@@ -1,0 +1,17 @@
+<ion-header class="header">
+  <ion-toolbar color="secondary">
+    <ion-title id="primary-title">Home</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <h1>¡Bienvenido/a de vuelta🎉!</h1>
+  <div class="container-bienvenida">
+    <h2 *ngIf="email">Ingresó con <strong>{{ email }}</strong></h2>
+  </div>
+
+  <div class="container-cerrar-sesion">
+    <ion-button (click)="logout()" color="primary">Cerrar sesión</ion-button>
+  </div>
+
+</ion-content>
