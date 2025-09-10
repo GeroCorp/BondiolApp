@@ -20,7 +20,7 @@ Fecha de inicio: 8/9
 Fecha de finalización: 10/9
 
 
-## Corpus Géronimo
+## Corpus Gerónimo
 - Accesos rapidos
 - Cierre de sesión
 
