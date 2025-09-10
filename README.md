@@ -11,18 +11,23 @@
 Fecha de inicio: 8/9  
 Fecha de finalización: 9/9
 
+- Agregar un empleado (punto 1)
+- Agregar un nuevo plato (punto 2)
+
+Fecha de incio: 10/9  
+Fecha de finalización: 14/9
 
 ## Pagés Valentino
 - inserccion de instancias en la base de datos
 - Formulario de ingreso
 
-Fecha de inicio: 8/9  
-Fecha de finalización: 10/9
+Fecha de inicio: 9/9  
+Fecha de finalización: 13/9
 
 
 ## Corpus Gerónimo
 - Accesos rapidos
 - Cierre de sesión
 
-Fecha de inicio: 8/9  
-Fecha de finalización: 10/9
+Fecha de inicio: 10/9  
+Fecha de finalización: 13/9
