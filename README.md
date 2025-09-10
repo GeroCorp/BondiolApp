@@ -7,16 +7,10 @@
 - Creación de servicios externos (bases de datos)
 - Diseño del ícono
 - Diseño de las splash screen
+- - Inserción de instancias en la base de datos
 
 Fecha de inicio: 8/9  
 Fecha de finalización: 9/9
-
-- Inserción de instancias en la base de datos
-- Agregar un empleado (punto 1)
-- Agregar un nuevo plato (punto 2)
-
-Fecha de incio: 10/9  
-Fecha de finalización: 14/9
 
 ## Pagés Valentino
 - Estructura del formulario de ingreso
