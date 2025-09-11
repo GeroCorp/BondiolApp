@@ -15,7 +15,7 @@ export class AuthService {
     );
   }
 
-  // 🔑 Iniciar sesión
+  // ✅ Iniciar sesión con email y contraseña
   async login(email: string, password: string) {
     try {
       const { data, error } = await this.supabase.auth.signInWithPassword({
@@ -24,16 +24,18 @@ export class AuthService {
       });
 
       if (error) throw new Error(this.mapAuthError(error));
-      if (!data || !data.user) throw new Error('No se pudo obtener el usuario.');
+      if (!data || !data.user) {
+        throw new Error('No se pudo obtener el usuario después de iniciar sesión.');
+      }
 
-      return data; // ✅ devuelve user y session
+      return data; // ✅ garantizado que tiene user
     } catch (err: any) {
       console.error('Error en login:', err);
       throw new Error(this.mapAuthError(err));
     }
   }
 
-  // 🔑 Cerrar sesión
+  // ✅ Cerrar sesión
   async logout() {
     try {
       const { error } = await this.supabase.auth.signOut();
@@ -44,14 +46,14 @@ export class AuthService {
     }
   }
 
-  // 🔑 Obtener usuario actual
+  // ✅ Obtener usuario actual
   async getUser() {
     const { data, error } = await this.supabase.auth.getUser();
     if (error) throw new Error('No se pudo obtener el usuario actual.');
     return data.user;
   }
 
-  // 🔑 Obtener empleado desde tabla empleados según user_id
+  // ✅ Obtener empleado (perfil) desde la tabla según user_id
   async getEmpleadoByUserId(userId: string) {
     const { data, error } = await this.supabase
       .from('empleados')
@@ -59,14 +61,14 @@ export class AuthService {
       .eq('user_id', userId);
 
     if (error) {
-      console.error('Error al buscar empleado:', error.message);
-      return [];
+      console.error("Error al buscar empleado:", error.message);
+      return []; // devolvemos array vacío
     }
 
     return Array.isArray(data) ? data : [];
   }
 
-  // 🔑 Traducir errores de Supabase
+  // ✅ Mapear errores de Supabase
   private mapAuthError(error: AuthError): string {
     switch (error.message) {
       case 'Invalid login credentials':

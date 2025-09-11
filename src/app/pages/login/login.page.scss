@@ -1,0 +1,40 @@
+.login-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-container {
+  width: 90%;
+  max-width: 400px;
+  padding: 2rem;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  text-align: center;
+
+  h2 {
+    margin-bottom: 0.5rem;
+    color: var(--ion-color-primary);
+  }
+
+  p {
+    color: #666;
+    margin-bottom: 1.5rem;
+  }
+
+  ion-item {
+    --border-radius: 10px;
+    margin-bottom: 1rem;
+  }
+
+ ion-button {
+  font-weight: bold;
+  --border-radius: 10px;
+}
+
+
+  small {
+    margin-left: 8px;
+  }
+}
