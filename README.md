@@ -14,14 +14,15 @@ Fecha de finalización: 9/9
 
 ## Pagés Valentino
 - Estructura del formulario de ingreso
-- Accesos rapidos
+- Cierre de sesión
 
 Fecha de inicio: 9/9  
 Fecha de finalización: 11/9
 
 
 ## Corpus Gerónimo
-- Cierre de sesión
+- Accesos rapidos
+- Arreglo de errores en login y home
 
-Fecha de inicio: 10/9  
-Fecha de finalización: 13/9
+Fecha de inicio: 10/9 
+Fecha de finalización: 12/9
