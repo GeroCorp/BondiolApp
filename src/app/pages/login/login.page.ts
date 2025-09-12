@@ -58,7 +58,7 @@ export class LoginPage {
       await loading.dismiss();
 
       // 3️⃣ Navego al home
-      this.router.navigate(['/home'], { state: { email, perfil } });
+      this.router.navigate(['/home'], { state: { email, perfil }, replaceUrl: true });
 
       this.showToast('¡Bienvenido/a!', 'success');
     } catch (err: any) {
@@ -75,5 +75,47 @@ export class LoginPage {
       position: 'bottom',
     });
     await toast.present();
+  }
+
+
+  // Rellena el formulario con los datos predefinidos (Intente hacerlo con auth, pero no existe mejor manera que hardcodear)
+
+  fastFill(perfil: string){
+    let email = "";
+    let password = "";
+    switch(perfil){
+      case "admin":
+        email = "dueno@resto-admin.com"
+        password = "admin123"
+        break;
+
+      case "super":
+        email = "supervisor@resto-admin.com"
+        password = "super123"
+        break;
+      
+      case "maitre":
+        email = "maitre@resto-empleado.com"
+        password = "maitre123"
+        break;
+
+      case "mozo" :
+        email = "mozo@resto-empleado.com"
+        password = "mozo123"
+        break;
+
+      case "cocinero": 
+        email = "cocinero@resto-empleado.com"
+        password = "cocinero123"
+        break;
+
+        case "bar":
+          email = "bartender@resto-empleado.com"
+          password = "bartender123"
+          break;
+    
+    }
+
+    this.loginForm.setValue({email, password});
   }
 }
