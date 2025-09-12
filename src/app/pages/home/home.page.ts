@@ -20,7 +20,7 @@ export class HomePage {
   async logout() {
     await this.authService.logout();
 
-    this.router.navigate(['/login']); // redirigir al login
+    this.router.navigate(['/login'], {replaceUrl: true}); // redirigir al login
     this.showToast('Sesión cerrada correctamente');
   }
 
