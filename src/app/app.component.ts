@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
-
 import { Platform } from '@ionic/angular';
 import { Router } from '@angular/router';
 
@@ -19,15 +18,14 @@ export class AppComponent {
   initializeApp() {
     this.platform.ready().then(() => {
       this.configureStatusBar();
-      //this.showSplash();
       this.router.navigateByUrl('splash');
     });
   }
 
   async configureStatusBar() {
     await StatusBar.setOverlaysWebView({ overlay: false });
-    await StatusBar.setBackgroundColor({ color: '#ffffffff' });
-    await StatusBar.setStyle({ style: Style.Light });
+    await StatusBar.setBackgroundColor({ color: '#000000ff' });
+    await StatusBar.setStyle({ style: Style.Dark });
   }
 
 }
