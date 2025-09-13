@@ -10,11 +10,11 @@ const config: CapacitorConfig = {
   plugins: {
     StatusBar: {
       overlaysWebView: false, // 👈 evita que el contenido se meta debajo de la barra
-      style: 'DARK',          // texto oscuro (ideal si el fondo es claro)
-      backgroundColor: '#ffffff', // fondo blanco para la barra
+      style: 'WHITE',          // texto oscuro (ideal si el fondo es claro)
+      backgroundColor: '#000000ff', // fondo blanco para la barra
     },
     SplashScreen: {
-      launchShowDuration: 1000, // indica cuanto tiempo va a durar el splash, por defecto viene en 3000
+      launchShowDuration: 0, // indica cuanto tiempo va a durar el splash, por defecto viene en 3000
       launchAutoHide: true,
       // launchFadeOutDuration: 0, // cuanto dura el desvanecimiento de la splash screen
       backgroundColor: "#ff2525", // Darle el color de mi splash screen
