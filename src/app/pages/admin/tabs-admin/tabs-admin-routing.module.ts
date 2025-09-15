@@ -20,6 +20,11 @@ const routes: Routes = [
         path: 'tab3-admin-cliente',
         loadChildren: () => import('./tab3-admin-cliente/tab3-admin-cliente.module').then(m => m.Tab3AdminClientePageModule)
       },
+      {
+        path: '',
+        redirectTo: 'tab1-carga-empleado',
+        pathMatch: 'full',
+      }
     ]
   }
 ];

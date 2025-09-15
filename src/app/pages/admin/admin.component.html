@@ -1,0 +1,29 @@
+<ion-card *ngIf="perfil === 'dueño' || perfil === 'supervisor'">
+    <ion-card-header>
+      <ion-card-title>Empleados</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-button expand="block" color="secondary" (click)="agregarEmpleado()">
+        + Agregar empleado
+      </ion-button>
+    </ion-card-content>
+
+    <ion-card-header>
+      <ion-card-title>Mesas</ion-card-title>
+        <ion-card-content>
+          <ion-button expand="block" color="secondary" (click)="agregarMesa()">
+            + Agregar mesa
+          </ion-button>
+        </ion-card-content>
+    </ion-card-header>
+
+    <ion-card-header>
+      <ion-card-title>Clientes</ion-card-title>
+        <ion-card-content>
+          <ion-button expand="block" color="secondary" (click)="adminCliente()">
+            Administrar clientes
+          </ion-button>
+        </ion-card-content>
+    </ion-card-header>
+
+  </ion-card>

@@ -25,7 +25,9 @@ export class AuthService {
 
       if (error) throw new Error(this.mapAuthError(error));
       if (!data || !data.user) {
-        throw new Error('No se pudo obtener el usuario después de iniciar sesión.');
+        throw new Error(
+          'No se pudo obtener el usuario después de iniciar sesión.'
+        );
       }
 
       return data; // ✅ garantizado que tiene user
@@ -61,7 +63,7 @@ export class AuthService {
       .eq('user_id', userId);
 
     if (error) {
-      console.error("Error al buscar empleado:", error.message);
+      console.error('Error al buscar empleado:', error.message);
       return []; // devolvemos array vacío
     }
 

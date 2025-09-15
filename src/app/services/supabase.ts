@@ -5,6 +5,8 @@ import { environment } from 'src/environments/environment';
 @Injectable({
   providedIn: 'root',
 })
+
+
 export class AuthService {
   private supabase: SupabaseClient;
 
@@ -49,6 +51,32 @@ export class AuthService {
     const { data, error } = await this.supabase.auth.getUser();
     if (error) throw new Error('No se pudo obtener el usuario actual.');
     return data.user;
+  }
+
+  async getUsuarioConPerfil() {
+    const { data, error } = await this.supabase.auth.getUser();
+    if (error || !data.user) {
+      throw new Error('No se pudo obtener el usuario actual.');
+    }
+
+    const user = data.user;
+
+    // Buscar en la tabla empleados
+    const { data: empleados, error: errorEmpleado } = await this.supabase
+      .from('empleados')
+      .select('perfil') 
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (errorEmpleado) {
+      console.error('Error al obtener perfil:', errorEmpleado.message);
+      return { email: user.email ?? null, perfil: null };
+    }
+
+    return {
+      email: user.email ?? null,
+      perfil: empleados ? empleados.perfil : null,
+    };
   }
 
   // // 🔑 Obtener empleado desde tabla empleados según user_id
