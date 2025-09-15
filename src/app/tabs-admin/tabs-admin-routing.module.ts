@@ -1,0 +1,31 @@
+import { NgModule } from '@angular/core';
+import { Routes, RouterModule } from '@angular/router';
+
+import { TabsAdminPage } from './tabs-admin.page';
+
+const routes: Routes = [
+  {
+    path: '',
+    component: TabsAdminPage,
+    children: [
+      {
+        path: 'tab1-carga-empleado',
+        loadChildren: () => import('./tab1-carga-empleado/tab1-carga-empleado.module').then(m => m.Tab1CargaEmpleadoPageModule)
+      },
+      {
+        path: 'tab2-carga-mesas',
+        loadChildren: () => import('./tab2-carga-mesas/tab2-carga-mesas.module').then(m => m.Tab2CargaMesasPageModule)
+      },
+      {
+        path: 'tab3-admin-cliente',
+        loadChildren: () => import('./tab3-admin-cliente/tab3-admin-cliente.module').then(m => m.Tab3AdminClientePageModule)
+      },
+    ]
+  }
+];
+
+@NgModule({
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule],
+})
+export class TabsAdminPageRoutingModule {}

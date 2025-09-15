@@ -17,17 +17,17 @@ const routes: Routes = [
     loadChildren: () => import('./pages/login/login.module').then(m => m.LoginPageModule)
   },
   {
-    path: '**',
-    redirectTo: 'splash',
-    pathMatch: 'full'
-  },
-  {
     path: 'splash',
     loadChildren: () => import('./pages/splash/splash.module').then(m => m.SplashPageModule)
   },
   {
-    path: 'tabs',
-    loadChildren: () => import('./tabs/tabs.module').then(m => m.TabsPageModule)
+    path: 'tabs-admin',
+    loadChildren: () => import('./tabs-admin/tabs-admin.module').then( m => m.TabsAdminPageModule)
+  },
+  {
+    path: '**',
+    redirectTo: 'splash',
+    pathMatch: 'full'
   },
 ];
 @NgModule({

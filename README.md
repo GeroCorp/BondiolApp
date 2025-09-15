@@ -1,6 +1,7 @@
 # Grupo: sinNombre-2025
 ###  Trabajo Final Integrador -- Primer parcial  
 
+# Primera semana
 
 ## Escobar Tobias Fabricio
 - Creacion de repositorio
@@ -26,3 +27,12 @@ Fecha de finalización: 11/9
 
 Fecha de inicio: 10/9 
 Fecha de finalización: 12/9
+
+# Segunda semana
+
+## Escobar Tobias Fabricio
+- 1° Funcionalidad (Agregar un empleado)
+- 2° Funcionalidad (Agregar un nuevo plato)
+
+Fecha de inicio: 13/9
+Fecha de estimada de finalización: 17/9
