@@ -6,11 +6,10 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./tabs-admin.page.scss'],
   standalone: false
 })
-export class TabsAdminPage implements OnInit {
+export class TabsAdminPage{
 
   constructor() { }
 
-  ngOnInit() {
-  }
+  
 
 }
