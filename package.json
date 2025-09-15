@@ -1,5 +1,5 @@
 {
-  "name": "restoApp",
+  "name": "restoapp",
   "version": "0.0.1",
   "author": "Ionic Framework",
   "homepage": "https://ionicframework.com/",
@@ -8,6 +8,7 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
+    "phone": "ionic cap run android --external --livereload --public-host=192.168.0.121",
     "test": "ng test",
     "lint": "ng lint",
     "android:refresh": "ionic build && npx cap sync android && npx cap open android"
@@ -34,6 +35,7 @@
     "@ionic/angular": "^8.0.0",
     "@ionic/pwa-elements": "^3.3.0",
     "@supabase/supabase-js": "^2.57.4",
+    "angularx-qrcode": "^18.0.2",
     "bootstrap": "^5.3.8",
     "ionicons": "^7.0.0",
     "rxjs": "~7.8.0",
