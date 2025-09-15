@@ -80,7 +80,15 @@ export class AuthService {
     return await this.supabase.from('empleados').insert([empleado]);
   }
 
-
+  // 🔑 Insertar nueva mesa
+  async insertarMesa(mesa: any) {
+    return await this.supabase.from('mesas').insert({
+      numero: mesa.numero,
+      cantidad: mesa.capacidad,
+      tipo: mesa.tipo
+      }
+    )
+  }
 
   // 🔑 Traducir errores de Supabase
   private mapAuthError(error: AuthError): string {
