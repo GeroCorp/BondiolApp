@@ -51,20 +51,36 @@ export class AuthService {
     return data.user;
   }
 
-  // 🔑 Obtener empleado desde tabla empleados según user_id
+  // // 🔑 Obtener empleado desde tabla empleados según user_id
   async getEmpleadoByUserId(userId: string) {
-    const { data, error } = await this.supabase
-      .from('empleados')
-      .select('*')
-      .eq('user_id', userId);
+      console.log('Query a empleados con user_id:', userId);
+      const { data, error } = await this.supabase
+        .from('empleados')
+        .select('*')
+        .eq('user_id', userId);
 
-    if (error) {
-      console.error('Error al buscar empleado:', error.message);
-      return [];
-    }
+      if (error) {
+        console.error('Error al buscar empleado:', error.message);
+        return [];
+      }
 
-    return Array.isArray(data) ? data : [];
+      console.log('Resultado de empleados:', data); // Add this to see the raw data from Supabase
+      console.log('Es array:', Array.isArray(data));
+      console.log('Array length:', data ? data.length : 0);
+      return Array.isArray(data) ? data : [];
   }
+
+  // 🔑 Registro de nuevo empleado (sólo email y password)
+  async registrarEmpleado(email: string, password: string) {
+    return await this.supabase.auth.signUp({ email, password });
+  }
+
+  // 🔑 Insertar nuevo empleado
+  async insertarEmpleado(empleado: any) {
+    return await this.supabase.from('empleados').insert([empleado]);
+  }
+
+
 
   // 🔑 Traducir errores de Supabase
   private mapAuthError(error: AuthError): string {

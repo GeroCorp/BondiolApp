@@ -47,7 +47,12 @@ export class LoginPage {
 
       // 2️⃣ Consulto perfil en empleados
       let perfil: string | null = null;
+      console.log('Buscando empleados con userId:', userId);
       const empleados = await this.authService.getEmpleadoByUserId(userId);
+      console.log('Empleados devueltos:', empleados);
+
+      console.log('UserId:', userId);
+      console.log('Empleados devueltos:', empleados);
 
       if (Array.isArray(empleados) && empleados.length > 0) {
         perfil = empleados[0].perfil;
@@ -57,8 +62,13 @@ export class LoginPage {
 
       await loading.dismiss();
 
-      // 3️⃣ Navego al home
-      this.router.navigate(['/home'], { state: { email, perfil }, replaceUrl: true });
+      // 3️⃣ Navego según el perfil
+      // no descomentar
+      // if (perfil === 'dueño' || perfil === 'supervisor') {
+      //   this.router.navigate(['/tabs-admin'], { state: { perfil }, replaceUrl: true });
+      // } else {
+        this.router.navigate(['/home'], { state: { email, perfil }, replaceUrl: true });
+      // }
 
       this.showToast('¡Bienvenido/a!', 'success');
     } catch (err: any) {
@@ -84,12 +94,12 @@ export class LoginPage {
     let email = "";
     let password = "";
     switch(perfil){
-      case "admin":
+      case "dueño":
         email = "dueno@resto-admin.com"
         password = "admin123"
         break;
 
-      case "super":
+      case "supervisor":
         email = "supervisor@resto-admin.com"
         password = "super123"
         break;
@@ -109,7 +119,7 @@ export class LoginPage {
         password = "cocinero123"
         break;
 
-        case "bar":
+        case "bartender":
           email = "bartender@resto-empleado.com"
           password = "bartender123"
           break;
