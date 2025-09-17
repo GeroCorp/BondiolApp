@@ -33,6 +33,7 @@ Fecha de finalización: 12/9
 ## Escobar Tobias Fabricio
 - 1° Funcionalidad (Agregar un empleado)
 - 2° Funcionalidad (Agregar un nuevo plato)
+- 3° Funcionalidad (Agregar una nueva bebida)
 - Arreglos/mejoras visuales generales
 
 Fecha de inicio: 13/9
@@ -40,7 +41,6 @@ Fecha estimada de finalización: 17/9
 
 
 ## Pagés Valentino
-- 3° Funcionalidad (Agregar una nueva bebida)
 - 6° Funcionalidad (Verificar ingreso del cliente registrado)
 
 Fecha de inicio: 15/9  
