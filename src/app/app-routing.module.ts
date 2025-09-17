@@ -21,8 +21,12 @@ const routes: Routes = [
     loadChildren: () => import('./pages/splash/splash.module').then(m => m.SplashPageModule)
   },
   {
-    path: 'admin',
-    loadChildren: () => import('./pages/admin/admin.module').then( m => m.AdminModule)
+    path: 'tabs-admin',
+    loadChildren: () => import('./tabs-admin/tabs-admin.module').then( m => m.TabsAdminPageModule)
+  },
+  {
+    path: 'tabs-cocinero-bartender',
+    loadChildren: () => import('./tabs-cocinero-bartender/tabs-cocinero.module').then( m => m.TabsCocineroPageModule)
   },
   {
     path: '**',

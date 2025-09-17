@@ -4,6 +4,7 @@ import { AuthService } from 'src/app/services/supabase';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ToastController } from '@ionic/angular';
 import { SafeUrl } from '@angular/platform-browser';
+import { PerfilService } from 'src/app/services/perfilService';
 
 
 @Component({
@@ -28,10 +29,10 @@ export class Tab2CargaMesasPage {
     private router: Router,
     private authService: AuthService,
     private toast: ToastController,
+    private perfilService: PerfilService
   ) {
-    this.email = history.state['email'] ?? null;
-    this.perfil = history.state['perfil'] ?? null;
-    console.log('Perfil recibido en tabs:', this.perfil);
+    this.perfil = this.perfilService.getPerfil();
+    console.log('Perfil recibido en Tabs admin:', this.perfil);
 
     this.mesaForm = this.fb.group({
       numero: ['', Validators.required],

@@ -108,6 +108,32 @@ export class AuthService {
     return await this.supabase.from('empleados').insert([empleado]);
   }
 
+  // 🔑 Insertar nuevo plato
+  async insertarPlato(producto: any) {
+    return await this.supabase.from('platos').insert([producto]);
+  }
+
+  // 🔑 Insertar nueva bebida
+  async insertarBebida(producto: any) {
+    return await this.supabase.from('bebidas').insert([producto]);
+  }
+
+  // 🔑 Verificar existencia del plato en el menú
+  async buscarPlatoPorNombre(nombre: string) {
+    return await this.supabase
+      .from('platos')
+      .select('*')
+      .ilike('nombre', nombre); // o .eq si querés exacto
+  }
+
+  // 🔑 Verificar existencia de la bebida en el menú
+  async buscarBebidaPorNombre(nombre: string) {
+    return await this.supabase
+      .from('bebidas')
+      .select('*')
+      .ilike('nombre', nombre); // o .eq si querés exacto
+  }
+
   // 🔑 Insertar nueva mesa
   async insertarMesa(mesa: any) {
     return await this.supabase.from('mesas').insert({

@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { AuthService } from 'src/app/services/supabase';
 import { ToastController } from '@ionic/angular';
+import { PerfilService } from 'src/app/services/perfilService';
 
 @Component({
   selector: 'app-home',
@@ -10,20 +11,28 @@ import { ToastController } from '@ionic/angular';
   styleUrls: ['./home.page.scss'],
   standalone: false,
 })
-export class HomePage implements OnInit {
+export class HomePage {
   email: string | null = null;
   perfil: string | null = null;
 
   constructor(
-    private router: Router,
-    private authService: AuthService,
-    private toastController: ToastController
-  ) {}
+    private router: Router, 
+    private authService: AuthService, 
+    private toastController: ToastController,
+    private perfilService: PerfilService
+  ) {
+    this.email = history.state['email'] ?? null;
+    this.perfil = history.state['perfil'] ?? null;
+    if (this.perfil) {
+      this.perfilService.setPerfil(this.perfil); // guarda el perfil
+    }
+    console.log('Perfil recibido en Home:', this.perfil);  // Verificar que perfil esta ingresando a home
+  }
 
   async logout() {
     await this.authService.logout();
 
-    this.router.navigate(['/login'], { replaceUrl: true }); // redirigir al login
+    this.router.navigate(['/login'], {replaceUrl: true}); // redirigir al login
     this.showToast('Sesión cerrada correctamente');
   }
 
@@ -37,18 +46,23 @@ export class HomePage implements OnInit {
     await toast.present();
   }
 
-  async ngOnInit() {
-    try {
-      const usuario = await this.authService.getUsuarioConPerfil();
-      this.email = usuario.email;
-      this.perfil = usuario.perfil;
-
-      // 🚨 Redirigir a admin si corresponde
-      if (this.perfil === 'dueño' || this.perfil === 'supervisor') {
-        this.router.navigate(['/admin']);
-      }
-    } catch (err) {
-      console.error('Error al obtener usuario:', err);
-    }
+  // Seccion de dueño y supervisor
+  agregarEmpleado() {
+    this.router.navigate(['/tabs-admin/tab1-carga-empleado'], {replaceUrl: true}); // redirigir a tabs empleado
   }
+  agregarMesa() {
+    this.router.navigate(['/tabs-admin/tab2-carga-mesas'], {replaceUrl: true}); // redirigir a tabs mesas
+  }
+  adminCliente() {
+    this.router.navigate(['/tabs-admin/tab3-admin-cliente'], {replaceUrl: true}); // Redirigir a tabs cliente
+  }
+
+  // Seccion de cocinero y bartender
+  agregarProducto() {
+    this.router.navigate(['/tabs-cocinero-bartender/tab1-agregar-producto'], {replaceUrl: true}); // redirigir a tabs producto
+  }
+  recibirPedidos() {
+    this.router.navigate(['/tabs-cocinero-bartender/tab2-recibir-pedido'], {replaceUrl: true}); // redirigir a tabs pedidos
+  }
+
 }

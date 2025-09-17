@@ -7,7 +7,7 @@ import { ToastController, LoadingController } from '@ionic/angular';
 
 
 import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
-// para poder leer QR en web
+import { PerfilService } from 'src/app/services/perfilService';
 
 
 @Component({
@@ -19,19 +19,22 @@ import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
 export class Tab1CargaEmpleadoPage {
   empleadoForm: FormGroup;
   foto: string | null = null;
-
+  perfil: string | null = null;
 
   constructor (
     private fb: FormBuilder, 
     private supabaseService: AuthService, 
     private router: Router, 
     private toastController: ToastController,
+    private perfilService: PerfilService
     // private loadingCtrl: LoadingController // implementarlo
   ) {
+    this.perfil = this.perfilService.getPerfil();
+    console.log('Perfil recibido en Tabs admin:', this.perfil);
 
     this.empleadoForm = this.fb.group({
-      nombre: ['', Validators.required],
-      apellido: ['', Validators.required],
+      nombre: ['', [Validators.required, Validators.pattern(/^[a-zA-ZÀ-ÿ\u00f1\u00d1\s]+$/), Validators.minLength(4)]], 
+      apellido: ['', [Validators.required, Validators.pattern(/^[a-zA-ZÀ-ÿ\u00f1\u00d1\s]+$/), Validators.minLength(4)]],
       dni: ['', [Validators.required, Validators.pattern(/^[0-9]{8}$/)]],
       cuil: ['', [Validators.required, Validators.pattern(/^[0-9]{11}$/)]],
       email: ['', [Validators.required, Validators.email]],
@@ -52,12 +55,12 @@ export class Tab1CargaEmpleadoPage {
 
   // mensajes auxiliares de validacion
   private validationMessages: { [key: string]: string } = {
-    nombre: 'El nombre es obligatorio y debe tener mínimo 4 caracteres.',
-    apellido: 'El apellido es obligatorio y debe tener mínimo 4 caracteres.',
+    nombre: 'El nombre es obligatorio y debe tener un mínimo de 4 caracteres (sin números).',
+    apellido: 'El apellido es obligatorio y debe tener un mínimo de 4 caracteres (sin números).',
     dni: 'DNI inválido: debe tener 8 dígitos numéricos.',
     cuil: 'CUIL inválido: debe tener 11 dígitos numéricos.',
     clave: 'Contraseña inválida: mínimo 6 caracteres.',
-    email: 'Email inválido.',
+    email: 'Correo electrónico inválido.',
     perfil: 'Debe seleccionar un perfil.',
   };
   // funcion auxiliar para verificacion del formulario
@@ -147,7 +150,7 @@ export class Tab1CargaEmpleadoPage {
   async showToast(message: string, color: 'success' | 'danger' | 'medium') {
     const toast = await this.toastController.create({
       message,
-      duration: 2500,
+      duration: 2700,
       color,
       position: 'bottom',
     });

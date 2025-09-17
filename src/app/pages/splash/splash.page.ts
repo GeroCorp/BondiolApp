@@ -17,7 +17,7 @@ export class SplashPage {
       // Esperamos a que la plataforma esté lista
       setTimeout(() => {
         this.navCtrl.navigateRoot('/login', { animationDirection: 'forward' });
-      }, 0); // 5 segundos de animación
+      }, 4000); // 4 segundos de animación
     });
   }
 }

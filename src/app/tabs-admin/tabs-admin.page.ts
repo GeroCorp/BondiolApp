@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { PerfilService } from '../services/perfilService';
 
 @Component({
   selector: 'app-tabs-admin',
@@ -8,7 +9,7 @@ import { Component, OnInit } from '@angular/core';
 })
 export class TabsAdminPage{
 
-  constructor() { }
+  constructor(private perfilService: PerfilService) { }
 
   
 
