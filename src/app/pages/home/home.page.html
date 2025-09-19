@@ -1,6 +1,6 @@
 <ion-header>
-  <ion-toolbar color="primary">
-    <ion-title>🏠 Home</ion-title>
+  <ion-toolbar>
+    <ion-title><ion-icon name="home"></ion-icon> Home</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -16,27 +16,32 @@
       </ion-card-header>
       <ion-card-content>
         <ion-button expand="block" color="secondary" (click)="agregarEmpleado()">
-          + Agregar empleado
+          <ion-icon name="add"/> Agregar empleado
         </ion-button>
       </ion-card-content>
 
       <ion-card-header>
         <ion-card-title>Mesas</ion-card-title>
-          <ion-card-content>
-            <ion-button expand="block" color="secondary" (click)="agregarMesa()">
-              + Agregar mesa
-            </ion-button>
-          </ion-card-content>
       </ion-card-header>
+      <ion-card-content>
+        <ion-button expand="block" color="secondary" (click)="agregarMesa()">
+          <ion-icon name="add"/> Agregar mesa 
+        </ion-button>
+        <ion-button expand="block" color="secondary" (click)="adminMesa()">
+          Administrar mesas
+        </ion-button>
+        
+        
+      </ion-card-content>
 
       <ion-card-header>
         <ion-card-title>Clientes</ion-card-title>
-          <ion-card-content>
-            <ion-button expand="block" color="secondary" (click)="adminCliente()">
-              Administrar clientes
-            </ion-button>
-          </ion-card-content>
       </ion-card-header>
+      <ion-card-content>
+        <ion-button expand="block" color="secondary" (click)="adminCliente()">
+          Administrar clientes
+        </ion-button>
+      </ion-card-content>
 
   </ion-card>
 
@@ -46,10 +51,10 @@
       </ion-card-header>
       <ion-card-content>
         <ion-button *ngIf="perfil === 'cocinero'" expand="block" color="secondary" (click)="agregarProducto()">
-          + Agregar plato
+          <ion-icon name="add"/> Agregar plato
         </ion-button>
         <ion-button *ngIf="perfil === 'bartender'" expand="block" color="secondary" (click)="agregarProducto()">
-          + Agregar bebida
+          <ion-icon name="add"/> Agregar bebida
         </ion-button>
       </ion-card-content>
 

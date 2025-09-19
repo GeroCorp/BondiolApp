@@ -13,6 +13,7 @@ export class AppComponent {
 
   constructor(private platform: Platform, public router: Router) {
     this.initializeApp();
+    document.body.classList.add('dark');
   }
 
   initializeApp() {

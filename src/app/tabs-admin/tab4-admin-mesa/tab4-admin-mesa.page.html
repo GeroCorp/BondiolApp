@@ -1,0 +1,38 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>tab4-adminMesa</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">tab4-adminMesa</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Listado de mesas</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list>
+
+        @for (mesa of mesas(); track $index) {
+          <ion-item>
+            <ion-label>
+              <h2>Mesa {{ mesa.numero }} - {{ mesa.tipo }}</h2>
+              <p>Capacidad: {{ mesa.cantidad }}</p>
+            </ion-label>
+            <ion-button color="danger" (click)="eliminarMesa(mesa.id)" fill="clear" slot="end">
+              <ion-icon name="trash-outline"></ion-icon>
+            </ion-button>
+          </ion-item>
+        }
+
+
+      </ion-list> 
+    </ion-card-content>
+  </ion-card>
+
+</ion-content>

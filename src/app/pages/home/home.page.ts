@@ -56,7 +56,9 @@ export class HomePage {
   adminCliente() {
     this.router.navigate(['/tabs-admin/tab3-admin-cliente'], {replaceUrl: true}); // Redirigir a tabs cliente
   }
-
+  adminMesa() {
+    this.router.navigate(['/tabs-admin/tab4-admin-mesa'], {replaceUrl: true}); // Redirigir a tabs mesa
+  }
   // Seccion de cocinero y bartender
   agregarProducto() {
     this.router.navigate(['/tabs-cocinero-bartender/tab1-agregar-producto'], {replaceUrl: true}); // redirigir a tabs producto

@@ -21,6 +21,10 @@ const routes: Routes = [
         loadChildren: () => import('./tab3-admin-cliente/tab3-admin-cliente.module').then(m => m.Tab3AdminClientePageModule)
       },
       {
+        path: 'tab4-admin-mesa',
+        loadChildren: () => import('./tab4-admin-mesa/tab4-admin-mesa.module').then(m => m.Tab4AdminMesaPageModule)
+      },
+      {
         path: '',
         redirectTo: 'tab1-carga-empleado',
         pathMatch: 'full',
