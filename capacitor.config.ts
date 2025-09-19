@@ -14,9 +14,10 @@ const config: CapacitorConfig = {
       backgroundColor: '#000000ff', // fondo blanco para la barra
     },
     SplashScreen: {
-      launchShowDuration: 0, // indica cuanto tiempo va a durar el splash, por defecto viene en 3000
+      // Va a tardar segundo y medio, con esto se ve splash estatico que es mejor que la pantalla negra a mi parecer
+      launchShowDuration: 1000, // indica cuanto tiempo va a durar el splash, por defecto viene en 3000
       launchAutoHide: true,
-      // launchFadeOutDuration: 0, // cuanto dura el desvanecimiento de la splash screen
+      launchFadeOutDuration: 500, // fade out del splash, para no tener un cambio brusco
       backgroundColor: "#ff2525", // Darle el color de mi splash screen
     },
   },
