@@ -23,9 +23,12 @@
           <ion-input type="password" formControlName="password" label="Contraseña" fill="outline" labelPlacement="floating" class="ion-margin-top"/>
         
         <ion-button expand="block" type="submit" class="ion-margin-top">
-          Iniciar sesión <ion-icon name="log-in-outline" slot="end"></ion-icon>
+          Iniciar sesión<ion-icon name="log-in-outline" slot="end"></ion-icon>
         </ion-button>
       </form>
+      <ion-button expand="block" class="ion-margin-top" color="danger" class="ion-margin-top" (click)="registrar()">
+        Registrarse<ion-icon name="person-circle-outline" slot="end"></ion-icon>
+      </ion-button>
 
     </ion-card-content>
     <ion-card color="light">

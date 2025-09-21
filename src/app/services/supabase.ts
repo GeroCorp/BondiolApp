@@ -51,22 +51,22 @@ export class AuthService {
     if (error) throw new Error('No se pudo obtener el usuario actual.');
     return data.user;
   }
-
+  
   async getUsuarioConPerfil() {
     const { data, error } = await this.supabase.auth.getUser();
     if (error || !data.user) {
       throw new Error('No se pudo obtener el usuario actual.');
     }
-
+    
     const user = data.user;
-
+    
     // Buscar en la tabla empleados
     const { data: empleados, error: errorEmpleado } = await this.supabase
-      .from('empleados')
-      .select('perfil')
-      .eq('user_id', user.id)
-      .maybeSingle();
-
+    .from('empleados')
+    .select('perfil')
+    .eq('user_id', user.id)
+    .maybeSingle();
+    
     if (errorEmpleado) {
       console.error('Error al obtener perfil:', errorEmpleado.message);
       return { email: user.email ?? null, perfil: null };
@@ -85,8 +85,8 @@ export class AuthService {
       .from('empleados')
       .select('*')
       .eq('user_id', userId);
-
-    if (error) {
+      
+      if (error) {
       console.error('Error al buscar empleado:', error.message);
       return [];
     }
@@ -96,17 +96,22 @@ export class AuthService {
     console.log('Array length:', data ? data.length : 0);
     return Array.isArray(data) ? data : [];
   }
+  
+  // 🔑 Registro Cliente
+  async registerCliente(email: string, password: string) {
+    return await this.supabase.auth.signUp({ email, password });
+  }
 
   // 🔑 Registro de nuevo empleado (sólo email y password)
   async registrarEmpleado(email: string, password: string) {
     return await this.supabase.auth.signUp({ email, password });
   }
-
+  
   // 🔑 Insertar nuevo empleado
   async insertarEmpleado(empleado: any) {
     return await this.supabase.from('empleados').insert([empleado]);
   }
-
+  
   // 🔑 Insertar nuevo plato
   async insertarPlato(producto: any) {
     return await this.supabase.from('platos').insert([producto]);
@@ -116,11 +121,11 @@ export class AuthService {
   async insertarBebida(producto: any) {
     return await this.supabase.from('bebidas').insert([producto]);
   }
-
+  
   // 🔑 Verificar existencia del plato en el menú
   async buscarPlatoPorNombre(nombre: string) {
     return await this.supabase
-      .from('platos')
+    .from('platos')
       .select('*')
       .ilike('nombre', nombre); // o .eq si querés exacto
   }
@@ -178,9 +183,9 @@ export class AuthService {
     user_id?: string | null;
   }) {
     // validaciones mínimas en backend también son recomendadas
-    if (!cliente.nombre || !cliente.apellido || !cliente.dni) {
-      throw new Error('Faltan campos obligatorios: nombre, apellido o dni.');
-    }
+    // if (!cliente.nombre || !cliente.apellido || !cliente.dni) {
+    //   throw new Error('Faltan campos obligatorios: nombre, apellido o dni.');
+    // }
 
     const payload = {
       nombre: cliente.nombre.trim(),

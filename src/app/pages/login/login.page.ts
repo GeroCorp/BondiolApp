@@ -87,6 +87,10 @@ export class LoginPage {
     await toast.present();
   }
 
+  registrar() {
+    this.router.navigate(['/register'], { replaceUrl: true });
+  }
+
 
   // Rellena el formulario con los datos predefinidos (Intente hacerlo con auth, pero no existe mejor manera que hardcodear)
 
