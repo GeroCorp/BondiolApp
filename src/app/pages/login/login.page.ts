@@ -12,7 +12,8 @@ import { AuthService } from 'src/app/services/supabase';
 })
 export class LoginPage {
   loginForm: FormGroup;
-
+  passwordVisible = false;
+  
   constructor(
     private fb: FormBuilder,
     private router: Router,
@@ -24,6 +25,10 @@ export class LoginPage {
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
     });
+  }
+
+  cambiarVisibilidadPassword() {
+    this.passwordVisible = !this.passwordVisible;
   }
 
   async onLogin() {
@@ -75,6 +80,10 @@ export class LoginPage {
       await loading.dismiss();
       this.showToast(err.message, 'danger');
     }
+  }
+
+  ingresarARegistro() {
+    this.router.navigate(['/registro'], {replaceUrl: true });
   }
 
   async showToast(message: string, color: 'success' | 'danger' | 'medium') {

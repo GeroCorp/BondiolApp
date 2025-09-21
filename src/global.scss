@@ -32,7 +32,8 @@
  * https://ionicframework.com/docs/theming/dark-mode
  */
 
- @import "@ionic/angular/css/palettes/dark.always.css"; 
+// Saque el siempre oscuro porque me generaba errores al querer poner colores
+// @import "@ionic/angular/css/palettes/dark.always.css"; 
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 /*@import "@ionic/angular/css/palettes/dark.system.css";*/
 
@@ -42,3 +43,11 @@ ion-content {
     padding-bottom: env(safe-area-inset-bottom);
 }
 
+// No funciona bien
+// .no-scroll-padding {
+//     --padding-start: 0;
+//     --padding-end: 0;
+//     --padding-top: 10px;
+//     --padding-bottom: 0;
+//     --overflow: hidden auto; /* solo scroll si hace falta */
+// }

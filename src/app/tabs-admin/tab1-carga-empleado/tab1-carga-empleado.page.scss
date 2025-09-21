@@ -1,14 +1,75 @@
-#img-empleado {
-    width: 80px;
-    height: 80px;
-    border-radius: 20px;
-    margin: 10px 0;
-    display: flex;
+// #img-empleado {
+//     width: 80px;
+//     height: 80px;
+//     border-radius: 20px;
+//     margin: 10px 0;
+//     display: flex;
 
+// }
+
+// .container-img-empleado {
+//     display: flex;
+//     justify-content: center;
+//     align-items: center;
+// }
+
+ion-content {
+    --background: linear-gradient(135deg, #2b73ad, #1b3c61); /* azul oscuro degradado */
+    color: #fff;
+}
+
+ion-toolbar {
+    --background: linear-gradient(135deg, #ff2525, #ff7b25); /* gradiente rojo/naranja */
+    --color: #fff;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Items de formulario */
+ion-item {
+    --background: rgba(255,255,255,0.05);
+    --border-radius: 12px;
+    margin-bottom: 12px;
+    color: #fff;
+}
+
+ion-label {
+    color: #ddd;
+}
+
+ion-input {
+    color: #fff;
+}
+
+/* Botones */
+ion-button {
+    --border-radius: 12px;
+    font-weight: bold;
+}
+
+/* Imagen */
+#img-empleado {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    margin: 16px auto;
+    display: block;
+    object-fit: cover;
+    border: 3px solid #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
 }
 
 .container-img-empleado {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+/* Botón cerrar sesión */
+.container-cerrar-sesion {
+    margin-top: 24px;
 }
