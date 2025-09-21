@@ -37,11 +37,6 @@ const routes: Routes = [
     redirectTo: 'splash',
     pathMatch: 'full'
   },
-  {
-    path: 'register',
-    loadChildren: () => import('./pages/register/register.module').then( m => m.RegisterPageModule)
-  },
-
 ];
 @NgModule({
   imports: [

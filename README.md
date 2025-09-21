@@ -54,3 +54,30 @@ Fecha estimada de finalización: 19/9
 
 Fecha de inicio: 15/9  
 Fecha estimada de finalización: 19/9
+
+# Tercera semana
+
+## Escobar Tobias Fabricio
+- 7° Funcionalidad (Rechazar al cliente)
+- 8° Funcionalidad (Aceptar al cliente)
+- Rediseño de paginas
+- Modificación y agregado en base de datos
+
+Fecha de inicio 20/9
+Fecha estimada de finalización: 25/9
+
+
+## Pagés Valentino
+- Agregar la push notification a la funcionalidad 6°
+- 9° Funcionalidad ()
+
+Fecha de inicio: 20/9  
+Fecha estimada de finalización: 25/9
+
+
+## Corpus Gerónimo
+- 5° Funcionalidad (Crear un cliente registrado)
+
+
+Fecha de inicio: 20/9  
+Fecha estimada de finalización: 25/9

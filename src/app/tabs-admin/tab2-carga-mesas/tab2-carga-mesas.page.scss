@@ -4,3 +4,68 @@ ion-input{
     border-radius: 8px;
     
 }
+
+
+ion-content {
+    --background: linear-gradient(135deg, #2b73ad, #1b3c61); /* azul oscuro degradado */
+    color: #fff;
+}
+
+/* Toolbar con gradiente rojo/naranja */
+ion-toolbar {
+    --background: linear-gradient(135deg, #ff2525, #ff7b25);
+    --color: #fff;
+}
+
+/* Formulario */
+form {
+    display: flex;
+    flex-direction: column;
+    }
+
+/* Items de formulario */
+ion-item {
+    --background: rgba(255, 255, 255, 0.05);
+    --border-radius: 12px;
+    margin-bottom: 12px;
+    color: #000000;
+}
+
+ion-label {
+    color: #ddd;
+}
+
+ion-input, ion-select {
+    color: #000000;
+}
+
+/* Botones */
+ion-button {
+    --border-radius: 12px;
+    font-weight: bold;
+}
+
+/* QR Code container */
+div[qrData] {
+    margin-top: 20px;
+    text-align: center;
+
+    qrcode {
+        border-radius: 12px;
+        padding: 10px;
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    a {
+        display: inline-block;
+        margin-top: 8px;
+        color: #000000;
+        font-weight: bold;
+        text-decoration: none;
+
+        &:hover {
+        text-decoration: underline;
+        }
+    }
+}
+
