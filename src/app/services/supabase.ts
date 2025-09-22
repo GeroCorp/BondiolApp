@@ -236,6 +236,7 @@ export class AuthService {
     return true;
   }
 
+<<<<<<< HEAD
   // metodos del maitre
   async getClientesAnonimosEnEspera() {
     try {
@@ -391,6 +392,29 @@ export class AuthService {
       throw error;
     }
   }
+=======
+  // 🔑 Obtener todas las mesas
+  async obtenerMesas() {
+    return await this.supabase.from('mesas').select('*');
+  }
+
+  // 🔑 Eliminar mesa por ID
+  async eliminarMesa(id: number) {
+    return await this.supabase.from('mesas').delete().eq('id', id);
+  }
+
+  actualizacionesMesas(callback: (payload: any) => void) {
+  return this.supabase
+    .channel('mesas-realtime')
+    .on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'mesas'
+    }, callback)
+    .subscribe();
+}
+
+>>>>>>> ef215b053dcab4c378efd29f9e321c9e0ec591c9
 
   // 🔑 Traducir errores de Supabase
   private mapAuthError(error: AuthError): string {
