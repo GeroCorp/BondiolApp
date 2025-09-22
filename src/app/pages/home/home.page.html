@@ -23,49 +23,20 @@
     <ion-card-header>
       <ion-card-title>Mesas</ion-card-title>
       <ion-card-content>
-<<<<<<< HEAD
         <ion-button expand="block" color="secondary" (click)="agregarMesa()">
           + Agregar mesa
-=======
-        <ion-button expand="block" color="secondary" (click)="agregarEmpleado()">
-          <ion-icon name="add"/> Agregar empleado
->>>>>>> ef215b053dcab4c378efd29f9e321c9e0ec591c9
         </ion-button>
       </ion-card-content>
     </ion-card-header>
 
-<<<<<<< HEAD
     <ion-card-header>
       <ion-card-title>Clientes</ion-card-title>
-=======
-      <ion-card-header>
-        <ion-card-title>Mesas</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <ion-button expand="block" color="secondary" (click)="agregarMesa()">
-          <ion-icon name="add"/> Agregar mesa 
-        </ion-button>
-        <ion-button expand="block" color="secondary" (click)="adminMesa()">
-          Administrar mesas
-        </ion-button>
-        
-        
-      </ion-card-content>
-
-      <ion-card-header>
-        <ion-card-title>Clientes</ion-card-title>
-      </ion-card-header>
->>>>>>> ef215b053dcab4c378efd29f9e321c9e0ec591c9
       <ion-card-content>
         <ion-button expand="block" color="secondary" (click)="adminCliente()">
           Administrar clientes
         </ion-button>
       </ion-card-content>
-<<<<<<< HEAD
     </ion-card-header>
-=======
-
->>>>>>> ef215b053dcab4c378efd29f9e321c9e0ec591c9
   </ion-card>
 
   <ion-card *ngIf="perfil === 'cocinero' || perfil === 'bartender'">
@@ -94,16 +65,8 @@
     <ion-card-header>
       <ion-card-title>Pedidos</ion-card-title>
       <ion-card-content>
-<<<<<<< HEAD
         <ion-button expand="block" color="secondary" (click)="recibirPedidos()">
           Ver pedidos recibidos
-=======
-        <ion-button *ngIf="perfil === 'cocinero'" expand="block" color="secondary" (click)="agregarProducto()">
-          <ion-icon name="add"/> Agregar plato
-        </ion-button>
-        <ion-button *ngIf="perfil === 'bartender'" expand="block" color="secondary" (click)="agregarProducto()">
-          <ion-icon name="add"/> Agregar bebida
->>>>>>> ef215b053dcab4c378efd29f9e321c9e0ec591c9
         </ion-button>
       </ion-card-content>
     </ion-card-header>
