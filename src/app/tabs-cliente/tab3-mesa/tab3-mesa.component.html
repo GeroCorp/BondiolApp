@@ -1,0 +1,19 @@
+<ion-header>
+  <ion-toolbar color="secondary">
+    <ion-title>Mi Mesa</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div *ngIf="mesa; else noMesa">
+    <h2>Mesa N° {{ mesa.numero }}</h2>
+    <p>Capacidad: {{ mesa.capacidad }}</p>
+    <p>Tipo: {{ mesa.tipo }}</p>
+  </div>
+
+  <ng-template #noMesa>
+    <ion-text color="medium">
+      Aún no tienes mesa asignada. Espera al maître.
+    </ion-text>
+  </ng-template>
+</ion-content>

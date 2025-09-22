@@ -1,18 +1,18 @@
 import { Component, OnInit } from '@angular/core';
-import { AuthService } from '../services/supabase';
+import { AuthService } from 'src/app/services/supabase';
 
 @Component({
-  selector: 'app-tabs-cliente',
-  templateUrl: './tabs-cliente.component.html',
-  styleUrls: ['./tabs-cliente.component.scss'],
+  selector: 'app-tab3-mesa',
+  templateUrl: './tab3-mesa.component.html',
+  styleUrls: ['./tab3-mesa.component.scss'],
 })
-export class TabsClienteComponent  implements OnInit {
-mesa: any = null;
+export class Tab3MesaComponent implements OnInit {
+  mesa: any = null;
 
   constructor(private supabase: AuthService) {}
 
   async ngOnInit() {
-    // Ejemplo: traer mesa asignada al último cliente anónimo
+    
     const { data, error } = await this.supabase.client
       .from('clientes_anonimos')
       .select('mesa_asignada, mesas(*)')
@@ -24,5 +24,4 @@ mesa: any = null;
       this.mesa = data[0].mesas;
     }
   }
-
 }
