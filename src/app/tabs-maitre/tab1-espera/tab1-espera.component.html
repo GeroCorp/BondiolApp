@@ -1,0 +1,28 @@
+<ion-header>
+  <ion-toolbar color="secondary">
+    <ion-title>Lista de Espera</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="cargarClientes(); $event.target.complete()">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <ion-list *ngIf="!isLoading && clientes.length > 0">
+    <ion-item *ngFor="let cliente of clientes">
+      <ion-label>
+        <h2>{{ cliente.nombre }} {{ cliente.apellido }}</h2>
+        <p>{{ cliente.email }}</p>
+      </ion-label>
+      <ion-button slot="end" color="primary" (click)="asignarMesa(cliente)">
+        Asignar Mesa
+      </ion-button>
+    </ion-item>
+  </ion-list>
+
+  <ion-spinner *ngIf="isLoading" class="ion-margin"></ion-spinner>
+  <ion-text color="medium" *ngIf="!isLoading && clientes.length === 0">
+    <p class="ion-text-center ion-padding">No hay clientes en espera.</p>
+  </ion-text>
+</ion-content>

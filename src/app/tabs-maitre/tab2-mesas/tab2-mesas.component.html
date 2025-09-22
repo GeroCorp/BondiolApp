@@ -1,0 +1,35 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Mesas</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="cargarMesas()">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <ion-list *ngIf="!isLoading; else loadingTpl">
+    <ion-item *ngFor="let mesa of mesas">
+      <ion-label>
+        <h2>Mesa {{ mesa.numero }}</h2>
+        <p>
+          Estado:
+          <strong>{{ mesa.cliente_asignado ? 'Ocupada' : 'Disponible' }}</strong>
+        </p>
+      </ion-label>
+      <ion-button
+        *ngIf="mesa.cliente_asignado"
+        color="danger"
+        (click)="liberarMesa(mesa)"
+      >
+        Liberar
+      </ion-button>
+    </ion-item>
+  </ion-list>
+
+  <ng-template #loadingTpl>
+    <ion-spinner class="ion-margin"></ion-spinner>
+    <p class="ion-text-center">Cargando mesas...</p>
+  </ng-template>
+</ion-content>

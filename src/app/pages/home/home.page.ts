@@ -16,8 +16,8 @@ export class HomePage {
   perfil: string | null = null;
 
   constructor(
-    private router: Router, 
-    private authService: AuthService, 
+    private router: Router,
+    private authService: AuthService,
     private toastController: ToastController,
     private perfilService: PerfilService
   ) {
@@ -26,13 +26,13 @@ export class HomePage {
     if (this.perfil) {
       this.perfilService.setPerfil(this.perfil); // guarda el perfil
     }
-    console.log('Perfil recibido en Home:', this.perfil);  // Verificar que perfil esta ingresando a home
+    console.log('Perfil recibido en Home:', this.perfil); // Verificar que perfil esta ingresando a home
   }
 
   async logout() {
     await this.authService.logout();
 
-    this.router.navigate(['/login'], {replaceUrl: true}); // redirigir al login
+    this.router.navigate(['/login'], { replaceUrl: true }); // redirigir al login
     this.showToast('Sesión cerrada correctamente');
   }
 
@@ -48,21 +48,35 @@ export class HomePage {
 
   // Seccion de dueño y supervisor
   agregarEmpleado() {
-    this.router.navigate(['/tabs-admin/tab1-carga-empleado'], {replaceUrl: true}); // redirigir a tabs empleado
+    this.router.navigate(['/tabs-admin/tab1-carga-empleado'], {
+      replaceUrl: true,
+    }); // redirigir a tabs empleado
   }
   agregarMesa() {
-    this.router.navigate(['/tabs-admin/tab2-carga-mesas'], {replaceUrl: true}); // redirigir a tabs mesas
+    this.router.navigate(['/tabs-admin/tab2-carga-mesas'], {
+      replaceUrl: true,
+    }); // redirigir a tabs mesas
   }
   adminCliente() {
-    this.router.navigate(['/tabs-admin/tab3-admin-cliente'], {replaceUrl: true}); // Redirigir a tabs cliente
+    this.router.navigate(['/tabs-admin/tab3-admin-cliente'], {
+      replaceUrl: true,
+    }); // Redirigir a tabs cliente
   }
 
   // Seccion de cocinero y bartender
   agregarProducto() {
-    this.router.navigate(['/tabs-cocinero-bartender/tab1-agregar-producto'], {replaceUrl: true}); // redirigir a tabs producto
+    this.router.navigate(['/tabs-cocinero-bartender/tab1-agregar-producto'], {
+      replaceUrl: true,
+    }); // redirigir a tabs producto
   }
   recibirPedidos() {
-    this.router.navigate(['/tabs-cocinero-bartender/tab2-recibir-pedido'], {replaceUrl: true}); // redirigir a tabs pedidos
+    this.router.navigate(['/tabs-cocinero-bartender/tab2-recibir-pedido'], {
+      replaceUrl: true,
+    }); // redirigir a tabs pedidos
   }
 
+  gestionarMaitre() {
+  
+  this.router.navigate(['/tabs-maitre'], { replaceUrl: true });
+}
 }

@@ -1,0 +1,21 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Panel Maître</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-segment [value]="selectedTab" (ionChange)="onTabChange($event)">
+    <ion-segment-button value="tab1-espera">
+      <ion-icon name="people-outline"></ion-icon>
+      <ion-label>Lista de espera</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="tab2-mesas">
+      <ion-icon name="grid-outline"></ion-icon>
+      <ion-label>Mesas</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+
+  <!-- Aquí se cargan los tabs hijos -->
+  <router-outlet></router-outlet>
+</ion-content>
