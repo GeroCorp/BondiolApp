@@ -7,7 +7,7 @@
 <ion-content [fullscreen]="true">
   <div class="container-bienvenida">
     <h1>¡Bienvenido/a de vuelta!</h1>
-    <h2 *ngIf="perfil">Ingresaste con perfil: <strong>{{ perfil }}</strong></h2>
+    <h2 *ngIf="perfil">Ingresaste con perfil de: <strong>{{ perfil }}</strong></h2>
   </div>
 
   <ion-card *ngIf="perfil === 'dueño' || perfil === 'supervisor'">
@@ -32,7 +32,7 @@
     <ion-card-header>
       <ion-card-title>Clientes</ion-card-title>
       <ion-card-content>
-        <ion-button expand="block" color="secondary" (click)="adminCliente()">
+        <ion-button expand="block" (click)="adminCliente()">
           Administrar clientes
         </ion-button>
       </ion-card-content>

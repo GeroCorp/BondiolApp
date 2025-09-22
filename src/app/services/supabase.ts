@@ -187,12 +187,12 @@ export class AuthService {
     }
 
     const payload = {
+      user_id: cliente.user_id ?? null,
       nombre: cliente.nombre.trim(),
       apellido: cliente.apellido.trim(),
       dni: cliente.dni.trim(),
       email: cliente.email ? cliente.email.trim() : null,
       foto: cliente.foto ?? null,
-      user_id: cliente.user_id ?? null,
       // estado y created_at los maneja la BD por defecto
     };
 
@@ -234,6 +234,11 @@ export class AuthService {
       throw new Error('Error al eliminar cliente: ' + error.message);
     }
     return true;
+  }
+
+  // 🔑 Registro de nuevo empleado (sólo email y password)
+  async registrarCliente(email: string, password: string) {
+    return await this.supabase.auth.signUp({ email, password });
   }
 
   // metodos del maitre
@@ -401,6 +406,9 @@ export class AuthService {
         return 'Debes confirmar tu correo antes de iniciar sesión.';
       case 'missing email or phone':
         return 'Complete todos los campos antes de ingresar.';
+      case 'User already registered':
+      case 'duplicate key value violates unique constraint "users_email_key"':
+        return 'El correo ya está registrado. Intente con otro.';
       default:
         return 'Error de autenticación: ' + error.message;
     }

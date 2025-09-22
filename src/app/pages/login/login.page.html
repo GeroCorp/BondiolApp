@@ -1,13 +1,13 @@
 <ion-header [translucent]="true">
   <ion-toolbar class="ion-text-center">
-    <img src="assets/icon/icon-only.png" alt="Logo" width="80">
+    <img src="assets/icon/icon-only.png" alt="Logo" width="85">
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="ion-padding ion-justify-content-center ion-align-items-center">
+<ion-content [fullscreen]="true" class="login-content ion-padding ion-justify-content-center ion-align-items-center">
 
 
-  <ion-card>
+  <ion-card class="card-container">
     <ion-card-header>
       <ion-card-title class="ion-text-center">Iniciar Sesión</ion-card-title>
     </ion-card-header>
@@ -20,21 +20,23 @@
           -->
           <ion-input type="email" formControlName="email" label="Correo Electrónico" fill="outline" labelPlacement="floating" class="ion-margin-top"/>
         
-          <ion-input type="password" formControlName="password" label="Contraseña" fill="outline" labelPlacement="floating" class="ion-margin-top"/>
-        
-        <ion-button expand="block" type="submit" class="ion-margin-top">
+          <ion-input [type]="passwordVisible ? 'text' : 'password'" formControlName="password" label="Contraseña" fill="outline" labelPlacement="floating" class="ion-margin-top"/> 
+          <ion-button fill="clear" slot="end" (click)="cambiarVisibilidadPassword()"><ion-icon [name]="passwordVisible ? 'eye' : 'eye-off'"></ion-icon></ion-button>
+          
+
+        <ion-button expand="block" type="submit" class="btn-primary ion-margin-top">
           Iniciar sesión <ion-icon name="log-in-outline" slot="end"></ion-icon>
         </ion-button>
       </form>
 
     </ion-card-content>
-    <ion-card color="light">
+    <ion-card>
     <ion-card-header>
-      <ion-card-title>Acceso Rápido</ion-card-title>
+      <ion-card-title class="ion-text-center">Acceso Rápido</ion-card-title>
     </ion-card-header>
     <ion-card-content>
-      <ion-item lines="none" color="light">
-        <ion-select placeholder="Selecciona usuario" interface="action-sheet" (ionChange)="fastFill($event.detail.value)">
+      <ion-item lines="none">
+        <ion-select id="select-id" placeholder="Selecciona usuario" interface="action-sheet" (ionChange)="fastFill($event.detail.value)">
           <ion-select-option value="dueño">Dueño</ion-select-option>
           <ion-select-option value="supervisor">Supervisor</ion-select-option>
           <ion-select-option value="maitre">Maitre</ion-select-option>
