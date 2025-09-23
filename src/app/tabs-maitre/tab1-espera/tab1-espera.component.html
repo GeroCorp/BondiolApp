@@ -1,0 +1,103 @@
+<ion-header>
+  <ion-toolbar color="secondary">
+    <ion-title>Lista de Espera</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <!-- Refresher -->
+  <ion-refresher slot="fixed" (ionRefresh)="refrescarDatos($event)">
+    <ion-refresher-content
+      pulling-icon="chevron-down-circle-outline"
+      pulling-text="Desliza para actualizar"
+      refreshing-spinner="circles">
+    </ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Loading Spinner -->
+  <div *ngIf="isLoading" class="loading-container">
+    <ion-spinner name="circles" color="primary"></ion-spinner>
+    <p class="ion-text-center ion-margin-top">Cargando clientes...</p>
+  </div>
+
+  <!-- Lista de clientes en espera -->
+  <ion-list *ngIf="!isLoading && clientes.length > 0">
+    <ion-list-header>
+      <ion-label>
+        <h2>Clientes en espera ({{ clientes.length }})</h2>
+        <p>Mesas disponibles: {{ mesas.length }}</p>
+      </ion-label>
+    </ion-list-header>
+
+    <ion-item *ngFor="let cliente of clientes; let i = index" 
+              lines="inset" 
+              [button]="false">
+      
+      <!-- Avatar o número de orden -->
+      <ion-avatar slot="start">
+        <img *ngIf="cliente.foto" [src]="cliente.foto" [alt]="cliente.nombre">
+        <div *ngIf="!cliente.foto" class="avatar-placeholder">
+          {{ i + 1 }}
+        </div>
+      </ion-avatar>
+
+      <!-- Información del cliente -->
+      <ion-label>
+        <h2>{{ cliente.nombre }}</h2>
+        <p>En espera desde: {{ formatearFecha(getFechaCliente(cliente)) }}</p>
+        <p *ngIf="cliente.id_clienteanonimo">ID: {{ cliente.id_clienteanonimo }}</p>
+      </ion-label>
+
+      <!-- Botón de asignar mesa -->
+      <ion-button 
+        slot="end" 
+        color="primary" 
+        [disabled]="mesas.length === 0"
+        (click)="asignarMesa(cliente)">
+        <ion-icon name="restaurant-outline" slot="start"></ion-icon>
+        Asignar Mesa
+      </ion-button>
+    </ion-item>
+  </ion-list>
+
+  <!-- Estado sin clientes -->
+  <div *ngIf="!isLoading && clientes.length === 0" class="empty-state">
+    <ion-icon name="people-outline" size="large" color="medium"></ion-icon>
+    <h2>No hay clientes en espera</h2>
+    <p class="ion-text-center">
+      Los clientes que se registren aparecerán aquí
+    </p>
+  </div>
+
+  <!-- Info de mesas disponibles (siempre visible) -->
+  <ion-card *ngIf="!isLoading" class="info-card">
+    <ion-card-header>
+      <ion-card-title color="primary">
+        <ion-icon name="information-circle-outline"></ion-icon>
+        Estado del Restaurante
+      </ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-row>
+        <ion-col size="6">
+          <ion-item lines="none">
+            <ion-icon name="people-outline" slot="start" color="secondary"></ion-icon>
+            <ion-label>
+              <h3>En espera</h3>
+              <p>{{ clientes.length }} clientes</p>
+            </ion-label>
+          </ion-item>
+        </ion-col>
+        <ion-col size="6">
+          <ion-item lines="none">
+            <ion-icon name="restaurant-outline" slot="start" color="success"></ion-icon>
+            <ion-label>
+              <h3>Mesas libres</h3>
+              <p>{{ mesas.length }} disponibles</p>
+            </ion-label>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+    </ion-card-content>
+  </ion-card>
+</ion-content>

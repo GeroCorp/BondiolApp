@@ -11,78 +11,80 @@
   </div>
 
   <ion-card *ngIf="perfil === 'dueño' || perfil === 'supervisor'">
-      <ion-card-header>
-        <ion-card-title>Empleados</ion-card-title>
-      </ion-card-header>
+    <ion-card-header>
+      <ion-card-title>Empleados</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-button expand="block" color="secondary" (click)="agregarEmpleado()">
+        + Agregar empleado
+      </ion-button>
+    </ion-card-content>
+
+    <ion-card-header>
+      <ion-card-title>Mesas</ion-card-title>
       <ion-card-content>
-        <ion-button expand="block" (click)="agregarEmpleado()">
-          <ion-icon name="add"/> Agregar empleado
+        <ion-button expand="block" color="secondary" (click)="agregarMesa()">
+          + Agregar mesa
         </ion-button>
       </ion-card-content>
+    </ion-card-header>
 
-      <ion-card-header>
-        <ion-card-title>Mesas</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <ion-button expand="block" (click)="agregarMesa()">
-          <ion-icon name="add"/> Agregar mesa 
-        </ion-button>
-        <br>
-        <ion-button expand="block" (click)="adminMesa()">
-          Administrar mesas
-        </ion-button>
-      </ion-card-content>
-
-      <ion-card-header>
-        <ion-card-title>Clientes</ion-card-title>
-      </ion-card-header>
+    <ion-card-header>
+      <ion-card-title>Clientes</ion-card-title>
       <ion-card-content>
         <ion-button expand="block" (click)="adminCliente()">
           Administrar clientes
         </ion-button>
       </ion-card-content>
-
+    </ion-card-header>
   </ion-card>
 
   <ion-card *ngIf="perfil === 'cocinero' || perfil === 'bartender'">
-      <ion-card-header>
-        <ion-card-title class="ion-text-center">Productos</ion-card-title>
-      </ion-card-header>
+    <ion-card-header>
+      <ion-card-title>Productos</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-button
+        *ngIf="perfil === 'cocinero'"
+        expand="block"
+        color="secondary"
+        (click)="agregarProducto()"
+      >
+        + Agregar plato
+      </ion-button>
+      <ion-button
+        *ngIf="perfil === 'bartender'"
+        expand="block"
+        color="secondary"
+        (click)="agregarProducto()"
+      >
+        + Agregar bebida
+      </ion-button>
+    </ion-card-content>
+
+    <ion-card-header>
+      <ion-card-title>Pedidos</ion-card-title>
       <ion-card-content>
-        <ion-button *ngIf="perfil === 'cocinero'" expand="block" (click)="agregarProducto()">
-          <ion-icon name="add"/> Agregar plato
-        </ion-button>
-        <ion-button *ngIf="perfil === 'bartender'" expand="block" (click)="agregarProducto()">
-          <ion-icon name="add"/> Agregar bebida
+        <ion-button expand="block" color="secondary" (click)="recibirPedidos()">
+          Ver pedidos recibidos
         </ion-button>
       </ion-card-content>
-
-      <ion-card-header>
-        <ion-card-title class="ion-text-center">Pedidos</ion-card-title>
-          <ion-card-content>
-            <ion-button expand="block" (click)="recibirPedidos()">
-              Ver pedidos recibidos
-            </ion-button>
-          </ion-card-content>
-      </ion-card-header>
+    </ion-card-header>
   </ion-card>
-
 
   <ion-card *ngIf="perfil === 'maitre'">
     <ion-card-header>
-      <ion-card-title class="ion-text-center">Clientes</ion-card-title>
+      <ion-card-title>Gestión Maître</ion-card-title>
     </ion-card-header>
     <ion-card-content>
-      <ion-button expand="block" (click)="registrarCliente()">
-        <ion-icon name="add"/> Registrar cliente
+      <ion-button expand="block" color="secondary" (click)="listaEspera()">
+        Lista de espera
       </ion-button>
-      <ion-button expand="block" (click)="verClientes()">
-        Ver clientes registrados
+      <ion-button expand="block" color="secondary" (click)="verMesas()">
+        Mesas
       </ion-button>
     </ion-card-content>
-    
   </ion-card>
-
 
   <div class="container-cerrar-sesion">
     <ion-button expand="block" (click)="logout()" color="danger">

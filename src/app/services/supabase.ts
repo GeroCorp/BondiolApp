@@ -15,6 +15,10 @@ export class AuthService {
     );
   }
 
+  get client() {
+    return this.supabase;
+  }
+
   // 🔑 Iniciar sesión
   async login(email: string, password: string) {
     try {
@@ -229,27 +233,161 @@ export class AuthService {
     return await this.supabase.auth.signUp({ email, password });
   }
 
-  // 🔑 Obtener todas las mesas
-  async obtenerMesas() {
-    return await this.supabase.from('mesas').select('*');
+  // metodos del maitre
+  async getClientesAnonimosEnEspera() {
+    try {
+      const { data, error } = await this.supabase
+        .from('clientes_anonimos')
+        .select('*')
+        .order('id_clienteanonimo', { ascending: false });
+
+      if (error) {
+        console.error('Error obteniendo clientes anónimos:', error);
+        throw new Error(
+          'Error al obtener clientes en espera: ' + error.message
+        );
+      }
+
+      // Filtrar solo los que no tienen mesa asignada (están en espera)
+      const clientesEnEspera = (data || []).filter(
+        (cliente) => !cliente.mesa_asignada && cliente.en_espera !== false
+      );
+
+      console.log('Clientes en espera encontrados:', clientesEnEspera);
+      return clientesEnEspera;
+    } catch (error: any) {
+      console.error('Error en getClientesAnonimosEnEspera:', error);
+      throw error;
+    }
   }
 
-  // 🔑 Eliminar mesa por ID
-  async eliminarMesa(id: number) {
-    return await this.supabase.from('mesas').delete().eq('id', id);
+  // 🔑 Obtener todas las mesas con su estado
+  async getMesasConEstado() {
+    try {
+      const { data, error } = await this.supabase
+        .from('mesas')
+        .select('*')
+        .order('numero', { ascending: true });
+
+      if (error) {
+        console.error('Error obteniendo mesas:', error);
+        throw new Error('Error al obtener mesas: ' + error.message);
+      }
+
+      console.log('Mesas encontradas:', data);
+      return data || [];
+    } catch (error: any) {
+      console.error('Error en getMesasConEstado:', error);
+      throw error;
+    }
   }
 
-  actualizacionesMesas(callback: (payload: any) => void) {
-    return this.supabase
-      .channel('mesas-realtime')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'mesas'
-      }, callback)
-      .subscribe();
+  // 🔑 Obtener solo mesas disponibles
+  async getMesasDisponibles() {
+    try {
+      const { data, error } = await this.supabase
+        .from('mesas')
+        .select('*')
+        .is('cliente_asignado', null) // Mesas sin cliente asignado
+        .order('numero', { ascending: true });
+
+      if (error) {
+        console.error('Error obteniendo mesas disponibles:', error);
+        throw new Error('Error al obtener mesas disponibles: ' + error.message);
+      }
+
+      console.log('Mesas disponibles:', data);
+      return data || [];
+    } catch (error: any) {
+      console.error('Error en getMesasDisponibles:', error);
+      throw error;
+    }
   }
 
+  // 🔑 Asignar mesa a cliente anónimo (PUNTO 10)
+  async asignarMesaAClienteAnonimo(idCliente: number, numeroMesa: number) {
+    try {
+      console.log('Asignando mesa:', { idCliente, numeroMesa });
+
+      // Primero verificar que la mesa existe y está disponible
+      const { data: mesaData, error: mesaError } = await this.supabase
+        .from('mesas')
+        .select('*')
+        .eq('id', numeroMesa)
+        .is('cliente_asignado', null)
+        .single();
+
+      if (mesaError || !mesaData) {
+        throw new Error('La mesa no está disponible o no existe');
+      }
+
+      // Actualizar la mesa como ocupada
+      const { error: errorMesa } = await this.supabase
+        .from('mesas')
+        .update({
+          cliente_asignado: idCliente,
+          disponible: false,
+        })
+        .eq('id', numeroMesa);
+
+      if (errorMesa) {
+        console.error('Error actualizando mesa:', errorMesa);
+        throw new Error('Error al asignar mesa: ' + errorMesa.message);
+      }
+
+      // Actualizar el cliente anónimo
+      const { error: errorCliente } = await this.supabase
+        .from('clientes_anonimos')
+        .update({
+          mesa_asignada: numeroMesa,
+          en_espera: false,
+        })
+        .eq('id_clienteanonimo', idCliente);
+
+      if (errorCliente) {
+        console.error('Error actualizando cliente:', errorCliente);
+
+        // Revertir cambios en mesa si falla la actualización del cliente
+        await this.supabase
+          .from('mesas')
+          .update({
+            cliente_asignado: null,
+            disponible: true,
+          })
+          .eq('id', numeroMesa);
+
+        throw new Error('Error al actualizar cliente: ' + errorCliente.message);
+      }
+
+      console.log('Mesa asignada exitosamente');
+      return true;
+    } catch (error: any) {
+      console.error('Error en asignarMesaAClienteAnonimo:', error);
+      throw error;
+    }
+  }
+
+  // 🔑 Liberar mesa (para cuando el cliente se va)
+  async liberarMesa(idMesa: number) {
+    try {
+      const { error } = await this.supabase
+        .from('mesas')
+        .update({
+          cliente_asignado: null,
+          disponible: true,
+        })
+        .eq('id', idMesa);
+
+      if (error) {
+        throw new Error('Error al liberar mesa: ' + error.message);
+      }
+
+      return true;
+    } catch (error: any) {
+      console.error('Error en liberarMesa:', error);
+      throw error;
+    }
+  }
 
   // 🔑 Traducir errores de Supabase
   private mapAuthError(error: AuthError): string {
