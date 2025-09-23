@@ -77,8 +77,11 @@ export class HomePage {
     }); // redirigir a tabs pedidos
   }
 
-  gestionarMaitre() {
-  
-  this.router.navigate(['/tabs-maitre'], { replaceUrl: true });
-}
+  listaEspera() {
+    this.router.navigate(['/tabs-maitre/tab1-espera'], { replaceUrl: true });
+  }
+
+  verMesas() {
+    this.router.navigate(['/tabs-maitre/tab2-mesas'], { replaceUrl: true });
+  }
 }
