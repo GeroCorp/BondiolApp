@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { ToastController, LoadingController } from '@ionic/angular';
 import { AuthService } from 'src/app/services/supabase';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
 
 @Component({
   selector: 'app-register',
@@ -15,7 +16,8 @@ export class RegisterPage {
 
   foto: string | null = null;
   registerForm: FormGroup;
-
+  qrData: string | null = null;
+  trimed: string[] | null = null;
   constructor(
     private formBuilder: FormBuilder,
     private router: Router,
@@ -34,7 +36,7 @@ export class RegisterPage {
   }
   
   async onRegister() {
-    const { email, password, password2, ...resto } = this.registerForm.value;
+    const { email, password, password2, name, surname, dni} = this.registerForm.value;
 
     ///////////////////
     // Validaciones //
@@ -68,33 +70,33 @@ export class RegisterPage {
     // Registro en Supabase //
 
     try {
-      const {data: user, error: authError } = await this.authService.registerCliente(email, password);
+       const {data: user, error: authError } = await this.authService.registerCliente(email, password)
 
-      if (authError) {
-        console.error('Error al crear cuenta Auth:', authError.message);
-        this.showToast('Error al crear usuario', 'danger');
-        return;
-      }
+       if (authError) {
+         console.error('Error al crear cuenta Auth:', authError.message);
+         this.showToast('Error al crear usuario', 'danger');
+         return;
+       }
 
       const nuevoCliente = {
-        ...resto,          // nombre, apellido, dni
+        nombre: name,
+        apellido: surname,
+        dni,
         email,
         foto: this.foto,
-        user_id: user.user?.id
+        user_id: user.user?.id || null
       }
 
-      const [error] = await this.authService.insertarCliente(nuevoCliente);
+      const data = await this.authService.insertarCliente(nuevoCliente);
 
-      if (error) {
-        console.error('Error al insertar cliente:', error.message);
-        this.showToast('Error al completar registro. Intente nuevamente.', 'danger');
+      if(!data) {
+        console.log(data);
+        this.showToast('Error al crear el perfil de cliente.', 'danger');
         return;
-      } else {
-        console.log('Cliente creado:', nuevoCliente);
-        this.showToast('Registro exitoso', 'success');
-        this.registerForm.reset();
-        this.foto = null;
       }
+      this.showToast('Registro exitoso. Ya puede iniciar sesión.', 'success');
+      this.router.navigate(['/login'], { replaceUrl: true });
+      
 
     } catch (error) {
       console.error('Error en el registro:', error);
@@ -102,6 +104,32 @@ export class RegisterPage {
     }
   
   
+  }
+
+  async leerQR() {
+    try {
+      const granted = await BarcodeScanner.checkPermissions();
+      if(granted.camera !== 'granted') {
+        await BarcodeScanner.requestPermissions();
+      }
+
+      const result = await BarcodeScanner.scan();
+
+      if(result.barcodes.length > 0) {
+        
+        this.qrData = result.barcodes[0].displayValue;
+        // trimed: [1] "Apellido" [2] "Nombre" [4] "DNI"
+        this.trimed = this.qrData ? this.qrData.split('@') : null;
+        
+        
+
+        this.showToast('QR leído: con éxito', 'success');
+        console.log(this.qrData);
+      }
+
+    } catch (error) {
+      console.error('Error al leer el QR:', error);
+    }
   }
 
   async showToast(message: string, color: 'success' | 'danger' | 'medium') {

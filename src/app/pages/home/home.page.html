@@ -31,8 +31,6 @@
         <ion-button expand="block" (click)="adminMesa()">
           Administrar mesas
         </ion-button>
-        
-        
       </ion-card-content>
 
       <ion-card-header>
@@ -69,6 +67,21 @@
       </ion-card-header>
   </ion-card>
 
+
+  <ion-card *ngIf="perfil === 'maitre'">
+    <ion-card-header>
+      <ion-card-title class="ion-text-center">Clientes</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-button expand="block" (click)="registrarCliente()">
+        <ion-icon name="add"/> Registrar cliente
+      </ion-button>
+      <ion-button expand="block" (click)="verClientes()">
+        Ver clientes registrados
+      </ion-button>
+    </ion-card-content>
+    
+  </ion-card>
 
 
   <div class="container-cerrar-sesion">

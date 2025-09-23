@@ -27,13 +27,10 @@
 
       <form [formGroup]="registerForm" (ngSubmit)="onRegister()">
         
-          <!-- Quizá queda mejor y con un estilo mas apegado a movil con el outline y floating
-              pero si lo ven medio medio borren el tag de comentario y los "label / fill" de input 
-          -->
-          <ion-input type="text" formControlName="name" label="Nombre" fill="outline" labelPlacement="floating" class="ion-margin-top"/>
-          <ion-input type="text" formControlName="surname" label="Apellido" fill="outline" labelPlacement="floating" class="ion-margin-top"/>
+          <ion-input type="text" formControlName="name" label="Nombre" fill="outline" labelPlacement="floating" class="ion-margin-top" [value]="trimed ? trimed[2] : ''" />
+          <ion-input type="text" formControlName="surname" label="Apellido" fill="outline" labelPlacement="floating" class="ion-margin-top" [value]="trimed ? trimed[1] : ''" />
 
-          <ion-input type="text" formControlName="dni" label="DNI" fill="outline" labelPlacement="floating" class="ion-margin-top"/>
+          <ion-input type="text" formControlName="dni" label="DNI" fill="outline" labelPlacement="floating" class="ion-margin-top" [value]="trimed ? trimed[4] : ''" />
 
           <ion-input type="email" formControlName="email" label="Correo Electrónico" fill="outline" labelPlacement="floating" class="ion-margin-top"/>
         
@@ -47,6 +44,16 @@
           <img [src]="foto" id="img-empleado" width="80px"/>
         </div>
       
+        <ion-item>
+          <ion-label>QR DNI</ion-label>
+          <ion-button expand="block" (click)="leerQR()">Leer QR</ion-button>
+
+          
+        </ion-item>
+        <div *ngIf="qrData" class="ion-margin-top">
+          <p>Datos del QR: {{ qrData }}</p>
+        
+        </div>
         
         <ion-button expand="block" type="submit" class="ion-margin-top">
           Crear Cuenta<ion-icon name="person-add-outline" slot="end"></ion-icon>
@@ -55,17 +62,5 @@
 
     </ion-card-content>
   </ion-card>
-
-
-
-
-
-
-
-
-
-
-
-
 
 </ion-content>

@@ -66,5 +66,12 @@ export class HomePage {
   recibirPedidos() {
     this.router.navigate(['/tabs-cocinero-bartender/tab2-recibir-pedido'], {replaceUrl: true}); // redirigir a tabs pedidos
   }
+  registrarCliente(){
+    this.router.navigate(['/tabs-maitre/tab1-registrar-cliente'], {replaceUrl: true}); // redirigir a tabs registrar cliente
+  }
+  verClientes(){
+    this.router.navigate(['/tabs-maitre/tab2-ver-clientes'], {replaceUrl: true}); // redirigir a tabs ver clientes
+  }
+
 
 }

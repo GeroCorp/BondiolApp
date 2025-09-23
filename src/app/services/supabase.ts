@@ -160,6 +160,12 @@ export class AuthService {
     return data ?? [];
   }
 
+  // ✅ Obtener todos los clientes
+  async getAllClientes(){
+    return await this.supabase.from('clientes').select('*')
+      .order('created_at', { ascending: false });
+  }
+
   async actualizarEstadoCliente(
     id_cliente: number,
     estado: 'aprobado' | 'rechazado'
@@ -173,7 +179,7 @@ export class AuthService {
     return true;
   }
 
-  // ✅ Insertar un cliente nuevo (valida mínimos)
+  // ✅ Insertar un cliente nuevo
   async insertarCliente(cliente: {
     nombre: string;
     apellido: string;
@@ -182,41 +188,22 @@ export class AuthService {
     foto?: string | null;
     user_id?: string | null;
   }) {
-    // validaciones mínimas en backend también son recomendadas
-    // if (!cliente.nombre || !cliente.apellido || !cliente.dni) {
-    //   throw new Error('Faltan campos obligatorios: nombre, apellido o dni.');
-    // }
-
-    const payload = {
-      user_id: cliente.user_id ?? null,
-      nombre: cliente.nombre.trim(),
-      apellido: cliente.apellido.trim(),
-      dni: cliente.dni.trim(),
-      email: cliente.email ? cliente.email.trim() : null,
-      foto: cliente.foto ?? null,
-      // estado y created_at los maneja la BD por defecto
-    };
-
-    const { data, error } = await this.supabase
-      .from('clientes')
-      .insert([payload])
-      .select(); // pedimos que nos devuelva la fila insertada
+    console.log(cliente);
+    const { data, error} = await this.supabase.from('clientes').insert([
+      {
+        nombre: cliente.nombre,
+        apellido: cliente.apellido,
+        dni: cliente.dni,
+        email: cliente.email ?? null,
+        foto: cliente.foto ?? null,
+        user_id: cliente.user_id ?? null,
+        estado: 'pendiente' // Nuevo cliente siempre inicia como pendiente
+      }
+    ]).select();
 
     if (error) {
-      // mapear errores comunes de constraints
-      const msg = (error.message ?? '').toLowerCase();
-      if (
-        msg.includes('clientes_dni_key') ||
-        (msg.includes('duplicate') && msg.includes('dni'))
-      ) {
-        throw new Error('El DNI ya existe en el sistema.');
-      }
-      if (
-        msg.includes('clientes_email_key') ||
-        (msg.includes('duplicate') && msg.includes('email'))
-      ) {
-        throw new Error('El email ya está registrado.');
-      }
+      console.error('Error al insertar cliente:', error.message);
+      
       throw new Error('Error al insertar cliente: ' + error.message);
     }
     return data ?? null;
