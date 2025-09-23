@@ -29,14 +29,15 @@ const routes: Routes = [
     loadChildren: () => import('./tabs-cocinero-bartender/tabs-cocinero.module').then( m => m.TabsCocineroPageModule)
   },
   {
-  path: 'tabs-maitre',
-  loadChildren: () => import('./tabs-maitre/tabs-maitre.module').then(m => m.TabsMaitreModule)
-},
+    path: 'tabs-maitre',
+    loadChildren: () => import('./tabs-maitre/tabs-maitre.module').then(m => m.TabsMaitrePageModule)
+  },
   {
     path: '**',
     redirectTo: 'splash',
     pathMatch: 'full'
   },
+
 
 ];
 @NgModule({

@@ -1,16 +1,14 @@
-import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { AlertController, IonicModule, ToastController } from '@ionic/angular';
 import { AuthService } from 'src/app/services/supabase';
 
 @Component({
   selector: 'app-tab1-espera',
-  standalone: true,
-  imports: [CommonModule, IonicModule],
-  templateUrl: './tab1-espera.component.html',
-  styleUrls: ['./tab1-espera.component.scss']
+  standalone: false,
+  templateUrl: './tab1-espera.page.html',
+  styleUrls: ['./tab1-espera.page.scss']
 })
-export class Tab1EsperaComponent implements OnInit {
+export class Tab1Espera implements OnInit {
   clientes: any[] = [];
   mesas: any[] = [];
   isLoading = false;
