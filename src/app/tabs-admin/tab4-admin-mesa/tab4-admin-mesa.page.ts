@@ -1,18 +1,16 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, OnInit } from '@angular/core';
 import { PerfilService } from 'src/app/services/perfilService';
 import { AuthService } from 'src/app/services/supabase';
 
-
 @Component({
-  selector: 'app-tab3-admin-cliente',
+  selector: 'app-tab4-admin-mesa',
   templateUrl: './tab4-admin-mesa.page.html',
   styleUrls: ['./tab4-admin-mesa.page.scss'],
   standalone: false
 })
-export class Tab4AdminMesaPage {
-  perfil: string | null = null
+export class Tab4AdminMesaPage implements OnInit {
+  perfil: string | null = null;
   readonly mesas = signal<any[]>([]);
-
 
   constructor(
     private perfilService: PerfilService,
@@ -24,40 +22,56 @@ export class Tab4AdminMesaPage {
 
   async ngOnInit() {
     try {
-      this.actualizacionSupabase();
-      
-    }catch (error) {
+      await this.cargarMesas();
+    } catch (error) {
       console.error('Error inesperado al obtener mesas:', error);
     }
-
   }
   
+  // 🔹 Cargar todas las mesas con estado
   async cargarMesas() {
-    const { data } = await this.authService.obtenerMesas();
-    this.mesas.set(data ?? []);
-  }
-
-  actualizacionSupabase(){
-    this.cargarMesas();
-    this.authService.actualizacionesMesas(() => {
-      this.cargarMesas();
-    });
-  }
-
-
-  eliminarMesa(id: number) {
-    console.log('Eliminar mesa con ID:', id);
-    try{
-      // Eliminar mesa de la base de datos
-    this.authService.eliminarMesa(id)
-    .then(() => {
-      console.log('Mesa eliminada con ID:', id);
-      this.cargarMesas(); // Recargar las mesas después de eliminar
-    })
-    }catch(e){
-      console.error('Error al eliminar la mesa:', e);
-      
+    try {
+      const data = await this.authService.getMesasConEstado(); // ✅ método correcto
+      this.mesas.set(data ?? []);
+      console.log('Mesas cargadas:', data);
+    } catch (error) {
+      console.error('Error cargando mesas:', error);
     }
+  }
 
+  // 🔹 Eliminar mesa
+  async eliminarMesa(id: number) {
+    console.log('Eliminar mesa con ID:', id);
+    try {
+      await this.authService.liberarMesa(id); // si solo quieres liberar
+      // o si querés eliminar completamente:
+      // await this.authService.eliminarMesa(id); // si implementas eliminarMesa()
+      console.log('Mesa eliminada/liberada con ID:', id);
+      await this.cargarMesas();
+    } catch(e) {
+      console.error('Error al eliminar/liberar la mesa:', e);
+    }
+  }
+
+  // 🔹 Asignar mesa a cliente anónimo
+  async asignarMesaClienteAnonimo(idCliente: number, numeroMesa: number) {
+    try {
+      await this.authService.asignarMesaAClienteAnonimo(idCliente, numeroMesa);
+      console.log('Mesa asignada a cliente:', idCliente);
+      await this.cargarMesas();
+    } catch(e) {
+      console.error('Error asignando mesa a cliente:', e);
+    }
+  }
+
+  // 🔹 Liberar mesa
+  async liberarMesa(idMesa: number) {
+    try {
+      await this.authService.liberarMesa(idMesa);
+      console.log('Mesa liberada:', idMesa);
+      await this.cargarMesas();
+    } catch(e) {
+      console.error('Error liberando mesa:', e);
+    }
   }
 }
