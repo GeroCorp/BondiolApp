@@ -1,0 +1,56 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Menú</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">tab3-menu</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+
+<ion-card>
+  <ion-card-header>
+    @if (perfil === 'cocinero') {
+      <ion-card-title>Menú Cocina</ion-card-title>
+    } @else {
+      <ion-card-title>Menú Bar</ion-card-title>
+    }
+  </ion-card-header>
+  <ion-card-content>
+    
+    <ion-list>
+      @if (perfil === 'cocinero') {
+
+        @for (item of platos();track $index){
+            <ion-item>
+              <ion-label>
+                <ion-img [src]="item.imagen"></ion-img>
+                <h2>{{ item.nombre }} - ${{ item.precio }}</h2>
+                <p>{{ item.descripcion }}</p>
+                <small>Tiempo de preparación: {{ item.tiempo }} minutos</small>
+              </ion-label>
+            </ion-item>
+        }
+
+       } @else if (perfil === 'bartender') {
+        @for (item of bebidas();track $index){
+            <ion-item>
+              <ion-label>
+                <h2>{{ item.nombre }} - ${{ item.precio }}</h2>
+                <p>{{ item.descripcion }}</p>
+                <small>Tiempo de preparación: {{ item.tiempo }} minutos</small>
+              </ion-label>
+            </ion-item>
+        } 
+      }
+
+    </ion-list>
+
+  </ion-card-content>
+</ion-card>
+
+</ion-content>

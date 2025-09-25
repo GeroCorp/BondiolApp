@@ -20,9 +20,15 @@ const routes: Routes = [
         path: '',
         redirectTo: 'tab1-agregar-producto',
         pathMatch: 'full',
+      },
+      {
+        path: 'tab3-menu',
+        loadChildren: () => import('./tab3-menu/tab3-menu.module').then( m => m.Tab3MenuPageModule)
       }
     ]
-  }
+  },
+  
+
 ];
 
 @NgModule({

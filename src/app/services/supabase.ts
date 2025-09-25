@@ -55,22 +55,22 @@ export class AuthService {
     if (error) throw new Error('No se pudo obtener el usuario actual.');
     return data.user;
   }
-
+  
   async getUsuarioConPerfil() {
     const { data, error } = await this.supabase.auth.getUser();
     if (error || !data.user) {
       throw new Error('No se pudo obtener el usuario actual.');
     }
-
+    
     const user = data.user;
-
+    
     // Buscar en la tabla empleados
     const { data: empleados, error: errorEmpleado } = await this.supabase
-      .from('empleados')
-      .select('perfil')
-      .eq('user_id', user.id)
-      .maybeSingle();
-
+    .from('empleados')
+    .select('perfil')
+    .eq('user_id', user.id)
+    .maybeSingle();
+    
     if (errorEmpleado) {
       console.error('Error al obtener perfil:', errorEmpleado.message);
       return { email: user.email ?? null, perfil: null };
@@ -89,8 +89,8 @@ export class AuthService {
       .from('empleados')
       .select('*')
       .eq('user_id', userId);
-
-    if (error) {
+      
+      if (error) {
       console.error('Error al buscar empleado:', error.message);
       return [];
     }
@@ -100,17 +100,22 @@ export class AuthService {
     console.log('Array length:', data ? data.length : 0);
     return Array.isArray(data) ? data : [];
   }
+  
+  // 🔑 Registro Cliente
+  async registerCliente(email: string, password: string) {
+    return await this.supabase.auth.signUp({ email, password });
+  }
 
   // 🔑 Registro de nuevo empleado (sólo email y password)
   async registrarEmpleado(email: string, password: string) {
     return await this.supabase.auth.signUp({ email, password });
   }
-
+  
   // 🔑 Insertar nuevo empleado
   async insertarEmpleado(empleado: any) {
     return await this.supabase.from('empleados').insert([empleado]);
   }
-
+  
   // 🔑 Insertar nuevo plato
   async insertarPlato(producto: any) {
     return await this.supabase.from('platos').insert([producto]);
@@ -120,11 +125,11 @@ export class AuthService {
   async insertarBebida(producto: any) {
     return await this.supabase.from('bebidas').insert([producto]);
   }
-
+  
   // 🔑 Verificar existencia del plato en el menú
   async buscarPlatoPorNombre(nombre: string) {
     return await this.supabase
-      .from('platos')
+    .from('platos')
       .select('*')
       .ilike('nombre', nombre); // o .eq si querés exacto
   }
@@ -136,6 +141,30 @@ export class AuthService {
       .select('*')
       .ilike('nombre', nombre); // o .eq si querés exacto
   }
+
+  async getPlatos() {
+    const { data, error } = await this.supabase
+      .from('platos')
+      .select('*')
+      .order('nombre', { ascending: true });
+    if (error) {
+      throw new Error('Error al obtener platos: ' + error.message);
+    }
+    return data ?? [];
+  }
+  
+  async getBebidas() {
+    const { data, error } = await this.supabase
+      .from('bebidas')
+      .select('*')
+      .order('nombre', { ascending: true });
+    if (error) {
+      throw new Error('Error al obtener bebidas: ' + error.message);
+    }
+    return data ?? [];
+  }
+
+
 
   // 🔑 Insertar nueva mesa
   async insertarMesa(mesa: any) {
@@ -159,6 +188,12 @@ export class AuthService {
     return data ?? [];
   }
 
+  // ✅ Obtener todos los clientes
+  async getAllClientes(){
+    return await this.supabase.from('clientes').select('*')
+      .order('created_at', { ascending: false });
+  }
+
   async actualizarEstadoCliente(
     id_cliente: number,
     estado: 'aprobado' | 'rechazado'
@@ -172,7 +207,7 @@ export class AuthService {
     return true;
   }
 
-  // ✅ Insertar un cliente nuevo (valida mínimos)
+  // ✅ Insertar un cliente nuevo
   async insertarCliente(cliente: {
     nombre: string;
     apellido: string;
@@ -181,41 +216,22 @@ export class AuthService {
     foto?: string | null;
     user_id?: string | null;
   }) {
-    // validaciones mínimas en backend también son recomendadas
-    if (!cliente.nombre || !cliente.apellido || !cliente.dni) {
-      throw new Error('Faltan campos obligatorios: nombre, apellido o dni.');
-    }
-
-    const payload = {
-      user_id: cliente.user_id ?? null,
-      nombre: cliente.nombre.trim(),
-      apellido: cliente.apellido.trim(),
-      dni: cliente.dni.trim(),
-      email: cliente.email ? cliente.email.trim() : null,
-      foto: cliente.foto ?? null,
-      // estado y created_at los maneja la BD por defecto
-    };
-
-    const { data, error } = await this.supabase
-      .from('clientes')
-      .insert([payload])
-      .select(); // pedimos que nos devuelva la fila insertada
+    console.log(cliente);
+    const { data, error} = await this.supabase.from('clientes').insert([
+      {
+        nombre: cliente.nombre,
+        apellido: cliente.apellido,
+        dni: cliente.dni,
+        email: cliente.email ?? null,
+        foto: cliente.foto ?? null,
+        user_id: cliente.user_id ?? null,
+        estado: 'pendiente' // Nuevo cliente siempre inicia como pendiente
+      }
+    ]).select();
 
     if (error) {
-      // mapear errores comunes de constraints
-      const msg = (error.message ?? '').toLowerCase();
-      if (
-        msg.includes('clientes_dni_key') ||
-        (msg.includes('duplicate') && msg.includes('dni'))
-      ) {
-        throw new Error('El DNI ya existe en el sistema.');
-      }
-      if (
-        msg.includes('clientes_email_key') ||
-        (msg.includes('duplicate') && msg.includes('email'))
-      ) {
-        throw new Error('El email ya está registrado.');
-      }
+      console.error('Error al insertar cliente:', error.message);
+      
       throw new Error('Error al insertar cliente: ' + error.message);
     }
     return data ?? null;
