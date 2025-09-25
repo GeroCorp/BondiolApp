@@ -4,17 +4,17 @@ import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
-import { Tab1EsperaPageRoutingModule } from './tab1-espera-routing.module';
+import { Tab3MenuPageRoutingModule } from './tab3-menu-routing.module';
 
-import { Tab1Espera } from './tab1-espera.page';
+import { Tab3MenuPage } from './tab3-menu.page';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    Tab1EsperaPageRoutingModule
+    Tab3MenuPageRoutingModule
   ],
-  declarations: [Tab1Espera]
+  declarations: [Tab3MenuPage]
 })
-export class Tab1EsperaPageModule {}
+export class Tab3MenuPageModule {}

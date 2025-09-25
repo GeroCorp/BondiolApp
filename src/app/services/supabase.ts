@@ -142,6 +142,30 @@ export class AuthService {
       .ilike('nombre', nombre); // o .eq si querés exacto
   }
 
+  async getPlatos() {
+    const { data, error } = await this.supabase
+      .from('platos')
+      .select('*')
+      .order('nombre', { ascending: true });
+    if (error) {
+      throw new Error('Error al obtener platos: ' + error.message);
+    }
+    return data ?? [];
+  }
+  
+  async getBebidas() {
+    const { data, error } = await this.supabase
+      .from('bebidas')
+      .select('*')
+      .order('nombre', { ascending: true });
+    if (error) {
+      throw new Error('Error al obtener bebidas: ' + error.message);
+    }
+    return data ?? [];
+  }
+
+
+
   // 🔑 Insertar nueva mesa
   async insertarMesa(mesa: any) {
     return await this.supabase.from('mesas').insert({

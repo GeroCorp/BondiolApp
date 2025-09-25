@@ -5,11 +5,11 @@ import { AuthService } from 'src/app/services/supabase';
 
 @Component({
   selector: 'app-tab2-mesas',
-  imports: [CommonModule, IonicModule],
-  templateUrl: './tab2-mesas.component.html',
-  styleUrls: ['./tab2-mesas.component.scss'],
+  standalone: false,
+  templateUrl: './tab2-mesas.page.html',
+  styleUrls: ['./tab2-mesas.page.scss'],
 })
-export class Tab2MesasComponent implements OnInit {
+export class Tab2Mesas implements OnInit {
   mesas: any[] = [];
   isLoading = false;
 

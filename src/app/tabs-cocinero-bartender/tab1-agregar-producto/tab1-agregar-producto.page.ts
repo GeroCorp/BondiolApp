@@ -33,8 +33,8 @@ export class Tab1AgregarProductoPage {
     console.log('Perfil recibido en Tabs cocinero-bartender:', this.perfil);
 
     this.productoForm = this.fb.group({
-      nombre: ['', [Validators.required, Validators.pattern(/^[a-zA-ZÀ-ÿ\u00f1\u00d1\s]+$/), Validators.minLength(4)]],
-      descripcion: ['', [Validators.required, Validators.pattern(/^[a-zA-ZÀ-ÿ\u00f1\u00d1\s]+$/), Validators.minLength(10)]],
+      nombre: ['', [Validators.required, Validators.pattern(/^[a-zA-ZÀ-ÿ\u00f1\u00d1\s ]+$/), Validators.minLength(4)]],
+      descripcion: ['', [Validators.required, Validators.pattern(/^[a-zA-ZÀ-ÿ\u00f1\u00d1\s .,]+$/), Validators.minLength(10)]],
       tiempo: ['', [Validators.required, Validators.pattern(/^[0-9]+$/), Validators.min(5), Validators.max(80)]],
       precio: ['', [Validators.required, Validators.pattern(/^\d+(\.\d{1,2})?$/), Validators.min(2000), Validators.max(70000)]],
     });

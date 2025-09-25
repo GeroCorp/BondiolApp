@@ -71,18 +71,16 @@ export class HomePage {
       replaceUrl: true,
     }); // redirigir a tabs producto
   }
+  verMenu() {
+    this.router.navigate(['/tabs-cocinero-bartender/tab3-menu'], {
+      replaceUrl: true,
+    }); // redirigir a tabs producto
+  }
   recibirPedidos() {
     this.router.navigate(['/tabs-cocinero-bartender/tab2-recibir-pedido'], {
       replaceUrl: true,
     }); // redirigir a tabs pedidos
   }
-  registrarCliente(){
-    this.router.navigate(['/tabs-maitre/tab1-registrar-cliente'], {replaceUrl: true}); // redirigir a tabs registrar cliente
-  }
-  verClientes(){
-    this.router.navigate(['/tabs-maitre/tab2-ver-clientes'], {replaceUrl: true}); // redirigir a tabs ver clientes
-  }
-
 
   listaEspera() {
     this.router.navigate(['/tabs-maitre/tab1-espera'], { replaceUrl: true });
@@ -90,5 +88,9 @@ export class HomePage {
 
   verMesas() {
     this.router.navigate(['/tabs-maitre/tab2-mesas'], { replaceUrl: true });
+  }
+
+  registrarCliente() {
+    this.router.navigate(['/tabs-maitre/tab3-regCliente'], { replaceUrl: true });
   }
 }

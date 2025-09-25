@@ -1,10 +1,10 @@
-<ion-header>
+<ion-header [translucent]="true">
   <ion-toolbar color="secondary">
     <ion-title>Lista de Espera</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content [fullscreen]="true" class="ion-padding">
   <!-- Refresher -->
   <ion-refresher slot="fixed" (ionRefresh)="refrescarDatos($event)">
     <ion-refresher-content
@@ -101,3 +101,4 @@
     </ion-card-content>
   </ion-card>
 </ion-content>
+
