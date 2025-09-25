@@ -1,15 +1,20 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
-import { RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 
-import { Tab2MesasComponent } from './tab2-mesas.component';
+import { IonicModule } from '@ionic/angular';
+
+import { Tab2MesasPageRoutingModule } from './tab2-mesas-routing.module';
+
+import { Tab2Mesas } from './tab2-mesas.page';
 
 @NgModule({
   imports: [
     CommonModule,
+    FormsModule,
     IonicModule,
-    Tab2MesasComponent
-  ]
+    Tab2MesasPageRoutingModule
+  ],
+  declarations: [Tab2Mesas]
 })
-export class Tab2MesasModule {}
+export class Tab2MesasPageModule {}
