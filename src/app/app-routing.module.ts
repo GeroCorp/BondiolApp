@@ -41,19 +41,6 @@ const routes: Routes = [
     redirectTo: 'splash',
     pathMatch: 'full'
   },
-  {
-    path: 'tabs-maitre',
-    loadChildren: () => import('./tabs-maitre/tabs-maitre.module').then( m => m.TabsMaitrePageModule)
-  },  {
-    path: 'tabs-maitre',
-    loadChildren: () => import('./tabs-maitre/tabs-maitre.module').then( m => m.TabsMaitrePageModule)
-  },
-  {
-    path: 'tabs-maitre',
-    loadChildren: () => import('./tabs-maitre/tabs-maitre.module').then( m => m.TabsMaitrePageModule)
-  },
-
-
 
 ];
 @NgModule({
