@@ -90,7 +90,7 @@ export class HomePage {
     this.router.navigate(['/tabs-maitre/tab2-mesas'], { replaceUrl: true });
   }
 
-  registrarCliente() {
-    this.router.navigate(['/tabs-maitre/tab3-regCliente'], { replaceUrl: true });
+  clientes() {
+    this.router.navigate(['/tabs-maitre/tab3-clientes'], { replaceUrl: true });
   }
 }
