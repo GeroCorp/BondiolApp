@@ -6,13 +6,14 @@ import { AuthService } from 'src/app/services/supabase';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
 
+
 @Component({
-  selector: 'app-register',
-  templateUrl: './register.page.html',
-  styleUrls: ['./register.page.scss'],
-  standalone: false
+  selector: 'app-registrar-cliente',
+  templateUrl: './registrar-cliente.page.html',
+  styleUrls: ['./registrar-cliente.page.scss'],
+  standalone: false,
 })
-export class RegisterPage {
+export class RegistrarClientePage {
 
   foto: string | null = null;
   registerForm: FormGroup;
@@ -70,6 +71,7 @@ export class RegisterPage {
     // Registro en Supabase //
 
     try {
+      // Registrar cliente en auth
        const {data: user, error: authError } = await this.authService.registerCliente(email, password)
 
        if (authError) {
@@ -87,16 +89,17 @@ export class RegisterPage {
           return;
         }
         this.foto = publicUrlData; // Actualizar la URL de la foto con la URL pública
-
-      const nuevoCliente = {
-        nombre: name,
-        apellido: surname,
-        dni,
-        email,
-        foto: this.foto,
-        user_id: user.user?.id || null
-      }
-
+        
+        
+        const nuevoCliente = {
+          nombre: name,
+          apellido: surname,
+          dni,
+          email,
+          foto: this.foto,
+          user_id: user.user?.id || null
+        }
+        
       const data = await this.authService.insertarCliente(nuevoCliente);
 
       if(!data) {
@@ -104,8 +107,7 @@ export class RegisterPage {
         this.showToast('Error al crear el perfil de cliente.', 'danger');
         return;
       }
-      this.showToast('Registro exitoso. Ya puede iniciar sesión.', 'success');
-      this.router.navigate(['/login'], { replaceUrl: true });
+      this.showToast('Cliente registrado con exito.', 'success');
       
 
     } catch (error) {
@@ -180,5 +182,7 @@ export class RegisterPage {
       }
     }
   }
+
+  
 
 }

@@ -7,7 +7,12 @@ const routes: Routes = [
   {
     path: '',
     component: Tab3ClientesPage
+  },
+  {
+    path: 'registrar-cliente',
+    loadChildren: () => import('./registrar-cliente/registrar-cliente.module').then( m => m.RegistrarClientePageModule)
   }
+
 ];
 
 @NgModule({
