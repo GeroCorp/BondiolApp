@@ -1,5 +1,4 @@
-import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, ViewChild, ElementRef } from '@angular/core';
 import { AuthService } from 'src/app/services/supabase';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ToastController } from '@ionic/angular';
@@ -15,18 +14,19 @@ import { PerfilService } from 'src/app/services/perfilService';
 })
 export class Tab2CargaMesasPage {
 
+  @ViewChild('qrContainer', { static: false }) qrCodeCanvas!: ElementRef;
+
   mesaForm: FormGroup;
 
   email: string | null = null;
   perfil: string | null = null;
 
-  qrData: string = '';
+  qrData: string = "";
 
   qrCodeDownloadLink: SafeUrl = '';
 
   constructor(
     private fb: FormBuilder,
-    private router: Router,
     private authService: AuthService,
     private toast: ToastController,
     private perfilService: PerfilService
@@ -35,25 +35,20 @@ export class Tab2CargaMesasPage {
     console.log('Perfil recibido en Tabs admin:', this.perfil);
 
     this.mesaForm = this.fb.group({
-      numero: ['', Validators.required],
-      capacidad: ['', Validators.required],
+      numero: ['', [Validators.required, Validators.min(1), Validators.max(100)]],
+      capacidad: ['', [Validators.required, Validators.min(1), Validators.max(30)]],
       tipo: ['', Validators.required]
-      // qr_url: ['', Validators.required]
 
     });
   }
 
-  // No se usa por ahora
-  // volverHome() {
-  //   this.router.navigate(['/home'], { state: {email: this.email, perfil: this.perfil}, replaceUrl: true });
-  // }
 
 
   private validatorsMessages: { [key: string]: string } = {
     numero: 'El número de mesa es obligatorio.',
-    capacidad: 'La capacidad debe estar entre 1 y 20 personas.',
-    tipo: 'Debe seleccionar tipo de mesa.',
-    // qr_url: 'El URL del QR es obligatorio.'
+    capacidad: 'La capacidad debe estar entre 1 y 30 personas.',
+    tipo: 'Debe seleccionar tipo de mesa.'
+
   };
 
   async showToast(message: string, color: 'success' | 'danger' | 'medium') {
@@ -80,10 +75,6 @@ export class Tab2CargaMesasPage {
   onQrCodeUrl(url: SafeUrl) {
     console.log('URL del QR generado:', url.toString()); 
     this.qrCodeDownloadLink = url;
-
-    ////// NO DESCOMENTAR PQ NO FUNCA Y NO SÉ POR QUÉ AAAAAAAAAAAAAAAAAAAAAA
-    // Actualizar el campo qr_url en el formulario con el URL del QR generado
-    // this.mesaForm.patchValue({ qr_url: url.toString() });
   }
 
 
@@ -93,14 +84,16 @@ export class Tab2CargaMesasPage {
 
     // Verificar que los campos necesarios estén completos
     if (numero && capacidad && tipo) {
-      const payload = { numero, capacidad, tipo };
-      this.qrData = JSON.stringify(payload);
-    
-    
+      const payload = [numero,capacidad,tipo];
+      this.qrData = payload.join(",");
+    }else {
+      this.showToast('Completar todos los campos para generar el QR', 'danger');
+      return;
     }
     console.log('Datos de la mesa para QR:', this.qrData);
 
   }
+
 
 
   async onSubmit(){
@@ -119,26 +112,60 @@ export class Tab2CargaMesasPage {
       return;
     }
 
-    if (this.mesaForm.valid) {
-
-      const mesaData = this.mesaForm.value;
-      console.log('Datos de la mesa a crear:', mesaData);
-
-      try {
-        const { data, error } = await this.authService.
-        insertarMesa(mesaData);
-        if (!error) {
-          this.showToast('Mesa creada correctamente', 'success');
-          this.mesaForm.reset();
-          this.qrData = "";
-        }
-
-      }catch (e){
-        this.showToast('Error al crear mesa', 'danger');
-        console.error(e);
+      const { numero, capacidad, tipo } = this.mesaForm.value;
+      if (!this.qrData) {
+        this.showToast('Generar el QR antes de crear la mesa', 'danger');
+        return;
       }
 
+      // Obtener la imagen del QR en base64 desde el canvas
+      const qrBlob = this.getQRBlob();
+      const qrUrl = await this.authService.subirQRmesa(numero, qrBlob!);
+
+
+
+      const mesaData ={
+        numero,
+        capacidad,
+        tipo,
+        qr: qrUrl
+      }
+      console.log('Datos de la mesa a crear:', mesaData);
+
+
+
+    try {
+      const { data, error } = await this.authService.
+      insertarMesa(mesaData);
+      if (!error) {
+        this.showToast('Mesa creada correctamente', 'success');
+        this.mesaForm.reset();
+        this.qrData = "";
+      }
+
+    }catch (e){
+      this.showToast('Error al crear mesa', 'danger');
+      console.error(e);
     }
+
+    
   }
+
+
+  getQRBlob(): Blob | null {
+  // Busca el elemento canvas dentro del contenedor
+  const canvasElement: HTMLCanvasElement = this.qrCodeCanvas.nativeElement.querySelector('canvas');
+  let canvas64 = "";
+
+  if (!canvasElement) {
+    return null;
+  }
+
+  // Extrae la imagen como una cadena Base64 (Data URL)
+  // formato 'image/jpeg' para supabase storage
+  canvas64 = canvasElement.toDataURL('image/jpeg', 0.9); // 0.9 es la calidad
+  
+  return this.authService.dataURLtoBlob(canvas64); // Devuelve la conversion a blob
+}
 
 }
