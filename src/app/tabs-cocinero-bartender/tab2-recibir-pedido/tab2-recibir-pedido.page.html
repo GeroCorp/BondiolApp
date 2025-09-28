@@ -4,12 +4,25 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="no-scroll-padding">
+<ion-content [fullscreen]="true" class="pedido-content">
   <ion-header collapse="condense">
     <ion-toolbar>
       <ion-title size="large">Recibir pedidos</ion-title>
     </ion-toolbar>
   </ion-header>
-</ion-content>
 
-<p>Aca implementar logica del recibir productos</p>
+  <div class="pedido-wrapper">
+    <!-- Mensaje temporal mientras se implementa la lógica -->
+    <p class="mensaje-temporal">Acá implementar lógica del recibir productos</p>
+
+    <!-- Ejemplo de estructura para futuros pedidos -->
+    <div class="pedidos-list">
+      <!-- Cuando no hay pedidos -->
+      <div class="pedido-empty-state">
+        <ion-icon name="restaurant-outline"></ion-icon>
+        <h3>No hay pedidos pendientes</h3>
+        <p>Los pedidos aparecerán aquí cuando lleguen de los clientes</p>
+      </div>
+    </div>
+  </div>
+</ion-content>

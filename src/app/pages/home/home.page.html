@@ -4,38 +4,37 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <div class="container-bienvenida">
-    <h1>¡Bienvenido/a de vuelta!</h1>
-    <h2 *ngIf="perfil">Ingresaste con perfil de: <strong>{{ perfil }}</strong></h2>
-  </div>
+<ion-content [fullscreen]="true" class="home-content">
+  <div class="home-wrapper">
+    <!-- Bienvenida -->
+    <div class="container-bienvenida">
+      <h1>¡Bienvenido/a de vuelta!</h1>
+      <h2 *ngIf="perfil">Ingresaste con perfil de: <strong>{{ perfil }}</strong></h2>
+    </div>
 
-  <ion-card *ngIf="perfil === 'dueño' || perfil === 'supervisor'">
-    <ion-card-header>
-      <ion-card-title>Empleados</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <ion-button expand="block" color="secondary" (click)="agregarEmpleado()">
-        + Agregar empleado
-      </ion-button>
-    </ion-card-content>
-
-    <ion-card-header>
-      <ion-card-title>Mesas</ion-card-title>
+    <!-- Tarjetas según perfil -->
+    <ion-card *ngIf="perfil === 'dueño' || perfil === 'supervisor'">
+      <ion-card-header>
+        <ion-card-title>Gestión General</ion-card-title>
+      </ion-card-header>
       <ion-card-content>
-        <ion-button expand="block" color="secondary" (click)="agregarMesa()">
-          + Agregar mesa
-        </ion-button>
+        <ion-button expand="block" color="secondary" (click)="agregarEmpleado()">+ Agregar empleado</ion-button>
+        <ion-button expand="block" color="secondary" (click)="agregarMesa()">+ Agregar mesa</ion-button>
+        <ion-button expand="block" (click)="adminCliente()">Administrar clientes</ion-button>
       </ion-card-content>
-    </ion-card-header>
+    </ion-card>
 
-    <ion-card-header>
-      <ion-card-title>Clientes</ion-card-title>
+    <ion-card *ngIf="perfil === 'cocinero' || perfil === 'bartender'">
+      <ion-card-header>
+        <ion-card-title>Productos</ion-card-title>
+      </ion-card-header>
       <ion-card-content>
-        <ion-button expand="block" (click)="adminCliente()">
-          Administrar clientes
-        </ion-button>
+        <ion-button *ngIf="perfil === 'cocinero'" expand="block" color="secondary" (click)="agregarProducto()">+ Agregar plato</ion-button>
+        <ion-button *ngIf="perfil === 'bartender'" expand="block" color="secondary" (click)="agregarProducto()">+ Agregar bebida</ion-button>
       </ion-card-content>
+      <ion-card-header>
+        <ion-card-title>Pedidos</ion-card-title>
+      </ion-card-header>
     </ion-card-header>
   </ion-card>
 
@@ -89,14 +88,22 @@
 
     <ion-card-header>
       <ion-card-title>Pedidos</ion-card-title>
-      <ion-card-content>
-        <ion-button expand="block" color="secondary" (click)="recibirPedidos()">
-          Ver pedidos recibidos
-        </ion-button>
-      </ion-card-content>
-    </ion-card-header>
-  </ion-card>
 
+      <ion-card-content>
+        <ion-button expand="block" color="secondary" (click)="recibirPedidos()">Ver pedidos recibidos</ion-button>
+      </ion-card-content>
+    </ion-card>
+
+
+    <ion-card *ngIf="perfil === 'maitre'">
+      <ion-card-header>
+        <ion-card-title>Gestión Maître</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-button expand="block" color="secondary" (click)="listaEspera()">Lista de espera</ion-button>
+        <ion-button expand="block" color="secondary" (click)="verMesas()">Mesas</ion-button>
+      </ion-card-content>
+    </ion-card>
   <ion-card *ngIf="perfil === 'maitre'">
     <ion-card-header>
       <ion-card-title>Gestión Maître</ion-card-title>
@@ -114,9 +121,9 @@
     </ion-card-content>
   </ion-card>
 
-  <div class="container-cerrar-sesion">
-    <ion-button expand="block" (click)="logout()" color="danger">
-      Cerrar sesión
-    </ion-button>
+    <!-- Logout -->
+    <div class="container-cerrar-sesion">
+      <ion-button expand="block" (click)="logout()" color="danger">Cerrar sesión</ion-button>
+    </div>
   </div>
 </ion-content>
