@@ -32,10 +32,10 @@
 
           <ion-input type="text" formControlName="dni" label="DNI" fill="outline" labelPlacement="floating" class="ion-margin-top" [value]="trimed ? trimed[4] : ''" />
 
-          <ion-input type="email" formControlName="email" label="Correo Electrónico" fill="outline" labelPlacement="floating" class="ion-margin-top"/>
+          <ion-input type="email" formControlName="email" label="Correo Electrónico" fill="outline" labelPlacement="floating" class="ion-margin-top" autocomplete="off" />
         
-          <ion-input type="password" formControlName="password" label="Contraseña" fill="outline" labelPlacement="floating" class="ion-margin-top"/>
-          <ion-input type="password" formControlName="password2" label="Repetir Contraseña" fill="outline" labelPlacement="floating" class="ion-margin-top"/>
+          <ion-input type="password" formControlName="password" label="Contraseña" fill="outline" labelPlacement="floating" class="ion-margin-top" autocomplete="off"/>
+          <ion-input type="password" formControlName="password2" label="Repetir Contraseña" fill="outline" labelPlacement="floating" class="ion-margin-top" autocomplete="off"/>
 
           
         <ion-label>Foto</ion-label>

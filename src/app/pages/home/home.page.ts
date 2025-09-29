@@ -14,7 +14,7 @@ import { PerfilService } from 'src/app/services/perfilService';
 export class HomePage {
   email: string | null = null;
   perfil: string | null = null;
-
+  nombreCliente: string = "invitado";
   constructor(
     private router: Router,
     private authService: AuthService,
@@ -27,6 +27,7 @@ export class HomePage {
       this.perfilService.setPerfil(this.perfil); // guarda el perfil
     }
     console.log('Perfil recibido en Home:', this.perfil); // Verificar que perfil esta ingresando a home
+    this.getCurrentUserName()
   }
 
   async logout() {
@@ -44,6 +45,18 @@ export class HomePage {
       position: 'bottom',
     });
     await toast.present();
+  }
+
+  async getCurrentUserName(){
+    const id = await this.authService.getCurrentUser();
+    if (!id){
+      throw new Error('No user logged in');
+    }
+    const user = await this.authService.getClienteByUserId(id);
+    console.log(user![0]?.nombre);
+    const nombre = user![0]?.nombre ?? 'Invitado';
+
+    this.nombreCliente = nombre;
   }
 
   // Seccion de dueño y supervisor
@@ -92,5 +105,9 @@ export class HomePage {
 
   clientes() {
     this.router.navigate(['/tabs-maitre/tab3-clientes'], { replaceUrl: true });
+  }
+
+  clienteMenu(){
+    this.router.navigate(['/clientes/tab1-menu'], { replaceUrl: true });
   }
 }

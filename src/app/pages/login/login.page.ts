@@ -132,10 +132,15 @@ export class LoginPage {
         password = "cocinero123"
         break;
 
-        case "bartender":
-          email = "bartender@resto-empleado.com"
-          password = "bartender123"
-          break;
+      case "bartender":
+        email = "bartender@resto-empleado.com"
+        password = "bartender123"
+        break;
+      
+      case "cliente":
+        email = "juanjo@mail.com"
+        password = "123123"
+        break;
     
     }
 

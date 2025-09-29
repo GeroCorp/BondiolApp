@@ -37,10 +37,15 @@ const routes: Routes = [
     loadChildren: () => import('./tabs-maitre/tabs-maitre.module').then(m => m.TabsMaitrePageModule)
   },
   {
+    path: 'clientes',
+    loadChildren: () => import('./tabs-clientes/tabs-clientes.module').then( m => m.TabsClientesPageModule)
+  },
+  {
     path: '**',
     redirectTo: 'splash',
     pathMatch: 'full'
   },
+
 
 ];
 @NgModule({

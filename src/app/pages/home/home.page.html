@@ -7,10 +7,17 @@
 <ion-content [fullscreen]="true" class="home-content">
   <div class="home-wrapper">
     <!-- Bienvenida -->
-    <div class="container-bienvenida">
-      <h1>¡Bienvenido/a de vuelta!</h1>
-      <h2 *ngIf="perfil">Ingresaste con perfil de: <strong>{{ perfil }}</strong></h2>
-    </div>
+     @if (perfil != "sin-perfil"){
+
+       <div class="container-bienvenida">
+         <h1>¡Bienvenido/a de vuelta!</h1>
+         <h2 >Ingresaste con perfil de: <strong>{{ perfil }}</strong></h2>
+       </div>
+      } @else {
+       <div class="container-bienvenida">
+         <h1>¡Bienvenido/a {{nombreCliente}}</h1>
+       </div>
+     }
 
     <!-- Tarjetas según perfil -->
     <ion-card *ngIf="perfil === 'dueño' || perfil === 'supervisor'">
@@ -35,75 +42,9 @@
       <ion-card-header>
         <ion-card-title>Pedidos</ion-card-title>
       </ion-card-header>
-    </ion-card-header>
+
   </ion-card>
 
-  <ion-card *ngIf="perfil === 'cocinero' || perfil === 'bartender'">
-    <ion-card-header>
-      <ion-card-title>Productos</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-
-
-      <ion-button
-        *ngIf="perfil === 'cocinero'"
-        expand="block"
-        color="secondary"
-        (click)="agregarProducto()"
-      >
-        + Agregar plato
-      </ion-button>
-
-      <ion-button
-        *ngIf="perfil === 'cocinero'"
-        expand="block"
-        color="secondary"
-        (click)="verMenu()"
-      >
-        Ver menú
-      </ion-button>
-
-
-
-      <ion-button
-        *ngIf="perfil === 'bartender'"
-        expand="block"
-        color="secondary"
-        (click)="agregarProducto()"
-      >
-        + Agregar bebida
-      </ion-button>
-
-      <ion-button
-        *ngIf="perfil === 'bartender'"
-        expand="block"
-        color="secondary"
-        (click)="verMenu()"
-      >
-        Ver menú
-      </ion-button>
-
-
-    </ion-card-content>
-
-    <ion-card-header>
-      <ion-card-title>Pedidos</ion-card-title>
-
-      <ion-card-content>
-        <ion-button expand="block" color="secondary" (click)="recibirPedidos()">Ver pedidos recibidos</ion-button>
-      </ion-card-content>
-    </ion-card>
-
-
-    <ion-card *ngIf="perfil === 'maitre'">
-      <ion-card-header>
-        <ion-card-title>Gestión Maître</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <ion-button expand="block" color="secondary" (click)="listaEspera()">Lista de espera</ion-button>
-        <ion-button expand="block" color="secondary" (click)="verMesas()">Mesas</ion-button>
-      </ion-card-content>
-    </ion-card>
   <ion-card *ngIf="perfil === 'maitre'">
     <ion-card-header>
       <ion-card-title>Gestión Maître</ion-card-title>
@@ -121,9 +62,21 @@
     </ion-card-content>
   </ion-card>
 
+  <ion-card *ngIf="perfil == 'sin-perfil'">
+    <ion-card-header>
+      <ion-card-title>Opciones</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-button (click)="clienteMenu()" expand="block" fill="clear" shape="round">
+        Ver Menú <ion-icon name="restaurant-outline" slot="start"></ion-icon>
+      </ion-button>
+    </ion-card-content>
+
+  </ion-card>
+
     <!-- Logout -->
     <div class="container-cerrar-sesion">
       <ion-button expand="block" (click)="logout()" color="danger">Cerrar sesión</ion-button>
     </div>
   </div>
-</ion-content>
+</ion-content> 

@@ -21,10 +21,11 @@
             <ion-input type="email" formControlName="email" label="Correo Electrónico" fill="outline" labelPlacement="floating" class="ion-margin-top"/>
           
             <div class="password-container">
-              <ion-input [type]="passwordVisible ? 'text' : 'password'" formControlName="password" label="Contraseña" fill="outline" labelPlacement="floating" class="ion-margin-top password-input"/> 
-              <ion-button fill="clear" slot="end" (click)="cambiarVisibilidadPassword()" class="password-toggle">
-                <ion-icon [name]="passwordVisible ? 'eye' : 'eye-off'"></ion-icon>
-              </ion-button>
+              <ion-input [type]="'password'" formControlName="password" label="Contraseña" fill="outline" labelPlacement="floating" class="ion-margin-top password-input">
+                @if (loginForm.get('password')?.value){
+                <ion-input-password-toggle slot="end"></ion-input-password-toggle>
+                }
+              </ion-input>
             </div>
             
 
@@ -32,6 +33,9 @@
             Iniciar sesión <ion-icon name="log-in-outline" slot="end"></ion-icon>
           </ion-button>
         </form>
+        <ion-button expand="block" class="ion-margin-top" color="danger" class="ion-margin-top" (click)="registrar()">
+          Registrarse<ion-icon name="person-circle-outline" slot="end"></ion-icon>
+        </ion-button>
 
       </ion-card-content>
       
@@ -48,6 +52,7 @@
               <ion-select-option value="mozo">Mozo</ion-select-option>
               <ion-select-option value="cocinero">Cocinero</ion-select-option>
               <ion-select-option value="bartender">Bartender</ion-select-option>
+              <ion-select-option value="cliente">Cliente</ion-select-option>
             </ion-select>
           </ion-item>
         </ion-card-content>
@@ -55,57 +60,3 @@
     </ion-card>
   </div>
 </ion-content>
-
-
-  <ion-card class="card-container">
-    <ion-card-header>
-      <ion-card-title class="ion-text-center">Iniciar Sesión</ion-card-title>
-    </ion-card-header>
-    <ion-card-content class="ion-padding">
-
-      <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
-        
-          <!-- Quizá queda mejor y con un estilo mas apegado a movil con el outline y floating
-              pero si lo ven medio medio borren el tag de comentario y los "label / fill" de input 
-          -->
-          <ion-input type="email" formControlName="email" label="Correo Electrónico" fill="outline" labelPlacement="floating" class="ion-margin-top"/>
-        
-          <ion-input [type]="passwordVisible ? 'text' : 'password'" formControlName="password" label="Contraseña" fill="outline" labelPlacement="floating" class="ion-margin-top"/> 
-          <ion-button fill="clear" slot="end" (click)="cambiarVisibilidadPassword()"><ion-icon [name]="passwordVisible ? 'eye' : 'eye-off'"></ion-icon></ion-button>
-
-          <!-- Existe un tag implementado en ionic para mostrar/ocultar password xd -->
-          
-
-        <ion-button expand="block" type="submit" class="btn-primary ion-margin-top">
-          Iniciar sesión <ion-icon name="log-in-outline" slot="end"></ion-icon>
-        </ion-button>
-      </form>
-      <ion-button expand="block" class="ion-margin-top" color="danger" class="ion-margin-top" (click)="registrar()">
-        Registrarse<ion-icon name="person-circle-outline" slot="end"></ion-icon>
-      </ion-button>
-
-    </ion-card-content>
-    <ion-card>
-    <ion-card-header>
-      <ion-card-title class="ion-text-center">Acceso Rápido</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <ion-item lines="none">
-        <ion-select id="select-id" placeholder="Selecciona usuario" interface="action-sheet" (ionChange)="fastFill($event.detail.value)">
-          <ion-select-option value="dueño">Dueño</ion-select-option>
-          <ion-select-option value="supervisor">Supervisor</ion-select-option>
-          <ion-select-option value="maitre">Maitre</ion-select-option>
-          <ion-select-option value="mozo">Mozo</ion-select-option>
-          <ion-select-option value="cocinero">Cocinero</ion-select-option>
-          <ion-select-option value="bartender">Bartender</ion-select-option>
-        </ion-select>
-      </ion-item>
-    </ion-card-content>
-  </ion-card>
-  </ion-card>
-
-  
-
-
-</ion-content>
-

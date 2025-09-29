@@ -174,6 +174,25 @@ export class AuthService {
       tipo: mesa.tipo,
     });
   }
+  // Obtener cliente loggeado
+  async getCurrentUser() {
+    const { data, error } = await this.supabase.auth.getUser();
+    if (error) throw new Error('No se pudo obtener el usuario actual.');
+    return data.user?.id ?? null;
+  }
+
+  async getClienteByUserId(userId: string) {
+    console.log('Query a clientes con user_id:', userId);
+    const { data, error } = await this.supabase
+      .from('clientes')
+      .select('*')
+      .eq('user_id', userId);
+    if (error) {
+      console.error('Error al buscar cliente:', error.message);
+      return null;
+    }
+    return data ?? null;
+  }
 
   // ✅ Insertar un cliente nuevo
   async getClientesPendientes() {
@@ -262,6 +281,28 @@ export class AuthService {
     const fileName = `${userId}_profile_${Date.now()}.jpeg`;
     const { data, error } = await this.supabase.storage
       .from('clientes-registrados')
+      .upload(fileName, imageBlob, {
+        cacheControl: '3600',
+        upsert: false // No sobrescribir
+      });
+
+    if (error) {
+      throw new Error(`Error al subir la imagen: ${error.message}`)
+    }
+
+    // Obtener la URL pública de la imagen
+    const { data: publicUrlData } = this.supabase.storage
+      .from('clientes-registrados')
+      .getPublicUrl(fileName);
+
+    // La URL pública es lo que guardarás en la base de datos
+    return publicUrlData.publicUrl;
+  }
+  async subirImagenPlatos(platoId: string, imageBlob: Blob) {
+
+    const fileName = `${platoId}_plato_${Date.now()}.jpeg`;
+    const { data, error } = await this.supabase.storage
+      .from('platos')
       .upload(fileName, imageBlob, {
         cacheControl: '3600',
         upsert: false // No sobrescribir
