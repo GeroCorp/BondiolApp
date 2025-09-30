@@ -62,22 +62,52 @@ Fecha estimada de finalización: 19/9
 - 8° Funcionalidad (Aceptar al cliente)
 - Rediseño de paginas
 - Modificación y agregado en base de datos
+- Creacion de push notification y aplicada a la 6° Funcionalidad
 
 Fecha de inicio 20/9
-Fecha estimada de finalización: 25/9
+Fecha estimada de finalización: 30/9
 
 
 ## Pagés Valentino
-- Agregar la push notification a la funcionalidad 6°
-- 9° Funcionalidad ()
+- 10° Funcionalidad (Maitre asigna mesa a cliente registrado)
+- Re estilado de pagina login, home, tabs
 
 Fecha de inicio: 20/9  
-Fecha estimada de finalización: 25/9
+Fecha estimada de finalización: 28/9
 
 
 ## Corpus Gerónimo
 - 5° Funcionalidad (Crear un cliente registrado)
+- Funcionalidad registro
+- Menu cocinero/bartender
+- Funcionalidad subir fotos cliente y mesa directo a supabase
 
 
 Fecha de inicio: 20/9  
-Fecha estimada de finalización: 25/9
+Fecha estimada de finalización: 27/9
+
+
+# Cuarta semana
+
+## Escobar Tobias Fabricio
+- Funcionalidad 15° (Cliente accede a juegos para obtener descuentos)
+- Estilado en las pages y tabs restantes
+
+Fecha de inicio 30/9
+Fecha estimada de finalización: 3/10
+
+
+## Pagés Valentino
+- 11° Funcionalidad (Codigo qr mesa)
+- 12° Funcionalidad (El cliente realiza pedido para todos los comensales de su mesa)
+
+Fecha de inicio: 30/9  
+Fecha estimada de finalización: 3/10
+
+
+## Corpus Gerónimo
+- 13° Funcionalidad (el mozo rechaza el pedido para que el usuario lo modifique)
+- 14° Funcionalidad (el mozo confirma el pedido, y este es derivado a los sectores correspondientes)
+
+Fecha de inicio: 30/9  
+Fecha estimada de finalización: 3/10
