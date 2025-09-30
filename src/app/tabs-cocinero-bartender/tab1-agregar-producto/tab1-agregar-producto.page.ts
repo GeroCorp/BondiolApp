@@ -8,7 +8,7 @@ import { PerfilService } from 'src/app/services/perfilService';
 //Implementar loadingController
 
 //Implementar loadingController
-
+ 
 @Component({
   selector: 'app-tab1-agregar-producto',
   standalone: false,
