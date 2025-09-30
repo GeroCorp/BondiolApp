@@ -8,6 +8,7 @@
   <div class="cliente-wrapper">
     <h2 class="cliente-title">Listado de Clientes Pendientes</h2>
 
+
     <ion-list *ngIf="clientes.length > 0; else noHay" class="cliente-list">
       <ion-item *ngFor="let cliente of clientes" class="cliente-item">
 

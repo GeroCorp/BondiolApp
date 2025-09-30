@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { QRCodeModule } from 'angularx-qrcode';
+import { QRCodeComponent  } from 'angularx-qrcode';
 
 
 import { IonicModule } from '@ionic/angular';
@@ -17,7 +17,7 @@ import { Tab2CargaMesasPage } from './tab2-carga-mesas.page';
     ReactiveFormsModule,
     IonicModule,
     Tab2CargaMesasPageRoutingModule,
-    QRCodeModule],
+    QRCodeComponent ],
   declarations: [Tab2CargaMesasPage]
 })
 export class Tab2CargaMesasPageModule {}

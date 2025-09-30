@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { Platform } from '@ionic/angular';
 import { Router } from '@angular/router';
+import { Notification } from './services/notification';
 
 @Component({
   selector: 'app-root',
@@ -10,6 +11,7 @@ import { Router } from '@angular/router';
   standalone: false,
 })
 export class AppComponent {
+  private notificationService: Notification = inject(Notification)
 
   constructor(private platform: Platform, public router: Router) {
     this.initializeApp();
@@ -20,6 +22,7 @@ export class AppComponent {
     this.platform.ready().then(() => {
       this.configureStatusBar();
       this.router.navigateByUrl('splash');
+      this.notificationService.init();
     });
   }
 

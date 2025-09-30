@@ -1,0 +1,48 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-title>Estado de Registro</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="presala-content">
+  <div class="presala-container">
+    
+    <div class="icon-container">
+      <ion-icon name="hourglass-outline" color="warning"></ion-icon>
+    </div>
+
+    <h1>Registro en Revisión</h1>
+    
+    <div class="message-box">
+      <p class="main-message">
+        Hola <strong>{{ clienteNombre }}</strong>,
+      </p>
+      <p>
+        Tu solicitud de registro está siendo revisada por nuestro equipo.
+      </p>
+      <p>
+        Recibirás un <strong>correo electrónico</strong> cuando tu cuenta sea aprobada.
+      </p>
+    </div>
+
+    <div class="info-box">
+      <ion-icon name="mail-outline" color="primary"></ion-icon>
+      <p>Te notificaremos a: <strong>{{ clienteEmail }}</strong></p>
+    </div>
+
+    <div class="time-estimate">
+      <ion-icon name="time-outline"></ion-icon>
+      <span>Tiempo estimado: 24-48 horas</span>
+    </div>
+
+    <ion-button 
+      expand="block" 
+      color="medium" 
+      (click)="volverAlLogin()"
+      class="btn-volver">
+      <ion-icon name="arrow-back-outline" slot="start"></ion-icon>
+      Volver al Login
+    </ion-button>
+
+  </div>
+</ion-content>
