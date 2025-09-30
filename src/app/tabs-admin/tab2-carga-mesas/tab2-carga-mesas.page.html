@@ -41,7 +41,7 @@
           <ion-input type="text" readonly="true"></ion-input>
         </ion-item>
 
-
+        <!-- Generar QR -->
         <ion-button (click)="generateQR()" expand="block" fill="clear" shape="round" class="mesa-button">
           Generar QR
         </ion-button>
@@ -55,14 +55,16 @@
         </div>
       
         <div *ngIf="qrData" class="ion-text-center ion-margin-top" #qrContainer>
-          <qrcode [qrdata]="qrData"  [elementType]="'canvas'" (qrCodeURL)="onQrCodeUrl($event)" [width]="200" [errorCorrectionLevel]="'M'"></qrcode>
-
-          
-          <!-- muestra el link para descargar imagen del qr -->
+          <qrcode [qrdata]="qrData" [elementType]="'canvas'" 
+                  (qrCodeURL)="onQrCodeUrl($event)" [width]="200" 
+                  [errorCorrectionLevel]="'M'">
+          </qrcode>
           <a [href]="qrCodeDownloadLink" download="qrcode">Descargar QR</a>
         </div>
       
-        <ion-button class="ion-margin-top mesa-button" expand="block" type="submit" [disabled]="mesaForm.invalid">Crear Mesa</ion-button>
+        <ion-button class="ion-margin-top mesa-button" expand="block" type="submit" [disabled]="mesaForm.invalid">
+          Crear Mesa
+        </ion-button>
       </form>
     </ion-card>
   </div>

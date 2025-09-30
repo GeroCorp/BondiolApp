@@ -114,4 +114,15 @@ async logout() {
     this.router.navigate(['/tabs-maitre/tab3-clientes'], { replaceUrl: true });
   }
 
+  // Sección de MOZO - NUEVA
+  gestionarPedidos() {
+    this.router.navigate(['/tabs-mozo/tab1-pedidos-pendientes'], { replaceUrl: true });
+  }
+  verPedidosConfirmados() {
+    this.router.navigate(['/tabs-mozo/tab2-pedidos-confirmados'], { replaceUrl: true });
+  }
+  verConsultasClientes() {
+    this.router.navigate(['/tabs-mozo/tab3-consultas'], { replaceUrl: true });
+  }
+
 }

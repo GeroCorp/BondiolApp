@@ -572,4 +572,262 @@ export class AuthService {
     }
   }
 
+
+  // METODOS PARA EL MOZO 
+  async getPedidosPendientesConfirmacion() {
+  try {
+    const { data, error } = await this.supabase
+      .from('pedidos')
+      .select(`
+        *,
+        mesa:mesas(numero),
+        cliente:clientes(nombre, apellido)
+      `)
+      .eq('estado', 'pendiente_confirmacion')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error al obtener pedidos pendientes:', error);
+    throw error;
+  }
+}
+
+/**
+ * Obtiene los items de un pedido específico
+ */
+async getItemsPedido(pedidoId: number) {
+  try {
+    const { data, error } = await this.supabase
+      .from('items_pedido')
+      .select(`
+        *,
+        producto:productos(
+          nombre,
+          descripcion,
+          tipo,
+          precio
+        )
+      `)
+      .eq('pedido_id', pedidoId);
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error al obtener items del pedido:', error);
+    throw error;
+  }
+}
+
+/**
+ * Actualiza el estado de un pedido
+ */
+async actualizarEstadoPedido(pedidoId: number, nuevoEstado: string, observaciones?: string) {
+  try {
+    const updateData: any = {
+      estado: nuevoEstado,
+      updated_at: new Date().toISOString()
+    };
+
+    if (observaciones) {
+      updateData.observaciones = observaciones;
+    }
+
+    const { data, error } = await this.supabase
+      .from('pedidos')
+      .update(updateData)
+      .eq('id_pedido', pedidoId)
+      .select();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error al actualizar estado del pedido:', error);
+    throw error;
+  }
+}
+
+/**
+ * Envía pedido a un sector específico (cocina o bar)
+ */
+async enviarPedidoSector(pedidoId: number, sector: 'cocina' | 'bar', items: any[]) {
+  try {
+    const pedidoSector = {
+      pedido_id: pedidoId,
+      sector: sector,
+      items: items,
+      estado: 'pendiente',
+      created_at: new Date().toISOString()
+    };
+
+    const { data, error } = await this.supabase
+      .from('pedidos_sector')
+      .insert(pedidoSector)
+      .select();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error(`Error al enviar pedido a ${sector}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Envía notificación push al cliente
+ */
+async enviarNotificacionCliente(clienteId: number, titulo: string, mensaje: string) {
+  try {
+    // Obtener el token FCM del cliente
+    const { data: cliente, error: clienteError } = await this.supabase
+      .from('clientes')
+      .select('fcm_token, user_id')
+      .eq('id_cliente', clienteId)
+      .single();
+
+    if (clienteError) throw clienteError;
+
+    if (!cliente?.fcm_token) {
+      console.warn('Cliente sin token FCM');
+      return null;
+    }
+
+    // Guardar notificación en la base de datos
+    const { data, error } = await this.supabase
+      .from('notificaciones')
+      .insert({
+        user_id: cliente.user_id,
+        titulo: titulo,
+        mensaje: mensaje,
+        tipo: 'pedido',
+        leida: false,
+        created_at: new Date().toISOString()
+      })
+      .select();
+
+    if (error) throw error;
+
+    // TODO: Aquí deberías implementar el envío real de push notification
+    // usando Firebase Cloud Messaging (FCM) o similar
+    console.log('Notificación enviada al cliente:', titulo, mensaje);
+
+    return data;
+  } catch (error) {
+    console.error('Error al enviar notificación al cliente:', error);
+    throw error;
+  }
+}
+
+/**
+ * Envía notificación push a un sector (cocinero/bartender)
+ */
+async enviarNotificacionSector(perfil: string, titulo: string, mensaje: string) {
+  try {
+    // Obtener todos los empleados de ese perfil
+    const { data: empleados, error: empleadosError } = await this.supabase
+      .from('empleados')
+      .select('user_id, fcm_token')
+      .eq('perfil', perfil);
+
+    if (empleadosError) throw empleadosError;
+
+    if (!empleados || empleados.length === 0) {
+      console.warn(`No se encontraron empleados con perfil ${perfil}`);
+      return null;
+    }
+
+    // Crear notificaciones para todos los empleados del sector
+    const notificaciones = empleados.map(emp => ({
+      user_id: emp.user_id,
+      titulo: titulo,
+      mensaje: mensaje,
+      tipo: 'pedido_sector',
+      leida: false,
+      created_at: new Date().toISOString()
+    }));
+
+    const { data, error } = await this.supabase
+      .from('notificaciones')
+      .insert(notificaciones)
+      .select();
+
+    if (error) throw error;
+
+    // TODO: Implementar envío real de push notifications
+    console.log(`Notificaciones enviadas al sector ${perfil}:`, titulo, mensaje);
+
+    return data;
+  } catch (error) {
+    console.error('Error al enviar notificación al sector:', error);
+    throw error;
+  }
+}
+
+/**
+ * Obtiene pedidos confirmados (para Tab 2)
+ */
+async getPedidosConfirmados() {
+  try {
+    const { data, error } = await this.supabase
+      .from('pedidos')
+      .select(`
+        *,
+        mesa:mesas(numero),
+        cliente:clientes(nombre, apellido),
+        pedidos_sector(sector, estado)
+      `)
+      .in('estado', ['confirmado', 'en_preparacion', 'listo'])
+      .order('created_at', { ascending: false })
+      .limit(20);
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error al obtener pedidos confirmados:', error);
+    throw error;
+  }
+}
+
+/**
+ * Obtiene consultas de clientes pendientes de respuesta
+ */
+async getConsultasPendientes() {
+  try {
+    const { data, error } = await this.supabase
+      .from('consultas')
+      .select(`
+        *,
+        mesa:mesas(numero),
+        cliente:clientes(nombre, apellido)
+      `)
+      .eq('estado', 'pendiente')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error al obtener consultas pendientes:', error);
+    throw error;
+  }
+}
+
+/**
+ * Obtiene el conteo de pedidos pendientes (para badge)
+ */
+async getPedidosPendientes() {
+  try {
+    const { data, error } = await this.supabase
+      .from('pedidos')
+      .select('id_pedido')
+      .eq('estado', 'pendiente_confirmacion');
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error al obtener conteo de pedidos:', error);
+    return [];
+  }
+}
+
 }
