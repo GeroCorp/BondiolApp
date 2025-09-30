@@ -1,11 +1,9 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
 import { IonicModule } from '@ionic/angular';
 
 import { Tab3ConsultasPageRoutingModule } from './tab3-consultas-routing.module';
-
 import { Tab3ConsultasPage } from './tab3-consultas.page';
 
 @NgModule({

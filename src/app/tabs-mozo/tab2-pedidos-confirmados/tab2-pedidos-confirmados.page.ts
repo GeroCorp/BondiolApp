@@ -6,10 +6,7 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./tab2-pedidos-confirmados.page.scss'],
 })
 export class Tab2PedidosConfirmadosPage implements OnInit {
-
-  constructor() { }
-
-  ngOnInit() {
+  ngOnInit(): void {
+    
   }
-
 }

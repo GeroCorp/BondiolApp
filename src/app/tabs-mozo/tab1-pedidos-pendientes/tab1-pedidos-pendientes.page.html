@@ -1,13 +1,128 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>tab1-pedidos-pendientes</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home" icon="arrow-back"></ion-back-button>
+    </ion-buttons>
+    <ion-title>
+      <ion-icon name="clipboard-outline"></ion-icon> Pedidos Pendientes
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="recargar()">
+        <ion-icon name="refresh-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">tab1-pedidos-pendientes</ion-title>
-    </ion-toolbar>
-  </ion-header>
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Spinner mientras carga -->
+  <div *ngIf="cargando" class="loading-container">
+    <ion-spinner name="crescent" color="primary"></ion-spinner>
+    <p>Cargando pedidos...</p>
+  </div>
+
+  <!-- Mensaje si no hay pedidos pendientes -->
+  <div *ngIf="!cargando && pedidosPendientes.length === 0" class="empty-state">
+    <ion-icon name="checkmark-done-circle-outline" color="success"></ion-icon>
+    <h2>No hay pedidos pendientes</h2>
+    <p>Todos los pedidos han sido procesados</p>
+  </div>
+
+  <!-- Lista de pedidos pendientes -->
+  <div *ngIf="!cargando && pedidosPendientes.length > 0">
+    <ion-card *ngFor="let pedido of pedidosPendientes" class="pedido-card">
+      <ion-card-header [class.pedido-nuevo]="esPedidoNuevo(pedido.created_at)">
+        <div class="header-pedido">
+          <div>
+            <ion-card-title>
+              <ion-icon name="restaurant-outline"></ion-icon>
+              Mesa {{ pedido.mesa?.numero }}
+            </ion-card-title>
+            <ion-card-subtitle>
+              <ion-icon name="time-outline"></ion-icon>
+              {{ formatearFecha(pedido.created_at) }}
+            </ion-card-subtitle>
+          </div>
+          <ion-badge *ngIf="esPedidoNuevo(pedido.created_at)" color="danger">
+            ¡NUEVO!
+          </ion-badge>
+        </div>
+      </ion-card-header>
+
+      <ion-card-content>
+        <!-- Información del cliente -->
+        <div class="info-cliente">
+          <ion-icon name="person-outline"></ion-icon>
+          <span>{{ pedido.cliente?.nombre || 'Cliente anónimo' }}</span>
+        </div>
+
+        <!-- Items del pedido -->
+        <div class="items-container">
+          <h4><ion-icon name="list-outline"></ion-icon> Detalle del pedido:</h4>
+          <ion-list>
+            <ion-item *ngFor="let item of pedido.items" lines="none">
+              <ion-label>
+                <h3>{{ item.cantidad }}x {{ item.producto?.nombre }}</h3>
+                <p *ngIf="item.producto?.descripcion">{{ item.producto.descripcion }}</p>
+                <p class="precio">${{ item.subtotal }}</p>
+              </ion-label>
+              <ion-icon 
+                *ngIf="item.producto?.tipo === 'comida'" 
+                name="pizza-outline" 
+                slot="start" 
+                color="primary"
+              ></ion-icon>
+              <ion-icon 
+                *ngIf="item.producto?.tipo === 'bebida'" 
+                name="cafe-outline" 
+                slot="start" 
+                color="secondary"
+              ></ion-icon>
+            </ion-item>
+          </ion-list>
+        </div>
+
+        <!-- Total -->
+        <div class="total-container">
+          <h3>TOTAL: <span class="total-monto">${{ pedido.total }}</span></h3>
+          <p class="tiempo-estimado">
+            <ion-icon name="alarm-outline"></ion-icon>
+            Tiempo estimado: {{ pedido.tiempo_estimado }} min
+          </p>
+        </div>
+
+        <!-- Observaciones si hay -->
+        <div *ngIf="pedido.observaciones" class="observaciones">
+          <ion-icon name="chatbox-outline"></ion-icon>
+          <strong>Observaciones:</strong>
+          <p>{{ pedido.observaciones }}</p>
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="botones-accion">
+          <ion-button 
+            expand="block" 
+            color="danger" 
+            (click)="rechazarPedido(pedido)"
+          >
+            <ion-icon name="close-circle-outline" slot="start"></ion-icon>
+            Rechazar para modificación
+          </ion-button>
+          
+          <ion-button 
+            expand="block" 
+            color="success" 
+            (click)="confirmarPedido(pedido)"
+          >
+            <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
+            Confirmar y enviar a cocina/bar
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
 </ion-content>
