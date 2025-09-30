@@ -20,6 +20,12 @@ const config: CapacitorConfig = {
       launchFadeOutDuration: 500, // fade out del splash, para no tener un cambio brusco
       backgroundColor: "#ff2525", // Darle el color de mi splash screen
     },
+    PushNotifications: {
+      presentationOptions: ["badge", "sound", "alert"]
+    },
+    CapacitorHttp: {
+      enabled: true
+    }
   },
 };
 

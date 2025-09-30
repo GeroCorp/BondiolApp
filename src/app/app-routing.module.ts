@@ -8,6 +8,14 @@ const routes: Routes = [
     loadChildren: () => import('./pages/home/home.module').then(m => m.HomePageModule),
   },
   {
+    path: 'pre-sala',
+    loadChildren: () => import('./pages/pre-sala/pre-sala.module').then( m => m.PreSalaPageModule)
+  },
+  {
+    path: 'home-cliente',
+    loadChildren: () => import('./pages/home-cliente/home-cliente.module').then( m => m.HomeClientePageModule)
+  },
+  {
     path: '',
     redirectTo: 'splash',
     pathMatch: 'full'
@@ -45,6 +53,11 @@ const routes: Routes = [
     redirectTo: 'splash',
     pathMatch: 'full'
   },
+  {
+    path: 'tabs-cliente-registrado',
+    loadChildren: () => import('./tabs-cliente-registrado/tabs-cliente-registrado.module').then( m => m.TabsClienteRegistradoPageModule)
+  },
+
 ];
 @NgModule({
   imports: [

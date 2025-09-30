@@ -1,9 +1,10 @@
-import { Component } from '@angular/core';
-import { Router } from '@angular/router';
 
+import { Component, inject, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/supabase';
 import { ToastController } from '@ionic/angular';
 import { PerfilService } from 'src/app/services/perfilService';
+import { Notification } from 'src/app/services/notification';
 
 @Component({
   selector: 'app-home',
@@ -11,9 +12,10 @@ import { PerfilService } from 'src/app/services/perfilService';
   styleUrls: ['./home.page.scss'],
   standalone: false,
 })
-export class HomePage {
+export class HomePage implements OnInit {
   email: string | null = null;
   perfil: string | null = null;
+  private notificationService: Notification = inject(Notification);
 
   constructor(
     private router: Router,
@@ -24,15 +26,30 @@ export class HomePage {
     this.email = history.state['email'] ?? null;
     this.perfil = history.state['perfil'] ?? null;
     if (this.perfil) {
-      this.perfilService.setPerfil(this.perfil); // guarda el perfil
+      this.perfilService.setPerfil(this.perfil);
     }
-    console.log('Perfil recibido en Home:', this.perfil); // Verificar que perfil esta ingresando a home
+    console.log('Perfil recibido en Home:', this.perfil);
   }
 
-  async logout() {
-    await this.authService.logout();
+  async ngOnInit() {
+    // Establecer tag de perfil en OneSignal cuando carga el home
+    if (this.perfil) {
+      this.notificationService.setUserTag(this.perfil);
+      
+      // También establecer el External User ID (opcional pero recomendado)
+      const user = await this.authService.getCurrentUser();
+      if (user) {
+        this.notificationService.setExternalUserId(user.id);
+      }
+    }
+  }
 
-    this.router.navigate(['/login'], { replaceUrl: true }); // redirigir al login
+async logout() {
+    // Limpiar tags de OneSignal al cerrar sesión
+    this.notificationService.clearUserTags();
+    
+    await this.authService.logout();
+    this.router.navigate(['/login'], { replaceUrl: true });
     this.showToast('Sesión cerrada correctamente');
   }
 
@@ -65,6 +82,8 @@ export class HomePage {
   adminMesa() {
     this.router.navigate(['/tabs-admin/tab4-admin-mesa'], {replaceUrl: true}); // Redirigir a tabs mesa
   }
+
+
   // Seccion de cocinero y bartender
   agregarProducto() {
     this.router.navigate(['/tabs-cocinero-bartender/tab1-agregar-producto'], {
@@ -82,6 +101,7 @@ export class HomePage {
     }); // redirigir a tabs pedidos
   }
 
+  //Seccion maitre
   listaEspera() {
     this.router.navigate(['/tabs-maitre/tab1-espera'], { replaceUrl: true });
   }
@@ -93,4 +113,5 @@ export class HomePage {
   clientes() {
     this.router.navigate(['/tabs-maitre/tab3-clientes'], { replaceUrl: true });
   }
+
 }

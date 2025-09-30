@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "730225999697",
+    "project_id": "tfi-primerparcial",
+    "storage_bucket": "tfi-primerparcial.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:730225999697:android:b55735bf11ad17508e9d70",
+        "android_client_info": {
+          "package_name": "io.ionic.starter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBmw3jqxaBxygDjvvqOEoyIuha14YjGqRM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
