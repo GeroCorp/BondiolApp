@@ -1,0 +1,74 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-title>
+      <ion-icon name="restaurant"></ion-icon> RestoApp
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="logout()">
+        <ion-icon name="log-out-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="cliente-content">
+  <div class="cliente-wrapper">
+    
+    <!-- Header de bienvenida -->
+    <div class="bienvenida-header">
+      <div class="avatar-container">
+        <img [src]="cliente?.foto || 'assets/avatar-placeholder.png'" alt="Foto de perfil">
+      </div>
+      <h1>¡Bienvenido/a!</h1>
+      <h2>{{ cliente?.nombre }} {{ cliente?.apellido }}</h2>
+      <p class="email">{{ cliente?.email }}</p>
+    </div>
+
+    <!-- Tarjetas de funcionalidades -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>¿Qué deseas hacer?</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        
+        <ion-button expand="block" color="secondary" disabled>
+          <ion-icon name="book-outline" slot="start"></ion-icon>
+          Ver Menú
+        </ion-button>
+
+        <ion-button expand="block" color="secondary" disabled>
+          <ion-icon name="cart-outline" slot="start"></ion-icon>
+          Hacer Pedido
+        </ion-button>
+
+        <ion-button expand="block" color="secondary" disabled>
+          <ion-icon name="list-outline" slot="start"></ion-icon>
+          Mis Pedidos
+        </ion-button>
+
+        <ion-button expand="block" color="secondary" disabled>
+          <ion-icon name="calendar-outline" slot="start"></ion-icon>
+          Reservar Mesa
+        </ion-button>
+
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Info de cuenta -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Estado de tu cuenta</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="estado-badge aprobado">
+          <ion-icon name="checkmark-circle"></ion-icon>
+          <span>Cuenta Aprobada</span>
+        </div>
+        <p class="info-text">
+          Tu cuenta fue verificada el {{ cliente?.created_at | date:'dd/MM/yyyy' }}
+        </p>
+      </ion-card-content>
+    </ion-card>
+
+  </div>
+</ion-content>

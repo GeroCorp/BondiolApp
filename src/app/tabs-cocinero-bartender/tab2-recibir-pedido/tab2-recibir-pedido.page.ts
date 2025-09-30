@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+ import { Component, OnInit } from '@angular/core';
 import { PerfilService } from 'src/app/services/perfilService';
 
 @Component({

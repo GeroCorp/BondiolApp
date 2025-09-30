@@ -198,7 +198,7 @@ export class AuthService {
   async getClientesPendientes() {
     const { data, error } = await this.supabase
       .from('clientes')
-      .select('id_cliente, nombre, apellido, email, foto, estado, created_at')
+      .select('*')
       .eq('estado', 'pendiente')
       .order('created_at', { ascending: false });
 
@@ -213,10 +213,7 @@ export class AuthService {
       .order('created_at', { ascending: false });
   }
 
-  async actualizarEstadoCliente(
-    id_cliente: number,
-    estado: 'aprobado' | 'rechazado'
-  ) {
+  async actualizarEstadoCliente(id_cliente: number, estado: 'aprobado' | 'rechazado') {
     const { error } = await this.supabase
       .from('clientes')
       .update({ estado })
@@ -517,19 +514,103 @@ export class AuthService {
     }
   }
 
-  // Convierte un Data URL (base64) a un Blob (para subida a Supabase Storage)
+
+
   dataURLtoBlob(dataurl: string): Blob {
-    const arr = dataurl.split(',');
-    const mimeMatch = arr[0].match(/:(.*?);/);
-    const mime = mimeMatch ? mimeMatch[1] : '';    
-    const bstr = atob(arr[1]);
-    let n = bstr.length;
-    const u8arr = new Uint8Array(n);
-    while (n--) {
-        u8arr[n] = bstr.charCodeAt(n);
+    if (!dataurl || !dataurl.includes(',')) {
+      throw new Error('dataURL inválido: ' + dataurl);
     }
 
-    console.log(mimeMatch);
+    const [header, base64] = dataurl.split(',');
+
+    // sacar MIME
+    const mimeMatch = header.match(/:(.*?);/);
+    const mime = mimeMatch ? mimeMatch[1] : 'application/octet-stream';
+
+    // limpiar la cadena base64
+    const cleanedBase64 = base64.replace(/\s/g, '');
+
+    let bstr: string;
+    try {
+      bstr = atob(cleanedBase64);
+    } catch (e) {
+      console.error('⚠️ Base64 inválido en dataURLtoBlob:', cleanedBase64.slice(0, 50));
+      throw new Error('La cadena base64 no es válida');
+    }
+
+    const u8arr = new Uint8Array(bstr.length);
+    for (let i = 0; i < bstr.length; i++) {
+      u8arr[i] = bstr.charCodeAt(i);
+    }
+
     return new Blob([u8arr], { type: mime });
-}
+  }
+
+
+  // EMAIL
+  /**
+   * Obtiene el usuario actual autenticado
+   */
+  async getCurrentUser() {
+    const { data: { user } } = await this.supabase.auth.getUser();
+    return user;
+  }
+
+  /**
+   * Obtiene datos de un usuario por su ID
+   */
+  async getUserById(userId: string) {
+    const { data: { user }, error } = await this.supabase.auth.admin.getUserById(userId);
+    
+    if (error) {
+      console.error('Error obteniendo usuario:', error);
+      return null;
+    }
+    
+    return user;
+  }
+
+  /**
+   * Obtiene datos de cliente por user_id
+   */
+  async getClienteByUserId(userId: string) {
+    const { data, error } = await this.supabase
+      .from('clientes')
+      .select('*')
+      .eq('user_id', userId)
+      .single();
+
+    if (error) {
+      console.error('Error obteniendo cliente:', error);
+      return null;
+    }
+
+    return data;
+  }
+
+  /**
+   * Confirma el email de un cliente (marca email_confirmed_at)
+   * Esto permite que el cliente pueda loguearse
+   */
+  async confirmarEmailCliente(userId: string) {
+    try {
+      // Esto requiere permisos de admin en Supabase
+      //
+      const { data, error } = await this.supabase.auth.admin.updateUserById(
+        userId,
+        { email_confirm: true }
+      );
+
+      if (error) {
+        console.error('Error confirmando email:', error);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error en confirmarEmailCliente:', error);
+      return false;
+    }
+  }
+
 }

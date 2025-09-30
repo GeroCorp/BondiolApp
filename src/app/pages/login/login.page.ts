@@ -1,29 +1,115 @@
-import { Component } from '@angular/core';
+// import { Component } from '@angular/core';
+// import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+// import { Router } from '@angular/router';
+// import { ToastController, LoadingController } from '@ionic/angular';
+// import { AuthService } from 'src/app/services/supabase';
+
+// @Component({
+//   selector: 'app-login',
+//   templateUrl: './login.page.html',
+//   styleUrls: ['./login.page.scss'],
+//   standalone: false,
+// })
+// export class LoginPage {
+//   loginForm: FormGroup;
+//   passwordVisible = false;
+  
+//   constructor(
+//     private fb: FormBuilder,
+//     private router: Router,
+//     private authService: AuthService,
+//     private toastController: ToastController,
+//     private loadingCtrl: LoadingController
+//   ) {
+//     this.loginForm = this.fb.group({
+//       email: ['', [Validators.required, Validators.email]],
+//       password: ['', [Validators.required, Validators.minLength(6)]],
+//     });
+//   }
+
+//   cambiarVisibilidadPassword() {
+//     this.passwordVisible = !this.passwordVisible;
+//   }
+
+  // async onLogin() {
+  //   if (this.loginForm.invalid) {
+  //     this.showToast('Complete todos los campos correctamente.', 'danger');
+  //     return;
+  //   }
+
+  //   const loading = await this.loadingCtrl.create({
+  //     message: 'Ingresando...',
+  //     spinner: 'crescent',
+  //   });
+  //   await loading.present();
+
+  //   const { email, password } = this.loginForm.value;
+
+  //   try {
+  //     // 1️⃣ Login en Supabase
+  //     const data = await this.authService.login(email, password);
+  //     const userId = data.user!.id;
+
+  //     // 2️⃣ Consulto perfil en empleados
+  //     let perfil: string | null = null;
+  //     console.log('Buscando empleados con userId:', userId);
+  //     const empleados = await this.authService.getEmpleadoByUserId(userId);
+  //     console.log('Empleados devueltos:', empleados);
+
+  //     console.log('UserId:', userId);
+  //     console.log('Empleados devueltos:', empleados);
+
+  //     if (Array.isArray(empleados) && empleados.length > 0) {
+  //       perfil = empleados[0].perfil;
+  //     } else {
+  //       perfil = 'sin-perfil';
+  //     }
+
+  //     await loading.dismiss();
+
+  //     // 3️⃣ Navego según el perfil
+  //     // no descomentar
+  //     // if (perfil === 'dueño' || perfil === 'supervisor') {
+  //     //   this.router.navigate(['/tabs-admin'], { state: { perfil }, replaceUrl: true });
+  //     // } else {
+  //       this.router.navigate(['/home'], { state: { email, perfil }, replaceUrl: true });
+  //     // }
+
+  //     this.showToast('¡Bienvenido/a!', 'success');
+  //   } catch (err: any) {
+  //     await loading.dismiss();
+  //     this.showToast(err.message, 'danger');
+  //   }
+  // }
+
+import { Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ToastController, LoadingController } from '@ionic/angular';
 import { AuthService } from 'src/app/services/supabase';
+import { Notification } from 'src/app/services/notification';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.page.html',
   styleUrls: ['./login.page.scss'],
-  standalone: false,
+  standalone: false
 })
 export class LoginPage {
   loginForm: FormGroup;
   passwordVisible = false;
-  
+  private notificationService: Notification = inject(Notification);
+
   constructor(
-    private fb: FormBuilder,
+    private formBuilder: FormBuilder,
     private router: Router,
-    private authService: AuthService,
     private toastController: ToastController,
-    private loadingCtrl: LoadingController
+    private loadingController: LoadingController,
+    private authService: AuthService
   ) {
-    this.loginForm = this.fb.group({
+    this.loginForm = this.formBuilder.group({
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
+      password: ['', [Validators.required, Validators.minLength(6)]]
     });
   }
 
@@ -33,54 +119,91 @@ export class LoginPage {
 
   async onLogin() {
     if (this.loginForm.invalid) {
-      this.showToast('Complete todos los campos correctamente.', 'danger');
+      this.showToast('Por favor, complete todos los campos correctamente.', 'danger');
       return;
     }
 
-    const loading = await this.loadingCtrl.create({
-      message: 'Ingresando...',
-      spinner: 'crescent',
+    const loading = await this.loadingController.create({
+      message: 'Iniciando sesión...'
     });
     await loading.present();
 
-    const { email, password } = this.loginForm.value;
-
     try {
-      // 1️⃣ Login en Supabase
-      const data = await this.authService.login(email, password);
-      const userId = data.user!.id;
+      const { email, password } = this.loginForm.value;
+      const { user, session } = await this.authService.login(email, password);
 
-      // 2️⃣ Consulto perfil en empleados
-      let perfil: string | null = null;
-      console.log('Buscando empleados con userId:', userId);
-      const empleados = await this.authService.getEmpleadoByUserId(userId);
-      console.log('Empleados devueltos:', empleados);
-
-      console.log('UserId:', userId);
-      console.log('Empleados devueltos:', empleados);
-
-      if (Array.isArray(empleados) && empleados.length > 0) {
-        perfil = empleados[0].perfil;
-      } else {
-        perfil = 'sin-perfil';
+      if (!user) {
+        await loading.dismiss();
+        this.showToast('Error al obtener usuario.', 'danger');
+        return;
       }
 
-      await loading.dismiss();
+      // Verificar si es empleado
+      const empleado = await this.authService.getEmpleadoByUserId(user.id);
+      
+      if (Array.isArray(empleado) && empleado.length > 0) {
+        // ✅ Es empleado -> establecer tags y redirigir a home de empleados
+        this.notificationService.setUserTag(empleado[0].perfil);
+        this.notificationService.setExternalUserId(user.id);
+        
+        await loading.dismiss();
+        this.router.navigate(['/home'], {
+          replaceUrl: true,
+          state: {
+            email: user.email,
+            perfil: empleado[0].perfil
+          }
+        });
+        this.showToast(`Bienvenido ${empleado[0].nombre}`, 'success');
+        return;
+      }
 
-      // 3️⃣ Navego según el perfil
-      // no descomentar
-      // if (perfil === 'dueño' || perfil === 'supervisor') {
-      //   this.router.navigate(['/tabs-admin'], { state: { perfil }, replaceUrl: true });
-      // } else {
-        this.router.navigate(['/home'], { state: { email, perfil }, replaceUrl: true });
-      // }
+      // Verificar si es cliente
+      const cliente = await this.authService.getClienteByUserId(user.id);
+      
+      if (cliente) {
+        // Verificar estado del cliente
+        if (cliente.estado === 'rechazado') {
+          // ❌ Cliente rechazado - no puede acceder
+          await loading.dismiss();
+          await this.authService.logout();
+          this.showToast(
+            'Tu cuenta fue rechazada. Contacta al administrador para más información.',
+            'danger'
+          );
+          return;
+        }
+        
+        if (cliente.estado === 'pendiente') {
+          // ⏳ Cliente pendiente - redirigir a pre-sala
+          await loading.dismiss();
+          this.router.navigate(['/pre-sala'], { replaceUrl: true });
+          return;
+        }
+        
+        if (cliente.estado === 'aprobado') {
+          // ✅ Cliente aprobado - establecer tags y redirigir a homeCliente
+          this.notificationService.setUserTag('cliente');
+          this.notificationService.setExternalUserId(user.id);
+          
+          await loading.dismiss();
+          this.router.navigate(['/home-cliente'], { replaceUrl: true });
+          this.showToast(`¡Bienvenido/a ${cliente.nombre}!`, 'success');
+          return;
+        }
+      }
 
-      this.showToast('¡Bienvenido/a!', 'success');
-    } catch (err: any) {
+      // Si no es ni empleado ni cliente
       await loading.dismiss();
-      this.showToast(err.message, 'danger');
+      this.showToast('Usuario no registrado correctamente.', 'danger');
+      
+    } catch (error: any) {
+      await loading.dismiss();
+      console.error('Error en login:', error);
+      this.showToast('Error al iniciar sesión: ' + (error.message || error), 'danger');
     }
   }
+
 
   ingresarARegistro() {
     this.router.navigate(['/registro'], {replaceUrl: true });

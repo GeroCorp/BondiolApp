@@ -8,6 +8,14 @@ const routes: Routes = [
     loadChildren: () => import('./pages/home/home.module').then(m => m.HomePageModule),
   },
   {
+    path: 'pre-sala',
+    loadChildren: () => import('./pages/pre-sala/pre-sala.module').then( m => m.PreSalaPageModule)
+  },
+  {
+    path: 'home-cliente',
+    loadChildren: () => import('./pages/home-cliente/home-cliente.module').then( m => m.HomeClientePageModule)
+  },
+  {
     path: '',
     redirectTo: 'splash',
     pathMatch: 'full'
@@ -37,15 +45,14 @@ const routes: Routes = [
     loadChildren: () => import('./tabs-maitre/tabs-maitre.module').then(m => m.TabsMaitrePageModule)
   },
   {
-    path: 'clientes',
-    loadChildren: () => import('./tabs-clientes/tabs-clientes.module').then( m => m.TabsClientesPageModule)
-  },
-  {
     path: '**',
     redirectTo: 'splash',
     pathMatch: 'full'
   },
-
+  {
+    path: 'tabs-cliente-registrado',
+    loadChildren: () => import('./tabs-cliente-registrado/tabs-cliente-registrado.module').then( m => m.TabsClienteRegistradoPageModule)
+  },
 
 ];
 @NgModule({

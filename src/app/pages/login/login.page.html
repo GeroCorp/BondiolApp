@@ -15,9 +15,6 @@
 
         <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
           
-            <!-- Quizá queda mejor y con un estilo mas apegado a movil con el outline y floating
-                pero si lo ven medio medio borren el tag de comentario y los "label / fill" de input 
-            -->
             <ion-input type="email" formControlName="email" label="Correo Electrónico" fill="outline" labelPlacement="floating" class="ion-margin-top"/>
           
             <div class="password-container">
@@ -36,6 +33,10 @@
         <ion-button expand="block" class="ion-margin-top" color="danger" class="ion-margin-top" (click)="registrar()">
           Registrarse<ion-icon name="person-circle-outline" slot="end"></ion-icon>
         </ion-button>
+
+      <ion-button expand="block" class="ion-margin-top" color="danger" class="ion-margin-top" (click)="registrar()">
+        Registrarse<ion-icon name="person-circle-outline" slot="end"></ion-icon>
+      </ion-button>
 
       </ion-card-content>
       
