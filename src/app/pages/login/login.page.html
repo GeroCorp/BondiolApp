@@ -18,13 +18,12 @@
             <ion-input type="email" formControlName="email" label="Correo Electrónico" fill="outline" labelPlacement="floating" class="ion-margin-top"/>
           
             <div class="password-container">
-              <ion-input [type]="passwordVisible ? 'text' : 'password'" formControlName="password" label="Contraseña" fill="outline" labelPlacement="floating" class="ion-margin-top password-input"/> 
-              <ion-button fill="clear" slot="end" (click)="cambiarVisibilidadPassword()" class="password-toggle">
+              <ion-input [type]="passwordVisible ? 'text' : 'password'" formControlName="password" label="Contraseña" fill="outline" labelPlacement="floating" class="ion-margin-top password-input"></ion-input>
+              <ion-button fill="clear" (click)="cambiarVisibilidadPassword()" class="password-toggle">
                 <ion-icon [name]="passwordVisible ? 'eye' : 'eye-off'"></ion-icon>
               </ion-button>
             </div>
             
-
           <ion-button expand="block" type="submit" class="btn-primary ion-margin-top">
             Iniciar sesión <ion-icon name="log-in-outline" slot="end"></ion-icon>
           </ion-button>

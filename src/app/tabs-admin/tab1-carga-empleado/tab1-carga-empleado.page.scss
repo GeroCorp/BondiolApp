@@ -1,73 +1,65 @@
-ion-header {
-  ion-toolbar {
-    --background: linear-gradient(135deg, #8b0000, #a52a2a, #b22222);
-    --color: #fff;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-    border-bottom: 1px solid rgba(255,255,255,0.2);
-    --min-height: 60px;
-    
-    ion-title {
-      font-weight: 700;
-      font-size: 1.3rem;
-      text-shadow: 0 1px 3px rgba(0,0,0,0.3);
-    }
-  }
-}
-
 .tab1-content {
-  --background: linear-gradient(135deg, #1a2332, #0f1419);
-  --padding-top: 0;
-  --padding-bottom: 0;
-  --padding-start: 16px;
-  --padding-end: 16px;
+  --background: linear-gradient(180deg, #1a1a1a 0%, #2d2d2d 50%, #1a5a8a 100%);
+  --padding-top: 5px;
+  --padding-bottom: 10px;
+  --padding-start: 20px;
+  --padding-end: 20px;
   color: #fff;
   
-  &[fullscreen="true"] {
-    --offset-top: 60px;
-    --offset-bottom: 60px;
-  }
+  --overflow: hidden; 
+}
+
+.cliente-title {
+  color: #ff6b47;
+  font-weight: 700;
+  font-size: 1.8rem;
+  margin-bottom: 10px;
+  text-align: center;
 }
 
 .empleado-wrapper {
   display: flex;
   flex-direction: column;
-  justify-content: center; // Changed back to center for proper vertical centering
+  justify-content: center; 
   align-items: center;
-  width: 100%;
-  min-height: calc(100vh - 120px);
-  padding: 80px 20px 40px 20px;
+  width: 100%; 
   box-sizing: border-box;
-  overflow-y: auto;
 }
 
 .empleado-card-content {
-  background: linear-gradient(145deg, #2a2a2a, #1e1e1e);
-  border-radius: 14px;
-  box-shadow: 0 6px 24px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.1);
-  margin: 0 0 16px 0;
-  backdrop-filter: blur(10px);
+  background: rgba(255,255,255,0.08);
+  border-radius: 16px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+  backdrop-filter: blur(15px);
   border: none;
-  padding: 20px;
-  width: 100%;
-  max-width: 400px;
-  
+  margin: 0 0 16px 0;
+  width: 100%; 
+  max-width: 400px; 
+  max-height: calc(100vh - 150px);
+  overflow-y: auto;
+
+  &.ion-padding {
+    padding: 20px;
+  }
+
   form {
     display: flex;
     flex-direction: column;
     gap: 16px;
     width: 100%;
+    margin: 0 auto;
   }
 }
 
 .empleado-item {
-  --background: rgba(255,255,255,0.08);
+  --background: rgba(255,255,255,0.1);
   --border-radius: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   color: #fff;
   backdrop-filter: blur(10px);
   border: none;
   transition: all 0.3s ease;
-  min-height: 52px;
+  min-height: 48px;
   
   ion-label {
     color: #ff6b47;
@@ -136,13 +128,4 @@ ion-header {
   background: rgba(255,255,255,0.02);
   border-radius: 12px;
   border: none;
-}
-
-.container-cerrar-sesion {
-  margin-top: 24px;
-  padding: 20px 0 10px;
-  border-top: 1px solid rgba(255,255,255,0.1);
-  display: flex;
-  justify-content: center;
-  width: 100%;
 }

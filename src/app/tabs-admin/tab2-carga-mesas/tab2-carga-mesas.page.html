@@ -1,16 +1,5 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>Admin-Cargar Mesas</ion-title>
-  </ion-toolbar>
-</ion-header>
-
 <ion-content [fullscreen]="true" class="mesa-content">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Cargar Mesas</ion-title>
-    </ion-toolbar>
-  </ion-header>
-
+  <h2 class="cliente-title">Crear nueva mesa</h2>
   <div class="mesa-wrapper">
     <ion-card class="mesa-card ion-padding">
       <form [formGroup]="mesaForm" (ngSubmit)="onSubmit()">

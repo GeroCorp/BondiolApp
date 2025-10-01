@@ -205,6 +205,7 @@ export class RegisterPage {
   registerForm: FormGroup;
   qrData: string | null = null;
   trimed: string[] | null = null;
+  passwordVisible = false;
   
   private notificationService: Notification = inject(Notification);
 
@@ -223,6 +224,10 @@ export class RegisterPage {
       password: ['', [Validators.required, Validators.minLength(6)]],
       password2: ['', [Validators.required, Validators.minLength(6)]]
     });
+  }
+  
+  cambiarVisibilidadPassword() {
+    this.passwordVisible = !this.passwordVisible;
   }
   
   async onRegister() {
@@ -390,5 +395,9 @@ export class RegisterPage {
         break;
       }
     }
+  }
+
+  volverLogin(){
+    this.router.navigate(['/login'], { replaceUrl: true });
   }
 }

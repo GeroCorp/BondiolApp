@@ -1,53 +1,37 @@
-<ion-header>
-  <ion-toolbar color="primary">
-    <ion-title>Admin-Clientes Pendientes</ion-title>
+<!-- <ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Clientes Pendientes</ion-title>
   </ion-toolbar>
-</ion-header>
+</ion-header> -->
 
 <ion-content [fullscreen]="true" class="cliente-content">
-  <div class="cliente-wrapper">
-    <h2 class="cliente-title">Listado de Clientes Pendientes</h2>
+  <h2 class="cliente-title ion-text-center">Listado de Clientes Pendientes</h2>
+  <ion-list *ngIf="clientes.length > 0; else noHay">
+    
+    <div *ngFor="let cliente of clientes" class="cliente-item">
+      
+      <ion-avatar class="cliente-avatar">
+        <img [src]="cliente.foto || 'assets/avatar-placeholder.png'" />
+      </ion-avatar>
 
-
-    <ion-list *ngIf="clientes.length > 0; else noHay" class="cliente-list">
-      <ion-item *ngFor="let cliente of clientes" class="cliente-item">
-
-        <ion-avatar slot="start">
-          <img [src]="cliente.foto || 'assets/avatar-placeholder.png'" />
-        </ion-avatar>
-
-        <ion-label class="cliente-label">
-          <h3>{{ cliente.apellido }}, {{ cliente.nombre }}</h3>
-          <p>{{ cliente.email || 'sin email' }}</p>
-          <small>Registrado: {{ cliente.created_at | date:'short' }}</small>
-        </ion-label>
-
-        <!-- contenedor fijo para los botones -->
-        <div class="acciones" slot="end">
-          <ion-button 
-            color="success" 
-            size="small" 
-            fill="solid" 
-            (click)="aprobarCliente(cliente)">
-            Aceptar
-          </ion-button>
-
-          <ion-button 
-            color="danger" 
-            size="small" 
-            fill="solid" 
-            (click)="rechazarCliente(cliente)">
-            Rechazar
-          </ion-button>
-        </div>
-      </ion-item>
-    </ion-list>
-
-    <ng-template #noHay>
-      <div class="sin-clientes">
-        <ion-icon name="people-outline" size="large"></ion-icon>
-        <p>No hay clientes pendientes.</p>
+      <div class="cliente-label">
+        <h3>{{ cliente.apellido }}, {{ cliente.nombre }}</h3>
+        <p>{{ cliente.email || 'sin email' }}</p>
+        <small>Registrado: {{ cliente.created_at | date:'short' }}</small>
       </div>
-    </ng-template>
-  </div>
+
+      <div class="acciones">
+        <ion-button color="success" expand="block" (click)="aprobarCliente(cliente)">Aceptar</ion-button>
+        <ion-button color="danger" expand="block" (click)="rechazarCliente(cliente)">Rechazar</ion-button>
+      </div>
+
+    </div>
+  </ion-list>
+
+  <ng-template #noHay>
+    <div class="sin-clientes">
+      <ion-icon name="people-outline" size="large"></ion-icon>
+      <p>No hay clientes pendientes.</p>
+    </div>
+  </ng-template>
 </ion-content>

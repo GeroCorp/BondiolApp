@@ -13,6 +13,30 @@ ion-header {
   }
 }
 
+/* contenedor del input + botón */
+.password-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  ion-input {
+    flex: 1; /* ocupa todo el ancho disponible */
+  }
+
+  .password-toggle {
+    --color: rgba(255,255,255,0.7);
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+
+    ion-icon {
+      font-size: 1.2rem;
+    }
+  }
+}
+
 .login-content {
   --background: linear-gradient(135deg, #cc1e1e, #cc5f1e, #1a5a8a);
   --padding-top: 0;
