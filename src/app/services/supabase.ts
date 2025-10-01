@@ -175,24 +175,9 @@ export class AuthService {
     });
   }
   // Obtener cliente loggeado
-  async getCurrentUser() {
-    const { data, error } = await this.supabase.auth.getUser();
-    if (error) throw new Error('No se pudo obtener el usuario actual.');
-    return data.user?.id ?? null;
-  }
+  
 
-  async getClienteByUserId(userId: string) {
-    console.log('Query a clientes con user_id:', userId);
-    const { data, error } = await this.supabase
-      .from('clientes')
-      .select('*')
-      .eq('user_id', userId);
-    if (error) {
-      console.error('Error al buscar cliente:', error.message);
-      return null;
-    }
-    return data ?? null;
-  }
+  
 
   // ✅ Insertar un cliente nuevo
   async getClientesPendientes() {

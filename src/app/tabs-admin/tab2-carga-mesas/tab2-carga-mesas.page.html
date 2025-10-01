@@ -42,7 +42,6 @@
       
       
         <div *ngIf="qrData" class="ion-text-center ion-margin-top" #qrContainer>
-          <qrcode [qrdata]="qrData"  [elementType]="'canvas'" (qrCodeURL)="onQrCodeUrl($event)" [width]="200" [errorCorrectionLevel]="'M'"></qrcode>
 
           
           <!-- muestra el link para descargar imagen del qr -->

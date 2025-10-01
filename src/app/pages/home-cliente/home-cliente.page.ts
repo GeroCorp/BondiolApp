@@ -66,4 +66,12 @@ export class HomeClientePage implements OnInit {
     });
     await toast.present();
   }
+
+  // Redirecciones 
+
+  verMenu(){
+    this.router.navigate(["/tabs-cliente-registrado/tab1-menu"], { replaceUrl: true })
+  }
+
+
 }

@@ -45,13 +45,13 @@ const routes: Routes = [
     loadChildren: () => import('./tabs-maitre/tabs-maitre.module').then(m => m.TabsMaitrePageModule)
   },
   {
+    path: 'tabs-cliente-registrado',
+    loadChildren: () => import('./tabs-cliente-registrado/tabs-cliente-registrado.module').then( m => m.TabsClienteRegistradoPageModule)
+  },
+  {
     path: '**',
     redirectTo: 'splash',
     pathMatch: 'full'
-  },
-  {
-    path: 'tabs-cliente-registrado',
-    loadChildren: () => import('./tabs-cliente-registrado/tabs-cliente-registrado.module').then( m => m.TabsClienteRegistradoPageModule)
   },
 
 ];
