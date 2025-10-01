@@ -830,4 +830,24 @@ async getPedidosPendientes() {
   }
 }
 
+async responderConsulta(consultaId: number, respuesta: string) {
+  try {
+    const { data, error } = await this.supabase
+      .from('consultas')
+      .update({
+        respuesta: respuesta,
+        estado: 'respondida',
+        respondida_at: new Date().toISOString()
+      })
+      .eq('id_consulta', consultaId)
+      .select();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error al responder consulta:', error);
+    throw error;
+  }
+}
+
 }

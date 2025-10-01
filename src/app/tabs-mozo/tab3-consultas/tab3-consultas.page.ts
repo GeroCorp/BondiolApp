@@ -1,15 +1,158 @@
 import { Component, OnInit } from '@angular/core';
+import { ToastController, LoadingController, AlertController } from '@ionic/angular';
+import { AuthService } from 'src/app/services/supabase';
+
+interface Consulta {
+  id_consulta: number;
+  mesa_id: number;
+  cliente_id: number;
+  mensaje: string;
+  estado: string;
+  respuesta?: string;
+  created_at: string;
+  mesa?: { numero: number };
+  cliente?: { nombre: string; apellido: string };
+  respuestaTemp?: string; // Para el ngModel
+}
 
 @Component({
   selector: 'app-tab3-consultas',
   templateUrl: './tab3-consultas.page.html',
   styleUrls: ['./tab3-consultas.page.scss'],
+  standalone: false
 })
 export class Tab3ConsultasPage implements OnInit {
+  consultas: Consulta[] = [];
+  cargando = true;
 
-  constructor() { }
+  constructor(
+    private authService: AuthService,
+    private toastController: ToastController,
+    private loadingController: LoadingController,
+    private alertController: AlertController
+  ) {}
 
-  ngOnInit() {
+  async ngOnInit() {
+    await this.cargarConsultas();
   }
 
+  async cargarConsultas() {
+    this.cargando = true;
+    try {
+      const consultas = await this.authService.getConsultasPendientes();
+      this.consultas = consultas || [];
+      // Inicializar campo temporal para respuesta
+      this.consultas.forEach(c => c.respuestaTemp = '');
+    } catch (error) {
+      console.error('Error al cargar consultas:', error);
+      this.showToast('Error al cargar las consultas', 'danger');
+    } finally {
+      this.cargando = false;
+    }
+  }
+
+  async recargar() {
+    await this.cargarConsultas();
+    this.showToast('Lista actualizada', 'medium');
+  }
+
+  async handleRefresh(event: any) {
+    await this.cargarConsultas();
+    event.target.complete();
+  }
+
+  formatearFecha(fecha: string): string {
+    const date = new Date(fecha);
+    const hoy = new Date();
+    const ayer = new Date(hoy);
+    ayer.setDate(hoy.getDate() - 1);
+
+    const opciones: Intl.DateTimeFormatOptions = {
+      hour: '2-digit',
+      minute: '2-digit',
+    };
+
+    const hora = date.toLocaleTimeString('es-AR', opciones);
+
+    if (date.toDateString() === hoy.toDateString()) {
+      return `Hoy ${hora}`;
+    } else if (date.toDateString() === ayer.toDateString()) {
+      return `Ayer ${hora}`;
+    } else {
+      return `${date.toLocaleDateString('es-AR')} ${hora}`;
+    }
+  }
+
+  async responderConsulta(consulta: Consulta) {
+    if (!consulta.respuestaTemp || consulta.respuestaTemp.trim() === '') {
+      this.showToast('Debes escribir una respuesta', 'warning');
+      return;
+    }
+
+    const alert = await this.alertController.create({
+      header: 'Confirmar respuesta',
+      message: '¿Enviar esta respuesta al cliente?',
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel',
+        },
+        {
+          text: 'Enviar',
+          handler: async () => {
+            await this.enviarRespuesta(consulta);
+          },
+        },
+      ],
+    });
+
+    await alert.present();
+  }
+
+  async enviarRespuesta(consulta: Consulta) {
+    const loading = await this.loadingController.create({
+      message: 'Enviando respuesta...',
+      spinner: 'crescent',
+    });
+    await loading.present();
+
+    try {
+      // Actualizar la consulta con la respuesta
+      await this.authService.responderConsulta(
+        consulta.id_consulta,
+        consulta.respuestaTemp || ''
+      );
+
+      // Enviar notificación al cliente
+      await this.authService.enviarNotificacionCliente(
+        consulta.cliente_id,
+        'Respuesta del mozo',
+        `Tu consulta de la mesa ${consulta.mesa?.numero} ha sido respondida.`
+      );
+
+      await loading.dismiss();
+      this.showToast('Respuesta enviada correctamente', 'success');
+
+      // Recargar lista
+      await this.cargarConsultas();
+    } catch (error) {
+      await loading.dismiss();
+      console.error('Error al enviar respuesta:', error);
+      this.showToast('Error al enviar la respuesta', 'danger');
+    }
+  }
+
+  async verHistorial() {
+    this.showToast('Función en desarrollo', 'medium');
+  }
+
+  async showToast(message: string, color: 'success' | 'danger' | 'warning' | 'medium') {
+    const toast = await this.toastController.create({
+      message,
+      duration: 2500,
+      color,
+      position: 'bottom',
+    });
+    await toast.present();
+  }
 }
