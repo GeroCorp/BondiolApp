@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
   selector: 'app-tabs-mozo',
   templateUrl: './tabs-mozo.page.html',
   styleUrls: ['./tabs-mozo.page.scss'],
+  standalone: false
 })
 export class TabsMozoPage implements OnInit {
   pedidosPendientes = 0;
@@ -13,9 +14,5 @@ export class TabsMozoPage implements OnInit {
   constructor(private router: Router) { }
 
   ngOnInit() {
-  }
-
-  volverHome() {
-    this.router.navigate(['/home']);
   }
 }

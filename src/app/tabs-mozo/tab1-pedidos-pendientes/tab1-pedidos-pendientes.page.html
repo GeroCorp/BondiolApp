@@ -67,7 +67,7 @@
             <ion-item *ngFor="let item of pedido.items" lines="none">
               <ion-label>
                 <h3>{{ item.cantidad }}x {{ item.producto?.nombre }}</h3>
-                <p *ngIf="item.producto?.descripcion">{{ item.producto.descripcion }}</p>
+                <p *ngIf="item.producto && item.producto.descripcion">{{ item.producto.descripcion }}</p>
                 <p class="precio">${{ item.subtotal }}</p>
               </ion-label>
               <ion-icon 

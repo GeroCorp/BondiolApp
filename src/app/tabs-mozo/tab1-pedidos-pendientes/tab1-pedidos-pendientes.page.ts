@@ -34,6 +34,7 @@ interface ItemPedido {
   selector: 'app-tab1-pedidos-pendientes',
   templateUrl: './tab1-pedidos-pendientes.page.html',
   styleUrls: ['./tab1-pedidos-pendientes.page.scss'],
+  standalone: false
 })
 export class Tab1PedidosPendientesPage implements OnInit {
   pedidosPendientes: Pedido[] = [];
