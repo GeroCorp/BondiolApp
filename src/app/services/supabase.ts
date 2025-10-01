@@ -332,6 +332,7 @@ export class AuthService {
       const { data, error } = await this.supabase
         .from('clientes_anonimos')
         .select('*')
+        .is('mesa_asignada', null) // Filtra quienes no tengan mesa asignada
         .order('id_clienteanonimo', { ascending: false });
 
       if (error) {
@@ -341,13 +342,16 @@ export class AuthService {
         );
       }
 
-      // Filtrar solo los que no tienen mesa asignada (están en espera)
-      const clientesEnEspera = (data || []).filter(
-        (cliente) => !cliente.mesa_asignada && cliente.en_espera !== false
-      );
+      return data || []
+      
+      /* Cuando se le sacaba la mesa asignada no volvia a aparecer por alguna razón  */
+      // // Filtrar solo los que no tienen mesa asignada (están en espera)
+      // const clientesEnEspera = (data || []).filter(
+      //   (cliente) => !cliente.mesa_asignada && cliente.en_espera !== false
+      // );
 
-      console.log('Clientes en espera encontrados:', clientesEnEspera);
-      return clientesEnEspera;
+      // console.log('Clientes en espera encontrados:', clientesEnEspera);
+      // return clientesEnEspera;
     } catch (error: any) {
       console.error('Error en getClientesAnonimosEnEspera:', error);
       throw error;

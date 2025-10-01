@@ -22,7 +22,8 @@
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
     display: flex;
     flex-direction: column;
-    max-height: 80vh;    ion-button[name="close-outline"] {
+    max-height: fit-content;    
+    ion-button[name="close-outline"] {
       position: absolute;
       top: 10px;
       right: 10px;
@@ -63,7 +64,7 @@
           justify-content: center;
           cursor: pointer;
           font-size: 20px;
-
+          color: black;
           &:disabled {
             opacity: 0.5;
             cursor: not-allowed;
@@ -100,13 +101,39 @@
 
     .bottom {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
+      flex-direction: column;
+      gap: 12px;
       padding: 16px;
       border-top: 1px solid #eee;
 
       small {
         color: var(--ion-color-medium);
+      }
+
+      .quantity-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+
+        .quantity-controls {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+
+          .quantity-display {
+            font-size: 1.2rem;
+            font-weight: bold;
+            min-width: 30px;
+            text-align: center;
+            padding: 0 8px;
+          }
+
+          ion-button {
+            --padding-start: 8px;
+            --padding-end: 8px;
+          }
+        }
       }
     }
   }

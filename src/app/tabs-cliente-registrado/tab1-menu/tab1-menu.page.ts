@@ -1,7 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { AuthService } from '../../services/supabase';
+import { ClienteService } from '../../services/cliente.service';
 import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
 import { ToastController } from '@ionic/angular';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-tab1-menu',
@@ -10,17 +12,20 @@ import { ToastController } from '@ionic/angular';
   standalone: false,
 })
 export class Tab1MenuPage implements OnInit {
-  nroMesa: number = 0;
+  nroMesa: number = 7;
   platos: any[] = [];
   bebidas: any[] = [];
   itemSelected: any = null;
   constructor(
     private authService: AuthService,
-    private toastController: ToastController
+    private clienteService: ClienteService,
+    private toastController: ToastController,
+    private router: Router
   ) { 
   }
 
   async ngOnInit() {
+    
     await this.cargarPlatos();
     await this.cargarBebidas();
   }
@@ -84,6 +89,22 @@ export class Tab1MenuPage implements OnInit {
   seleccionarItem(item:any){
     this.itemSelected = item;
     console.log(this.itemSelected);
+  }
+
+  onAddItem(item: any){
+    // Agregar el item al pedido usando el servicio
+    this.clienteService.addItem(item);
+    this.showToast(`${item.nombre} agregado al pedido`, 'success');
+    this.itemSelected = null; // Cerrar el popup después de agregar
+    console.log('Pedido actual:', this.clienteService.pedido());
+  }
+
+  calcularMonto(){
+    return this.clienteService.getTotal();
+  }
+
+  volverHome(){
+    this.router.navigate(["/home-cliente"])
   }
 
   async showToast(message: string, color: 'success' | 'danger' | 'medium') {

@@ -1,6 +1,10 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>Menú</ion-title>
+    <ion-button (click)="volverHome()" fill="clear" shape="round" slot="end">
+      Volver
+      <ion-icon slot="start" name="home-outline"></ion-icon>
+    </ion-button>
+    <ion-title slot="start">Menú</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -28,7 +32,7 @@
   <ion-card>
     <ion-card-header>
       <ion-card-title>Nro de Mesa: {{ nroMesa }}</ion-card-title>
-      
+      <ion-card-subtitle>Pedido - {{ calcularMonto() | currency:'$':'symbol':'1.0-0' }}</ion-card-subtitle>
     </ion-card-header>
     <ion-card-content>
       <ion-card-title>Menú de Platos</ion-card-title>
@@ -66,7 +70,11 @@
     </ion-card-content>
   </ion-card>
   @if (itemSelected) {
-    <app-menu-item [item]="itemSelected" (closeItem)="itemSelected = null"></app-menu-item>
+    <app-menu-item 
+    [item]="itemSelected" 
+    (closeItem)="itemSelected = null"
+    (addItem)="onAddItem($event)">
+  </app-menu-item>
   }
 }
 </ion-content>

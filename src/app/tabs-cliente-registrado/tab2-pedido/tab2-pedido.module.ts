@@ -4,17 +4,17 @@ import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
-import { TabsClientesPageRoutingModule } from './tabs-clientes-routing.module';
+import { Tab2PedidoPageRoutingModule } from './tab2-pedido-routing.module';
 
-import { TabsClientesPage } from './tabs-clientes.page';
+import { Tab2PedidoPage } from './tab2-pedido.page';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    TabsClientesPageRoutingModule
+    Tab2PedidoPageRoutingModule
   ],
-  declarations: [TabsClientesPage]
+  declarations: [Tab2PedidoPage]
 })
-export class TabsClientesPageModule {}
+export class Tab2PedidoPageModule {}

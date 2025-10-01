@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AlertController, IonicModule, ToastController } from '@ionic/angular';
+import { ClienteService } from 'src/app/services/cliente.service';
 import { AuthService } from 'src/app/services/supabase';
 
 @Component({
@@ -16,11 +17,12 @@ export class Tab1Espera implements OnInit {
   constructor(
     private supabaseService: AuthService,
     private alertCtrl: AlertController,
-    private toastCtrl: ToastController
+    private toastCtrl: ToastController,
+    private clienteService: ClienteService
   ) {}
 
   async ngOnInit() {
-    await this.cargarDatos();
+
   }
 
   async ionViewWillEnter() {
@@ -31,8 +33,13 @@ export class Tab1Espera implements OnInit {
   async cargarDatos() {
     await Promise.all([
       this.cargarClientes(),
-      this.cargarMesas()
+      this.cargarMesas(),
     ]);
+  }
+
+
+  test(bool: boolean){
+    console.log(bool);
   }
 
   // 🔹 Cargar clientes anónimos en espera (CORREGIDO)
@@ -41,6 +48,15 @@ export class Tab1Espera implements OnInit {
     try {
       console.log('🔄 Cargando clientes en espera...');
       this.clientes = await this.supabaseService.getClientesAnonimosEnEspera();
+      
+      // Busca clientes registrados sin mesa asignada
+      const clientesReg = await this.clienteService.getClientesEnEspera();
+
+      // Los añade al array
+      clientesReg.forEach( cliente => {
+        this.clientes.push(cliente)
+      })
+
       console.log('✅ Clientes cargados:', this.clientes.length);
     } catch (err) {
       console.error('❌ Error cargando clientes:', err);
@@ -73,8 +89,9 @@ export class Tab1Espera implements OnInit {
     }
   }
 
-  // 🔹 Asignar mesa a cliente anónimo (MEJORADO)
-  async asignarMesa(cliente: any) {
+
+  // 🔹 Asignar mesa a cliente anónimo o registrado
+  async asignarMesa(cliente: any, isAnonimo: boolean) {
     if (!this.mesas || this.mesas.length === 0) {
       const toast = await this.toastCtrl.create({
         message: 'No hay mesas disponibles',
@@ -113,8 +130,9 @@ export class Tab1Espera implements OnInit {
               await toast.present();
               return false; // Mantener el alert abierto
             }
-
-            await this.procesarAsignacion(cliente, mesaId);
+            if (isAnonimo){
+              await this.procesarAsignacion(cliente, mesaId, true);
+            }else await this.procesarAsignacion(cliente, mesaId, false)
             return true; // Cerrar el alert
           }
         }
@@ -125,7 +143,7 @@ export class Tab1Espera implements OnInit {
   }
 
   // 🔹 Procesar la asignación de mesa (NUEVO MÉTODO)
-  private async procesarAsignacion(cliente: any, mesaId: number) {
+  private async procesarAsignacion(cliente: any, mesaId: number, isAnonimo: boolean) {
     const loading = await this.toastCtrl.create({
       message: 'Asignando mesa...',
       duration: 0
@@ -138,10 +156,12 @@ export class Tab1Espera implements OnInit {
         mesaId 
       });
 
+      if (isAnonimo){
       await this.supabaseService.asignarMesaAClienteAnonimo(
         cliente.id_clienteanonimo, 
         mesaId
-      );
+      );}
+      else await this.clienteService.setMesa(cliente.id_cliente, mesaId)
 
       await loading.dismiss();
 

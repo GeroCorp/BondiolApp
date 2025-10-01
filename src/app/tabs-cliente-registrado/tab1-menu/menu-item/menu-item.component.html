@@ -1,6 +1,6 @@
 <div class="main-container">
   <ion-card class="ion-padding">
-      <ion-button (click)="onClose()">
+      <ion-button (click)="onClose()" >
         <ion-icon slot="icon-only" name="close-outline"></ion-icon>
       </ion-button>
       
@@ -8,8 +8,8 @@
       <div class="carrusel">
         <ion-img [src]="item.imagenes[currentImageIndex]" width="70%" height="auto"></ion-img>
         <div class="carrusel-controls">
-          <button (click)="prevImage()" [disabled]="currentImageIndex === 0">&lt;</button>
-          <button (click)="nextImage()" [disabled]="currentImageIndex === item.imagenes.length - 1">&gt;</button>
+          <button (click)="prevImage()" [disabled]="currentImageIndex === 0"><ion-icon name="caret-back-outline"></ion-icon></button>
+          <button (click)="nextImage()" [disabled]="currentImageIndex === item.imagenes.length - 1"><ion-icon name="caret-forward-outline"></ion-icon></button>
         </div>
       </div>
     </ion-card-header>
@@ -22,10 +22,21 @@
     </ion-card-content>
     <div class="bottom">
       <small>Tiempo estimado {{ item?.tiempo }} min</small>
-      <ion-button >
-        <ion-icon slot="start" name="add"></ion-icon>
-        Agregar
-      </ion-button>
+      <div class="quantity-container">
+        <div class="quantity-controls">
+          <ion-button fill="outline" size="small" (click)="decreaseQuantity()" [disabled]="quantity <= 1">
+            <ion-icon name="remove-outline"></ion-icon>
+          </ion-button>
+          <span class="quantity-display">{{ quantity }}</span>
+          <ion-button fill="outline" size="small" (click)="increaseQuantity()">
+            <ion-icon name="add-outline"></ion-icon>
+          </ion-button>
+        </div>
+        <ion-button (click)="onAddItem()" color="primary">
+          <ion-icon slot="start" name="add"></ion-icon>
+          Agregar ({{ (item?.precio * quantity) | currency:'$':'symbol':'1.0-0' }})
+        </ion-button>
+      </div>
     </div>
 
   </ion-card>

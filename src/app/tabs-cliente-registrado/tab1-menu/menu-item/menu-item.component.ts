@@ -10,8 +10,10 @@ import { CommonModule } from '@angular/common';
 export class MenuItemComponent  implements OnInit {
   @Input() item: any = {};
   @Output() closeItem = new EventEmitter<void>();
+  @Output() addItem = new EventEmitter<any>()
   
   public currentImageIndex: number = 0;
+  public quantity: number = 1;
   constructor() { }
 
   ngOnInit() {
@@ -40,7 +42,28 @@ export class MenuItemComponent  implements OnInit {
   onClose(){
     this.item = null;
     this.currentImageIndex = 0;
+    this.quantity = 1; // Reset quantity when closing
     this.closeItem.emit();
+  }
+
+  onAddItem(){
+    // Crear un objeto con el item y la cantidad
+    const itemWithQuantity = {
+      ...this.item,
+      quantity: this.quantity,
+      subtotal: this.item.precio * this.quantity
+    };
+    this.addItem.emit(itemWithQuantity);
+  }
+
+  increaseQuantity() {
+    this.quantity++;
+  }
+
+  decreaseQuantity() {
+    if (this.quantity > 1) {
+      this.quantity--;
+    }
   }
 
 }
