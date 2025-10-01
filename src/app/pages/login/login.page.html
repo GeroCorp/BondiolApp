@@ -12,7 +12,6 @@
       </ion-card-header>
       <ion-card-content class="ion-padding">
 
-
         <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
           
             <ion-input type="email" formControlName="email" label="Correo Electrónico" fill="outline" labelPlacement="floating" class="ion-margin-top"/>
@@ -29,19 +28,24 @@
           </ion-button>
         </form>
 
-      <ion-button expand="block" class="ion-margin-top" color="danger" class="ion-margin-top" (click)="registrar()">
-        Registrarse<ion-icon name="person-circle-outline" slot="end"></ion-icon>
-      </ion-button>
+        <ion-button expand="block" class="ion-margin-top" color="danger" (click)="registrar()">
+          Registrarse <ion-icon name="person-circle-outline" slot="end"></ion-icon>
+        </ion-button>
 
       </ion-card-content>
-      
+
       <ion-card>
         <ion-card-header>
           <ion-card-title class="ion-text-center">Acceso Rápido</ion-card-title>
         </ion-card-header>
         <ion-card-content>
           <ion-item lines="none">
-            <ion-select id="select-id" placeholder="Selecciona usuario" interface="action-sheet" (ionChange)="fastFill($event.detail.value)">
+            <ion-select 
+              id="select-id" 
+              placeholder="Selecciona usuario" 
+              interface="action-sheet" 
+              (ionChange)="fastFill($event.detail.value)"
+            >
               <ion-select-option value="dueño">Dueño</ion-select-option>
               <ion-select-option value="supervisor">Supervisor</ion-select-option>
               <ion-select-option value="maitre">Maitre</ion-select-option>
@@ -55,7 +59,3 @@
     </ion-card>
   </div>
 </ion-content>
-
-
-  
-

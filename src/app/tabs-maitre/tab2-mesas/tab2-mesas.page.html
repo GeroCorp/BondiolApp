@@ -1,11 +1,10 @@
 <ion-header>
-  <ion-toolbar color="primary">
+  <ion-toolbar>
     <ion-title>Gestión de Mesas</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="mesas-content">
-  <!-- Refresher -->
   <ion-refresher slot="fixed" (ionRefresh)="refrescarDatos($event)">
     <ion-refresher-content
       pulling-icon="chevron-down-circle-outline"
@@ -50,13 +49,13 @@
       </ion-card-content>
     </ion-card>
 
-    <!-- Loading Spinner -->
+    <!-- Loading -->
     <div *ngIf="isLoading" class="loading-container">
       <ion-spinner name="circles" color="primary"></ion-spinner>
       <p class="ion-text-center ion-margin-top">Cargando mesas...</p>
     </div>
 
-    <!-- Lista de mesas -->
+    <!-- Lista -->
     <ion-list *ngIf="!isLoading && mesas.length > 0" class="mesas-list">
       <ion-list-header>
         <ion-label>
@@ -65,7 +64,6 @@
       </ion-list-header>
 
       <ion-item *ngFor="let mesa of mesas" lines="inset" class="mesa-item">
-        <!-- Icono de estado -->
         <ion-icon 
           slot="start" 
           [name]="getEstadoMesa(mesa).icon" 
@@ -73,7 +71,6 @@
           size="large">
         </ion-icon>
 
-        <!-- Información de la mesa -->
         <ion-label>
           <h2>Mesa {{ mesa.numero }}</h2>
           <p>
@@ -90,9 +87,7 @@
           </p>
         </ion-label>
 
-        <!-- Botones de acción -->
         <div slot="end" class="action-buttons">
-          <!-- Botón liberar mesa (solo si está ocupada) -->
           <ion-button
             *ngIf="mesa.cliente_asignado"
             color="danger"
@@ -100,24 +95,18 @@
             (click)="liberarMesa(mesa)">
             <ion-icon name="exit-outline" slot="icon-only"></ion-icon>
           </ion-button>
-
-          <!-- Badge de estado -->
-          <ion-badge 
-            [color]="getEstadoMesa(mesa).color"
-            class="status-badge">
+          <ion-badge [color]="getEstadoMesa(mesa).color" class="status-badge">
             {{ getEstadoMesa(mesa).texto }}
           </ion-badge>
         </div>
       </ion-item>
     </ion-list>
 
-    <!-- Estado sin mesas -->
+    <!-- Sin mesas -->
     <div *ngIf="!isLoading && mesas.length === 0" class="empty-state">
       <ion-icon name="restaurant-outline" size="large" color="medium"></ion-icon>
       <h2>No hay mesas registradas</h2>
-      <p class="ion-text-center">
-        Contacte al administrador para configurar las mesas
-      </p>
+      <p class="ion-text-center">Contacte al administrador para configurar las mesas</p>
     </div>
   </div>
 </ion-content>

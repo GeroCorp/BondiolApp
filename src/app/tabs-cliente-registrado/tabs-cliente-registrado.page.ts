@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 
+
 @Component({
   selector: 'app-tabs-cliente-registrado',
   templateUrl: './tabs-cliente-registrado.page.html',

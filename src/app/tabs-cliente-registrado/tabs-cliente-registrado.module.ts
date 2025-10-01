@@ -13,8 +13,8 @@ import { TabsClienteRegistradoPage } from './tabs-cliente-registrado.page';
     CommonModule,
     FormsModule,
     IonicModule,
-    TabsClienteRegistradoPageRoutingModule
-  ],
-  declarations: [TabsClienteRegistradoPage]
+    TabsClienteRegistradoPageRoutingModule,
+    ],
+    declarations: [TabsClienteRegistradoPage]
 })
 export class TabsClienteRegistradoPageModule {}

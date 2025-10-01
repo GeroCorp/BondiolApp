@@ -1,0 +1,92 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home" icon="arrow-back"></ion-back-button>
+    </ion-buttons>
+    <ion-title>
+      <ion-icon name="chatbubbles-outline"></ion-icon> Consultas de Clientes
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="recargar()">
+        <ion-icon name="refresh-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Spinner mientras carga -->
+  <div *ngIf="cargando" class="loading-container">
+    <ion-spinner name="crescent" color="primary"></ion-spinner>
+    <p>Cargando consultas...</p>
+  </div>
+
+  <!-- Sin consultas pendientes -->
+  <div *ngIf="!cargando && consultas.length === 0" class="empty-state">
+    <ion-icon name="checkmark-done-circle-outline" color="success"></ion-icon>
+    <h2>No hay consultas pendientes</h2>
+    <p>Todas las consultas han sido respondidas</p>
+  </div>
+
+  <!-- Lista de consultas -->
+  <div *ngIf="!cargando && consultas.length > 0">
+    <ion-card *ngFor="let consulta of consultas" class="consulta-card">
+      <ion-card-header>
+        <div class="header-consulta">
+          <div>
+            <ion-card-title>
+              <ion-icon name="restaurant-outline"></ion-icon>
+              Mesa {{ consulta.mesa?.numero }}
+            </ion-card-title>
+            <ion-card-subtitle>
+              <ion-icon name="time-outline"></ion-icon>
+              {{ formatearFecha(consulta.created_at) }}
+            </ion-card-subtitle>
+          </div>
+          <ion-badge color="warning">Pendiente</ion-badge>
+        </div>
+      </ion-card-header>
+
+      <ion-card-content>
+        <!-- Cliente -->
+        <div class="info-cliente">
+          <ion-icon name="person-outline"></ion-icon>
+          <span>{{ consulta.cliente?.nombre }} {{ consulta.cliente?.apellido }}</span>
+        </div>
+
+        <!-- Mensaje del cliente -->
+        <div class="mensaje-cliente">
+          <h4>
+            <ion-icon name="chatbox-ellipses-outline"></ion-icon>
+            Consulta del cliente:
+          </h4>
+          <p>{{ consulta.mensaje }}</p>
+        </div>
+
+        <!-- Formulario de respuesta -->
+        <div class="respuesta-container">
+          <ion-textarea
+            [(ngModel)]="consulta.respuestaTemp"
+            placeholder="Escribe tu respuesta aquí..."
+            rows="3"
+            fill="outline"
+          ></ion-textarea>
+
+          <ion-button 
+            expand="block" 
+            color="success" 
+            (click)="responderConsulta(consulta)"
+            [disabled]="!consulta.respuestaTemp || consulta.respuestaTemp.trim() === ''"
+          >
+            <ion-icon name="send-outline" slot="start"></ion-icon>
+            Enviar respuesta
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

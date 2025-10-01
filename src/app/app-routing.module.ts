@@ -45,6 +45,10 @@ const routes: Routes = [
     loadChildren: () => import('./tabs-maitre/tabs-maitre.module').then(m => m.TabsMaitrePageModule)
   },
   {
+    path: 'tabs-mozo',
+    loadChildren: () => import('./tabs-mozo/tabs-mozo.module').then(m => m.TabsMozoPageModule)
+  },
+  {
     path: 'tabs-cliente-registrado',
     loadChildren: () => import('./tabs-cliente-registrado/tabs-cliente-registrado.module').then( m => m.TabsClienteRegistradoPageModule)
   },
@@ -52,7 +56,7 @@ const routes: Routes = [
     path: '**',
     redirectTo: 'splash',
     pathMatch: 'full'
-  },
+  }
 ];
 @NgModule({
   imports: [
