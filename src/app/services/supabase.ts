@@ -174,6 +174,10 @@ export class AuthService {
       tipo: mesa.tipo,
     });
   }
+  // Obtener cliente loggeado
+  
+
+  
 
   // ✅ Insertar un cliente nuevo
   async getClientesPendientes() {
@@ -276,6 +280,28 @@ export class AuthService {
     // La URL pública es lo que guardarás en la base de datos
     return publicUrlData.publicUrl;
   }
+  async subirImagenPlatos(platoId: string, imageBlob: Blob) {
+
+    const fileName = `${platoId}_plato_${Date.now()}.jpeg`;
+    const { data, error } = await this.supabase.storage
+      .from('platos')
+      .upload(fileName, imageBlob, {
+        cacheControl: '3600',
+        upsert: false // No sobrescribir
+      });
+
+    if (error) {
+      throw new Error(`Error al subir la imagen: ${error.message}`)
+    }
+
+    // Obtener la URL pública de la imagen
+    const { data: publicUrlData } = this.supabase.storage
+      .from('clientes-registrados')
+      .getPublicUrl(fileName);
+
+    // La URL pública es lo que guardarás en la base de datos
+    return publicUrlData.publicUrl;
+  }
 
   async subirQRmesa(nroMesa: string, imageBlob: Blob) {
 
@@ -306,6 +332,7 @@ export class AuthService {
       const { data, error } = await this.supabase
         .from('clientes_anonimos')
         .select('*')
+        .is('mesa_asignada', null) // Filtra quienes no tengan mesa asignada
         .order('id_clienteanonimo', { ascending: false });
 
       if (error) {
@@ -315,13 +342,16 @@ export class AuthService {
         );
       }
 
-      // Filtrar solo los que no tienen mesa asignada (están en espera)
-      const clientesEnEspera = (data || []).filter(
-        (cliente) => !cliente.mesa_asignada && cliente.en_espera !== false
-      );
+      return data || []
+      
+      /* Cuando se le sacaba la mesa asignada no volvia a aparecer por alguna razón  */
+      // // Filtrar solo los que no tienen mesa asignada (están en espera)
+      // const clientesEnEspera = (data || []).filter(
+      //   (cliente) => !cliente.mesa_asignada && cliente.en_espera !== false
+      // );
 
-      console.log('Clientes en espera encontrados:', clientesEnEspera);
-      return clientesEnEspera;
+      // console.log('Clientes en espera encontrados:', clientesEnEspera);
+      // return clientesEnEspera;
     } catch (error: any) {
       console.error('Error en getClientesAnonimosEnEspera:', error);
       throw error;

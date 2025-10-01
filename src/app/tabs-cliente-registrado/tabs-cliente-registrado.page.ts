@@ -5,7 +5,7 @@ import { Component, OnInit } from '@angular/core';
   selector: 'app-tabs-cliente-registrado',
   templateUrl: './tabs-cliente-registrado.page.html',
   styleUrls: ['./tabs-cliente-registrado.page.scss'],
-  standalone: false
+  standalone: false,
 })
 export class TabsClienteRegistradoPage implements OnInit {
 

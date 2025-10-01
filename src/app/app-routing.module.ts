@@ -56,7 +56,8 @@ const routes: Routes = [
     path: '**',
     redirectTo: 'splash',
     pathMatch: 'full'
-  }
+  },
+
 ];
 @NgModule({
   imports: [

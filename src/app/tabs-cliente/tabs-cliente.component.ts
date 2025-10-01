@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../services/supabase';
+import { IonTabs, IonTabButton } from "@ionic/angular/standalone";
 
 @Component({
   selector: 'app-tabs-cliente',
