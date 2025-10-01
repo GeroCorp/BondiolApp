@@ -25,12 +25,16 @@ const routes: Routes = [
         loadChildren: () => import('./tab4-admin-mesa/tab4-admin-mesa.module').then(m => m.Tab4AdminMesaPageModule)
       },
       {
+        path: 'tab5-admin-perfil',
+        loadChildren: () => import('./tab5-admin-perfil/tab5-admin-perfil.module').then( m => m.Tab5AdminPerfilPageModule)
+      },
+      {
         path: '',
         redirectTo: 'tab1-carga-empleado',
         pathMatch: 'full',
       }
     ]
-  }
+  },
 ];
 
 @NgModule({

@@ -140,12 +140,7 @@ export class Tab1CargaEmpleadoPage {
 
   }
 
-  async logout() {
-    await this.supabaseService.logout();
 
-    this.router.navigate(['/login'], {replaceUrl: true}); // redirigir al login
-    this.showToast('Sesión cerrada correctamente', 'medium');
-  }
 
   async showToast(message: string, color: 'success' | 'danger' | 'medium') {
     const toast = await this.toastController.create({

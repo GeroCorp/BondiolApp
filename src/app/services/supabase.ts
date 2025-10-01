@@ -599,6 +599,20 @@ export class AuthService {
   }
 
 
+  // Carga de perfiles (admin-supervisor y empleados restantes)
+  async cargarEmpleado(perfilBuscado: string){
+    const { data, error } = await this.supabase
+      .from('empleados')
+      .select('*')
+      .eq('perfil', perfilBuscado)
+      // .order('created_at', { ascending: false });
+
+    if (error)
+      throw new Error('Error al obtener empleado: ' + error.message);
+    return data;
+  }
+
+
   // METODOS PARA EL MOZO 
   async getPedidosPendientesConfirmacion() {
   try {

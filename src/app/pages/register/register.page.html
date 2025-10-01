@@ -1,66 +1,67 @@
 <ion-header [translucent]="true">
-  <ion-toolbar>
+  <ion-toolbar class="custom-header">
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/login" icon="caret-back"></ion-back-button>
+      <img src="assets/icon/icon-only.png" alt="Logo" class="header-logo">
     </ion-buttons>
 
+    <ion-title>Registro</ion-title>
 
-      <div class="logo">
-        <img src="assets/icon/icon-only.png" alt="Logo" width="80">
-      </div>
+    <ion-buttons slot="end">
+      <ion-button (click)="volverLogin()">
+        <ion-icon name="log-out-outline" slot="end"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Registrarse</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content [fullscreen]="true" class="registro-content">
+  <div class="registro-wrapper">
+    <ion-card class="card-container">
+      <ion-card-header>
+        <ion-card-title class="ion-text-center">Crear Cuenta</ion-card-title>
+      </ion-card-header>
+      <ion-card-content class="ion-padding">
 
+        <form [formGroup]="registerForm" (ngSubmit)="onRegister()">
+          <ion-input type="text" formControlName="name" label="Nombre" fill="outline" labelPlacement="floating" class="ion-margin-top"/>
+          <ion-input type="text" formControlName="surname" label="Apellido" fill="outline" labelPlacement="floating" class="ion-margin-top"/>
+          <ion-input type="text" formControlName="dni" label="DNI" fill="outline" labelPlacement="floating" class="ion-margin-top"/>
+          <ion-input type="email" formControlName="email" label="Correo Electrónico" fill="outline" labelPlacement="floating" class="ion-margin-top"/>
 
-  <ion-card>
-    <ion-card-header>
-      <ion-card-title class="ion-text-center">Crear Cuenta</ion-card-title>
-    </ion-card-header>
-    <ion-card-content class="ion-padding">
+          <div class="password-container">
+            <ion-input [type]="passwordVisible ? 'text' : 'password'" formControlName="password" label="Contraseña" fill="outline" labelPlacement="floating" class="ion-margin-top password-input"/> 
+            <ion-button fill="clear" slot="end" (click)="cambiarVisibilidadPassword()" class="password-toggle">
+              <ion-icon [name]="passwordVisible ? 'eye' : 'eye-off'"></ion-icon>
+            </ion-button>
+          </div>
 
-      <form [formGroup]="registerForm" (ngSubmit)="onRegister()">
-        
-          <ion-input type="text" formControlName="name" label="Nombre" fill="outline" labelPlacement="floating" class="ion-margin-top" [value]="trimed ? trimed[2] : ''" />
-          <ion-input type="text" formControlName="surname" label="Apellido" fill="outline" labelPlacement="floating" class="ion-margin-top" [value]="trimed ? trimed[1] : ''" />
+          <div class="password-container">
+            <ion-input [type]="passwordVisible ? 'text' : 'password'" formControlName="password2" label="Repetir Contraseña" fill="outline" labelPlacement="floating" class="ion-margin-top password-input"/> 
+            <ion-button fill="clear" slot="end" (click)="cambiarVisibilidadPassword()" class="password-toggle">
+              <ion-icon [name]="passwordVisible ? 'eye' : 'eye-off'"></ion-icon>
+            </ion-button>
+          </div>
 
-          <ion-input type="text" formControlName="dni" label="DNI" fill="outline" labelPlacement="floating" class="ion-margin-top" [value]="trimed ? trimed[4] : ''" />
+          <div class="extras-container ion-margin-top">
+            <ion-label>Foto</ion-label>
+            <ion-button expand="block" (click)="tomarFoto()">Tomar Foto</ion-button>
+            <div *ngIf="foto" class="container-img-empleado">
+              <img [src]="foto" id="img-empleado" width="100"/>
+            </div>
 
-          <ion-input type="email" formControlName="email" label="Correo Electrónico" fill="outline" labelPlacement="floating" class="ion-margin-top" autocomplete="off" />
-        
-          <ion-input type="password" formControlName="password" label="Contraseña" fill="outline" labelPlacement="floating" class="ion-margin-top" autocomplete="off"/>
-          <ion-input type="password" formControlName="password2" label="Repetir Contraseña" fill="outline" labelPlacement="floating" class="ion-margin-top" autocomplete="off"/>
+            <ion-label class="ion-margin-top">QR DNI</ion-label>
+            <ion-button expand="block" (click)="leerQR()">Leer QR</ion-button>
+            <div *ngIf="qrData" class="ion-margin-top qr-data">
+              <p>Datos del QR: {{ qrData }}</p>
+            </div>
+          </div>
 
-          
-        <ion-label>Foto</ion-label>
-        <ion-button expand="block" (click)="tomarFoto()">Tomar Foto</ion-button>
-        <div *ngIf="foto" class="container-img-empleado">
-          <img [src]="foto" id="img-empleado" width="80px"/>
-        </div>
-      
-        <ion-item>
-          <ion-label>QR DNI</ion-label>
-          <ion-button expand="block" (click)="leerQR()">Leer QR</ion-button>
+          <ion-button expand="block" type="submit" class="btn-primary ion-margin-top">
+            Crear Cuenta <ion-icon name="person-add-outline" slot="end"></ion-icon>
+          </ion-button>
+        </form>
 
-          
-        </ion-item>
-        <div *ngIf="qrData" class="ion-margin-top">
-          <p>Datos del QR: {{ qrData }}</p>
-        
-        </div>
-        
-        <ion-button expand="block" type="submit" class="ion-margin-top">
-          Crear Cuenta<ion-icon name="person-add-outline" slot="end"></ion-icon>
-        </ion-button>
-      </form>
-
-    </ion-card-content>
-  </ion-card>
-
+      </ion-card-content>
+    </ion-card>
+  </div>
 </ion-content>

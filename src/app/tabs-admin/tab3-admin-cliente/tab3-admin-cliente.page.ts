@@ -3,6 +3,7 @@ import { AuthService } from 'src/app/services/supabase';
 import { EmailService } from 'src/app/services/email';
 import { PerfilService } from 'src/app/services/perfilService';
 import { ToastController, LoadingController, AlertController } from '@ionic/angular';
+import { Router } from '@angular/router';
 
 interface Cliente {
   id_cliente?: number;
@@ -32,7 +33,8 @@ export class Tab3AdminClientePage implements OnInit {
     private perfilService: PerfilService,
     private toastCtrl: ToastController,
     private loadingCtrl: LoadingController,
-    private alertCtrl: AlertController
+    private alertCtrl: AlertController,
+    private router: Router
   ) {
     this.perfil = this.perfilService.getPerfil();
     console.log('Perfil recibido en Tab3 Admin Cliente:', this.perfil);
@@ -239,4 +241,5 @@ export class Tab3AdminClientePage implements OnInit {
       );
     }
   }
+
 }

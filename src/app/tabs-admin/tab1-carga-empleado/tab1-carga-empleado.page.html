@@ -1,18 +1,7 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>Admin-Crear empleados</ion-title>
-  </ion-toolbar>
-</ion-header>
-
 <ion-content [fullscreen]="true" class="tab1-content">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Crear Empleado</ion-title>
-    </ion-toolbar>
-  </ion-header>
-
+  <h2 class="cliente-title">Agregar nuevo empleado</h2>
   <div class="empleado-wrapper">
-    <div class="empleado-card-content">
+    <ion-card class="empleado-card-content ion-padding">
       <form [formGroup]="empleadoForm" (ngSubmit)="crearEmpleado()">
         <ion-item class="empleado-item">
           <ion-label position="floating">Nombre</ion-label>
@@ -72,12 +61,6 @@
           Crear Empleado
         </ion-button>
       </form>
-    
-      <div class="container-cerrar-sesion">
-        <ion-button expand="block" (click)="logout()" color="danger" class="empleado-button">
-          Cerrar sesión
-        </ion-button>
-      </div>
-    </div>
+    </ion-card>
   </div>
 </ion-content>

@@ -1,15 +1,5 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>Carga de productos</ion-title>
-  </ion-toolbar>
-</ion-header>
-
 <ion-content [fullscreen]="true" class="producto-content">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Carga de productos</ion-title>
-    </ion-toolbar>
-  </ion-header>
+  <h2 class="cliente-title">Agregar Producto</h2>
 
   <div class="producto-wrapper">
     <div class="producto-card-content">
@@ -41,21 +31,15 @@
 
         <div *ngIf="imagenes && imagenes.length > 0" class="container-img-producto">
           <img *ngFor="let img of imagenes; let i = index"
-               [src]="img"
-               id="img-producto"
-               alt="Producto {{ i + 1 }}"/>
+                [src]="img"
+                id="img-producto"
+                alt="Producto {{ i + 1 }}"/>
         </div>
 
         <ion-button expand="block" type="submit" class="producto-button">
           Crear Producto
         </ion-button>
       </form>
-    </div>
-
-    <div class="container-cerrar-sesion">
-      <ion-button expand="block" (click)="logout()" color="danger" class="producto-button">
-        Cerrar sesión
-      </ion-button>
     </div>
   </div>
 </ion-content>
