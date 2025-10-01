@@ -14,36 +14,6 @@
       </h2>
     </div>
 
-    <!-- <form (ngSubmit)="sendNotification()">
-
-      <ion-item>
-        <ion-input name="title" label="Titulo notificacion" [(ngModel)]="notification.title" />
-      </ion-item>
-    
-      <ion-item>
-        <ion-textarea name="body" label="Cuerpo notificacion" [(ngModel)]="notification.body"></ion-textarea>
-      </ion-item>
-
-      <ion-item>
-        <ion-input name="body" type="url" inputmode="url" label="URL notificacion" [(ngModel)]="notification.url"/>
-      </ion-item>
-    
-      <ion-item>
-        <ion-label>Fecha envio</ion-label>
-        <ion-datetime-button slot="end" datetime="datetime"/>
-        
-        <ion-modal [keepContentsMounted]="true">
-          <ng-template>
-            <ion-datetime id="datetime" name="datetime" [(ngModel)]="notification.date" />
-          </ng-template>
-        </ion-modal>  
-      </ion-item>
-    
-      <ion-item lines="none">
-        <ion-button type="submit" slot="end">Enviar</ion-button>
-      </ion-item>
-    </form> -->
-
     <!-- Dueño / Supervisor -->
     <ion-card *ngIf="perfil === 'dueño' || perfil === 'supervisor'">
       <ion-card-header>
@@ -68,7 +38,6 @@
         <ion-card-title>Productos</ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        <!-- Cocinero -->
         <ion-button
           *ngIf="perfil === 'cocinero'"
           expand="block"
@@ -77,6 +46,7 @@
         >
           + Agregar plato
         </ion-button>
+
         <ion-button
           *ngIf="perfil === 'cocinero'"
           expand="block"
@@ -86,7 +56,6 @@
           Ver menú
         </ion-button>
 
-        <!-- Bartender -->
         <ion-button
           *ngIf="perfil === 'bartender'"
           expand="block"
@@ -95,6 +64,7 @@
         >
           + Agregar bebida
         </ion-button>
+
         <ion-button
           *ngIf="perfil === 'bartender'"
           expand="block"
@@ -133,8 +103,23 @@
       </ion-card-content>
     </ion-card>
 
-
-  
+    <!-- Mozo -->
+    <ion-card *ngIf="perfil === 'mozo'">
+      <ion-card-header>
+        <ion-card-title>Gestión Mozo</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-button expand="block" color="secondary" (click)="gestionarPedidos()">
+          Gestionar pedidos
+        </ion-button>
+        <ion-button expand="block" color="secondary" (click)="verPedidosConfirmados()">
+          Pedidos Confirmados
+        </ion-button>
+        <ion-button expand="block" color="secondary" (click)="verConsultasClientes()">
+          Consultas Clientes
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
 
     <!-- Logout -->
     <div class="container-cerrar-sesion">
