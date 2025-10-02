@@ -40,6 +40,24 @@ export class Tab1AgregarProductoPage {
     });
   }
 
+  async seleccionarDeGaleria() {
+    if (this.imagenes.length >= 3) {
+      this.showToast('Ya cargaste las 3 fotos permitidas', 'danger');
+      return;
+    }
+
+    const image = await Camera.getPhoto({
+      quality: 80,
+      allowEditing: false,
+      resultType: CameraResultType.DataUrl,
+      source: CameraSource.Photos, // 📌 galería en vez de cámara
+    });
+
+    if (image?.dataUrl) {
+      this.imagenes.push(image.dataUrl);
+    }
+  }
+
   async tomarFoto() {
     if (this.imagenes.length >= 3) {
       this.showToast('Ya cargaste las 3 fotos permitidas', 'danger');
@@ -184,6 +202,15 @@ export class Tab1AgregarProductoPage {
 
     this.router.navigate(['/login'], {replaceUrl: true}); // redirigir al login
     this.showToast('Sesión cerrada correctamente', 'medium');
+  }
+
+  resetFormulario() {
+    this.productoForm.reset();  // limpia el formulario
+    this.imagenes = [];         // limpia imágenes
+  }
+
+  borrarImagen(index: number) {
+    this.imagenes.splice(index, 1); // elimina solo la imagen seleccionada
   }
 
   async showToast(message: string, color: 'success' | 'danger' | 'medium') {

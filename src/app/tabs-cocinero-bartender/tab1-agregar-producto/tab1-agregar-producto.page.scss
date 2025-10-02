@@ -50,7 +50,7 @@ ion-content.producto-content {
   --border-radius: 12px;
   margin-bottom: 16px;
   color: #fff;
-  // border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.1);
   // transition: all 0.3s ease;
   min-height: 52px;
   
@@ -114,33 +114,62 @@ ion-content.producto-content {
   }
 }
 
-.container-img-producto {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin: 16px 0;
-  padding: 16px;
-  background: rgba(255,255,255,0.02);
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.05);
-}
-
-#img-producto {
-  width: 80px;
-  height: 80px;
-  border-radius: 12px;
-  object-fit: cover;
-  border: 2px solid rgba(255,255,255,0.2);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  transition: all 0.3s ease;
+/*Estilo especial para seccion fotos*/
+.producto-item-fotos {
+  --background: rgba(255,255,255,0.08);
+  --border-radius: 12px;
+  margin-bottom: 16px;
+  color: #fff;
+  min-height: 52px;
   
-  &:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 16px rgba(255,107,71,0.4);
+  ion-label {
+    color: #ff6b47;
+    font-weight: 600;
+    font-size: 1rem;
   }
 }
+
+.producto-button-foto {
+  --border-radius: 12px;
+  font-weight: 600;
+  height: 44px;
+  font-size: 0.8rem;
+  padding-right: 10px;
+  padding-left: 10px;
+  padding-top: 3px;
+  padding-bottom: 3px;
+}
+
+
+
+.container-img-producto {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.img-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.img-wrapper img {
+  width: 100px;
+  height: 100px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.img-wrapper ion-button {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+}
+
+
+
+
 
 /* Animaciones igual que en home */
 .producto-card-content {

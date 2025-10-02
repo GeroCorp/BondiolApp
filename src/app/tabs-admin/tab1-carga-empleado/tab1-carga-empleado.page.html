@@ -49,7 +49,12 @@
         </ion-item>
 
         <div *ngIf="foto" class="container-img-empleado">
-          <img [src]="foto" id="img-empleado"/>
+          <div class="img-borrar">
+            <img [src]="foto" id="img-empleado"/>
+            <ion-button fill="clear" color="danger" size="small" (click)="borrarImagen()">
+              <ion-icon name="trash"></ion-icon>
+            </ion-button>
+          </div>
         </div>
 
         <ion-item class="empleado-item">
@@ -59,6 +64,11 @@
 
         <ion-button expand="block" type="submit" class="empleado-button">
           Crear Empleado
+        </ion-button>
+
+        <!-- Botón resetear formulario -->
+        <ion-button expand="block" color="medium" (click)="resetFormulario()" class="producto-button">
+          Limpiar todo
         </ion-button>
       </form>
     </ion-card>
