@@ -1,6 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { PerfilService } from 'src/app/services/perfilService';
 import { AuthService } from 'src/app/services/supabase';
+
 @Component({
   selector: 'app-tab3-menu',
   templateUrl: './tab3-menu.page.html',
@@ -21,7 +22,6 @@ export class Tab3MenuPage implements OnInit {
   }
 
   async ngOnInit() {
-
     try {
       if (this.perfil === 'cocinero') {
         await this.cargarPlatos();
@@ -29,9 +29,8 @@ export class Tab3MenuPage implements OnInit {
         await this.cargarBebidas();
       }
     } catch (error) {
-      console.error('Error inesperado al obtener platos:', error);
+      console.error('Error inesperado al obtener productos:', error);
     }
-
   }
 
   async cargarPlatos() {
@@ -52,7 +51,38 @@ export class Tab3MenuPage implements OnInit {
     } catch (error) {
       console.error('Error cargando bebidas:', error);
     }
-  
   }
 
+  getFirstImage(imagenes: any): string {
+    try {
+      if (!imagenes) {
+        console.warn('No hay imágenes disponibles');
+        return 'assets/placeholder.png';
+      }
+      
+      if (typeof imagenes === 'string') {
+        try {
+          const imagenesArray = JSON.parse(imagenes);
+          if (Array.isArray(imagenesArray) && imagenesArray.length > 0) {
+            console.log('Imagen parseada:', imagenesArray[0]);
+            return imagenesArray[0];
+          }
+        } catch (parseError) {
+          console.error('Error al parsear JSON de imágenes:', parseError);
+          return 'assets/placeholder.png';
+        }
+      }
+      
+      if (Array.isArray(imagenes) && imagenes.length > 0) {
+        console.log('Imagen desde array:', imagenes[0]);
+        return imagenes[0];
+      }
+      
+      console.warn('Formato de imágenes no reconocido:', imagenes);
+      return 'assets/placeholder.png';
+    } catch (error) {
+      console.error('Error obteniendo primera imagen:', error);
+      return 'assets/placeholder.png';
+    }
+  }
 }
