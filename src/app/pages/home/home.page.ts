@@ -63,6 +63,17 @@ async logout() {
     await toast.present();
   }
 
+  async getCurrentUserName(){
+    const id = await this.authService.getCurrentUser();
+    if (!id){
+      throw new Error('No user logged in');
+    }
+    const user = await this.authService.getClienteByUserId(id.id);
+    console.log(user![0]?.nombre);
+    const nombre = user![0]?.nombre ?? 'Invitado';
+
+  }
+
   // Seccion de dueño y supervisor
   agregarEmpleado() {
     this.router.navigate(['/tabs-admin/tab1-carga-empleado'], {

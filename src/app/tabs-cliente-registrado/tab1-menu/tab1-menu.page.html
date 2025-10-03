@@ -1,0 +1,80 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-button (click)="volverHome()" fill="clear" shape="round" slot="end">
+      Volver
+      <ion-icon slot="start" name="home-outline"></ion-icon>
+    </ion-button>
+    <ion-title slot="start">Menú</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">tab1-menu</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+
+  @if (nroMesa == 0) {
+  <ion-card>
+    <ion-card-header>
+      <ion-card-subtitle>Mesa no asignada</ion-card-subtitle>
+      <ion-card-title>Por favor, escanee el QR de la mesa.</ion-card-title>
+    </ion-card-header> 
+    <ion-card-content>
+      <ion-button expand="block" (click)="escanearQr()">
+        Escanear QR<ion-icon name="qr-code-outline" slot="end"></ion-icon>
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
+  } @else {
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Nro de Mesa: {{ nroMesa }}</ion-card-title>
+      <ion-card-subtitle>Pedido - {{ calcularMonto() | currency:'$':'symbol':'1.0-0' }}</ion-card-subtitle>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-card-title>Menú de Platos</ion-card-title>
+      <ion-grid fixed>
+        <ion-row>
+          @for (plato of platos; track $index) {
+            <ion-col size="4">
+              <ion-card (click)="seleccionarItem(plato)">
+                <ion-card-header>
+                  <!-- <ion-img [src]="handleImages(plato)"></ion-img> -->
+                  <ion-card-title>{{ plato.nombre }}</ion-card-title>
+                  <ion-card-subtitle>{{ plato.precio | currency:'$':'symbol':'1.0-0' }}</ion-card-subtitle>
+                </ion-card-header>
+              </ion-card>
+            </ion-col>
+          }
+        </ion-row>
+      </ion-grid>
+      <ion-card-title>Menú de Bebidas</ion-card-title>
+      <ion-grid fixed>
+        <ion-row>
+          @for (bebida of bebidas; track $index) {
+            <ion-col size="4">
+              <ion-card (click)="seleccionarItem(bebida)">
+                <ion-card-header>
+                  <ion-card-title>{{ bebida.nombre }}</ion-card-title>
+                  <ion-card-subtitle>{{ bebida.precio | currency:'$':'symbol':'1.0-0' }}</ion-card-subtitle>
+                </ion-card-header>
+              </ion-card>
+            </ion-col>
+          }
+        </ion-row>
+      </ion-grid>
+     
+    </ion-card-content>
+  </ion-card>
+  @if (itemSelected) {
+    <app-menu-item 
+    [item]="itemSelected" 
+    (closeItem)="itemSelected = null"
+    (addItem)="onAddItem($event)">
+  </app-menu-item>
+  }
+}
+</ion-content>

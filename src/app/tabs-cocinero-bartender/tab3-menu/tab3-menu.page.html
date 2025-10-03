@@ -41,7 +41,9 @@
               <p class="ion-text-center">Los platos que se agreguen aparecerán aquí</p>
             </div>
           }
-        } @else if (perfil === 'bartender') {
+        }
+        
+        @if (perfil === 'bartender') {
           @if (bebidas().length > 0) {
             @for (item of bebidas(); track $index) {
               <ion-item>

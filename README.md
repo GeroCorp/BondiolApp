@@ -98,16 +98,16 @@ Fecha estimada de finalización: 3/10
 
 
 ## Pagés Valentino
-- 11° Funcionalidad (Codigo qr mesa)
-- 12° Funcionalidad (El cliente realiza pedido para todos los comensales de su mesa)
+- 13° Funcionalidad (el mozo rechaza el pedido para que el usuario lo modifique)
+- 14° Funcionalidad (el mozo confirma el pedido, y este es derivado a los sectores correspondientes)
 
 Fecha de inicio: 30/9  
 Fecha estimada de finalización: 3/10
 
 
 ## Corpus Gerónimo
-- 13° Funcionalidad (el mozo rechaza el pedido para que el usuario lo modifique)
-- 14° Funcionalidad (el mozo confirma el pedido, y este es derivado a los sectores correspondientes)
+- 11°  Funcionalidad (Codigo qr mesa)
+- 12°  Funcionalidad (El cliente realiza pedido para todos los comensales de su mesa)
 
 Fecha de inicio: 30/9  
 Fecha estimada de finalización: 3/10

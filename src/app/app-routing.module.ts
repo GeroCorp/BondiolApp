@@ -49,13 +49,13 @@ const routes: Routes = [
     loadChildren: () => import('./tabs-mozo/tabs-mozo.module').then(m => m.TabsMozoPageModule)
   },
   {
+    path: 'tabs-cliente-registrado',
+    loadChildren: () => import('./tabs-cliente-registrado/tabs-cliente-registrado.module').then( m => m.TabsClienteRegistradoPageModule)
+  },
+  {
     path: '**',
     redirectTo: 'splash',
     pathMatch: 'full'
-  },
-  {
-    path: 'tabs-cliente-registrado',
-    loadChildren: () => import('./tabs-cliente-registrado/tabs-cliente-registrado.module').then( m => m.TabsClienteRegistradoPageModule)
   },
 
 ];

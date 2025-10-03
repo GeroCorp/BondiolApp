@@ -17,18 +17,20 @@ const routes: Routes = [
         loadChildren: () => import('./tab2-recibir-pedido/tab2-recibir-pedido.module').then( m => m.Tab2RecibirPedidoPageModule)
       },
       {
+        path: 'tab3-menu',
+        loadChildren: () => import('./tab3-menu/tab3-menu.module').then( m => m.Tab3MenuPageModule)
+      },
+      {
+        path: 'tab4-perfil',
+        loadChildren: () => import('./tab4-perfil/tab4-perfil.module').then( m => m.Tab4PerfilPageModule)
+      },
+      {
         path: '',
         redirectTo: 'tab1-agregar-producto',
         pathMatch: 'full',
       },
-      {
-        path: 'tab3-menu',
-        loadChildren: () => import('./tab3-menu/tab3-menu.module').then( m => m.Tab3MenuPageModule)
-      }
     ]
   },
-  
-
 ];
 
 @NgModule({

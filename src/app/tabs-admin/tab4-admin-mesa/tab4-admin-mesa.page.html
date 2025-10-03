@@ -1,15 +1,7 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>Listado</ion-title>
-  </ion-toolbar>
-</ion-header>
-
-<ion-content [fullscreen]="true">
+<ion-content [fullscreen]="true" class="container">
+  <h2 class="cliente-title">Listado de mesas</h2>
   <div class="mesa-admin-wrapper">
     <ion-card class="mesa-admin-card">
-      <ion-card-header>
-        <ion-card-title>Listado de mesas</ion-card-title>
-      </ion-card-header>
       <ion-card-content>
         <ion-list class="mesa-admin-list">
           @for (mesa of mesas(); track $index) {

@@ -1,87 +1,3 @@
-// import { Component } from '@angular/core';
-// import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-// import { Router } from '@angular/router';
-// import { ToastController, LoadingController } from '@ionic/angular';
-// import { AuthService } from 'src/app/services/supabase';
-
-// @Component({
-//   selector: 'app-login',
-//   templateUrl: './login.page.html',
-//   styleUrls: ['./login.page.scss'],
-//   standalone: false,
-// })
-// export class LoginPage {
-//   loginForm: FormGroup;
-//   passwordVisible = false;
-  
-//   constructor(
-//     private fb: FormBuilder,
-//     private router: Router,
-//     private authService: AuthService,
-//     private toastController: ToastController,
-//     private loadingCtrl: LoadingController
-//   ) {
-//     this.loginForm = this.fb.group({
-//       email: ['', [Validators.required, Validators.email]],
-//       password: ['', [Validators.required, Validators.minLength(6)]],
-//     });
-//   }
-
-//   cambiarVisibilidadPassword() {
-//     this.passwordVisible = !this.passwordVisible;
-//   }
-
-  // async onLogin() {
-  //   if (this.loginForm.invalid) {
-  //     this.showToast('Complete todos los campos correctamente.', 'danger');
-  //     return;
-  //   }
-
-  //   const loading = await this.loadingCtrl.create({
-  //     message: 'Ingresando...',
-  //     spinner: 'crescent',
-  //   });
-  //   await loading.present();
-
-  //   const { email, password } = this.loginForm.value;
-
-  //   try {
-  //     // 1️⃣ Login en Supabase
-  //     const data = await this.authService.login(email, password);
-  //     const userId = data.user!.id;
-
-  //     // 2️⃣ Consulto perfil en empleados
-  //     let perfil: string | null = null;
-  //     console.log('Buscando empleados con userId:', userId);
-  //     const empleados = await this.authService.getEmpleadoByUserId(userId);
-  //     console.log('Empleados devueltos:', empleados);
-
-  //     console.log('UserId:', userId);
-  //     console.log('Empleados devueltos:', empleados);
-
-  //     if (Array.isArray(empleados) && empleados.length > 0) {
-  //       perfil = empleados[0].perfil;
-  //     } else {
-  //       perfil = 'sin-perfil';
-  //     }
-
-  //     await loading.dismiss();
-
-  //     // 3️⃣ Navego según el perfil
-  //     // no descomentar
-  //     // if (perfil === 'dueño' || perfil === 'supervisor') {
-  //     //   this.router.navigate(['/tabs-admin'], { state: { perfil }, replaceUrl: true });
-  //     // } else {
-  //       this.router.navigate(['/home'], { state: { email, perfil }, replaceUrl: true });
-  //     // }
-
-  //     this.showToast('¡Bienvenido/a!', 'success');
-  //   } catch (err: any) {
-  //     await loading.dismiss();
-  //     this.showToast(err.message, 'danger');
-  //   }
-  // }
-
 import { Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -255,10 +171,15 @@ export class LoginPage {
         password = "cocinero123"
         break;
 
-        case "bartender":
-          email = "bartender@resto-empleado.com"
-          password = "bartender123"
-          break;
+      case "bartender":
+        email = "bartender@resto-empleado.com"
+        password = "bartender123"
+        break;
+      
+      case "cliente":
+        email = "juanjo@mail.com"
+        password = "123123"
+        break;
     
     }
 

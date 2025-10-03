@@ -1,15 +1,5 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>Carga de productos</ion-title>
-  </ion-toolbar>
-</ion-header>
-
-<ion-content [fullscreen]="true" class="producto-content">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Carga de productos</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<!-- <ion-content [fullscreen]="true" class="producto-content">
+  <h2 class="cliente-title">Agregar Producto</h2>
 
   <div class="producto-wrapper">
     <div class="producto-card-content">
@@ -36,14 +26,19 @@
 
         <ion-item class="producto-item">
           <ion-label>Fotos</ion-label>
-          <ion-button expand="block" (click)="tomarFoto()" class="producto-button">Subir imágenes</ion-button>
+          <ion-button expand="block" (click)="tomarFoto()" class="producto-button">
+            Tomar foto
+          </ion-button>
+          <ion-button expand="block" (click)="seleccionarDeGaleria()" class="producto-button">
+            Subir desde galería
+          </ion-button>
         </ion-item>
 
         <div *ngIf="imagenes && imagenes.length > 0" class="container-img-producto">
           <img *ngFor="let img of imagenes; let i = index"
-               [src]="img"
-               id="img-producto"
-               alt="Producto {{ i + 1 }}"/>
+                [src]="img"
+                id="img-producto"
+                alt="Producto {{ i + 1 }}"/>
         </div>
 
         <ion-button expand="block" type="submit" class="producto-button">
@@ -51,11 +46,69 @@
         </ion-button>
       </form>
     </div>
+  </div>
+</ion-content> -->
 
-    <div class="container-cerrar-sesion">
-      <ion-button expand="block" (click)="logout()" color="danger" class="producto-button">
-        Cerrar sesión
-      </ion-button>
+
+<ion-content [fullscreen]="true" class="producto-content">
+  <h2 class="cliente-title">Agregar Producto</h2>
+
+  <div class="producto-wrapper">
+    <div class="producto-card-content">
+      <form [formGroup]="productoForm" (ngSubmit)="crearProducto()">
+
+        <!-- Campos -->
+        <ion-item class="producto-item">
+          <ion-label position="floating">Nombre</ion-label>
+          <ion-input formControlName="nombre"></ion-input>
+        </ion-item>
+
+        <ion-item class="producto-item">
+          <ion-label position="floating">Descripción</ion-label>
+          <ion-input formControlName="descripcion"></ion-input>
+        </ion-item>
+
+        <ion-item class="producto-item">
+          <ion-label position="floating">Tiempo de elaboración (en minutos)</ion-label>
+          <ion-input type="text" inputmode="numeric" formControlName="tiempo"></ion-input>
+        </ion-item>
+
+        <ion-item class="producto-item">
+          <ion-label position="floating">Precio</ion-label>
+          <ion-input type="text" inputmode="numeric" formControlName="precio"></ion-input>
+        </ion-item>
+
+        <!-- Botón subir imágenes -->
+        <ion-item class="producto-item-fotos">
+          <ion-label>Fotos</ion-label>
+          <ion-button expand="block" (click)="tomarFoto()" class="producto-button-foto">
+            Tomar foto
+          </ion-button>
+          <ion-button expand="block" (click)="seleccionarDeGaleria()" class="producto-button-foto">
+            Subir desde galería
+          </ion-button>
+        </ion-item>
+
+        <!-- Galería con opción de eliminar -->
+        <div *ngIf="imagenes && imagenes.length > 0" class="container-img-producto">
+          <div *ngFor="let img of imagenes; let i = index" class="img-wrapper">
+            <img [src]="img" id="img-producto" alt="Producto {{ i + 1 }}" />
+            <ion-button fill="clear" color="danger" size="small" (click)="borrarImagen(i)">
+              <ion-icon name="trash"></ion-icon>
+            </ion-button>
+          </div>
+        </div>
+
+        <!-- Botón crear producto -->
+        <ion-button expand="block" type="submit" class="producto-button">
+          Crear Producto
+        </ion-button>
+
+        <!-- Botón resetear formulario -->
+        <ion-button expand="block" color="medium" (click)="resetFormulario()" class="producto-button">
+          Limpiar todo
+        </ion-button>
+      </form>
     </div>
   </div>
 </ion-content>

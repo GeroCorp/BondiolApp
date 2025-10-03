@@ -47,7 +47,7 @@
         <ion-label>
           <h2>{{ cliente.nombre }}</h2>
           <p>En espera desde: {{ formatearFecha(getFechaCliente(cliente)) }}</p>
-          <p *ngIf="cliente.id_clienteanonimo">ID: {{ cliente.id_clienteanonimo }}</p>
+          <p *ngIf="cliente.id_clienteanonimo">ID: {{ cliente.id_clienteanonimo ? cliente.id_clienteanonimo : cliente.id_cliente }}</p>
         </ion-label>
 
         <!-- Botón de asignar mesa -->
@@ -55,7 +55,7 @@
           slot="end" 
           color="primary" 
           [disabled]="mesas.length === 0"
-          (click)="asignarMesa(cliente)">
+          (click)="asignarMesa(cliente, cliente.id_clienteanonimo ? true : false)">
           <ion-icon name="restaurant-outline" slot="start"></ion-icon>
           Asignar Mesa
         </ion-button>

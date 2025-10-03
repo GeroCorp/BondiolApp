@@ -30,13 +30,26 @@
         <ion-card-title>¿Qué deseas hacer?</ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        
-        <ion-button expand="block" color="secondary" disabled>
+
+      @if (enEspera) {
+        <ion-card>
+          <ion-card-header>
+            <ion-card-subtitle>Estado de mesa</ion-card-subtitle>
+            <ion-card-title>Tu mesa está en espera de ser asignada.</ion-card-title>
+          </ion-card-header> 
+          <ion-card-content>
+            <p>Por favor, espera a que un maitre te asigne una mesa.</p>
+          </ion-card-content>
+        </ion-card>
+      }
+      @if (!enEspera){
+
+        <ion-button expand="block" color="secondary" (click)="verMenu()">
           <ion-icon name="book-outline" slot="start"></ion-icon>
           Ver Menú
         </ion-button>
 
-        <ion-button expand="block" color="secondary" disabled>
+        <ion-button expand="block" color="secondary" (click)="hacerPedido()">
           <ion-icon name="cart-outline" slot="start"></ion-icon>
           Hacer Pedido
         </ion-button>
@@ -47,11 +60,17 @@
         </ion-button>
 
         <ion-button expand="block" color="secondary" disabled>
-          <ion-icon name="calendar-outline" slot="start"></ion-icon>
-          Reservar Mesa
+          <ion-icon name="chatbubble-outline" slot="start"></ion-icon>
+          Consulta Mozos
         </ion-button>
 
-      </ion-card-content>
+        
+      }
+      <ion-button expand="block" color="secondary" disabled>
+        <ion-icon name="calendar-outline" slot="start"></ion-icon>
+        Reservar Mesa
+      </ion-button>
+    </ion-card-content>
     </ion-card>
 
     <!-- Info de cuenta -->

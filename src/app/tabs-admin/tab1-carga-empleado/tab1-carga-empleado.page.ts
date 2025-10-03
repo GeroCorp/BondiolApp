@@ -140,12 +140,15 @@ export class Tab1CargaEmpleadoPage {
 
   }
 
-  async logout() {
-    await this.supabaseService.logout();
-
-    this.router.navigate(['/login'], {replaceUrl: true}); // redirigir al login
-    this.showToast('Sesión cerrada correctamente', 'medium');
+  resetFormulario() {
+    this.empleadoForm.reset();  // limpia el formulario
+    this.foto = null;         // limpia imágenes
   }
+
+  borrarImagen() {
+    this.foto = null;
+  }
+
 
   async showToast(message: string, color: 'success' | 'danger' | 'medium') {
     const toast = await this.toastController.create({
@@ -157,47 +160,129 @@ export class Tab1CargaEmpleadoPage {
     await toast.present();
   }
 
-  // QR
+  //  Lector de QR comun
+  // // QR
+  // async leerQR() {
+  //   try {
+  //     // Solicitar permisos de cámara
+  //     const granted = await BarcodeScanner.checkPermissions();
+  //     if (granted.camera !== 'granted') {
+  //       await BarcodeScanner.requestPermissions();
+  //     }
+
+  //     // Escaneo único (más confiable)
+  //     const result = await BarcodeScanner.scan();
+
+  //     if (result.barcodes.length > 0) {
+  //       try {
+  //         const barcode = result.barcodes[0];
+  //         const contenido = barcode.rawValue ?? barcode.displayValue ?? '';
+
+  //         if (!contenido) throw new Error('QR vacío');
+
+  //         const datos = JSON.parse(contenido);
+
+  //         this.empleadoForm.patchValue({
+  //           nombre: datos.nombre ?? '',
+  //           apellido: datos.apellido ?? '',
+  //           dni: datos.dni ?? '',
+  //           cuil: datos.cuil ?? ''
+  //         });
+
+  //         this.showToast('Datos cargados desde QR', 'success');
+  //       } catch (e) {
+  //         console.error('Error al parsear QR:', e);
+  //         this.showToast('El QR no contiene datos válidos', 'danger');
+  //       }
+  //     } else {
+  //       this.showToast('No se detectó ningún QR', 'danger');
+  //     }
+
+  //   } catch (err) {
+  //     console.error(err);
+  //     this.showToast('No se pudo iniciar el escaneo', 'danger');
+  //   }
+  // }
+
+  // Lector de QR DNI
   async leerQR() {
     try {
-      // Solicitar permisos de cámara
-      const granted = await BarcodeScanner.checkPermissions();
+      // 1️⃣ Pedir permisos de cámara
+      let granted = await BarcodeScanner.checkPermissions();
       if (granted.camera !== 'granted') {
-        await BarcodeScanner.requestPermissions();
-      }
-
-      // Escaneo único (más confiable)
-      const result = await BarcodeScanner.scan();
-
-      if (result.barcodes.length > 0) {
-        try {
-          const barcode = result.barcodes[0];
-          const contenido = barcode.rawValue ?? barcode.displayValue ?? '';
-
-          if (!contenido) throw new Error('QR vacío');
-
-          const datos = JSON.parse(contenido);
-
-          this.empleadoForm.patchValue({
-            nombre: datos.nombre ?? '',
-            apellido: datos.apellido ?? '',
-            dni: datos.dni ?? '',
-            cuil: datos.cuil ?? ''
-          });
-
-          this.showToast('Datos cargados desde QR', 'success');
-        } catch (e) {
-          console.error('Error al parsear QR:', e);
-          this.showToast('El QR no contiene datos válidos', 'danger');
+        granted = await BarcodeScanner.requestPermissions();
+        if (granted.camera !== 'granted') {
+          this.showToast('Permiso de cámara denegado', 'danger');
+          return;
         }
-      } else {
-        this.showToast('No se detectó ningún QR', 'danger');
       }
 
-    } catch (err) {
-      console.error(err);
+      // 2️⃣ Escaneo
+      const result = await BarcodeScanner.scan(); // ✅ sin barcodeFormats
+
+      if (!result.barcodes || result.barcodes.length === 0) {
+        this.showToast('No se detectó ningún DNI', 'danger');
+        return;
+      }
+
+      // 3️⃣ Tomar el primer código PDF417
+      const barcode = result.barcodes.find(b => b.format === 'PDF_417') ?? null;
+      if (!barcode) {
+        this.showToast('No se detectó un código PDF417 válido', 'danger');
+        return;
+      }
+
+      const raw = barcode.rawValue ?? '';
+      if (!raw) {
+        this.showToast('El DNI está vacío', 'danger');
+        return;
+      }
+
+      // 4️⃣ Parsear datos separados por '@'
+      const partes = raw.split('@');
+      if (partes.length < 5) {
+        this.showToast('Formato del DNI inválido', 'danger');
+        return;
+      }
+
+      const apellido = partes[1] ?? '';
+      const nombre = partes[2] ?? '';
+      const dni = partes[4] ?? '';
+
+      // 5️⃣ Opcional: calcular CUIL
+      const sexo = partes[3] ?? 'M';
+      const prefijo = sexo.toUpperCase() === 'F' ? '27' : '20';
+      const cuilSinDigito = prefijo + dni;
+      const digitoVerificador = this.calcularDigitoVerificadorCUIL(cuilSinDigito);
+      const cuil = cuilSinDigito + digitoVerificador;
+
+      // 6️⃣ Completar el formulario
+      this.empleadoForm.patchValue({
+        nombre,
+        apellido,
+        dni,
+        cuil
+      });
+
+      this.showToast('Datos cargados desde el DNI', 'success');
+
+    } catch (err: any) {
+      console.error('Error al escanear DNI:', err);
       this.showToast('No se pudo iniciar el escaneo', 'danger');
     }
+  }
+
+  // Función auxiliar para calcular dígito verificador del CUIL
+  calcularDigitoVerificadorCUIL(cuilSinDigito: string): string {
+    const pesos = [5, 4, 3, 2, 7, 6, 5, 4, 3, 2];
+    let suma = 0;
+    for (let i = 0; i < pesos.length; i++) {
+      suma += parseInt(cuilSinDigito[i]) * pesos[i];
+    }
+    const resto = suma % 11;
+    if (resto === 0) return '0';
+    if (resto === 1) return cuilSinDigito.startsWith('20') ? '9' : '4';
+    return (11 - resto).toString();
   }
 
 }

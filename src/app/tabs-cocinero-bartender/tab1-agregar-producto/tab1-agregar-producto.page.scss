@@ -1,64 +1,41 @@
-ion-header {
-  ion-toolbar {
-    --background: linear-gradient(135deg, #8b0000, #a52a2a, #b22222);
-    --color: #ffffff;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-    border-bottom: 1px solid rgba(255,255,255,0.2);
-    --min-height: 60px;
-    
-    ion-title {
-      font-weight: 700;
-      font-size: 1.3rem;
-      text-shadow: 0 1px 3px rgba(0,0,0,0.3);
-    }
-  }
-}
-
-ion-content {
+ion-content.producto-content {
   --background: linear-gradient(180deg, #1a1a1a 0%, #2d2d2d 50%, #1a5a8a 100%);
   --padding-top: 0;
   --padding-bottom: 0;
   --padding-start: 16px;
   --padding-end: 16px;
   
-  &[fullscreen="true"] {
-    --offset-top: 60px;
-  }
+  --overflow: hidden;
 }
 
-/* Layout vertical para móvil */
-.producto-content {
-  --background: linear-gradient(180deg, #1a1a1a 0%, #2d2d2d 50%, #1a5a8a 100%);
-  --padding-top: 0;
-  --padding-bottom: 0;
-  --padding-start: 16px;
-  --padding-end: 16px;
-  
-  &[fullscreen="true"] {
-    --offset-top: 60px;
-  }
+.cliente-title {
+  color: #ff6b47;
+  font-weight: 700;
+  font-size: 1.8rem;
+  margin-bottom: 10px;
+  text-align: center;
 }
 
 .producto-wrapper {
   display: flex;
   flex-direction: column;
   width: 100%;
-  min-height: 100%;
-  padding: 80px 0 80px;
+  // padding: 80px 0 80px;
   box-sizing: border-box;
 }
 
 .producto-card-content {
-  /* Card igual que en home */
-  background: linear-gradient(145deg, #2a2a2a, #1e1e1e);
-  border-radius: 14px;
-  box-shadow: 0 6px 24px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.08);
+  border-radius: 16px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.3);
   margin: 0 0 16px 0;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,0.05);
-  overflow: hidden;
+  backdrop-filter: blur(15px);
+  // border: 1px solid rgba(255,255,255,0.05);
   padding: 20px;
   width: 100%;
+  max-width: 400px; 
+  max-height: calc(100vh - 150px);
+  overflow-y: auto;
   
   form {
     display: flex;
@@ -74,7 +51,7 @@ ion-content {
   margin-bottom: 16px;
   color: #fff;
   border: 1px solid rgba(255,255,255,0.1);
-  transition: all 0.3s ease;
+  // transition: all 0.3s ease;
   min-height: 52px;
   
   ion-label {
@@ -137,60 +114,62 @@ ion-content {
   }
 }
 
+/*Estilo especial para seccion fotos*/
+.producto-item-fotos {
+  --background: rgba(255,255,255,0.08);
+  --border-radius: 12px;
+  margin-bottom: 16px;
+  color: #fff;
+  min-height: 52px;
+  
+  ion-label {
+    color: #ff6b47;
+    font-weight: 600;
+    font-size: 1rem;
+  }
+}
+
+.producto-button-foto {
+  --border-radius: 12px;
+  font-weight: 600;
+  height: 44px;
+  font-size: 0.8rem;
+  padding-right: 10px;
+  padding-left: 10px;
+  padding-top: 3px;
+  padding-bottom: 3px;
+}
+
+
+
 .container-img-producto {
   display: flex;
-  justify-content: center;
-  align-items: center;
   flex-wrap: wrap;
-  gap: 12px;
-  margin: 16px 0;
-  padding: 16px;
-  background: rgba(255,255,255,0.02);
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.05);
+  gap: 10px;
+  margin-top: 10px;
 }
 
-#img-producto {
-  width: 80px;
-  height: 80px;
-  border-radius: 12px;
+.img-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.img-wrapper img {
+  width: 100px;
+  height: 100px;
+  border-radius: 8px;
   object-fit: cover;
-  border: 2px solid rgba(255,255,255,0.2);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  transition: all 0.3s ease;
-  
-  &:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 16px rgba(255,107,71,0.4);
-  }
 }
 
-.container-cerrar-sesion {
-  display: flex;
-  justify-content: center;
-  padding: 20px 0 10px;
-  margin-top: 24px;
-  border-top: 1px solid rgba(255,255,255,0.1);
-  width: 100%;
-  
-  ion-button {
-    --background: linear-gradient(135deg, #dc3545, #c82333);
-    --background-hover: linear-gradient(135deg, #c82333, #bd2130);
-    --border-radius: 12px;
-    --padding-start: 32px;
-    --padding-end: 32px;
-    font-weight: 700;
-    font-size: 1.05rem;
-    height: 46px;
-    box-shadow: 0 3px 12px rgba(220,53,69,0.4);
-    transition: all 0.3s ease;
-    
-    &:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 16px rgba(220,53,69,0.5);
-    }
-  }
+.img-wrapper ion-button {
+  position: absolute;
+  top: 2px;
+  right: 2px;
 }
+
+
+
+
 
 /* Animaciones igual que en home */
 .producto-card-content {

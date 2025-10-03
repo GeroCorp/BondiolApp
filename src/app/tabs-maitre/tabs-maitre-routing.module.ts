@@ -21,12 +21,18 @@ const routes: Routes = [
         loadChildren: () => import('./tab3-clientes/tab3-clientes.module').then( m => m.Tab3ClientesPageModule)
       },
       {
+        path: 'tab4-perfil',
+        loadChildren: () => import('./tab4-perfil/tab4-perfil.module').then( m => m.Tab4PerfilPageModule)
+      },
+      {
         path: '',
         redirectTo: 'tab1-espera',
         pathMatch: 'full',
       }
     ]
-  }
+  },
+
+
 ];
 
 @NgModule({

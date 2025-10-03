@@ -13,41 +13,22 @@
       <ion-card-content class="ion-padding">
 
         <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
-          <ion-input 
-            type="email" 
-            formControlName="email" 
-            label="Correo Electrónico" 
-            fill="outline" 
-            labelPlacement="floating" 
-            class="ion-margin-top"
-          />
-
-          <div class="password-container">
-            <ion-input 
-              [type]="passwordVisible ? 'text' : 'password'" 
-              formControlName="password" 
-              label="Contraseña" 
-              fill="outline" 
-              labelPlacement="floating" 
-              class="ion-margin-top password-input"
-            /> 
-            <ion-button 
-              fill="clear" 
-              slot="end" 
-              (click)="cambiarVisibilidadPassword()" 
-              class="password-toggle"
-            >
-              <ion-icon [name]="passwordVisible ? 'eye' : 'eye-off'"></ion-icon>
-            </ion-button>
-          </div>
-
+          
+            <ion-input type="email" formControlName="email" label="Correo Electrónico" fill="outline" labelPlacement="floating" class="ion-margin-top"/>
+          
+            <div class="password-container">
+              <ion-input [type]="passwordVisible ? 'text' : 'password'" formControlName="password" label="Contraseña" fill="outline" labelPlacement="floating" class="ion-margin-top password-input"></ion-input>
+              <ion-button fill="clear" (click)="cambiarVisibilidadPassword()" class="password-toggle">
+                <ion-icon [name]="passwordVisible ? 'eye' : 'eye-off'"></ion-icon>
+              </ion-button>
+            </div>
+            
           <ion-button expand="block" type="submit" class="btn-primary ion-margin-top">
             Iniciar sesión <ion-icon name="log-in-outline" slot="end"></ion-icon>
           </ion-button>
         </form>
-
-        <ion-button expand="block" class="ion-margin-top" color="danger" (click)="registrar()">
-          Registrarse <ion-icon name="person-circle-outline" slot="end"></ion-icon>
+        <ion-button expand="block" class="ion-margin-top" color="danger" class="ion-margin-top" (click)="registrar()">
+          Registrarse<ion-icon name="person-circle-outline" slot="end"></ion-icon>
         </ion-button>
 
       </ion-card-content>
@@ -70,6 +51,7 @@
               <ion-select-option value="mozo">Mozo</ion-select-option>
               <ion-select-option value="cocinero">Cocinero</ion-select-option>
               <ion-select-option value="bartender">Bartender</ion-select-option>
+              <ion-select-option value="cliente">Cliente</ion-select-option>
             </ion-select>
           </ion-item>
         </ion-card-content>

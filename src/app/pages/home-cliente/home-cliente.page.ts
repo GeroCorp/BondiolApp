@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, effect, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/supabase';
 import { ToastController } from '@ionic/angular';
+import { ClienteService } from 'src/app/services/cliente.service';
 
 interface Cliente {
   id_cliente?: number;
@@ -22,14 +23,23 @@ interface Cliente {
 })
 export class HomeClientePage implements OnInit {
   cliente: Cliente | null = null;
+  enEspera: boolean = true;
 
   constructor(
     private router: Router,
     private authService: AuthService,
-    private toastController: ToastController
-  ) {}
+    private toastController: ToastController,
+    private clienteService: ClienteService
+  ) {
+    // Mover el effect al constructor
+    effect(() => {
+      this.enEspera = this.clienteService.clienteEnEspera();
+      console.log('Estado del cliente: ', this.enEspera);
+    });
+  }
 
   async ngOnInit() {
+    this.clienteService.detectarUpdate();
     await this.cargarDatosCliente();
   }
 
@@ -66,4 +76,15 @@ export class HomeClientePage implements OnInit {
     });
     await toast.present();
   }
+
+  // Redirecciones 
+
+  verMenu(){
+    this.router.navigate(["/tabs-cliente-registrado/tab1-menu"], { replaceUrl: true })
+  }
+  hacerPedido(){
+    this.router.navigate(["/tabs-cliente-registrado/tab2-pedido"], { replaceUrl: true })
+  }
+
+
 }
