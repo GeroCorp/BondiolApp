@@ -5,47 +5,60 @@
     </ion-toolbar>
   </ion-header>
 
-
-<ion-card>
-  <ion-card-header>
-    @if (perfil === 'cocinero') {
-      <ion-card-title>Menú Cocina</ion-card-title>
-    } @else {
-      <ion-card-title>Menú Bar</ion-card-title>
-    }
-  </ion-card-header>
-  <ion-card-content>
-    
-    <ion-list>
+  <ion-card>
+    <ion-card-header>
       @if (perfil === 'cocinero') {
-
-        @for (item of platos();track $index){
-            <ion-item>
-              <ion-label>
-                <img [src]="item.imagenes">
-                <h2>{{ item.nombre }} - ${{ item.precio }}</h2>
-                <p>{{ item.descripcion }}</p>
-                <small>Tiempo de preparación: {{ item.tiempo }} minutos</small>
-              </ion-label>
-            </ion-item>
-        }
-
-      } @else if (perfil === 'bartender') {
-        @for (item of bebidas();track $index){
-            <ion-item>
-              <ion-label>
-                <img [src]="item.imagenes">
-                <h2>{{ item.nombre }} - ${{ item.precio }}</h2>
-                <p>{{ item.descripcion }}</p>
-                <small>Tiempo de preparación: {{ item.tiempo }} minutos</small>
-              </ion-label>
-            </ion-item>
-        } 
+        <ion-card-title>Menú Cocina</ion-card-title>
+      } @else {
+        <ion-card-title>Menú Bar</ion-card-title>
       }
+    </ion-card-header>
+    <ion-card-content>
+      
+      <ion-list>
+        @if (perfil === 'cocinero') {
+          @if (platos().length > 0) {
+            @for (item of platos(); track $index) {
+              <ion-item>
+                <ion-label>
+                  <ion-img [src]="getFirstImage(item.imagenes)"></ion-img>
+                  <h2>{{ item.nombre }} - ${{ item.precio }}</h2>
+                  <p>{{ item.descripcion }}</p>
+                  <small>Tiempo de preparación: {{ item.tiempo }} minutos</small>
+                </ion-label>
+              </ion-item>
+            }
+          } @else {
+            <div class="empty-state">
+              <ion-icon name="restaurant-outline" size="large" color="medium"></ion-icon>
+              <h2>No hay platos disponibles</h2>
+              <p class="ion-text-center">Los platos que se agreguen aparecerán aquí</p>
+            </div>
+          }
+        }
+        
+        @if (perfil === 'bartender') {
+          @if (bebidas().length > 0) {
+            @for (item of bebidas(); track $index) {
+              <ion-item>
+                <ion-label>
+                  <ion-img [src]="getFirstImage(item.imagenes)"></ion-img>
+                  <h2>{{ item.nombre }} - ${{ item.precio }}</h2>
+                  <p>{{ item.descripcion }}</p>
+                  <small>Tiempo de preparación: {{ item.tiempo }} minutos</small>
+                </ion-label>
+              </ion-item>
+            }
+          } @else {
+            <div class="empty-state">
+              <ion-icon name="beer-outline" size="large" color="medium"></ion-icon>
+              <h2>No hay bebidas disponibles</h2>
+              <p class="ion-text-center">Las bebidas que se agreguen aparecerán aquí</p>
+            </div>
+          }
+        }
+      </ion-list>
 
-    </ion-list>
-
-  </ion-card-content>
-</ion-card>
-
+    </ion-card-content>
+  </ion-card>
 </ion-content>
