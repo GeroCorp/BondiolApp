@@ -14,7 +14,7 @@ ion-header {
   }
 }
 
-.produto-content {
+.producto-content {
   --background: linear-gradient(180deg, #1a1a1a 0%, #2d2d2d 50%, #1a5a8a 100%);
   --padding-top: 0;
   --padding-bottom: 0;
@@ -28,14 +28,14 @@ ion-header {
 }
 
 /* Wrapper centrado */
-.produto-content-wrapper {
+.producto-content-wrapper {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100%;
 }
 
-.produto-wrapper {
+.producto-wrapper {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -47,7 +47,7 @@ ion-header {
   overflow-y: auto;
 }
 
-.produto-card-content {
+.producto-card-content {
   background: linear-gradient(145deg, #2a2a2a, #1e1e1e);
   border-radius: 14px;
   box-shadow: 0 6px 24px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.1);
@@ -66,7 +66,7 @@ ion-header {
   }
 }
 
-.produto-item {
+.producto-item {
   --background: rgba(255,255,255,0.05);
   --border-color: transparent;
   --border-radius: 12px;
@@ -91,7 +91,7 @@ ion-header {
   }
 }
 
-.produto-button {
+.producto-button {
   --border-radius: 12px;
   font-weight: 600;
   transition: all 0.3s ease;
@@ -125,7 +125,7 @@ ion-header {
   }
 }
 
-.container-img-produto {
+.container-img-producto {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -138,7 +138,7 @@ ion-header {
   border: none;
 }
 
-#img-produto {
+#img-producto {
   width: 80px;
   height: 80px;
   border-radius: 12px;
@@ -187,6 +187,28 @@ ion-header {
   overflow-y: auto;
 }
 
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 60px 20px;
+  color: #ffffff;
+  
+  ion-spinner {
+    width: 50px;
+    height: 50px;
+    --color: #ff6b47;
+    margin-bottom: 20px;
+  }
+  
+  p {
+    color: rgba(255,255,255,0.8);
+    font-size: 1.1rem;
+    margin: 0;
+  }
+}
+
 .mensaje-temporal {
   color: #ffffff;
   font-size: 1.1rem;
@@ -201,6 +223,74 @@ ion-header {
 .pedidos-list {
   width: 100%;
   max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 20px; 
+}
+
+.pedido-card {
+  background: linear-gradient(145deg, #2a2a2a, #1e1e1e);
+  border-radius: 14px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.05);
+  margin: 0;
+  
+  ion-card-header {
+    padding: 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  
+  ion-card-title {
+    color: #ff6b47;
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  
+  ion-card-subtitle {
+    color: rgba(255,255,255,0.7);
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    
+    ion-icon {
+      font-size: 1rem;
+      color: #4a9eff;
+    }
+  }
+  
+  ion-card-content {
+    padding: 16px;
+    color: #ffffff;
+    
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      
+      li {
+        padding: 10px 12px;
+        margin-bottom: 8px;
+        background: rgba(255,255,255,0.05);
+        border-radius: 8px;
+        border-left: 3px solid #ff6b47;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        
+        &:hover {
+          background: rgba(255,255,255,0.08);
+          transform: translateX(4px);
+        }
+        
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+    }
+  }
 }
 
 .pedido-empty-state {

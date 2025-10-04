@@ -13,7 +13,7 @@ import { Tab2RecibirPedidoPage } from './tab2-recibir-pedido.page';
     CommonModule,
     FormsModule,
     IonicModule,
-    Tab2RecibirPedidoPageRoutingModule
+    Tab2RecibirPedidoPageRoutingModule,
   ],
   declarations: [Tab2RecibirPedidoPage]
 })
