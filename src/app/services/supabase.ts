@@ -859,18 +859,65 @@ async getConsultasPendientes() {
 /**
  * Obtiene el conteo de pedidos pendientes (para badge)
  */
-async getPedidosPendientes() {
+async getPedidosPendientesSector(sector: 'cocina' | 'bar') {
   try {
-    const { data, error } = await this.supabase
+    // Obtiene todos los pedidos pendientes
+    const { data: pedidos, error } = await this.supabase
       .from('pedidos')
-      .select('id_pedido')
-      .eq('estado', 'pendiente_confirmacion');
+      .select('id, mesa, fecha, estado')
+      .eq('estado', 'pendiente')
+      .order('fecha', { ascending: false });
 
     if (error) throw error;
-    return data;
+
+    const pedidosConItems = [];
+
+    for (const pedido of pedidos) {
+      // Obtiene los items del pedido
+      const { data: detalles, error: errorDetalles } = await this.supabase
+        .from('detalles_pedido')
+        .select('producto, cantidad, precio_unitario')
+        .eq('id_pedido', pedido.id);
+
+      if (errorDetalles) continue;
+
+      let itemsFiltrados: any[] = [];
+
+      if (sector === 'cocina') {
+        // Filtra solo los productos que están en la tabla platos
+        for (const item of detalles) {
+          const { data: plato } = await this.supabase
+            .from('platos')
+            .select('nombre')
+            .eq('nombre', item.producto)
+            .maybeSingle();
+          if (plato) itemsFiltrados.push(item);
+        }
+      } else if (sector === 'bar') {
+        // Filtra solo los productos que están en la tabla bebidas
+        for (const item of detalles) {
+          const { data: bebida } = await this.supabase
+            .from('bebidas')
+            .select('nombre')
+            .eq('nombre', item.producto)
+            .maybeSingle();
+          if (bebida) itemsFiltrados.push(item);
+        }
+      }
+
+      // Solo agrega el pedido si tiene items para ese sector
+      if (itemsFiltrados.length > 0) {
+        pedidosConItems.push({
+          ...pedido,
+          items: itemsFiltrados,
+        });
+      }
+    }
+
+    return { data: pedidosConItems, error: null };
   } catch (error) {
-    console.error('Error al obtener conteo de pedidos:', error);
-    return [];
+    console.error('Error al obtener pedidos pendientes del sector:', error);
+    return { data: [], error };
   }
 }
 
