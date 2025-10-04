@@ -11,7 +11,7 @@ export class ClienteService {
   // Signal para el estado de espera del cliente
   private _clienteEnEspera = signal<boolean>(false);
   private supabase: SupabaseClient;
-  
+
   constructor() {
     this.supabase = createClient(
       environment.SUPABASE_URL,
@@ -28,6 +28,8 @@ export class ClienteService {
   get clienteEnEspera() {
     return this._clienteEnEspera;
   }
+
+  // Metodos para manejo del pedido
 
   // Agregar un item al pedido
   addItem(item: any) {
@@ -89,6 +91,140 @@ export class ClienteService {
     };
     this._pedido.set(updatedPedido);
   }
+
+
+  async insertPedido(){
+    
+    const detalles = this._pedido()
+    const idCliente = await this.getClientId()
+    const nroMesa = await this.getMesa(idCliente)
+    const cabecera = {
+      mesa: nroMesa, 
+      id_cliente: idCliente,
+      fecha: new Date(),
+      estado: "pendiente" // El estado default siempre es "pendiente"
+    }
+
+    const { data, error } = await this.supabase
+    .from('pedidos')
+    .insert([cabecera])
+    .select()
+
+    const idPedido = data![0].id;
+
+    console.log(data);
+     await Promise.all(detalles.map(async item => {
+       console.log("🔄️Item a insertar: \nProducto: ", item.nombre, "\nCantidad: ", item.quantity, "\nPrecio: $", item.precio);
+       const { data, error } = await this.supabase
+       .from('detalles_pedido')
+       .insert([
+         {
+          id_pedido: idPedido,
+          producto: item.nombre,
+          cantidad: item.quantity,
+          precio_unitario: item.precio
+         }
+       ]).select();
+
+       if (error) {
+         console.error('❌ Error insertando detalle de pedido:', error);
+       }
+     }));
+  }
+
+  // Metodos del chat de consultas
+
+
+  
+  async getChatMessages(){
+    const mesa = await this.getMesa(await this.getClientId())
+    const { data, error } = await this.supabase
+    .from('mensajes')
+    .select('*')
+    .eq('nroMesa', mesa)
+    .order('date_sended', { ascending: true });
+
+    if (error) {
+      console.error('❌ Error obteniendo mensajes:', error);
+      return [];
+    }
+
+    return data;
+  }
+
+  async sendMessage(content: string){
+    const idCliente = await this.getClientId()
+    const nroMesa = await this.getMesa(idCliente)
+    const nombre = this.getNombreCliente()
+
+    const { error } = await this.supabase
+    .from('mensajes')
+    .insert([
+      {
+        contenido: content,
+        nombre_usuario: await nombre,
+        date_sended: new Date().toISOString(),
+        nroMesa
+      }
+    ]);
+
+    if (error) {
+      console.error('❌ Error enviando mensaje:', error);
+      throw new Error('Error enviando mensaje: ' + error.message);
+    }
+
+
+
+  }
+
+  async subscribeToNewMessages(signal: any){
+    try{
+      this.supabase.channel('custom-messages-channel')
+        .on(
+          'postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'mensajes' },
+          (payload) => {
+            console.log('Nuevo mensaje recibido:', payload);
+            const newRow = payload.new;
+            signal.update((arr: any) =>{
+              return [...arr, newRow]
+            })
+        }
+      )
+      .subscribe();
+    }catch (error){
+      console.error('Error al suscribirse a nuevos mensajes: ' + error);
+    }
+  }
+
+
+
+  // Metodos para manejo de clientes
+
+  async getClientId(){
+    const userid = (await this.supabase.auth.getUser()).data.user?.id
+    const { data , error } = await this.supabase
+    .from('clientes')
+    .select('id_cliente')
+    .eq('user_id', userid)
+
+    if (error) throw new Error("Error al obtener id del cliente: " + error.message)
+  
+    return data[0].id_cliente ?? -1;
+  }
+  async getNombreCliente(){
+    const userid = await this.getClientId()
+    const { data , error } = await this.supabase
+    .from('clientes')
+    .select('nombre')
+    .eq('id_cliente', userid)
+
+    if (error) throw new Error("Error al obtener nombre del cliente: " + error.message)
+      
+
+    return data[0].nombre ?? 'Cliente';
+  }
+
 
   async getClientesEnEspera(){
     try{
@@ -171,6 +307,8 @@ export class ClienteService {
     return bool;
   }
 
+  // Metodos para manejo de mesas
+
   async isMesaDisponible(nro: number) {
     const { data, error} = await this.supabase
     .from('clientes')
@@ -209,7 +347,17 @@ export class ClienteService {
     return data;
   }
 
+  async getMesa(idCliente: number){
+    const { data, error } = await this.supabase
+    .from('clientes')
+    .select('mesa_asignada')
+    .eq('id_cliente', idCliente)
 
+    if (error) throw new Error("❗❗Ocurrió un error al obtener mesa asignada: " + error.message)
+
+      console.log(data[0].mesa_asignada);
+    return data[0].mesa_asignada;
+  }
   
   async setMesa(id: number, nroMesa: number){
     try {

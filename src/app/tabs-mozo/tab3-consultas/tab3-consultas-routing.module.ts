@@ -7,6 +7,10 @@ const routes: Routes = [
   {
     path: '',
     component: Tab3ConsultasPage
+  },
+  {
+    path: 'chat/:id_mesa',
+    loadChildren: () => import('./chat/chat.module').then( m => m.ChatPageModule)
   }
 ];
 

@@ -25,7 +25,12 @@ const routes: Routes = [
         pathMatch: 'full'
       }
     ]
+  },
+  {
+    path: 'chat',
+    loadChildren: () => import('./tab3-consultas/chat/chat.module').then( m => m.ChatPageModule)
   }
+
 ];
 
 @NgModule({

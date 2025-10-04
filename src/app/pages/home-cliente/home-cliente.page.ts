@@ -31,7 +31,7 @@ export class HomeClientePage implements OnInit {
     private toastController: ToastController,
     private clienteService: ClienteService
   ) {
-    // Mover el effect al constructor
+  
     effect(() => {
       this.enEspera = this.clienteService.clienteEnEspera();
       console.log('Estado del cliente: ', this.enEspera);
@@ -84,6 +84,9 @@ export class HomeClientePage implements OnInit {
   }
   hacerPedido(){
     this.router.navigate(["/tabs-cliente-registrado/tab2-pedido"], { replaceUrl: true })
+  }
+  hacerConsulta(){
+    this.router.navigate(["/tabs-cliente-registrado/tab3-consulta"], { replaceUrl: true })
   }
 
 

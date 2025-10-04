@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { ToastController, LoadingController, AlertController } from '@ionic/angular';
 import { AuthService } from 'src/app/services/supabase';
 
@@ -24,8 +25,11 @@ interface Consulta {
 export class Tab3ConsultasPage implements OnInit {
   consultas: Consulta[] = [];
   cargando = true;
+  mesas : any[] = [];
+
 
   constructor(
+    private router: Router,
     private authService: AuthService,
     private toastController: ToastController,
     private loadingController: LoadingController,
@@ -33,7 +37,8 @@ export class Tab3ConsultasPage implements OnInit {
   ) {}
 
   async ngOnInit() {
-    await this.cargarConsultas();
+    // await this.cargarConsultas();
+    await this.cargarMesas();
   }
 
   async cargarConsultas() {
@@ -83,64 +88,86 @@ export class Tab3ConsultasPage implements OnInit {
     }
   }
 
-  async responderConsulta(consulta: Consulta) {
-    if (!consulta.respuestaTemp || consulta.respuestaTemp.trim() === '') {
-      this.showToast('Debes escribir una respuesta', 'warning');
-      return;
-    }
-
-    const alert = await this.alertController.create({
-      header: 'Confirmar respuesta',
-      message: '¿Enviar esta respuesta al cliente?',
-      buttons: [
-        {
-          text: 'Cancelar',
-          role: 'cancel',
-        },
-        {
-          text: 'Enviar',
-          handler: async () => {
-            await this.enviarRespuesta(consulta);
-          },
-        },
-      ],
-    });
-
-    await alert.present();
+  test(mesa: any) {
+    console.log('Mesa seleccionada:', mesa);
+    // Navegar al chat pasando el ID de la mesa como parámetro
+    this.router.navigate(['/tabs-mozo/tab3-consultas/chat', mesa.id]);
   }
 
-  async enviarRespuesta(consulta: Consulta) {
-    const loading = await this.loadingController.create({
-      message: 'Enviando respuesta...',
-      spinner: 'crescent',
-    });
-    await loading.present();
-
+  async cargarMesas() {
     try {
-      // Actualizar la consulta con la respuesta
-      await this.authService.responderConsulta(
-        consulta.id_consulta,
-        consulta.respuestaTemp || ''
-      );
-
-      // Enviar notificación al cliente
-      await this.authService.enviarNotificacionCliente(
-        consulta.cliente_id,
-        'Respuesta del mozo',
-        `Tu consulta de la mesa ${consulta.mesa?.numero} ha sido respondida.`
-      );
-
-      await loading.dismiss();
-      this.showToast('Respuesta enviada correctamente', 'success');
-
-      // Recargar lista
-      await this.cargarConsultas();
+      this.mesas = await this.authService.getMesasConEstado();
+      this.showToast('Mesas cargadas correctamente', 'success');
     } catch (error) {
-      await loading.dismiss();
-      console.error('Error al enviar respuesta:', error);
-      this.showToast('Error al enviar la respuesta', 'danger');
+      console.error('Error al cargar mesas:', error);
+      this.showToast('Error al cargar las mesas', 'danger');
+    } finally {
+      this.cargando = false;
     }
   }
+
+  async loadChats(){
+
+  }
+
+  // async responderConsulta(consulta: Consulta) {
+  //   if (!consulta.respuestaTemp || consulta.respuestaTemp.trim() === '') {
+  //     this.showToast('Debes escribir una respuesta', 'warning');
+  //     return;
+  //   }
+
+  //   const alert = await this.alertController.create({
+  //     header: 'Confirmar respuesta',
+  //     message: '¿Enviar esta respuesta al cliente?',
+  //     buttons: [
+  //       {
+  //         text: 'Cancelar',
+  //         role: 'cancel',
+  //       },
+  //       {
+  //         text: 'Enviar',
+  //         handler: async () => {
+  //           await this.enviarRespuesta(consulta);
+  //         },
+  //       },
+  //     ],
+  //   });
+
+  //   await alert.present();
+  // }
+
+  // async enviarRespuesta(consulta: Consulta) {
+  //   const loading = await this.loadingController.create({
+  //     message: 'Enviando respuesta...',
+  //     spinner: 'crescent',
+  //   });
+  //   await loading.present();
+
+  //   try {
+  //     // Actualizar la consulta con la respuesta
+  //     await this.authService.responderConsulta(
+  //       consulta.id_consulta,
+  //       consulta.respuestaTemp || ''
+  //     );
+
+  //     // Enviar notificación al cliente
+  //     await this.authService.enviarNotificacionCliente(
+  //       consulta.cliente_id,
+  //       'Respuesta del mozo',
+  //       `Tu consulta de la mesa ${consulta.mesa?.numero} ha sido respondida.`
+  //     );
+
+  //     await loading.dismiss();
+  //     this.showToast('Respuesta enviada correctamente', 'success');
+
+  //     // Recargar lista
+  //     await this.cargarConsultas();
+  //   } catch (error) {
+  //     await loading.dismiss();
+  //     console.error('Error al enviar respuesta:', error);
+  //     this.showToast('Error al enviar la respuesta', 'danger');
+  //   }
+  // }
 
   async verHistorial() {
     this.showToast('Función en desarrollo', 'medium');
