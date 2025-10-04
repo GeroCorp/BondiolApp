@@ -26,13 +26,26 @@
   </div>
 
   <!-- Sin consultas pendientes -->
-  <div *ngIf="!cargando && consultas.length === 0" class="empty-state">
+  <!-- <div *ngIf="!cargando && consultas.length === 0" class="empty-state">
     <ion-icon name="checkmark-done-circle-outline" color="success"></ion-icon>
     <h2>No hay consultas pendientes</h2>
     <p>Todas las consultas han sido respondidas</p>
-  </div>
+  </div> -->
 
-  <!-- Lista de consultas -->
+  @for (mesa of mesas; track $index) {
+    <ion-card (click)="test(mesa)">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="restaurant-outline"></ion-icon>
+          Mesa {{ mesa.numero }}
+          <!-- Deberia ir un icono de ! si hay un nuevo mensaje -->
+        </ion-card-title>
+        <ion-card-subtitle>Tipo - {{ mesa.tipo }}</ion-card-subtitle>
+      </ion-card-header>
+    </ion-card>
+  }
+
+  <!-- Lista de consultas 
   <div *ngIf="!cargando && consultas.length > 0">
     <ion-card *ngFor="let consulta of consultas" class="consulta-card">
       <ion-card-header>
@@ -52,13 +65,13 @@
       </ion-card-header>
 
       <ion-card-content>
-        <!-- Cliente -->
+        Cliente 
         <div class="info-cliente">
           <ion-icon name="person-outline"></ion-icon>
           <span>{{ consulta.cliente?.nombre }} {{ consulta.cliente?.apellido }}</span>
         </div>
 
-        <!-- Mensaje del cliente -->
+         Mensaje del cliente 
         <div class="mensaje-cliente">
           <h4>
             <ion-icon name="chatbox-ellipses-outline"></ion-icon>
@@ -67,7 +80,7 @@
           <p>{{ consulta.mensaje }}</p>
         </div>
 
-        <!-- Formulario de respuesta -->
+        Formulario de respuesta 
         <div class="respuesta-container">
           <ion-textarea
             [(ngModel)]="consulta.respuestaTemp"
@@ -88,5 +101,5 @@
         </div>
       </ion-card-content>
     </ion-card>
-  </div>
+  </div> -->
 </ion-content>

@@ -1,20 +1,20 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-button (click)="volverHome()" fill="clear" shape="round" slot="end">
+    <ion-button (click)="volver()" fill="clear" shape="round" slot="end">
       Volver
       <ion-icon slot="start" name="home-outline"></ion-icon>
     </ion-button>
-    <ion-title>Consulta</ion-title>
+    <ion-title>Chat - Mesa {{ id_mesa }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar>
-      <ion-title size="large">Consulta</ion-title>
+      <ion-title size="large">Chat - Mesa {{ id_mesa }}</ion-title>
     </ion-toolbar>
   </ion-header>
-
+  
   <div class="messages-container">
     <div class="messages-list">
       @if (loading()) {
@@ -45,7 +45,13 @@
           </div>
         </div>
       }
-
+      <ion-item lines="none" class="input-item">
+        <ion-input type="text" placeholder="Escribe un mensaje..." [(ngModel)]="newMessage" class="message-input"></ion-input>
+        <ion-button (click)="sendMessage()" fill="clear" slot="end" [disabled]="!newMessage.trim()" class="send-button">
+          <ion-icon slot="icon-only" name="send-sharp"></ion-icon>
+        </ion-button>
+      </ion-item>
+  
       @if (messages.length === 0 && !loading) {
         <div class="no-messages">
           <p>No hay mensajes aún.</p>
@@ -53,18 +59,7 @@
       }
     </div>
   </div>
-
+  
+  <!-- Input fijo en la parte inferior -->
 </ion-content>
 
-<ion-footer>
-  <ion-toolbar>
-    <div class="input-container">
-      <ion-item lines="none" class="input-item">
-        <ion-input type="text" placeholder="Escribe un mensaje..." [(ngModel)]="newMessage" class="message-input"></ion-input>
-        <ion-button (click)="sendMessage()" fill="clear" slot="end" [disabled]="!newMessage.trim()" class="send-button">
-          <ion-icon slot="icon-only" name="send-sharp"></ion-icon>
-        </ion-button>
-      </ion-item>
-    </div>
-  </ion-toolbar>
-</ion-footer>

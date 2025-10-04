@@ -1,38 +1,45 @@
-.messages-container {
-  height: 100%;
-  padding-bottom: 80px; // Espacio para el footer
-  overflow-y: auto;
-  background-color: #e5ddd5; // Fondo estilo WhatsApp
+// Fondo de la página
+ion-content {
+  --background: #e5ddd5;
 }
 
-.messages-list {
+.messages-container {
+  min-height: calc(100vh - 140px); // Altura mínima
   padding: 16px;
-  min-height: 100%;
+  padding-bottom: 140px; // Espacio para el input + tab-bar (80px + 60px)
+  background-color: #e5ddd5;
   background-image: 
     repeating-linear-gradient(
       45deg,
-      rgba(255,255,255,0.1),
-      rgba(255,255,255,0.1) 1px,
+      rgba(255,255,255,0.05),
+      rgba(255,255,255,0.05) 1px,
       transparent 1px,
       transparent 8px
     );
 }
 
+.messages-list {
+  width: 100%;
+}
+
 .message-wrapper {
   margin-bottom: 12px;
   display: flex;
+  width: 100%;
   
   &.sent {
     justify-content: flex-end;
     
     .message-bubble {
-      background-color: #dcf8c6; // Verde claro de WhatsApp
+      background-color: #dcf8c6;
       border-radius: 18px 18px 4px 18px;
-      margin-left: 60px;
+      margin-left: auto;
+      margin-right: 8px;
+      max-width: 70%;
     }
     
     .sender-name {
-      color: #075e54; // Verde oscuro
+      color: #075e54;
     }
   }
   
@@ -42,21 +49,23 @@
     .message-bubble {
       background-color: #ffffff;
       border-radius: 18px 18px 18px 4px;
-      margin-right: 60px;
+      margin-left: 8px;
+      margin-right: auto;
+      max-width: 70%;
       box-shadow: 0 1px 0.5px rgba(0,0,0,0.13);
     }
     
     .sender-name {
-      color: #25d366; // Verde WhatsApp
+      color: #25d366;
     }
   }
 }
 
 .message-bubble {
-  max-width: 280px;
   padding: 8px 12px;
   position: relative;
   word-wrap: break-word;
+  min-width: 80px;
 }
 
 .message-header {
@@ -89,23 +98,15 @@
   font-style: italic;
 }
 
-ion-footer {
+// Input fijo en la parte inferior
+.input-fixed {
   position: fixed;
   bottom: 56px; // Altura del tab-bar para que aparezca encima
   left: 0;
   right: 0;
-  z-index: 999;
+  z-index: 1000;
   background-color: #f0f0f0;
   border-top: 1px solid #e0e0e0;
-}
-
-ion-footer ion-toolbar {
-  --padding-start: 0;
-  --padding-end: 0;
-  --background: transparent;
-}
-
-.input-container {
   padding: 8px 16px;
   
   .input-item {
@@ -115,25 +116,24 @@ ion-footer ion-toolbar {
     --padding-end: 8px;
     margin: 0;
     box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+    --min-height: 44px;
   }
   
   .message-input {
     --placeholder-color: #8696a0;
     font-size: 16px;
+    --color: #303030;
   }
   
   .send-button {
     --color: #25d366;
     --color-hover: #128c7e;
     margin: 0 4px;
+    width: 44px;
+    height: 44px;
     
     ion-icon {
       font-size: 24px;
     }
   }
-}
-
-// Fondo de la página
-ion-content {
-  --background: #e5ddd5;
 }

@@ -12,7 +12,8 @@ export class Tab2PedidoPage implements OnInit {
 
   constructor(public clienteService: ClienteService, private router: Router) { }
 
-  ngOnInit() {
+  async ngOnInit() {
+
   }
 
   // Getter para acceder al pedido desde el template
@@ -27,6 +28,15 @@ export class Tab2PedidoPage implements OnInit {
 
   // Limpiar todo el pedido
   clearPedido() {
+    this.clienteService.clearPedido();
+  }
+
+  // Confirmar el pedido
+  confirmarPedido() {
+    // Aquí podrías implementar la lógica para confirmar el pedido,
+    // como enviarlo a un servidor o marcarlo como confirmado.
+    console.log('Pedido confirmado:', this.clienteService.pedido());
+    this.clienteService.insertPedido();
     this.clienteService.clearPedido();
   }
 

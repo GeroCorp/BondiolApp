@@ -23,7 +23,7 @@
     
     <ion-card-content>
       @if (pedido().length === 0) {
-        <ion-item>
+        <ion-item>g
           <ion-label>
             <h2>Tu pedido está vacío</h2>
             <p>Agrega algunos items desde el menú</p>
@@ -65,7 +65,7 @@
           </ion-label>
         </ion-item>
         
-        <ion-button expand="block" color="primary" class="ion-margin-top">
+        <ion-button expand="block" color="primary" class="ion-margin-top" (click)="confirmarPedido()">
           Confirmar Pedido
           <ion-icon name="checkmark-outline" slot="end"></ion-icon>
         </ion-button>
