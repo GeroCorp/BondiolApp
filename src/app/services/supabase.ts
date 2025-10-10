@@ -2,6 +2,15 @@ import { Injectable } from '@angular/core';
 import { createClient, SupabaseClient, AuthError } from '@supabase/supabase-js';
 import { environment } from 'src/environments/environment';
 
+// ✅ Instancia única de Supabase (singleton)
+const supabaseInstance = createClient(
+  environment.SUPABASE_URL,
+  environment.SUPABASE_ANON_KEY
+);
+
+// ✅ Exporta la instancia para usar en otros servicios
+export const supabase = supabaseInstance;
+
 @Injectable({
   providedIn: 'root',
 })
@@ -9,10 +18,7 @@ export class AuthService {
   private supabase: SupabaseClient;
 
   constructor() {
-    this.supabase = createClient(
-      environment.SUPABASE_URL,
-      environment.SUPABASE_ANON_KEY
-    );
+    this.supabase = supabaseInstance; // Usa la instancia única
   }
 
   get client() {
