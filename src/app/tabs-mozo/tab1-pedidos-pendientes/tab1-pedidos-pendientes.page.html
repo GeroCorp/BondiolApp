@@ -35,7 +35,7 @@
   <!-- Lista de pedidos pendientes -->
   <div *ngIf="!cargando && pedidosPendientes.length > 0">
     <ion-card *ngFor="let pedido of pedidosPendientes" class="pedido-card">
-      <ion-card-header [class.pedido-nuevo]="esPedidoNuevo(pedido.created_at)">
+      <ion-card-header [class.pedido-nuevo]="esPedidoNuevo(pedido.fecha)">
         <div class="header-pedido">
           <div>
             <ion-card-title>
@@ -44,10 +44,10 @@
             </ion-card-title>
             <ion-card-subtitle>
               <ion-icon name="time-outline"></ion-icon>
-              {{ formatearFecha(pedido.created_at) }}
+              {{ formatearFecha(pedido.fecha) }}
             </ion-card-subtitle>
           </div>
-          <ion-badge *ngIf="esPedidoNuevo(pedido.created_at)" color="danger">
+          <ion-badge *ngIf="esPedidoNuevo(pedido.fecha)" color="danger">
             ¡NUEVO!
           </ion-badge>
         </div>
@@ -66,18 +66,17 @@
           <ion-list>
             <ion-item *ngFor="let item of pedido.items" lines="none">
               <ion-label>
-                <h3>{{ item.cantidad }}x {{ item.producto?.nombre }}</h3>
-                <p *ngIf="item.producto && item.producto.descripcion">{{ item.producto.descripcion }}</p>
-                <p class="precio">${{ item.subtotal }}</p>
+                <h3>{{ item.cantidad }}x {{ item.nombre_prod }}</h3>
+                <p class="precio">${{ item.precio_unitario}}</p>
               </ion-label>
               <ion-icon 
-                *ngIf="item.producto?.tipo === 'comida'" 
+                *ngIf="item.tipo === 'plato'" 
                 name="pizza-outline" 
                 slot="start" 
                 color="primary"
               ></ion-icon>
               <ion-icon 
-                *ngIf="item.producto?.tipo === 'bebida'" 
+                *ngIf="item.tipo === 'bebida'" 
                 name="cafe-outline" 
                 slot="start" 
                 color="secondary"
@@ -91,16 +90,15 @@
           <h3>TOTAL: <span class="total-monto">${{ pedido.total }}</span></h3>
           <p class="tiempo-estimado">
             <ion-icon name="alarm-outline"></ion-icon>
-            Tiempo estimado: {{ pedido.tiempo_estimado }} min
           </p>
         </div>
 
         <!-- Observaciones si hay -->
-        <div *ngIf="pedido.observaciones" class="observaciones">
+        <!-- <div *ngIf="pedido.observaciones" class="observaciones">
           <ion-icon name="chatbox-outline"></ion-icon>
           <strong>Observaciones:</strong>
           <p>{{ pedido.observaciones }}</p>
-        </div>
+        </div> -->
 
         <!-- Botones de acción -->
         <div class="botones-accion">

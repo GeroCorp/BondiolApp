@@ -5,6 +5,7 @@ import { IonicModule } from '@ionic/angular';
 
 import { Tab2PedidosConfirmadosPageRoutingModule } from './tab2-pedidos-confirmados-routing.module';
 import { Tab2PedidosConfirmadosPage } from './tab2-pedidos-confirmados.page';
+import { DetallePedidoModalComponent } from './detalle-pedido-modal/detalle-pedido-modal.component';
 
 @NgModule({
   imports: [
@@ -13,6 +14,9 @@ import { Tab2PedidosConfirmadosPage } from './tab2-pedidos-confirmados.page';
     IonicModule,
     Tab2PedidosConfirmadosPageRoutingModule
   ],
-  declarations: [Tab2PedidosConfirmadosPage]
+  declarations: [
+    Tab2PedidosConfirmadosPage,
+    DetallePedidoModalComponent
+  ]
 })
 export class Tab2PedidosConfirmadosPageModule {}

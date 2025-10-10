@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ModalController, ToastController, LoadingController } from '@ionic/angular';
+import { Mozo } from 'src/app/services/mozo';
 import { AuthService } from 'src/app/services/supabase';
+import { DetallePedidoModalComponent } from './detalle-pedido-modal/detalle-pedido-modal.component';
 
 @Component({
   selector: 'app-tab2-pedidos-confirmados',
@@ -15,6 +17,7 @@ export class Tab2PedidosConfirmadosPage implements OnInit {
   cargando = true;
 
   constructor(
+    private mozoService: Mozo,
     private authService: AuthService,
     private modalController: ModalController,
     private toastController: ToastController,
@@ -28,7 +31,7 @@ export class Tab2PedidosConfirmadosPage implements OnInit {
   async cargarPedidos() {
     this.cargando = true;
     try {
-      const pedidos = await this.authService.getPedidosConfirmados();
+      const pedidos = await this.mozoService.getPedidosConfirmados();
       this.pedidos = pedidos || [];
       this.filtrarPedidos();
     } catch (error) {
@@ -134,37 +137,25 @@ export class Tab2PedidosConfirmadosPage implements OnInit {
   }
 
   async verDetalle(pedido: any) {
-    // TODO: Implementar modal con detalle completo
-    const items = await this.authService.getItemsPedido(pedido.id_pedido);
-    
-    let detalleHTML = `
-      <ion-list>
-        <ion-list-header>
-          <ion-label>Items del pedido</ion-label>
-        </ion-list-header>
-    `;
-
-    items?.forEach((item: any) => {
-      detalleHTML += `
-        <ion-item>
-          <ion-label>
-            <h3>${item.cantidad}x ${item.producto?.nombre}</h3>
-            <p>${item.subtotal}</p>
-          </ion-label>
-        </ion-item>
-      `;
-    });
-
-    detalleHTML += `</ion-list>`;
-
-    // Mostrar en un alert simple
-    const alert = await this.toastController.create({
-      message: `Detalle del pedido - Mesa ${pedido.mesa?.numero}`,
-      duration: 5000,
-      position: 'middle',
-      buttons: ['OK']
-    });
-    await alert.present();
+    try {
+      // Cargar los items del pedido
+      const items = await this.mozoService.getDetallesPedido(pedido.id || pedido.id_pedido);
+      
+      // Crear y presentar el modal
+      const modal = await this.modalController.create({
+        component: DetallePedidoModalComponent,
+        componentProps: {
+          pedido: pedido,
+          items: items || []
+        },
+        cssClass: 'detalle-pedido-modal'
+      });
+      
+      await modal.present();
+    } catch (error) {
+      console.error('Error al cargar detalle del pedido:', error);
+      this.showToast('Error al cargar el detalle del pedido', 'danger');
+    }
   }
 
   async showToast(message: string, color: 'success' | 'danger' | 'medium') {

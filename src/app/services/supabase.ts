@@ -617,27 +617,6 @@ export class AuthService {
   }
 
 
-  // METODOS PARA EL MOZO 
-  async getPedidosPendientesConfirmacion() {
-  try {
-    const { data, error } = await this.supabase
-      .from('pedidos')
-      .select(`
-        *,
-        mesa:mesas(numero),
-        cliente:clientes(nombre, apellido)
-      `)
-      .eq('estado', 'pendiente_confirmacion')
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    return data;
-  } catch (error) {
-    console.error('Error al obtener pedidos pendientes:', error);
-    throw error;
-  }
-}
-
 /**
  * Obtiene los items de un pedido específico
  */

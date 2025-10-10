@@ -254,3 +254,12 @@ ion-content {
     }
   }
 }
+
+// Estilos para el modal de detalle
+.detalle-pedido-modal {
+  --width: 95%;
+  --max-width: 600px;
+  --height: 80%;
+  --border-radius: 16px;
+  --box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}

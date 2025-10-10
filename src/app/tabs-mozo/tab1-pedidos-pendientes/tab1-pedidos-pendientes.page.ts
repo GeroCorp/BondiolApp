@@ -2,16 +2,15 @@ import { Component, OnInit } from '@angular/core';
 import { AlertController, ToastController, LoadingController } from '@ionic/angular';
 import { AuthService } from 'src/app/services/supabase';
 import { Vibration } from '@awesome-cordova-plugins/vibration/ngx';
+import { ESTADO, Mozo } from 'src/app/services/mozo';
 
 interface Pedido {
-  id_pedido: number;
+  id: number;
   mesa_id: number;
   cliente_id: number;
   estado: string;
   total: number;
-  tiempo_estimado: number;
-  observaciones?: string;
-  created_at: string;
+  fecha: string;
   mesa?: { numero: number };
   cliente?: { nombre: string; apellido: string };
   items?: ItemPedido[];
@@ -19,15 +18,10 @@ interface Pedido {
 
 interface ItemPedido {
   id_item: number;
-  producto_id: number;
+  nombre_prod: string;
   cantidad: number;
-  subtotal: number;
-  producto?: {
-    nombre: string;
-    descripcion: string;
-    tipo: 'comida' | 'bebida';
-    precio: number;
-  };
+  precio_unitario: number;
+  tipo: 'plato' | 'bebida';
 }
 
 @Component({
@@ -41,6 +35,7 @@ export class Tab1PedidosPendientesPage implements OnInit {
   cargando = true;
 
   constructor(
+    private mozoService: Mozo,
     private authService: AuthService,
     private alertController: AlertController,
     private toastController: ToastController,
@@ -49,21 +44,25 @@ export class Tab1PedidosPendientesPage implements OnInit {
   ) {}
 
   async ngOnInit() {
-    await this.cargarPedidosPendientes();
+    this.cargarPedidosPendientes();
   }
 
   async cargarPedidosPendientes() {
     this.cargando = true;
     try {
-      const pedidos = await this.authService.getPedidosPendientesConfirmacion();
+      const pedidos = await this.mozoService.getPedidosPendientes();
       
       if (pedidos) {
-        for (const pedido of pedidos) {
-          const items = await this.authService.getItemsPedido(pedido.id_pedido);
-          pedido.items = items || [];
-        }
         this.pedidosPendientes = pedidos;
+        this.pedidosPendientes.forEach(async (pedido) => {
+          console.log(pedido.id);
+          const items = await this.mozoService.getDetallesPedido(pedido.id);
+          pedido.items = items;
+          pedido.total = items.reduce((sum, item) => sum + item.precio_unitario * item.cantidad, 0);
+        });
+        console.log(pedidos);
       }
+
     } catch (error) {
       console.error('Error al cargar pedidos:', error);
       this.showToast('Error al cargar los pedidos pendientes', 'danger');
@@ -150,7 +149,7 @@ export class Tab1PedidosPendientesPage implements OnInit {
     await loading.present();
 
     try {
-      await this.authService.actualizarEstadoPedido(pedido.id_pedido, 'rechazado', motivo);
+      await this.mozoService.actualizarEstadoPedido(pedido.id, ESTADO.CONFIRMADO);
 
       await this.authService.enviarNotificacionCliente(
         pedido.cliente_id,
@@ -201,13 +200,14 @@ export class Tab1PedidosPendientesPage implements OnInit {
     await loading.present();
 
     try {
-      await this.authService.actualizarEstadoPedido(pedido.id_pedido, 'confirmado');
+      await this.mozoService.actualizarEstadoPedido(pedido.id, ESTADO.CONFIRMADO);
 
-      const itemsCocina = pedido.items?.filter(item => item.producto?.tipo === 'comida') || [];
-      const itemsBar = pedido.items?.filter(item => item.producto?.tipo === 'bebida') || [];
+      const itemsCocina = pedido.items?.filter(item => item.tipo === 'plato') || [];
+      const itemsBar = pedido.items?.filter(item => item.tipo === 'bebida') || [];
 
       if (itemsCocina.length > 0) {
-        await this.authService.enviarPedidoSector(pedido.id_pedido, 'cocina', itemsCocina);
+        const nombresCocina = itemsCocina.map(item => `${item.cantidad}x ${item.nombre_prod}`).join(',');
+        await this.mozoService.enviarPedidoSector(pedido.id, 'cocina', nombresCocina);
         await this.authService.enviarNotificacionSector(
           'cocinero',
           'Nuevo pedido',
@@ -216,7 +216,8 @@ export class Tab1PedidosPendientesPage implements OnInit {
       }
 
       if (itemsBar.length > 0) {
-        await this.authService.enviarPedidoSector(pedido.id_pedido, 'bar', itemsBar);
+        const nombresBar = itemsBar.map(item => `${item.cantidad}x ${item.nombre_prod}`).join(',');
+        await this.mozoService.enviarPedidoSector(pedido.id, 'bar', nombresBar);
         await this.authService.enviarNotificacionSector(
           'bartender',
           'Nuevo pedido',

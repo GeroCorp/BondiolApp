@@ -1,44 +1,238 @@
+// Fondo principal con gradiente
+ion-content {
+  --background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+  --padding-top: 80px; // Espacio para el total fijo
+}
+
+// Total visible y fijo en la parte superior
+.total-display-fixed {
+  position: fixed;
+  top: 60px; // Después del header
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+  
+  .total-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    color: white;
+    
+    .mesa-info {
+      font-size: 16px;
+      font-weight: 600;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+      opacity: 0.9;
+    }
+    
+    .total-amount {
+      font-size: 28px;
+      font-weight: bold;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      background: rgba(255, 255, 255, 0.2);
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(10px);
+      animation: pulseGlow 2s ease-in-out infinite alternate;
+    }
+  }
+}
+
+// Animación para el total
+@keyframes pulseGlow {
+  0% {
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+  }
+}
+
+// Responsive design para el total
+@media (max-width: 768px) {
+  .total-display-fixed {
+    .total-container {
+      padding: 12px 16px;
+      
+      .mesa-info {
+        font-size: 14px;
+      }
+      
+      .total-amount {
+        font-size: 24px;
+        padding: 6px 12px;
+      }
+    }
+  }
+  
+  ion-content {
+    --padding-top: 70px;
+  }
+}
+
+// Header con estilo elegante
+ion-header {
+  ion-toolbar {
+    --background: linear-gradient(135deg, #667eea, #764ba2);
+    --color: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+    --min-height: 60px;
+    
+    ion-title {
+      font-weight: 700;
+      font-size: 1.3rem;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+
+    ion-buttons ion-button {
+      --color: #fff;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    }
+  }
+}
+
+// Estilo para el contenedor principal
+.menu-container {
+  padding: 20px;
+  padding-top: 100px; // Espacio para el total fijo
+  min-height: 100vh;
+}
+
+// Título de sección
+.section-title {
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  margin: 20px 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+// Grid con mejor espaciado
 ion-grid {
+  padding: 0;
+  
   ion-row {
+    margin-bottom: 16px;
+    
     ion-col {
       display: flex;
+      padding: 4px;
+      
       ion-card {
         width: 100%;
         height: 100%;
-        margin: 8px;
+        margin: 4px;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
         
         ion-card-header {
           display: flex;
           flex-direction: column;
           height: 100%;
+          padding: 12px;
           
           ion-img {
             width: 100%;
             height: 100px;
             object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 8px;
           }
           
           ion-card-title {
             font-size: 1rem;
             line-height: 1.2;
             margin-top: 8px;
+            color: #333;
+            font-weight: 600;
           }
           
           ion-card-subtitle {
             margin-top: auto;
+            color: #667eea;
+            font-weight: 500;
+            font-size: 0.9rem;
           }
         }
+        
         &:hover {
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-          transform: translateY(-2px);
-          transition: all 0.3s ease;
+          box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+          transform: translateY(-4px);
+          background: rgba(255, 255, 255, 1);
         }
+        
         &:active {
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-          transform: translateY(0);
+          box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+          transform: translateY(-2px);
           transition: all 0.1s ease;
         }
       }
     }
+  }
+}
+
+// Estilos para el modal/selector
+.selector-modal {
+  --background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
+}
+
+// Mensaje de carga
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 50vh;
+  color: white;
+
+  ion-spinner {
+    --color: white;
+    margin-bottom: 20px;
+  }
+
+  p {
+    font-size: 16px;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+}
+
+// Estado vacío
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 50vh;
+  color: white;
+  text-align: center;
+  padding: 20px;
+
+  ion-icon {
+    font-size: 80px;
+    margin-bottom: 20px;
+    opacity: 0.7;
+  }
+
+  h2 {
+    font-size: 24px;
+    margin-bottom: 10px;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+
+  p {
+    font-size: 16px;
+    opacity: 0.8;
   }
 }
