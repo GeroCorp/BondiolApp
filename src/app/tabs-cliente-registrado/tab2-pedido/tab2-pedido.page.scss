@@ -1,33 +1,254 @@
-.quantity-controls-pedido {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 8px;
+// Fondo principal con gradiente
+ion-content {
+  --background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+}
 
-  .quantity-display {
-    font-size: 1rem;
-    font-weight: bold;
-    min-width: 25px;
-    text-align: center;
-    padding: 0 8px;
-    background: var(--ion-color-light);
-    border-radius: 4px;
-  }
+// Header con estilo elegante
+ion-header {
+  ion-toolbar {
+    --background: linear-gradient(135deg, #667eea, #764ba2);
+    --color: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+    --min-height: 60px;
+    
+    ion-title {
+      font-weight: 700;
+      font-size: 1.3rem;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
 
-  ion-button {
-    --padding-start: 6px;
-    --padding-end: 6px;
-    --border-radius: 50%;
+    ion-buttons ion-button {
+      --color: #fff;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    }
   }
 }
 
+// Contenedor principal
+.pedido-container {
+  padding: 20px;
+  min-height: 100vh;
+}
+
+// Título del pedido
+.pedido-header {
+  text-align: center;
+  color: white;
+  margin-bottom: 30px;
+
+  h1 {
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  .total-badge {
+    background: rgba(255, 255, 255, 0.9);
+    color: #667eea;
+    padding: 12px 24px;
+    border-radius: 25px;
+    font-size: 18px;
+    font-weight: bold;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  }
+}
+
+// Cards de items del pedido
+ion-card {
+  border-radius: 15px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 1);
+  }
+
+  ion-card-header {
+    ion-card-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    ion-card-subtitle {
+      color: #667eea;
+      font-weight: 500;
+      margin-top: 4px;
+    }
+  }
+
+  ion-card-content {
+    padding-top: 8px;
+  }
+}
+
+// Controles de cantidad mejorados
+.quantity-controls-pedido {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  justify-content: center;
+
+  .quantity-display {
+    font-size: 1.2rem;
+    font-weight: bold;
+    min-width: 40px;
+    text-align: center;
+    padding: 8px 12px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  }
+
+  ion-button {
+    --padding-start: 8px;
+    --padding-end: 8px;
+    --border-radius: 50%;
+    --background: rgba(102, 126, 234, 0.1);
+    --color: #667eea;
+    --box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+    
+    &:hover {
+      --background: rgba(102, 126, 234, 0.2);
+      transform: scale(1.1);
+    }
+  }
+}
+
+// Acciones de items
 .item-actions {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
+  margin-top: 8px;
 
   ion-note {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #667eea;
+  }
+
+  ion-button {
+    --background: #ff4757;
+    --color: white;
+    --border-radius: 8px;
+    --box-shadow: 0 2px 8px rgba(255, 71, 87, 0.3);
+    font-size: 12px;
+    height: 32px;
+    
+    &:hover {
+      --background: #ff3742;
+      transform: scale(1.05);
+    }
+  }
+}
+
+// Estado vacío
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 60vh;
+  color: white;
+  text-align: center;
+  padding: 40px 20px;
+
+  ion-icon {
+    font-size: 100px;
+    margin-bottom: 30px;
+    opacity: 0.7;
+  }
+
+  h2 {
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  p {
+    font-size: 16px;
+    opacity: 0.8;
+    line-height: 1.5;
+    margin-bottom: 30px;
+  }
+
+  ion-button {
+    --background: linear-gradient(135deg, #667eea, #764ba2);
+    --color: white;
+    --border-radius: 25px;
+    --padding-start: 32px;
+    --padding-end: 32px;
+    --box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    font-weight: 600;
+    
+    &:hover {
+      transform: translateY(-2px);
+      --box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+    }
+  }
+}
+
+// Botón de enviar pedido
+.enviar-pedido-button {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+  z-index: 1000;
+
+  ion-button {
+    --background: linear-gradient(135deg, #667eea, #764ba2);
+    --color: white;
+    --border-radius: 15px;
+    --box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+    height: 56px;
+    font-size: 18px;
+    font-weight: bold;
+    
+    &:hover {
+      transform: translateY(-2px);
+      --box-shadow: 0 6px 25px rgba(102, 126, 234, 0.5);
+    }
+    
+    &:disabled {
+      --background: rgba(255, 255, 255, 0.3);
+      --color: rgba(255, 255, 255, 0.7);
+      --box-shadow: none;
+    }
+  }
+}
+
+// Loading spinner
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 50vh;
+  color: white;
+
+  ion-spinner {
+    --color: white;
+    margin-bottom: 20px;
+    width: 50px;
+    height: 50px;
+  }
+
+  p {
+    font-size: 16px;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   }
 }

@@ -35,21 +35,29 @@ export class ClienteService {
   addItem(item: any) {
     const currentPedido = this._pedido();
     
+    // Asegurar que el item tenga cantidad y subtotal
+    const itemConSubtotal = {
+      ...item,
+      quantity: item.quantity || 1,
+      subtotal: item.precio * (item.quantity || 1)
+    };
+    
     // Buscar si el item ya existe en el pedido (mismo id)
     const existingItemIndex = currentPedido.findIndex(pedidoItem => pedidoItem.id === item.id);
     
     if (existingItemIndex !== -1) {
       // Si existe, actualizar la cantidad y subtotal
       const updatedPedido = [...currentPedido];
+      const newQuantity = updatedPedido[existingItemIndex].quantity + (item.quantity || 1);
       updatedPedido[existingItemIndex] = {
         ...updatedPedido[existingItemIndex],
-        quantity: updatedPedido[existingItemIndex].quantity + item.quantity,
-        subtotal: updatedPedido[existingItemIndex].precio * (updatedPedido[existingItemIndex].quantity + item.quantity)
+        quantity: newQuantity,
+        subtotal: updatedPedido[existingItemIndex].precio * newQuantity
       };
       this._pedido.set(updatedPedido);
     } else {
       // Si no existe, agregarlo como nuevo item
-      this._pedido.set([...currentPedido, item]);
+      this._pedido.set([...currentPedido, itemConSubtotal]);
     }
   }
 
@@ -67,7 +75,11 @@ export class ClienteService {
 
   // Obtener el total del pedido
   getTotal(): number {
-    return this._pedido().reduce((total, item) => total + (item.subtotal || item.precio || 0), 0);
+    return this._pedido().reduce((total, item) => {
+      // Priorizar subtotal si existe, sino calcular precio * cantidad
+      const itemTotal = item.subtotal || (item.precio * (item.quantity || 1));
+      return total + itemTotal;
+    }, 0);
   }
 
   // Obtener la cantidad total de items en el pedido
@@ -93,16 +105,29 @@ export class ClienteService {
   }
 
 
-  async insertPedido(){
+  async insertPedido() {
     
     const detalles = this._pedido()
+    console.log('🔍 Detalles del pedido:', detalles);
+    
+    // Calcular total manualmente para debug
+    const totalCalculado = detalles.reduce((total, item) => {
+      const itemTotal = item.subtotal || (item.precio * (item.quantity || 1));
+      console.log(`Item: ${item.nombre}, Precio: ${item.precio}, Cantidad: ${item.quantity || 1}, Subtotal: ${itemTotal}`);
+      return total + itemTotal;
+    }, 0);
+    
+    console.log('💰 Total calculado manualmente:', totalCalculado);
+    console.log('💰 Total del método getTotal():', this.getTotal());
+    
     const idCliente = await this.getClientId()
     const nroMesa = await this.getMesa(idCliente)
     const cabecera = {
       mesa: nroMesa, 
       id_cliente: idCliente,
       fecha: new Date(),
-      estado: "pendiente" // El estado default siempre es "pendiente"
+      estado: "pendiente",
+      total: totalCalculado // Usar el total calculado manualmente
     }
 
     const { data, error } = await this.supabase
@@ -120,9 +145,10 @@ export class ClienteService {
        .insert([
          {
           id_pedido: idPedido,
-          producto: item.nombre,
+          nombre_prod: item.nombre,
           cantidad: item.quantity,
-          precio_unitario: item.precio
+          precio_unitario: item.precio,
+          tipo: item.tipo
          }
        ]).select();
 

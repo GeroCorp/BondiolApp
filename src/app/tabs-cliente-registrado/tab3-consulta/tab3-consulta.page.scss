@@ -91,7 +91,7 @@
 
 ion-footer {
   position: fixed;
-  bottom: 56px; // Altura del tab-bar para que aparezca encima
+  bottom: 0; // Altura del tab-bar para que aparezca encima
   left: 0;
   right: 0;
   z-index: 999;

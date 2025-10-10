@@ -5,6 +5,13 @@ import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
 import { ToastController } from '@ionic/angular';
 import { Router } from '@angular/router';
 
+interface Item {
+  id: number;
+  nombre: string;
+  precio: number;
+  tipo: 'plato' | 'bebida';
+}
+
 @Component({
   selector: 'app-tab1-menu',
   templateUrl: './tab1-menu.page.html',
@@ -13,9 +20,9 @@ import { Router } from '@angular/router';
 })
 export class Tab1MenuPage implements OnInit {
   nroMesa: number = 7;
-  platos: any[] = [];
-  bebidas: any[] = [];
-  itemSelected: any = null;
+  platos: Item[] = [];
+  bebidas: Item[] = [];
+  itemSelected: Item | null = null;
   constructor(
     private authService: AuthService,
     private clienteService: ClienteService,
@@ -86,12 +93,13 @@ export class Tab1MenuPage implements OnInit {
   //   return item.imagenes[0];
   // }
 
-  seleccionarItem(item:any){
+  seleccionarItem(item: Item, tipo: 'plato' | 'bebida'){
     this.itemSelected = item;
+    this.itemSelected!.tipo = tipo;
     console.log(this.itemSelected);
   }
 
-  onAddItem(item: any){
+  onAddItem(item: Item){
     // Agregar el item al pedido usando el servicio
     this.clienteService.addItem(item);
     this.showToast(`${item.nombre} agregado al pedido`, 'success');
