@@ -240,25 +240,59 @@ ion-header {
   ion-card-header {
     padding: 16px;
     border-bottom: 1px solid rgba(255,255,255,0.1);
-  }
-  
-  ion-card-title {
-    color: #ff6b47;
-    font-size: 1.3rem;
-    font-weight: 700;
-    margin-bottom: 8px;
-  }
-  
-  ion-card-subtitle {
-    color: rgba(255,255,255,0.7);
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    gap: 6px;
     
-    ion-icon {
-      font-size: 1rem;
-      color: #4a9eff;
+    ion-card-title {
+      color: #ff6b47;
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      
+      .sector-badge {
+        font-size: 0.8rem;
+        font-weight: 600;
+      }
+    }
+    
+    ion-card-subtitle {
+      color: rgba(255,255,255,0.7);
+      
+      .pedido-info {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        
+        .fecha-info {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 0.9rem;
+          
+          ion-icon {
+            color: #4a9eff;
+          }
+        }
+        
+        .pedido-details {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          
+          .pedido-id {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.8);
+            font-weight: 500;
+          }
+          
+          .estado-badge {
+            font-size: 0.75rem;
+            font-weight: 600;
+          }
+        }
+      }
     }
   }
   
@@ -266,27 +300,73 @@ ion-header {
     padding: 16px;
     color: #ffffff;
     
-    ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
+    .items-section {
+      margin-bottom: 20px;
       
-      li {
-        padding: 10px 12px;
-        margin-bottom: 8px;
-        background: rgba(255,255,255,0.05);
-        border-radius: 8px;
-        border-left: 3px solid #ff6b47;
-        font-size: 1rem;
-        transition: all 0.3s ease;
+      .items-title {
+        color: #ff6b47;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
         
-        &:hover {
-          background: rgba(255,255,255,0.08);
-          transform: translateX(4px);
+        ion-icon {
+          color: #4a9eff;
+        }
+      }
+      
+      .items-list {
+        background: transparent;
+        
+        .item-pedido {
+          --background: rgba(255,255,255,0.05);
+          --border-color: transparent;
+          margin-bottom: 8px;
+          border-radius: 8px;
+          border-left: 3px solid #ff6b47;
+          transition: all 0.3s ease;
+          
+          &:hover {
+            --background: rgba(255,255,255,0.08);
+            transform: translateX(4px);
+          }
+          
+          ion-icon {
+            color: #4a9eff;
+          }
+          
+          ion-label {
+            h3 {
+              color: #ffffff;
+              font-size: 0.95rem;
+              margin: 0;
+              font-weight: 500;
+            }
+          }
+        }
+      }
+    }
+    
+    .pedido-actions {
+      margin-top: 16px;
+      
+      ion-button {
+        --border-radius: 12px;
+        font-weight: 600;
+        height: 46px;
+        
+        &[color="success"] {
+          --background: linear-gradient(135deg, #28a745, #20c997);
+          --color: #ffffff;
+          box-shadow: 0 3px 12px rgba(40,167,69,0.4);
         }
         
-        &:last-child {
-          margin-bottom: 0;
+        &[disabled] {
+          --background: rgba(255,255,255,0.1);
+          --color: rgba(255,255,255,0.4);
+          box-shadow: none;
         }
       }
     }
