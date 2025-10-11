@@ -660,7 +660,7 @@ async actualizarEstadoPedido(pedidoId: number, nuevoEstado: string, observacione
     const { data, error } = await this.supabase
       .from('pedidos')
       .update(updateData)
-      .eq('id_pedido', pedidoId)
+      .eq('id', pedidoId) // <-- CORREGIDO
       .select();
 
     if (error) throw error;
@@ -784,6 +784,28 @@ async enviarNotificacionSector(perfil: string, titulo: string, mensaje: string) 
   } catch (error) {
     console.error('Error al enviar notificación al sector:', error);
     throw error;
+  }
+}
+
+async enviarNotificacionPagoConfirmado(idPedido: number) {
+  const { data: empleados } = await this.supabase
+    .from('empleados')
+    .select('user_id, perfil')
+    .in('perfil', ['dueño', 'supervisor']);
+
+  if (empleados && Array.isArray(empleados)) {
+    for (const emp of empleados) {
+      await this.supabase
+        .from('notificaciones')
+        .insert({
+          destinatario_id: emp.user_id,
+          tipo_destinatario: 'empleado',
+          titulo: 'Pago confirmado',
+          mensaje: `El pedido #${idPedido} fue pagado y la mesa está libre.`,
+          tipo_notificacion: 'pago_confirmado',
+          enviada: false
+        });
+    }
   }
 }
 

@@ -158,6 +158,39 @@ export class Tab2PedidosConfirmadosPage implements OnInit {
     }
   }
 
+  async confirmarPago(pedido: any) {
+  const loading = await this.loadingController.create({
+    message: 'Confirmando pago...',
+    spinner: 'crescent',
+  });
+  await loading.present();
+
+  try {
+    // Cambia el estado del pedido a 'pagado'
+    await this.authService.client
+      .from('pedidos')
+      .update({ estado: 'pagado' })
+      .eq('id', pedido.id || pedido.id_pedido);
+
+    // Libera la mesa asociada
+    await this.authService.client
+      .from('mesas')
+      .update({ disponible: true, cliente_asignado: null })
+      .eq('id', pedido.mesa?.id || pedido.mesa);
+
+    // Notifica a dueño y supervisor
+    await this.authService.enviarNotificacionPagoConfirmado(pedido.id || pedido.id_pedido);
+
+    await loading.dismiss();
+    this.showToast('Pago confirmado y mesa liberada', 'success');
+    await this.cargarPedidos();
+  } catch (error) {
+    await loading.dismiss();
+    console.error('Error al confirmar pago:', error);
+    this.showToast('Error al confirmar pago', 'danger');
+  }
+}
+
   async showToast(message: string, color: 'success' | 'danger' | 'medium') {
     const toast = await this.toastController.create({
       message,
