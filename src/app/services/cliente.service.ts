@@ -418,4 +418,101 @@ export class ClienteService {
       throw error;
     }
   }
+
+  /**
+ * Verifica que el QR escaneado corresponda a la mesa del cliente
+ */
+async verificarQRMesa(numeroMesaQR: number): Promise<{ valido: boolean, mensaje: string }> {
+  try {
+    const clienteId = await this.getClientId();
+    const mesaAsignada = await this.getMesa(clienteId);
+
+    // Verificar que el cliente tenga mesa asignada
+    if (!mesaAsignada) {
+      return {
+        valido: false,
+        mensaje: 'No tienes una mesa asignada. Espera a que el maître te asigne una.'
+      };
+    }
+
+    // Verificar que el QR coincida con la mesa asignada
+    if (numeroMesaQR !== mesaAsignada) {
+      return {
+        valido: false,
+        mensaje: `Este es el QR de la Mesa ${numeroMesaQR}, pero tu mesa asignada es la ${mesaAsignada}.`
+      };
+    }
+
+    // Verificar en la BD que todo esté correcto
+    const { data: mesa, error } = await this.supabase
+      .from('mesas')
+      .select('*')
+      .eq('numero', numeroMesaQR)
+      .eq('cliente_asignado', clienteId)
+      .maybeSingle();
+
+    if (error || !mesa) {
+      return {
+        valido: false,
+        mensaje: 'Error al verificar la mesa en la base de datos.'
+      };
+    }
+
+    // Verificar que la mesa no esté disponible (debe estar ocupada por este cliente)
+    if (mesa.disponible) {
+      return {
+        valido: false,
+        mensaje: 'Inconsistencia: la mesa aparece como disponible.'
+      };
+    }
+
+    return {
+      valido: true,
+      mensaje: `Mesa ${numeroMesaQR} verificada correctamente.`
+    };
+
+  } catch (error) {
+    console.error('Error verificando QR de mesa:', error);
+    return {
+      valido: false,
+      mensaje: 'Error al verificar el código QR.'
+    };
+  }
+}
+async liberarMesaCliente() {
+  try {
+    const clienteId = await this.getClientId();
+    const numeroMesa = await this.getMesa(clienteId);
+
+    if (!numeroMesa) {
+      console.log('No hay mesa para liberar');
+      return true;
+    }
+
+    // Actualizar la mesa
+    const { error: errorMesa } = await this.supabase
+      .from('mesas')
+      .update({
+        cliente_asignado: null,
+        disponible: true
+      })
+      .eq('numero', numeroMesa);
+
+    if (errorMesa) throw errorMesa;
+
+    // Actualizar el cliente
+    const { error: errorCliente } = await this.supabase
+      .from('clientes')
+      .update({ mesa_asignada: null })
+      .eq('id_cliente', clienteId);
+
+    if (errorCliente) throw errorCliente;
+
+    console.log('Mesa liberada exitosamente');
+    return true;
+  } catch (error) {
+    console.error('Error liberando mesa:', error);
+    throw error;
+  }
+}
 }

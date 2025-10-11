@@ -56,9 +56,7 @@
       <ion-card-header>
         <div class="header-pedido">
           <div>
-            <ion-card-title>
-              Mesa {{ pedido.mesa?.numero }}
-            </ion-card-title>
+            <ion-card-title> Mesa {{ pedido.mesa?.numero }} </ion-card-title>
             <ion-card-subtitle>
               {{ formatearFecha(pedido.created_at) }}
             </ion-card-subtitle>
@@ -71,13 +69,19 @@
 
       <ion-card-content>
         <!-- Estado del pedido en sectores -->
-        <div class="estado-sectores" *ngIf="pedido.pedidos_sector && pedido.pedidos_sector.length > 0">
+        <div
+          class="estado-sectores"
+          *ngIf="pedido.pedidos_sector && pedido.pedidos_sector.length > 0"
+        >
           <h4><ion-icon name="time-outline"></ion-icon> Estado por sector:</h4>
           <div class="sector-item" *ngFor="let sector of pedido.pedidos_sector">
             <ion-chip [color]="getColorSector(sector.estado)">
-              <ion-icon [name]="sector.sector === 'cocina' ? 'restaurant-outline' : 'cafe-outline'"></ion-icon>
+              <ion-icon
+                [name]="sector.sector === 'cocina' ? 'restaurant-outline' : 'cafe-outline'"
+              ></ion-icon>
               <ion-label>
-                {{ sector.sector | titlecase }}: {{ getTextoEstado(sector.estado) }}
+                {{ sector.sector | titlecase }}: {{
+                getTextoEstado(sector.estado) }}
               </ion-label>
             </ion-chip>
           </div>
@@ -90,7 +94,11 @@
 
         <!-- Acciones según estado -->
         <div class="botones-accion" *ngIf="pedido.estado === 'listo'">
-          <ion-button expand="block" color="success" (click)="marcarEntregado(pedido)">
+          <ion-button
+            expand="block"
+            color="success"
+            (click)="marcarEntregado(pedido)"
+          >
             <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
             Marcar como entregado
           </ion-button>
@@ -100,6 +108,10 @@
         <ion-button expand="block" fill="outline" (click)="verDetalle(pedido)">
           <ion-icon name="eye-outline" slot="start"></ion-icon>
           Ver detalle completo
+        </ion-button>
+
+        <ion-button color="success" (click)="confirmarPago(pedido)">
+          Confirmar pago y liberar mesa
         </ion-button>
       </ion-card-content>
     </ion-card>
