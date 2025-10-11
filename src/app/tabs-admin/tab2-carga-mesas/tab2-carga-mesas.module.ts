@@ -17,6 +17,7 @@ import { Tab2CargaMesasPage } from './tab2-carga-mesas.page';
     ReactiveFormsModule,
     IonicModule,
     Tab2CargaMesasPageRoutingModule,
+    QRCodeComponent
      ],
   declarations: [Tab2CargaMesasPage]
 })

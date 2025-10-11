@@ -611,10 +611,11 @@ export class AuthService {
 
   // Carga de perfiles (admin-supervisor y empleados restantes)
   async cargarEmpleado(perfilBuscado: string){
+    const user = await this.getCurrentUser();
     const { data, error } = await this.supabase
       .from('empleados')
       .select('*')
-      .eq('perfil', perfilBuscado)
+      .eq('user_id', user?.id)
       // .order('created_at', { ascending: false });
 
     if (error)
