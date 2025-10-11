@@ -208,21 +208,11 @@ export class Tab1PedidosPendientesPage implements OnInit {
       if (itemsCocina.length > 0) {
         const nombresCocina = itemsCocina.map(item => `${item.cantidad}x ${item.nombre_prod}`).join(',');
         await this.mozoService.enviarPedidoSector(pedido.id, 'cocina', nombresCocina);
-        await this.authService.enviarNotificacionSector(
-          'cocinero',
-          'Nuevo pedido',
-          `Mesa ${pedido.mesa?.numero}: ${itemsCocina.length} plato(s)`
-        );
       }
 
       if (itemsBar.length > 0) {
         const nombresBar = itemsBar.map(item => `${item.cantidad}x ${item.nombre_prod}`).join(',');
         await this.mozoService.enviarPedidoSector(pedido.id, 'bar', nombresBar);
-        await this.authService.enviarNotificacionSector(
-          'bartender',
-          'Nuevo pedido',
-          `Mesa ${pedido.mesa?.numero}: ${itemsBar.length} bebida(s)`
-        );
       }
 
       await this.authService.enviarNotificacionCliente(
@@ -230,7 +220,16 @@ export class Tab1PedidosPendientesPage implements OnInit {
         'Pedido confirmado',
         `Tu pedido de la mesa ${pedido.mesa?.numero} está siendo preparado.`
       );
-
+      // await this.authService.enviarNotificacionSector(
+      //     'cocinero',
+      //     'Nuevo pedido',
+      //     `Mesa ${pedido.mesa?.numero}: ${itemsCocina.length} plato(s)`
+      //   );
+      // await this.authService.enviarNotificacionSector(
+      //           'bartender',
+      //           'Nuevo pedido',
+      //           `Mesa ${pedido.mesa?.numero}: ${itemsBar.length} bebida(s)`
+      //         );
       await loading.dismiss();
       this.showToast('Pedido confirmado y enviado a cocina/bar', 'success');
 
