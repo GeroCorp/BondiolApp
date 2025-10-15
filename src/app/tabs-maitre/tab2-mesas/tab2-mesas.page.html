@@ -1,11 +1,12 @@
-<ion-header>
-  <ion-toolbar>
+<ion-header [translucent]="true">
+  <ion-toolbar color="secondary">
     <ion-title>Gestión de Mesas</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="mesas-content">
-  <ion-refresher slot="fixed" (ionRefresh)="refrescarDatos($event)">
+<ion-content [fullscreen]="true" class="mesas-content">
+  <!-- Refresher -->
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
     <ion-refresher-content
       pulling-icon="chevron-down-circle-outline"
       pulling-text="Desliza para actualizar"
@@ -14,99 +15,132 @@
   </ion-refresher>
 
   <div class="mesas-wrapper">
-    <!-- Resumen de estados -->
-    <ion-card *ngIf="!isLoading" class="summary-card">
+    <!-- Loading Spinner -->
+    <div *ngIf="isLoading()" class="loading-container">
+      <ion-spinner name="circles" color="primary"></ion-spinner>
+      <p class="ion-text-center ion-margin-top">Cargando mesas...</p>
+    </div>
+
+    <!-- Lista de mesas -->
+    <ion-list *ngIf="!isLoading() && mesas().length > 0" class="mesas-list">
+      <ion-list-header>
+        <ion-label>
+          <h2>Estado de Mesas ({{ mesas().length }})</h2>
+          <p>Gestión de mesas del restaurante</p>
+        </ion-label>
+      </ion-list-header>
+
+      <ion-item
+        *ngFor="let mesa of mesas(); trackBy: trackByMesa"
+        lines="inset"
+        [button]="false"
+        class="mesa-item"
+        [class.disponible]="mesa.disponible && !mesa.cliente_asignado"
+        [class.ocupada]="mesa.cliente_asignado"
+        [class.no-disponible]="!mesa.disponible && !mesa.cliente_asignado">
+
+        <ion-avatar slot="start" class="mesa-avatar">
+          <div class="mesa-number">{{ mesa.numero }}</div>
+        </ion-avatar>
+
+        <div class="mesa-col">
+          <ion-label>
+            <h2>Mesa {{ mesa.numero }}</h2>
+            <p>{{ mesa.capacidad || mesa.cantidad }} persona{{ (mesa.capacidad || mesa.cantidad) > 1 ? 's' : '' }}</p>
+            <p>
+              <ion-badge [color]="getEstadoColor(mesa)">
+                {{ getEstadoTexto(mesa) }}
+              </ion-badge>
+              <span *ngIf="mesa.tipo" class="mesa-tipo">- {{ mesa.tipo | titlecase }}</span>
+            </p>
+            
+            <!-- Información del cliente si está asignado -->
+            <div *ngIf="mesa.cliente_asignado" class="cliente-info">
+              <p class="cliente-nombre">
+                <ion-icon name="person-outline" size="small"></ion-icon>
+                {{ getClienteNombre(mesa) }}
+              </p>
+              <p *ngIf="getClienteEmail(mesa)" class="cliente-email">
+                <ion-icon name="mail-outline" size="small"></ion-icon>
+                {{ getClienteEmail(mesa) }}
+              </p>
+            </div>
+          </ion-label>
+
+          <!-- Acciones -->
+          <div class="acciones-mesa" *ngIf="mesa.cliente_asignado">
+            <ion-button
+              color="danger"
+              size="small"
+              (click)="liberarMesa(mesa)">
+              <ion-icon name="log-out-outline" slot="start"></ion-icon>
+              Liberar
+            </ion-button>
+          </div>
+        </div>
+      </ion-item>
+    </ion-list>
+
+    <!-- Estado sin mesas -->
+    <div *ngIf="!isLoading() && mesas().length === 0" class="empty-state">
+      <ion-icon name="restaurant-outline" size="large" color="medium"></ion-icon>
+      <h2>No hay mesas configuradas</h2>
+      <p class="ion-text-center">
+        Contacte al administrador para configurar las mesas del restaurante
+      </p>
+    </div>
+
+    <!-- Info de estadísticas -->
+    <ion-card *ngIf="!isLoading()" class="info-card">
       <ion-card-header>
         <ion-card-title color="primary">
           <ion-icon name="analytics-outline"></ion-icon>
-          Resumen del Estado
+          Estado del Restaurante
         </ion-card-title>
       </ion-card-header>
       <ion-card-content>
         <ion-row>
           <ion-col size="4">
-            <div class="stat-item">
-              <ion-icon name="checkmark-circle" color="success" size="large"></ion-icon>
-              <h3>{{ mesasDisponibles }}</h3>
-              <p>Disponibles</p>
-            </div>
+            <ion-item lines="none">
+              <ion-icon
+                name="checkmark-circle"
+                slot="start"
+                color="success">
+              </ion-icon>
+              <ion-label>
+                <h3>Disponibles</h3>
+                <p>{{ mesasDisponibles }} mesas</p>
+              </ion-label>
+            </ion-item>
           </ion-col>
           <ion-col size="4">
-            <div class="stat-item">
-              <ion-icon name="person" color="danger" size="large"></ion-icon>
-              <h3>{{ mesasOcupadas }}</h3>
-              <p>Ocupadas</p>
-            </div>
+            <ion-item lines="none">
+              <ion-icon
+                name="people"
+                slot="start"
+                color="danger">
+              </ion-icon>
+              <ion-label>
+                <h3>Ocupadas</h3>
+                <p>{{ mesasOcupadas }} mesas</p>
+              </ion-label>
+            </ion-item>
           </ion-col>
           <ion-col size="4">
-            <div class="stat-item">
-              <ion-icon name="warning" color="warning" size="large"></ion-icon>
-              <h3>{{ mesasNoDisponibles }}</h3>
-              <p>No disponibles</p>
-            </div>
+            <ion-item lines="none">
+              <ion-icon
+                name="close-circle"
+                slot="start"
+                color="warning">
+              </ion-icon>
+              <ion-label>
+                <h3>No disponibles</h3>
+                <p>{{ mesasNoDisponibles }} mesas</p>
+              </ion-label>
+            </ion-item>
           </ion-col>
         </ion-row>
       </ion-card-content>
     </ion-card>
-
-    <!-- Loading -->
-    <div *ngIf="isLoading" class="loading-container">
-      <ion-spinner name="circles" color="primary"></ion-spinner>
-      <p class="ion-text-center ion-margin-top">Cargando mesas...</p>
-    </div>
-
-    <!-- Lista -->
-    <ion-list *ngIf="!isLoading && mesas.length > 0" class="mesas-list">
-      <ion-list-header>
-        <ion-label>
-          <h2>Todas las Mesas ({{ mesas.length }})</h2>
-        </ion-label>
-      </ion-list-header>
-
-      <ion-item *ngFor="let mesa of mesas" lines="inset" class="mesa-item">
-        <ion-icon 
-          slot="start" 
-          [name]="getEstadoMesa(mesa).icon" 
-          [color]="getEstadoMesa(mesa).color"
-          size="large">
-        </ion-icon>
-
-        <ion-label>
-          <h2>Mesa {{ mesa.numero }}</h2>
-          <p>
-            <strong>Estado:</strong> 
-            <ion-text [color]="getEstadoMesa(mesa).color">
-              {{ getEstadoMesa(mesa).texto }}
-            </ion-text>
-          </p>
-          <p><strong>Tipo:</strong> {{ mesa.tipo }}</p>
-          <p><strong>Capacidad:</strong> {{ mesa.cantidad }} personas</p>
-          <p *ngIf="mesa.cliente_asignado">
-            <strong>Cliente:</strong> {{ getTipoCliente(mesa) }}
-            <br><small>ID Cliente: {{ mesa.cliente_asignado }}</small>
-          </p>
-        </ion-label>
-
-        <div slot="end" class="action-buttons">
-          <ion-button
-            *ngIf="mesa.cliente_asignado"
-            color="danger"
-            fill="clear"
-            (click)="liberarMesa(mesa)">
-            <ion-icon name="exit-outline" slot="icon-only"></ion-icon>
-          </ion-button>
-          <ion-badge [color]="getEstadoMesa(mesa).color" class="status-badge">
-            {{ getEstadoMesa(mesa).texto }}
-          </ion-badge>
-        </div>
-      </ion-item>
-    </ion-list>
-
-    <!-- Sin mesas -->
-    <div *ngIf="!isLoading && mesas.length === 0" class="empty-state">
-      <ion-icon name="restaurant-outline" size="large" color="medium"></ion-icon>
-      <h2>No hay mesas registradas</h2>
-      <p class="ion-text-center">Contacte al administrador para configurar las mesas</p>
-    </div>
   </div>
 </ion-content>

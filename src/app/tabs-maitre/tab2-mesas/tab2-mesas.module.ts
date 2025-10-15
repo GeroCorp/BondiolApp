@@ -6,7 +6,7 @@ import { IonicModule } from '@ionic/angular';
 
 import { Tab2MesasPageRoutingModule } from './tab2-mesas-routing.module';
 
-import { Tab2Mesas } from './tab2-mesas.page';
+import { Tab2MesasPage } from './tab2-mesas.page';
 
 @NgModule({
   imports: [
@@ -15,6 +15,6 @@ import { Tab2Mesas } from './tab2-mesas.page';
     IonicModule,
     Tab2MesasPageRoutingModule
   ],
-  declarations: [Tab2Mesas]
+  declarations: [Tab2MesasPage]
 })
 export class Tab2MesasPageModule {}

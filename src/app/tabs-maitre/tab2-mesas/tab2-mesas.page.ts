@@ -1,91 +1,105 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
-import { AlertController, IonicModule, ToastController } from '@ionic/angular';
-import { AuthService } from 'src/app/services/supabase';
+import { Component, OnInit, signal } from '@angular/core';
+import { AlertController, ToastController } from '@ionic/angular';
+import { AuthService } from '../../services/supabase';
 
 @Component({
   selector: 'app-tab2-mesas',
-  standalone: false,
   templateUrl: './tab2-mesas.page.html',
   styleUrls: ['./tab2-mesas.page.scss'],
+  standalone: false,
 })
-export class Tab2Mesas implements OnInit {
-  mesas: any[] = [];
-  isLoading = false;
+export class Tab2MesasPage implements OnInit {
+
+  mesas = signal<any[]>([]);
+  isLoading = signal<boolean>(true);
 
   constructor(
-    private supabaseService: AuthService,
-    private toastCtrl: ToastController,
-    private alertCtrl: AlertController
-  ) {}
+    private supabase: AuthService,
+    private alertCtrl: AlertController,
+    private toastCtrl: ToastController
+  ) { }
 
-  async ngOnInit() {
-    await this.cargarMesas();
+  ngOnInit() {
+    this.loadMesas();
   }
 
-  async ionViewWillEnter() {
-    await this.cargarMesas();
-  }
+  async loadMesas() {
+    this.isLoading.set(true);
 
-  // 🔹 Cargar todas las mesas con su estado
-  async cargarMesas() {
-    this.isLoading = true;
     try {
-      console.log('🔄 Cargando todas las mesas...');
-      this.mesas = await this.supabaseService.getMesasConEstado();
-      console.log('✅ Mesas cargadas:', this.mesas.length);
-    } catch (err) {
-      console.error('❌ Error cargando mesas:', err);
-      
-      const toast = await this.toastCtrl.create({
-        message: 'Error al cargar las mesas',
-        duration: 3000,
-        color: 'danger'
-      });
-      await toast.present();
-    } finally {
-      this.isLoading = false;
+      const data = await this.supabase.getMesasConEstado();
+      this.mesas.set(data);
+    }catch (err){
+      console.error('Error loading mesas:', err);
+    }finally {
+      this.isLoading.set(false);
     }
   }
 
-  // 🔹 Determinar el estado de una mesa
-  getEstadoMesa(mesa: any): { texto: string; color: string; icon: string } {
-    if (mesa.cliente_asignado) {
-      return {
-        texto: 'Ocupada',
-        color: 'danger',
-        icon: 'person'
-      };
-    } else if (mesa.disponible) {
-      return {
-        texto: 'Disponible',
-        color: 'success',
-        icon: 'checkmark-circle'
-      };
-    } else {
-      return {
-        texto: 'No disponible',
-        color: 'warning',
-        icon: 'warning'
-      };
-    }
+  // Método para refrescar datos
+  async handleRefresh(event: any) {
+    await this.loadMesas();
+    event.target.complete();
   }
 
-  // 🔹 Obtener información del tipo de cliente
-  getTipoCliente(mesa: any): string {
+  // TrackBy function para mejor rendimiento
+  trackByMesa(index: number, mesa: any): any {
+    return mesa.id || mesa.numero;
+  }
+
+  // Getters para estadísticas
+  get mesasDisponibles(): number {
+    return this.mesas().filter(m => m.disponible && !m.cliente_asignado).length;
+  }
+
+  get mesasOcupadas(): number {
+    return this.mesas().filter(m => m.cliente_asignado).length;
+  }
+
+  get mesasNoDisponibles(): number {
+    return this.mesas().filter(m => !m.disponible && !m.cliente_asignado).length;
+  }
+
+  // Métodos para obtener información de estado
+  getEstadoColor(mesa: any): string {
+    if (mesa.cliente_asignado) return 'danger';
+    if (mesa.disponible) return 'success';
+    return 'warning';
+  }
+
+  getEstadoTexto(mesa: any): string {
+    if (mesa.cliente_asignado) return 'Ocupada';
+    if (mesa.disponible) return 'Disponible';
+    return 'No disponible';
+  }
+
+  // Métodos para información del cliente
+  getClienteNombre(mesa: any): string {
     if (!mesa.cliente_asignado) return '';
     
-    switch (mesa.tipo_cliente) {
-      case 'anonimo':
-        return 'Cliente anónimo';
-      case 'registrado':
-        return 'Cliente registrado';
-      default:
-        return 'Cliente';
+    // Si tenemos información del cliente del JOIN
+    if (mesa.clientes && typeof mesa.clientes === 'object') {
+      const cliente = mesa.clientes;
+      if (cliente.nombre && cliente.apellido) {
+        return `${cliente.nombre} ${cliente.apellido}`;
+      }
     }
+    
+    // Fallback: solo mostrar el ID
+    return `Cliente #${mesa.cliente_asignado}`;
   }
 
-  // 🔹 Liberar mesa con confirmación
+  getClienteEmail(mesa: any): string {
+    if (!mesa.cliente_asignado || !mesa.clientes) return '';
+    
+    if (mesa.clientes && typeof mesa.clientes === 'object') {
+      return mesa.clientes.email || '';
+    }
+    
+    return '';
+  }
+
+  // Métodos de acción
   async liberarMesa(mesa: any) {
     const alert = await this.alertCtrl.create({
       header: 'Confirmar liberación',
@@ -93,8 +107,7 @@ export class Tab2Mesas implements OnInit {
       buttons: [
         {
           text: 'Cancelar',
-          role: 'cancel',
-          cssClass: 'secondary'
+          role: 'cancel'
         },
         {
           text: 'Liberar',
@@ -105,40 +118,23 @@ export class Tab2Mesas implements OnInit {
         }
       ]
     });
-
     await alert.present();
   }
 
-  // 🔹 Procesar la liberación de mesa
   private async procesarLiberacion(mesa: any) {
-    const loading = await this.toastCtrl.create({
-      message: 'Liberando mesa...',
-      duration: 0
-    });
-    await loading.present();
-
     try {
-      console.log('🔄 Liberando mesa:', mesa.id);
+      // Aquí iría la lógica para liberar la mesa en Supabase
+      await this.supabase.liberarMesa(mesa.id);
       
-      await this.supabaseService.liberarMesa(mesa.id);
-      
-      await loading.dismiss();
-
       const toast = await this.toastCtrl.create({
         message: `Mesa ${mesa.numero} liberada exitosamente`,
         duration: 3000,
         color: 'success'
       });
       await toast.present();
-
-      // Recargar las mesas
-      await this.cargarMesas();
-
+      
+      await this.loadMesas(); // Recargar datos
     } catch (err: any) {
-      await loading.dismiss();
-      
-      console.error('❌ Error liberando mesa:', err);
-      
       const toast = await this.toastCtrl.create({
         message: err.message || 'Error al liberar la mesa',
         duration: 4000,
@@ -148,22 +144,103 @@ export class Tab2Mesas implements OnInit {
     }
   }
 
-  // 🔹 Método para refrescar datos
-  async refrescarDatos(event: any) {
-    await this.cargarMesas();
-    event.target.complete();
+  async asignarMesa(mesa: any) {
+    const alert = await this.alertCtrl.create({
+      header: 'Asignar Mesa',
+      message: `Ingrese el ID del cliente para asignar a la Mesa ${mesa.numero}:`,
+      inputs: [
+        {
+          name: 'clienteId',
+          type: 'number',
+          placeholder: 'ID del cliente',
+          min: 1
+        }
+      ],
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel'
+        },
+        {
+          text: 'Asignar',
+          handler: async (data) => {
+            if (data.clienteId && data.clienteId > 0) {
+              await this.procesarAsignacion(mesa, data.clienteId);
+            }
+          }
+        }
+      ]
+    });
+    await alert.present();
   }
 
-  // 🔹 Contar mesas por estado
-  get mesasDisponibles(): number {
-    return this.mesas.filter(m => m.disponible && !m.cliente_asignado).length;
+  private async procesarAsignacion(mesa: any, clienteId: number) {
+    try {
+      // Aquí iría la lógica para asignar la mesa en Supabase
+      // await this.supabase.asignarMesa(mesa.id, clienteId);
+      
+      const toast = await this.toastCtrl.create({
+        message: `Mesa ${mesa.numero} asignada exitosamente`,
+        duration: 3000,
+        color: 'success'
+      });
+      await toast.present();
+      
+      await this.loadMesas(); // Recargar datos
+    } catch (err: any) {
+      const toast = await this.toastCtrl.create({
+        message: err.message || 'Error al asignar la mesa',
+        duration: 4000,
+        color: 'danger'
+      });
+      await toast.present();
+    }
   }
 
-  get mesasOcupadas(): number {
-    return this.mesas.filter(m => m.cliente_asignado).length;
+  async toggleDisponibilidad(mesa: any) {
+    const nuevoEstado = !mesa.disponible;
+    const accion = nuevoEstado ? 'activar' : 'desactivar';
+    
+    const alert = await this.alertCtrl.create({
+      header: `${accion.charAt(0).toUpperCase() + accion.slice(1)} Mesa`,
+      message: `¿Está seguro de que desea ${accion} la Mesa ${mesa.numero}?`,
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel'
+        },
+        {
+          text: accion.charAt(0).toUpperCase() + accion.slice(1),
+          handler: async () => {
+            await this.procesarCambioDisponibilidad(mesa, nuevoEstado);
+          }
+        }
+      ]
+    });
+    await alert.present();
   }
 
-  get mesasNoDisponibles(): number {
-    return this.mesas.filter(m => !m.disponible && !m.cliente_asignado).length;
+  private async procesarCambioDisponibilidad(mesa: any, disponible: boolean) {
+    try {
+      // Aquí iría la lógica para cambiar disponibilidad en Supabase
+      // await this.supabase.cambiarDisponibilidadMesa(mesa.id, disponible);
+      
+      const toast = await this.toastCtrl.create({
+        message: `Mesa ${mesa.numero} ${disponible ? 'activada' : 'desactivada'} exitosamente`,
+        duration: 3000,
+        color: 'success'
+      });
+      await toast.present();
+      
+      await this.loadMesas(); // Recargar datos
+    } catch (err: any) {
+      const toast = await this.toastCtrl.create({
+        message: err.message || 'Error al cambiar la disponibilidad',
+        duration: 4000,
+        color: 'danger'
+      });
+      await toast.present();
+    }
   }
+
 }

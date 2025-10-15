@@ -1,6 +1,14 @@
 # Grupo: sinNombre-2025
 ###  Trabajo Final Integrador -- Primer parcial  
 
+# QRs de test
+
+### Ingreso al local (Lista de espera)
+![Lista de espera](src\assets\QRs\lista_de_espera.png)
+### QR para test mesa
+![Test mesa](src\assets\QRs\mesa_test.png)
+
+
 # Primera semana
 
 ## Escobar Tobias Fabricio
@@ -111,3 +119,14 @@ Fecha estimada de finalización: 3/10
 
 Fecha de inicio: 30/9  
 Fecha estimada de finalización: 3/10
+
+# Quinta semana
+
+## Pagés Valentino
+- 22° Funcionalidad (Confirmación de pago)
+- Arreglos generales
+
+## Corpus Gerónimo
+- Estilado de paginas
+- Arreglos de funcionalidades
+- Creación de lista de espera

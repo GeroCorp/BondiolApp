@@ -8,6 +8,17 @@
 </ion-header>
 
 <ion-content [fullscreen]="true" class="lista-espera-content">
+  
+  <!-- Refresher para actualizar el estado -->
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content
+      pulling-icon="chevron-down-circle-outline"
+      pulling-text="Arrastra para actualizar"
+      refreshing-spinner="circular"
+      refreshing-text="Actualizando estado...">
+    </ion-refresher-content>
+  </ion-refresher>
+
   <div class="lista-espera-wrapper">
 
     <!-- Formulario para unirse a la lista -->
@@ -147,12 +158,33 @@
               @if (clienteEnEspera.mesa_asignada) {
                 <p><strong>Mesa asignada:</strong> #{{ clienteEnEspera.mesa_asignada }}</p>
               }
+              @if (ultimaActualizacion) {
+                <p class="ultima-actualizacion">
+                  <ion-icon name="time-outline"></ion-icon>
+                  <small>Última actualización: {{ ultimaActualizacion | date:'HH:mm:ss' }}</small>
+                </p>
+              }
             </div>
           </div>
 
           <!-- Acciones según el estado -->
           @if (clienteEnEspera.estado === 'esperando') {
             <div class="acciones-espera">
+              <ion-button 
+                expand="block" 
+                fill="outline" 
+                color="primary" 
+                (click)="actualizarEstadoManual()"
+                [disabled]="isRefreshing">
+                @if (isRefreshing) {
+                  <ion-spinner name="crescent" slot="start"></ion-spinner>
+                  Actualizando...
+                } @else {
+                  <ion-icon name="refresh-outline" slot="start"></ion-icon>
+                  Actualizar Estado
+                }
+              </ion-button>
+              
               <ion-button 
                 expand="block" 
                 fill="outline" 
@@ -190,9 +222,9 @@
                   <ion-button 
                     expand="block" 
                     color="light"
-                    routerLink="/tabs-cliente-registrado">
+                    routerLink="/home-cliente">
                     <ion-icon name="restaurant-outline" slot="start"></ion-icon>
-                    Ir a Mi Mesa
+                    Voler al menú principal
                   </ion-button>
                 </ion-card-content>
               </ion-card>

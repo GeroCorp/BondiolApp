@@ -24,7 +24,9 @@ export class ListaEsperaClientePage implements OnInit {
   
   // Estado
   isLoading = false;
+  isRefreshing = false;
   posicionEnLista = 0;
+  ultimaActualizacion: Date | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -161,6 +163,134 @@ export class ListaEsperaClientePage implements OnInit {
   }
 
   /**
+   * Actualizar estado manualmente (botón)
+   */
+  async actualizarEstadoManual() {
+    if (!this.clienteEnEspera || !this.clienteEnEspera.id || this.isRefreshing) {
+      if (this.isRefreshing) {
+        await this.presentToast('Ya se está actualizando...', 'warning');
+      } else {
+        await this.presentToast('No hay información para actualizar', 'warning');
+      }
+      return;
+    }
+
+    this.isRefreshing = true;
+    const loading = await this.loadingCtrl.create({
+      message: 'Actualizando estado...',
+      duration: 3000
+    });
+    await loading.present();
+
+    try {
+      const resultado = await this.listaEsperaService.consultarEstadoPorId(this.clienteEnEspera.id);
+      
+      if (resultado && resultado.success && resultado.data) {
+        const estadoAnterior = this.clienteEnEspera.estado;
+        
+        this.clienteEnEspera = resultado.data;
+        this.posicionEnLista = resultado.posicion || 0;
+        this.ultimaActualizacion = new Date();
+        
+        if (estadoAnterior !== this.clienteEnEspera.estado) {
+          let mensaje = '';
+          switch (this.clienteEnEspera.estado) {
+            case 'llamado':
+              mensaje = '🔔 ¡Te han llamado! Dirígete a recepción';
+              break;
+            case 'asignado':
+              mensaje = `🎉 ¡Mesa asignada! Mesa #${this.clienteEnEspera.mesa_asignada}`;
+              break;
+            case 'cancelado':
+              mensaje = '❌ Tu turno ha sido cancelado';
+              break;
+            case 'ausente':
+              mensaje = '⚠️ Has sido marcado como ausente';
+              break;
+            default:
+              mensaje = '✅ Estado actualizado correctamente';
+          }
+          await this.presentToast(mensaje, this.estadoColor);
+        } else {
+          await this.presentToast('Sin cambios en tu estado', 'medium');
+        }
+      } else {
+        await this.presentToast('No se pudo obtener información actualizada', 'warning');
+      }
+    } catch (error) {
+      console.error('Error actualizando estado:', error);
+      await this.presentToast('Error al actualizar', 'danger');
+    } finally {
+      this.isRefreshing = false;
+      await loading.dismiss();
+    }
+  }
+
+  /**
+   * Handle refresh manual
+   */
+  async handleRefresh(event: any) {
+    try {
+      // Si no hay cliente en espera, no hay nada que actualizar
+      if (!this.clienteEnEspera || !this.clienteEnEspera.id) {
+        await this.presentToast('No hay información para actualizar', 'warning');
+        event.target.complete();
+        return;
+      }
+
+      console.log('🔄 Actualizando estado del cliente...');
+      
+      // Consultar el estado actualizado
+      const resultado = await this.listaEsperaService.consultarEstadoPorId(this.clienteEnEspera.id);
+      
+      if (resultado && resultado.success && resultado.data) {
+        const estadoAnterior = this.clienteEnEspera.estado;
+        
+        // Actualizar datos
+        this.clienteEnEspera = resultado.data;
+        this.posicionEnLista = resultado.posicion || 0;
+        this.ultimaActualizacion = new Date();
+        
+        // Mostrar mensaje de cambio de estado si es diferente
+        if (estadoAnterior !== this.clienteEnEspera.estado) {
+          let mensaje = '';
+          switch (this.clienteEnEspera.estado) {
+            case 'llamado':
+              mensaje = '🔔 ¡Te han llamado! Dirígete a recepción';
+              break;
+            case 'asignado':
+              mensaje = `🎉 ¡Mesa asignada! Mesa #${this.clienteEnEspera.mesa_asignada}`;
+              break;
+            case 'cancelado':
+              mensaje = '❌ Tu turno ha sido cancelado';
+              break;
+            case 'ausente':
+              mensaje = '⚠️ Has sido marcado como ausente';
+              break;
+            default:
+              mensaje = '✅ Estado actualizado correctamente';
+          }
+          await this.presentToast(mensaje, this.estadoColor);
+        } else {
+          await this.presentToast('✅ Estado actualizado', 'success');
+        }
+        
+        console.log('✅ Estado actualizado:', this.clienteEnEspera.estado);
+      } else {
+        await this.presentToast('⚠️ No se pudo obtener información actualizada', 'warning');
+        console.warn('❌ No se pudo consultar el estado');
+      }
+      
+    } catch (error) {
+      console.error('❌ Error actualizando estado:', error);
+      await this.presentToast('❌ Error al actualizar', 'danger');
+    } finally {
+      // Completar el refresher
+      event.target.complete();
+    }
+  }
+
+  /**
    * Actualización automática del estado
    */
   private async iniciarActualizacionAutomatica() {
@@ -179,48 +309,12 @@ export class ListaEsperaClientePage implements OnInit {
       if (resultado && resultado.success && resultado.data) {
         this.clienteEnEspera = resultado.data;
         this.posicionEnLista = resultado.posicion || 0;
+        this.ultimaActualizacion = new Date();
         
-        // Si fue llamado, mostrar alerta
-        if (resultado.data.estado === 'llamado') {
-          await this.mostrarAlertaLlamado();
-          clearInterval(intervalo);
-        }
-        
-        // Si fue asignado, redirigir
-        if (resultado.data.estado === 'asignado') {
-          await this.mostrarAlertaAsignado();
-          clearInterval(intervalo);
-        }
       }
     }, 30000); // Actualizar cada 30 segundos
   }
 
-  private async mostrarAlertaLlamado() {
-    const alert = await this.alertCtrl.create({
-      header: '¡Tu turno está listo!',
-      message: `Cliente #${this.clienteEnEspera?.id} - Dirígete a la recepción`,
-      buttons: ['Entendido'],
-      backdropDismiss: false
-    });
-    await alert.present();
-  }
-
-  private async mostrarAlertaAsignado() {
-    const alert = await this.alertCtrl.create({
-      header: '¡Mesa asignada!',
-      message: `Te han asignado la mesa #${this.clienteEnEspera?.mesa_asignada}`,
-      buttons: [
-        {
-          text: 'Ir a mi mesa',
-          handler: () => {
-            this.router.navigate(['/cliente-registrado']);
-          }
-        }
-      ],
-      backdropDismiss: false
-    });
-    await alert.present();
-  }
 
   private validarFormulario(): boolean {
     if (!this.nombreCliente.trim()) {

@@ -1,0 +1,131 @@
+.lista-espera-content {
+  --background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.lista-espera-wrapper {
+  padding: 16px;
+}
+
+// Estado y acciones
+.estado-info {
+  margin-bottom: 16px;
+}
+
+.estado-badge {
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.info-details p {
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+.acciones-espera {
+  margin-top: 16px;
+  
+  ion-button {
+    margin-bottom: 8px;
+  }
+}
+
+// Indicador de última actualización
+.ultima-actualizacion {
+  margin-top: 12px !important;
+  opacity: 0.7;
+  font-style: italic;
+  
+  ion-icon {
+    margin-right: 4px;
+    font-size: 14px;
+  }
+  
+  small {
+    font-size: 12px;
+  }
+}
+
+// Llamado y asignado
+.llamado-alert,
+.asignado-success {
+  margin-top: 16px;
+  
+  h3 {
+    margin: 0 0 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+// Loading container
+.loading-container {
+  text-align: center;
+  padding: 40px 20px;
+  
+  ion-spinner {
+    margin-bottom: 16px;
+  }
+  
+  p {
+    color: var(--ion-color-medium);
+    margin: 0;
+  }
+}
+
+// Info container
+.info-container {
+  .id-placeholder {
+    text-align: center;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    margin-bottom: 16px;
+    
+    ion-icon {
+      color: var(--ion-color-primary);
+      margin-bottom: 12px;
+    }
+    
+    p {
+      margin: 4px 0;
+      
+      &:first-of-type {
+        font-size: 18px;
+        font-weight: bold;
+      }
+    }
+  }
+}
+
+// Cards styling
+ion-card {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  border-radius: 16px;
+  margin-bottom: 16px;
+  
+  ion-card-header {
+    ion-card-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 18px;
+    }
+  }
+}
+
+// Range styling
+ion-range {
+  padding: 16px 0;
+}
+
+// Responsive design
+@media (max-width: 576px) {
+  .lista-espera-wrapper {
+    padding: 12px;
+  }
+  
+  ion-card {
+    margin-bottom: 12px;
+  }
+}

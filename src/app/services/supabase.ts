@@ -364,20 +364,47 @@ export class AuthService {
     }
   }
 
-  // 🔑 Obtener todas las mesas con su estado
+  // 🔑 Obtener todas las mesas con su estado y cliente asignado
   async getMesasConEstado() {
     try {
+      // Intentar query con JOIN primero
       const { data, error } = await this.supabase
         .from('mesas')
-        .select('*')
+        .select(`
+          id,
+          numero,
+          cantidad,
+          tipo,
+          disponible,
+          cliente_asignado,
+          clientes:cliente_asignado (
+            id_cliente,
+            nombre,
+            apellido,
+            email,
+            estado
+          )
+        `)
         .order('numero', { ascending: true });
 
       if (error) {
-        console.error('Error obteniendo mesas:', error);
-        throw new Error('Error al obtener mesas: ' + error.message);
+        console.error('❌ Error en query con JOIN:', error);
+        
+        // Fallback: query simple
+        const { data: simpleData, error: simpleError } = await this.supabase
+          .from('mesas')
+          .select('*')
+          .order('numero', { ascending: true });
+          
+        if (simpleError) {
+          throw new Error('Error al obtener mesas: ' + simpleError.message);
+        }
+        
+        console.log('✅ Usando query simple, mesas encontradas:', simpleData?.length);
+        return simpleData || [];
       }
 
-      console.log('Mesas encontradas:', data);
+      console.log('✅ Query con JOIN exitosa, mesas encontradas:', data?.length);
       return data || [];
     } catch (error: any) {
       console.error('Error en getMesasConEstado:', error);

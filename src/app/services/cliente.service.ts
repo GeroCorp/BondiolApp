@@ -373,6 +373,19 @@ export class ClienteService {
     }
     
     console.log('✅ Mesa actualizada:', data);
+
+    const { data: clienteData, error: clienteError } = await this.supabase
+    .from('clientes')
+    .update({ mesa_asignada: null })
+    .eq('id_cliente', cliente_id)
+    .select();
+
+    if (clienteError) {
+      console.error('❌ Error actualizando cliente:', clienteError);
+      throw new Error('Error actualizando el cliente: ' + clienteError.message);
+    }
+    console.log('✅ Cliente actualizado:', clienteData);
+
     return data;
   }
 
