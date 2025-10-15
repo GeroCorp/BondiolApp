@@ -23,6 +23,12 @@ export class Tab1MenuPage implements OnInit {
   platos: Item[] = [];
   bebidas: Item[] = [];
   itemSelected: Item | null = null;
+  
+  // Estados de carga
+  isLoadingQR: boolean = false;
+  isLoadingPlatos: boolean = false;
+  isLoadingBebidas: boolean = false;
+  isLoadingItems: boolean = false;
   constructor(
     private authService: AuthService,
     private clienteService: ClienteService,
@@ -32,11 +38,14 @@ export class Tab1MenuPage implements OnInit {
   }
 
   async ngOnInit() {
-    
-    await this.cargarPlatos();
-    await this.cargarBebidas();
+    // Cargar ambos en paralelo para mejor rendimiento
+    await Promise.all([
+      this.cargarPlatos(),
+      this.cargarBebidas()
+    ]);
   }
   async escanearQr() {
+    this.isLoadingQR = true;
     try {
       const granted = await BarcodeScanner.checkPermissions();
       if (granted.camera !== 'granted') {
@@ -66,24 +75,42 @@ export class Tab1MenuPage implements OnInit {
     } catch (err: any) {
       console.error('Error al escanear QR:', err);
       this.showToast(err.message, 'danger');
+    } finally {
+      this.isLoadingQR = false;
     }
   }
 
   async cargarPlatos(){
-    this.platos = await this.authService.getPlatos();
-    if (this.platos.length > 0) {
-      this.showToast('Platos cargados', 'success');
-    } else {
-      this.showToast('No se encontraron platos', 'medium');
+    this.isLoadingPlatos = true;
+    try {
+      this.platos = await this.authService.getPlatos();
+      if (this.platos.length > 0) {
+        this.showToast('Platos cargados', 'success');
+      } else {
+        this.showToast('No se encontraron platos', 'medium');
+      }
+    } catch (error) {
+      console.error('Error cargando platos:', error);
+      this.showToast('Error al cargar platos', 'danger');
+    } finally {
+      this.isLoadingPlatos = false;
     }
   }
 
   async cargarBebidas(){
-    this.bebidas = await this.authService.getBebidas();
-    if (this.bebidas.length > 0) {
-      this.showToast('Bebidas cargadas', 'success');
-    } else {
-      this.showToast('No se encontraron bebidas', 'medium');
+    this.isLoadingBebidas = true;
+    try {
+      this.bebidas = await this.authService.getBebidas();
+      if (this.bebidas.length > 0) {
+        this.showToast('Bebidas cargadas', 'success');
+      } else {
+        this.showToast('No se encontraron bebidas', 'medium');
+      }
+    } catch (error) {
+      console.error('Error cargando bebidas:', error);
+      this.showToast('Error al cargar bebidas', 'danger');
+    } finally {
+      this.isLoadingBebidas = false;
     }
   }
 
@@ -94,9 +121,15 @@ export class Tab1MenuPage implements OnInit {
   // }
 
   seleccionarItem(item: Item, tipo: 'plato' | 'bebida'){
-    this.itemSelected = item;
-    this.itemSelected!.tipo = tipo;
-    console.log(this.itemSelected);
+    if (this.isLoadingItems) return;
+    
+    this.isLoadingItems = true;
+    setTimeout(() => {
+      this.itemSelected = item;
+      this.itemSelected!.tipo = tipo;
+      console.log(this.itemSelected);
+      this.isLoadingItems = false;
+    }, 300); // Pequeño delay para mostrar el loading
   }
 
   onAddItem(item: Item){

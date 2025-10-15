@@ -1,0 +1,245 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-title>Lista de Espera</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home-cliente"></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="lista-espera-content">
+  <div class="lista-espera-wrapper">
+
+    <!-- Formulario para unirse a la lista -->
+    @if (mostrarFormulario) {
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon name="people-outline"></ion-icon>
+            Unirse a Lista de Espera
+          </ion-card-title>
+          <ion-card-subtitle>
+            Te notificaremos cuando tengas una mesa disponible
+          </ion-card-subtitle>
+        </ion-card-header>
+
+        <ion-card-content>
+          <ion-item>
+            <ion-label position="stacked">Nombre Completo *</ion-label>
+            <ion-input 
+              [(ngModel)]="nombreCliente"
+              placeholder="Ingresa tu nombre completo"
+              type="text"
+              required>
+            </ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Cantidad de Personas *</ion-label>
+            <ion-range
+              [(ngModel)]="cantidadPersonas"
+              min="1"
+              max="12"
+              pin="true"
+              snaps="true"
+              color="primary">
+              <ion-label slot="start">1</ion-label>
+              <ion-label slot="end">12</ion-label>
+            </ion-range>
+            <ion-note slot="helper">
+              Seleccionado: {{ cantidadPersonas }} persona{{ cantidadPersonas > 1 ? 's' : '' }}
+            </ion-note>
+          </ion-item>
+
+          <ion-button 
+            expand="block" 
+            color="primary" 
+            (click)="agregarALista()"
+            [disabled]="isLoading">
+            <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+            Unirse a la Lista
+          </ion-button>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Consultar turno existente -->
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon name="search-outline"></ion-icon>
+            ¿Ya tienes un turno?
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-button 
+            expand="block" 
+            fill="outline" 
+            color="secondary"
+            (click)="toggleConsulta()">
+            <ion-icon name="eye-outline" slot="start"></ion-icon>
+            Consultar mi turno
+          </ion-button>
+          
+          @if (mostrarConsulta) {
+            <ion-item>
+              <ion-label position="stacked">ID de tu turno</ion-label>
+              <ion-input 
+                [(ngModel)]="consultarPorId"
+                placeholder="Ej: 123"
+                type="number">
+              </ion-input>
+            </ion-item>
+            
+            <ion-button 
+              expand="block" 
+              color="secondary"
+              (click)="consultarTurnoPorId()">
+              <ion-icon name="search" slot="start"></ion-icon>
+              Buscar
+            </ion-button>
+          }
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Información adicional -->
+      <ion-card>
+        <ion-card-content>
+          <h3>
+            <ion-icon name="information-circle-outline"></ion-icon>
+            ¿Cómo funciona?
+          </h3>
+          <ul>
+            <li>Te notificaremos cuando sea tu turno</li>
+            <li>Recibirás un ID para consultar tu estado</li>
+            <li>Mantén tu ID seguro para futuras consultas</li>
+          </ul>
+        </ion-card-content>
+      </ion-card>
+    }
+
+    <!-- Estado del cliente en espera -->
+    @if (!mostrarFormulario && clienteEnEspera) {
+      <ion-card [color]="estadoColor">
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon name="ticket-outline"></ion-icon>
+            Cliente #{{ clienteEnEspera.id }}
+          </ion-card-title>
+          <ion-card-subtitle>
+            {{ clienteEnEspera.nombre_cliente }}
+          </ion-card-subtitle>
+        </ion-card-header>
+
+        <ion-card-content>
+          <div class="estado-info">
+            <div class="estado-badge">
+              <ion-badge [color]="estadoColor">
+                {{ estadoTexto }}
+              </ion-badge>
+            </div>
+
+            <div class="info-details">
+              <p><strong>Personas:</strong> {{ clienteEnEspera.cantidad_personas }}</p>
+              <p><strong>Hora de ingreso:</strong> {{ clienteEnEspera.created_at | date:'HH:mm' }}</p>
+              @if (posicionEnLista > 0) {
+                <p><strong>Posición en lista:</strong> {{ posicionEnLista }}</p>
+              }
+              @if (clienteEnEspera.mesa_asignada) {
+                <p><strong>Mesa asignada:</strong> #{{ clienteEnEspera.mesa_asignada }}</p>
+              }
+            </div>
+          </div>
+
+          <!-- Acciones según el estado -->
+          @if (clienteEnEspera.estado === 'esperando') {
+            <div class="acciones-espera">
+              <ion-button 
+                expand="block" 
+                fill="outline" 
+                color="danger" 
+                (click)="cancelarTurno()">
+                <ion-icon name="close-circle-outline" slot="start"></ion-icon>
+                Cancelar Turno
+              </ion-button>
+            </div>
+          }
+
+          @if (clienteEnEspera.estado === 'llamado') {
+            <div class="llamado-alert">
+              <ion-card color="success">
+                <ion-card-content>
+                  <h3>
+                    <ion-icon name="megaphone-outline"></ion-icon>
+                    ¡Tu turno está listo!
+                  </h3>
+                  <p>Dirígete a la recepción para que te asignen una mesa.</p>
+                </ion-card-content>
+              </ion-card>
+            </div>
+          }
+
+          @if (clienteEnEspera.estado === 'asignado') {
+            <div class="asignado-success">
+              <ion-card color="primary">
+                <ion-card-content>
+                  <h3>
+                    <ion-icon name="checkmark-circle-outline"></ion-icon>
+                    ¡Mesa Asignada!
+                  </h3>
+                  <p>Te han asignado la Mesa #{{ clienteEnEspera.mesa_asignada }}</p>
+                  <ion-button 
+                    expand="block" 
+                    color="light"
+                    routerLink="/tabs-cliente-registrado">
+                    <ion-icon name="restaurant-outline" slot="start"></ion-icon>
+                    Ir a Mi Mesa
+                  </ion-button>
+                </ion-card-content>
+              </ion-card>
+            </div>
+          }
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Información del cliente -->
+      @if (clienteEnEspera.estado === 'esperando') {
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>
+              <ion-icon name="information-circle-outline"></ion-icon>
+              Tu Información
+            </ion-card-title>
+            <ion-card-subtitle>
+              Guarda tu ID para consultar tu estado más tarde
+            </ion-card-subtitle>
+          </ion-card-header>
+          
+          <ion-card-content class="info-container">
+            <div class="id-placeholder">
+              <ion-icon name="person" size="large"></ion-icon>
+              <p><strong>Tu ID:</strong> {{ clienteEnEspera.id }}</p>
+              <p><strong>Estado:</strong> {{ estadoTexto }}</p>
+            </div>
+            
+            <ion-button 
+              expand="block" 
+              fill="outline" 
+              color="secondary">
+              <ion-icon name="share-outline" slot="start"></ion-icon>
+              Compartir ID
+            </ion-button>
+          </ion-card-content>
+        </ion-card>
+      }
+    }
+
+    <!-- Loading state -->
+    @if (isLoading) {
+      <div class="loading-container">
+        <ion-spinner name="crescent"></ion-spinner>
+        <p>Procesando...</p>
+      </div>
+    }
+
+  </div>
+</ion-content>

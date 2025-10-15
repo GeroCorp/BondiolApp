@@ -43,6 +43,14 @@ ion-content {
     padding-bottom: env(safe-area-inset-bottom);
 }
 
+// Sobreescribir el offset-bottom del Shadow DOM de Ionic
+
+
+// Alternativa para controlar el scroll interno
+.inner-scroll {
+    --padding-bottom: 60px !important;
+}
+
 // No funciona bien
 // .no-scroll-padding {
 //     --padding-start: 0;
@@ -51,3 +59,4 @@ ion-content {
 //     --padding-bottom: 0;
 //     --overflow: hidden auto; /* solo scroll si hace falta */
 // }
+

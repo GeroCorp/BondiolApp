@@ -53,10 +53,15 @@ const routes: Routes = [
     loadChildren: () => import('./tabs-cliente-registrado/tabs-cliente-registrado.module').then( m => m.TabsClienteRegistradoPageModule)
   },
   {
+    path: 'lista-espera-cliente',
+    loadChildren: () => import('./pages/lista-espera-cliente/lista-espera-cliente.module').then( m => m.ListaEsperaClientePageModule)
+  },
+  {
     path: '**',
     redirectTo: 'splash',
     pathMatch: 'full'
   },
+
 
 ];
 @NgModule({

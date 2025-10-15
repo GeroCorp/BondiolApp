@@ -1,0 +1,510 @@
+import { Injectable } from '@angular/core';
+import { supabase } from './supabase';
+import { ClienteService } from './cliente.service';
+
+export interface ClienteEspera {
+  id?: number;
+  nombre_cliente: string;
+  estado: 'esperando' | 'llamado' | 'asignado' | 'ausente' | 'cancelado';
+  cantidad_personas: number;
+  mesa_asignada?: number;
+  created_at?: string;
+}
+
+@Injectable({
+  providedIn: 'root'
+})
+export class ListaEsperaService {
+
+  constructor(private clienteService: ClienteService) { }
+
+  /**
+   * Agregar cliente a la lista de espera
+   */
+  async agregarClienteEspera(datosCliente: {
+    nombre_cliente: string; // Cambiar de 'nombre' a 'nombre_cliente'
+    cantidad_personas: number;
+  }) {
+    try {
+
+      const nuevoCliente = {
+        nombre_cliente: datosCliente.nombre_cliente,
+        cantidad_personas: datosCliente.cantidad_personas,
+        estado: 'esperando',
+        created_at: new Date().toISOString()
+      };
+
+      const { data, error } = await supabase
+        .from('lista_espera')
+        .insert([nuevoCliente])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      return {
+        success: true,
+        data: data,
+        mensaje: `Cliente agregado a la lista de espera.`,
+      };
+    } catch (error) {
+      console.error('Error al agregar cliente a lista de espera:', error);
+      return {
+        success: false,
+        error: error,
+        mensaje: 'Error al agregar cliente a la lista de espera'
+      };
+    }
+  }
+
+  /**
+   * Obtener lista de espera actual
+   */
+  async getListaEspera(): Promise<ClienteEspera[]> {
+    try {
+      const { data, error } = await supabase
+        .from('lista_espera')
+        .select('*')
+        .in('estado', ['esperando', 'llamado'])
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+      return data || [];
+
+    } catch (error) {
+      console.error('Error al obtener lista de espera:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Llamar al siguiente cliente
+   */
+  async llamarSiguienteCliente(): Promise<ClienteEspera | null> {
+    try {
+      // Buscar el primer cliente en espera
+      const { data: clienteEspera, error } = await supabase
+        .from('lista_espera')
+        .select('*')
+        .eq('estado', 'esperando')
+        .order('created_at', { ascending: true })
+        .limit(1)
+        .maybeSingle();
+
+      if (error || !clienteEspera) return null;
+
+      // Actualizar estado a 'llamado'
+      const { data: clienteActualizado, error: errorUpdate } = await supabase
+        .from('lista_espera')
+        .update({ 
+          estado: 'llamado'
+        })
+        .eq('id', clienteEspera.id)
+        .select()
+        .single();
+
+      if (errorUpdate) throw errorUpdate;
+
+      return clienteActualizado;
+
+    } catch (error) {
+      console.error('Error al llamar siguiente cliente:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Asignar mesa a cliente de lista de espera
+   */
+  async asignarMesaListaEspera(clienteId: number, mesaId: number): Promise<boolean> {
+    try {
+      // Primero obtener los datos del cliente de la lista de espera
+      const clienteEspera = await this.getClientePorId(clienteId);
+      if (!clienteEspera) {
+        console.error('Cliente no encontrado en lista de espera');
+        return false;
+      }
+
+      // Actualizar la lista de espera
+      const { error } = await supabase
+        .from('lista_espera')
+        .update({ 
+          estado: 'asignado',
+          mesa_asignada: mesaId
+        })
+        .eq('id', clienteId);
+
+      if (error) throw error;
+
+      // Buscar el cliente en la tabla clientes por nombre completo
+      // Intentamos diferentes formas de búsqueda para mayor precisión
+      const nombreCompleto = clienteEspera.nombre_cliente.trim();
+      const partesNombre = nombreCompleto.split(' ');
+      
+      let clientesEncontrados: any[] = [];
+      let errorBusqueda: any = null;
+
+      // Intento 1: Búsqueda por nombre completo exacto
+      if (partesNombre.length >= 2) {
+        const { data, error } = await supabase
+          .from('clientes')
+          .select('id_cliente, nombre, apellido')
+          .ilike('nombre', partesNombre[0])
+          .ilike('apellido', partesNombre[1]);
+        
+        if (!error && data && data.length > 0) {
+          clientesEncontrados = data;
+        }
+      }
+
+      // Intento 2: Si no encontramos nada, buscar por nombre aproximado
+      if (clientesEncontrados.length === 0) {
+        const { data, error } = await supabase
+          .from('clientes')
+          .select('id_cliente, nombre, apellido')
+          .ilike('nombre', `%${partesNombre[0]}%`);
+        
+        errorBusqueda = error;
+        clientesEncontrados = data || [];
+      }
+
+      if (errorBusqueda) {
+        console.error('Error al buscar cliente:', errorBusqueda);
+        // Aunque falle la búsqueda del cliente, la lista de espera ya se actualizó
+        return true;
+      }
+
+      // Si encontramos cliente(s), actualizar la mesa asignada
+      if (clientesEncontrados && clientesEncontrados.length > 0) {
+        const clienteEncontrado = clientesEncontrados[0];
+        
+        if (clientesEncontrados.length > 1) {
+          console.warn(`⚠️ Se encontraron ${clientesEncontrados.length} clientes con nombre similar a "${clienteEspera.nombre_cliente}". Usando el primero: ${clienteEncontrado.nombre} ${clienteEncontrado.apellido}`);
+        }
+        
+        try {
+          await this.clienteService.setMesa(clienteEncontrado.id_cliente, mesaId);
+          console.log(`✅ Mesa ${mesaId} asignada tanto en lista_espera como en clientes para: ${clienteEspera.nombre_cliente} -> ${clienteEncontrado.nombre} ${clienteEncontrado.apellido}`);
+        } catch (errorAsignacion) {
+          console.error('❌ Error al asignar mesa en tabla clientes:', errorAsignacion);
+          // No fallar completamente si hay error en la tabla clientes
+          console.warn('⚠️ La mesa fue asignada en lista_espera pero no se pudo sincronizar con la tabla clientes');
+        }
+      } else {
+        console.warn(`⚠️ No se encontró cliente registrado con nombre similar a: "${clienteEspera.nombre_cliente}"`);
+        console.info(`💡 Sugerencia: Verifique que el cliente esté registrado en el sistema o use nombres exactos`);
+      }
+
+      return true;
+
+    } catch (error) {
+      console.error('Error al asignar mesa:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Marcar cliente como ausente
+   */
+  async marcarClienteAusente(clienteId: number): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('lista_espera')
+        .update({ 
+          estado: 'ausente'
+        })
+        .eq('id', clienteId);
+
+      if (error) throw error;
+      return true;
+
+    } catch (error) {
+      console.error('Error al marcar cliente ausente:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Consultar estado por ID
+   */
+  async consultarEstadoPorId(clienteId: number): Promise<{
+    success: boolean;
+    data?: ClienteEspera;
+    posicion?: number;
+    mensaje?: string;
+  }> {
+    try {
+      const { data, error } = await supabase
+        .from('lista_espera')
+        .select('*')
+        .eq('id', clienteId)
+        .single();
+
+      if (error) {
+        return {
+          success: false,
+          mensaje: 'Cliente no encontrado'
+        };
+      }
+
+      // Obtener posición en la cola contando clientes anteriores
+      const { count: posicion, error: posError } = await supabase
+        .from('lista_espera')
+        .select('*', { count: 'exact', head: true })
+        .eq('estado', 'esperando')
+        .lt('created_at', data.created_at);
+
+      return {
+        success: true,
+        data: data,
+        posicion: posError ? 0 : (posicion || 0) + 1,
+        mensaje: `Estado: ${data.estado}. ID: ${data.id}`
+      };
+
+    } catch (error) {
+      console.error('Error al consultar estado por ID:', error);
+      return {
+        success: false,
+        mensaje: 'Error al consultar el estado'
+      };
+    }
+  }
+
+  /**
+   * Cancelar turno
+   */
+  async cancelarTurno(clienteId: number): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('lista_espera')
+        .update({ estado: 'cancelado' })
+        .eq('id', clienteId);
+
+      if (error) throw error;
+      return true;
+
+    } catch (error) {
+      console.error('Error al cancelar turno:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Obtener estadísticas de la lista
+   */
+  async getEstadisticas(): Promise<{
+    totalEsperando: number;
+    totalLlamados: number;
+    totalAsignados: number;
+    totalAusentes: number;
+    totalCancelados: number;
+  }> {
+    try {
+      const hoy = new Date().toISOString().split('T')[0];
+      
+      const { data, error } = await supabase
+        .from('lista_espera')
+        .select('estado')
+        .gte('created_at', `${hoy}T00:00:00.000Z`)
+        .lt('created_at', `${hoy}T23:59:59.999Z`);
+
+      if (error) throw error;
+
+      const estadisticas = {
+        totalEsperando: 0,
+        totalLlamados: 0,
+        totalAsignados: 0,
+        totalAusentes: 0,
+        totalCancelados: 0
+      };
+
+      data?.forEach(registro => {
+        switch (registro.estado) {
+          case 'esperando':
+            estadisticas.totalEsperando++;
+            break;
+          case 'llamado':
+            estadisticas.totalLlamados++;
+            break;
+          case 'asignado':
+            estadisticas.totalAsignados++;
+            break;
+          case 'ausente':
+            estadisticas.totalAusentes++;
+            break;
+          case 'cancelado':
+            estadisticas.totalCancelados++;
+            break;
+        }
+      });
+
+      return estadisticas;
+
+    } catch (error) {
+      console.error('Error al obtener estadísticas:', error);
+      return {
+        totalEsperando: 0,
+        totalLlamados: 0,
+        totalAsignados: 0,
+        totalAusentes: 0,
+        totalCancelados: 0
+      };
+    }
+  }
+
+  /**
+   * Limpiar registros antiguos (más de 1 día)
+   */
+  async limpiarRegistrosAntiguos(): Promise<number> {
+    try {
+      const fechaLimite = new Date();
+      fechaLimite.setDate(fechaLimite.getDate() - 1);
+
+      const { data, error } = await supabase
+        .from('lista_espera')
+        .delete()
+        .lt('created_at', fechaLimite.toISOString())
+        .select('id');
+
+      if (error) throw error;
+      return data?.length || 0;
+
+    } catch (error) {
+      console.error('Error al limpiar registros antiguos:', error);
+      return 0;
+    }
+  }
+
+  /**
+   * Obtener cliente por ID
+   */
+  async getClientePorId(id: number): Promise<ClienteEspera | null> {
+    try {
+      const { data, error } = await supabase
+        .from('lista_espera')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (error) return null;
+      return data;
+
+    } catch (error) {
+      console.error('Error al obtener cliente por ID:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Obtener todos los clientes (para administración)
+   */
+  async getTodosLosClientes(): Promise<ClienteEspera[]> {
+    try {
+      const { data, error } = await supabase
+        .from('lista_espera')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+
+    } catch (error) {
+      console.error('Error al obtener todos los clientes:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Actualizar información del cliente
+   */
+  async actualizarCliente(id: number, datosActualizados: Partial<ClienteEspera>): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('lista_espera')
+        .update(datosActualizados)
+        .eq('id', id);
+
+      if (error) throw error;
+      return true;
+
+    } catch (error) {
+      console.error('Error al actualizar cliente:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Sincronizar manualmente un cliente de lista de espera con tabla clientes
+   * Útil cuando la sincronización automática falla
+   */
+  async sincronizarClienteManual(clienteEsperaId: number, clienteRegistradoId: number, mesaId?: number): Promise<boolean> {
+    try {
+      const clienteEspera = await this.getClientePorId(clienteEsperaId);
+      if (!clienteEspera) {
+        console.error('Cliente no encontrado en lista de espera');
+        return false;
+      }
+
+      // Si el cliente de lista de espera ya tiene mesa asignada, usar esa mesa
+      const mesaAsignar = mesaId || clienteEspera.mesa_asignada;
+      
+      if (!mesaAsignar) {
+        console.error('No hay mesa para asignar');
+        return false;
+      }
+
+      await this.clienteService.setMesa(clienteRegistradoId, mesaAsignar);
+      console.log(`✅ Sincronización manual exitosa: Cliente ${clienteRegistradoId} -> Mesa ${mesaAsignar}`);
+      
+      return true;
+    } catch (error) {
+      console.error('Error en sincronización manual:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Buscar posibles coincidencias de cliente registrado para un cliente de lista de espera
+   */
+  async buscarClientesCoincidentes(clienteEsperaId: number): Promise<any[]> {
+    try {
+      const clienteEspera = await this.getClientePorId(clienteEsperaId);
+      if (!clienteEspera) return [];
+
+      const nombreCompleto = clienteEspera.nombre_cliente.trim();
+      const partesNombre = nombreCompleto.split(' ');
+
+      const { data, error } = await supabase
+        .from('clientes')
+        .select('id_cliente, nombre, apellido, email')
+        .or(`nombre.ilike.%${partesNombre[0]}%,apellido.ilike.%${partesNombre[0]}%`);
+
+      if (error) {
+        console.error('Error buscando coincidencias:', error);
+        return [];
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Error en búsqueda de coincidencias:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Suscribirse a cambios en tiempo real
+   */
+  suscribirCambios(callback: (payload: any) => void) {
+    return supabase
+      .channel('lista_espera')
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'lista_espera' 
+        }, 
+        callback
+      )
+      .subscribe();
+  }
+}

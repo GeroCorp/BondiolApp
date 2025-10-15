@@ -355,13 +355,16 @@ export class ClienteService {
     return true;
   }
 
-  async actualizarMesa(cliente_id:number, mesa_id: number){
-    console.log('🔄 Actualizando mesa:', { cliente_id, mesa_id });
+  async actualizarMesa(cliente_id:number, mesa_numero: number){
+    console.log('🔄 Actualizando mesa:', { cliente_id, mesa_numero });
     
     const { data, error } = await this.supabase
     .from('mesas')
-    .update({cliente_asignado: cliente_id})
-    .eq('id', mesa_id)
+    .update({
+      cliente_asignado: cliente_id,
+      disponible: false
+    })
+    .eq('id', mesa_numero) 
     .select();
 
     if (error) {

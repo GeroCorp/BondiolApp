@@ -22,70 +22,103 @@
       <p class="ion-text-center ion-margin-top">Cargando clientes...</p>
     </div>
 
-    <!-- Lista de clientes en espera -->
-    <ion-list *ngIf="!isLoading && clientes.length > 0" class="espera-list">
+    <!-- Lista de espera formal (únicos clientes a mostrar) -->
+    <ion-list *ngIf="!isLoading && clientesFiltrados.length > 0" class="espera-list">
       <ion-list-header>
         <ion-label>
-          <h2>Clientes en espera ({{ clientes.length }})</h2>
-          <p>Mesas disponibles: {{ mesas.length }}</p>
+          <h2>{{ mostrarTodos ? 'Todos los Clientes' : 'Lista de Espera' }} ({{ clientesFiltrados.length }})</h2>
+          <p>{{ mostrarTodos ? 'Historial completo' : 'Clientes en espera de mesa' }}</p>
         </ion-label>
+        <div class="header-buttons">
+          <ion-button 
+            fill="outline" 
+            color="secondary" 
+            size="small"
+            (click)="toggleMostrarTodos()">
+            <ion-icon [name]="mostrarTodos ? 'eye-off-outline' : 'eye-outline'" slot="start"></ion-icon>
+            {{ mostrarTodos ? 'Solo Espera' : 'Ver Todos' }}
+          </ion-button>
+          <ion-button 
+            fill="clear" 
+            color="primary" 
+            (click)="llamarSiguienteCliente()"
+            [disabled]="clientesFiltrados.length === 0">
+            <ion-icon name="megaphone-outline" slot="start"></ion-icon>
+            Llamar Siguiente
+          </ion-button>
+        </div>
       </ion-list-header>
 
       <ion-item
-        *ngFor="let cliente of clientes; let i = index"
+        *ngFor="let cliente of clientesFiltrados; let i = index"
         lines="inset"
         [button]="false"
         class="espera-item"
       >
-        <!-- Avatar o número de orden -->
-        <ion-avatar slot="start">
-          <img
-            *ngIf="cliente.foto"
-            [src]="cliente.foto"
-            [alt]="cliente.nombre"
-          />
-          <div *ngIf="!cliente.foto" class="avatar-placeholder">
-            {{ i + 1 }}
-          </div>
+        <ion-avatar slot="start" class="position-avatar">
+          <div class="position-number">{{ i + 1 }}</div>
         </ion-avatar>
 
-        <!-- Agrupa info y botón en columna -->
         <div class="cliente-col">
-          <!-- Información del cliente -->
           <ion-label>
-            <h2>{{ cliente.nombre }}</h2>
+            <h2>{{ cliente.nombre_cliente }}</h2>
+            <p>{{ cliente.cantidad_personas }} persona{{ cliente.cantidad_personas > 1 ? 's' : '' }}</p>
             <p>
-              En espera desde: {{ formatearFecha(getFechaCliente(cliente)) }}
+              <ion-badge [color]="getColorEstado(cliente.estado)">
+                {{ getEstadoTexto(cliente.estado) }}
+              </ion-badge>
+              - {{ formatearFecha(cliente.created_at) }}
             </p>
-            <p *ngIf="cliente.id_clienteanonimo">
-              ID: {{ cliente.id_clienteanonimo ? cliente.id_clienteanonimo :
-              cliente.id_cliente }}
+            <p class="cliente-id">
+              <ion-icon name="person-outline" size="small"></ion-icon>
+              ID: {{ cliente.id }}
             </p>
           </ion-label>
 
-          <!-- Botón de asignar mesa -->
-          <ion-button
-            color="primary"
-            [disabled]="mesas.length === 0"
-            (click)="asignarMesa(cliente, cliente.id_clienteanonimo ? true : false)"
-          >
-            <ion-icon name="restaurant-outline" slot="start"></ion-icon>
-            Asignar Mesa
-          </ion-button>
+          <div class="acciones-cliente">
+            <ion-button
+              *ngIf="cliente.estado === 'esperando'"
+              color="secondary"
+              size="small"
+              (click)="llamarSiguienteCliente()"
+              [disabled]="i !== 0">
+              <ion-icon name="megaphone-outline" slot="start"></ion-icon>
+              {{ i === 0 ? 'Llamar' : 'En cola' }}
+            </ion-button>
+
+            <ion-button
+              *ngIf="cliente.estado === 'llamado'"
+              color="primary"
+              [disabled]="mesas.length === 0"
+              (click)="asignarMesaListaEspera(cliente)">
+              <ion-icon name="restaurant-outline" slot="start"></ion-icon>
+              Asignar Mesa
+            </ion-button>
+
+            <ion-button
+              *ngIf="cliente.estado === 'esperando' || cliente.estado === 'llamado'"
+              color="warning"
+              size="small"
+              fill="outline"
+              (click)="marcarClienteAusente(cliente)">
+              <ion-icon name="close-outline" slot="start"></ion-icon>
+              Ausente
+            </ion-button>
+          </div>
         </div>
       </ion-item>
     </ion-list>
 
     <!-- Estado sin clientes -->
-    <div *ngIf="!isLoading && clientes.length === 0" class="empty-state">
+    <div *ngIf="!isLoading && clientesFiltrados.length === 0" class="empty-state">
       <ion-icon name="people-outline" size="large" color="medium"></ion-icon>
       <h2>No hay clientes en espera</h2>
       <p class="ion-text-center">
-        Los clientes que se registren aparecerán aquí
+        Los clientes que se unan a la lista aparecerán aquí
       </p>
     </div>
 
-    <!-- Info de mesas disponibles (siempre visible) -->
+    <!-- Info de mesas disponibles -->
     <ion-card *ngIf="!isLoading" class="info-card">
       <ion-card-header>
         <ion-card-title color="primary">
@@ -98,13 +131,13 @@
           <ion-col size="6">
             <ion-item lines="none">
               <ion-icon
-                name="people-outline"
+                name="ticket-outline"
                 slot="start"
-                color="secondary"
+                color="tertiary"
               ></ion-icon>
               <ion-label>
-                <h3>En espera</h3>
-                <p>{{ clientes.length }} clientes</p>
+                <h3>En Espera</h3>
+                <p>{{ contarClientesPorEstado('esperando') }} clientes</p>
               </ion-label>
             </ion-item>
           </ion-col>

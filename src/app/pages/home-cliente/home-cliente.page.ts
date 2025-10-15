@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/supabase';
 import { ToastController, AlertController } from '@ionic/angular';
 import { ClienteService } from 'src/app/services/cliente.service';
+import { ListaEsperaService } from 'src/app/services/lista-espera.service';
 import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
 
 interface Cliente {
@@ -33,7 +34,8 @@ export class HomeClientePage implements OnInit {
     private authService: AuthService,
     private toastController: ToastController,
     private alertController: AlertController,
-    private clienteService: ClienteService
+    private clienteService: ClienteService,
+    private listaEsperaService: ListaEsperaService
   ) {
     effect(() => {
       this.enEspera = this.clienteService.clienteEnEspera();
@@ -70,10 +72,11 @@ export class HomeClientePage implements OnInit {
         this.mesaAsignada = await this.clienteService.getMesa(this.cliente.id_cliente);
         console.log('Mesa asignada al cliente:', this.mesaAsignada);
         
-        // Si tiene mesa asignada, está verificada automáticamente
+        // Solo obtener la mesa asignada, PERO NO marcarla como verificada
+        // El cliente debe escanear el QR para verificar que está en la mesa correcta
         if (this.mesaAsignada) {
-          this.mesaVerificada = true;
-          this.enEspera = false;
+          this.enEspera = false; // Ya no está en espera
+          // mesaVerificada sigue siendo false hasta que escanee QR
         }
       }
     } catch (error) {
@@ -107,27 +110,80 @@ export class HomeClientePage implements OnInit {
       this.showToast('Error al escanear: ' + err.message, 'danger');
     }
   }
+  async escanearQRListaEspera() {
+    try {
+      // Verificar permisos de cámara
+      const granted = await BarcodeScanner.checkPermissions();
+      if (granted.camera !== 'granted') {
+        const permission = await BarcodeScanner.requestPermissions();
+        if (permission.camera !== 'granted') {
+          this.showToast('Se necesitan permisos de cámara', 'danger');
+          return;
+        }
+      }
+
+      // Escanear QR
+      const result = await BarcodeScanner.scan();
+
+      if (result.barcodes && result.barcodes.length > 0) {
+        const qrData = result.barcodes[0].displayValue;
+          this.router.navigate([qrData]);
+        
+      } else {
+        this.showToast('No se detectó ningún QR', 'danger');
+      }
+    } catch (err: any) {
+      console.error('Error al escanear QR:', err);
+      this.showToast('Error al escanear: ' + err.message, 'danger');
+    }
+  }
 
   async procesarQRMesa(qrData: string) {
     try {
-      const numeroMesa = parseInt(qrData);
-
-      if (isNaN(numeroMesa)) {
-        this.showToast('QR inválido: no es un número de mesa', 'danger');
+      // Parsear el QR que viene en formato "numero,capacidad,tipo"
+      const datosQR = qrData.split(',');
+      
+      if (datosQR.length !== 3) {
+        this.showToast('QR inválido: formato incorrecto', 'danger');
         return;
       }
 
-      console.log('Mesa escaneada:', numeroMesa);
+      const numeroMesa = parseInt(datosQR[0]);
+      const capacidad = parseInt(datosQR[1]);
+      const tipo = datosQR[2];
+
+      if (isNaN(numeroMesa) || isNaN(capacidad)) {
+        this.showToast('QR inválido: datos no válidos', 'danger');
+        return;
+      }
+
+      console.log('Mesa escaneada:', {
+        numero: numeroMesa,
+        capacidad: capacidad,
+        tipo: tipo
+      });
       console.log('Mesa actual asignada:', this.mesaAsignada);
 
-      // Si ya tiene una mesa asignada, preguntar si quiere cambiarla
+      // VERIFICACIÓN CLAVE: Si el cliente tiene mesa asignada, debe coincidir con la escaneada
       if (this.mesaAsignada && this.mesaAsignada !== numeroMesa) {
-        await this.confirmarCambioMesa(numeroMesa);
+        this.showToast(
+          `❌ Esta no es tu mesa asignada. Tu mesa es la ${this.mesaAsignada}, pero escaneaste la mesa ${numeroMesa}`,
+          'danger'
+        );
         return;
       }
 
-      // Intentar asignar la mesa
-      await this.asignarMesa(numeroMesa);
+      // Si no tiene mesa asignada, mostrar error
+      if (!this.mesaAsignada) {
+        this.showToast(
+          `❌ No tienes una mesa asignada. Debe asignarte una mesa antes de poder escanear el QR.`,
+          'danger'
+        );
+        return;
+      }
+
+      // Si llegó hasta aquí, significa que la mesa escaneada coincide con la asignada
+      await this.verificarMesa(numeroMesa, capacidad, tipo);
 
     } catch (error) {
       console.error('Error procesando QR:', error);
@@ -135,28 +191,55 @@ export class HomeClientePage implements OnInit {
     }
   }
 
-  async confirmarCambioMesa(nuevaMesa: number) {
-    const alert = await this.alertController.create({
-      header: 'Cambiar de Mesa',
-      message: `Actualmente tienes asignada la Mesa ${this.mesaAsignada}. ¿Deseas cambiar a la Mesa ${nuevaMesa}?`,
-      buttons: [
-        {
-          text: 'Cancelar',
-          role: 'cancel'
-        },
-        {
-          text: 'Cambiar',
-          handler: async () => {
-            // Liberar la mesa actual primero
-            if (this.mesaAsignada) {
-              await this.liberarMesaActual();
-            }
-            await this.asignarMesa(nuevaMesa);
-          }
-        }
-      ]
-    });
-    await alert.present();
+  /**
+   * Verificar que la mesa escaneada corresponde a la asignada
+   */
+  async verificarMesa(numeroMesa: number, capacidad: number, tipo: string) {
+    try {
+      if (!this.cliente?.id_cliente) {
+        this.showToast('Error: No se pudo obtener tu ID de cliente', 'danger');
+        return;
+      }
+
+      // Verificar que la mesa existe en la base de datos
+      const { data: mesa, error: errorMesa } = await this.authService.client
+        .from('mesas')
+        .select('*')
+        .eq('numero', numeroMesa)
+        .maybeSingle();
+
+      if (errorMesa || !mesa) {
+        this.showToast(`La Mesa ${numeroMesa} no existe en el sistema`, 'danger');
+        return;
+      }
+
+      // Verificar que los datos del QR coincidan con los de la base de datos
+      if (mesa.capacidad !== capacidad || mesa.tipo !== tipo) {
+        this.showToast(`Los datos del QR no coinciden con la mesa registrada`, 'danger');
+        return;
+      }
+
+      // Asegurarse de que la mesa esté correctamente asignada en la base de datos
+      // Esto actualiza tanto la tabla clientes como mesas
+      await this.clienteService.setMesa(this.cliente.id_cliente, numeroMesa);
+
+      // Todo correcto - verificar la mesa
+      this.mesaVerificada = true;
+      this.enEspera = false;
+      
+      console.log(`✅ Mesa ${numeroMesa} verificada y sincronizada correctamente`);
+      
+      this.showToast(
+        `✅ Mesa ${numeroMesa} verificada correctamente\n` +
+        `Capacidad: ${capacidad} personas\n` +
+        `Tipo: ${tipo}`,
+        'success'
+      );
+
+    } catch (error) {
+      console.error('Error verificando mesa:', error);
+      this.showToast('Error al verificar la mesa', 'danger');
+    }
   }
 
   async liberarMesaActual() {
@@ -178,10 +261,21 @@ export class HomeClientePage implements OnInit {
     }
   }
 
+  /**
+   * NOTA: Este método ahora no se usa en el flujo principal
+   * La asignación de mesas se hace desde el maître/administrador
+   * Los clientes solo verifican su mesa asignada escaneando el QR
+   */
   async asignarMesa(numeroMesa: number) {
     try {
       if (!this.cliente?.id_cliente) {
         this.showToast('Error: No se pudo obtener tu ID de cliente', 'danger');
+        return;
+      }
+
+      // Solo permitir si no tiene mesa asignada (caso excepcional)
+      if (this.mesaAsignada) {
+        this.showToast('Ya tienes una mesa asignada. Escanea el QR de tu mesa para verificarla.', 'warning');
         return;
       }
 
@@ -203,23 +297,14 @@ export class HomeClientePage implements OnInit {
         return;
       }
 
-      // Si ya está asignada a este cliente, solo verificar
-      if (mesa.cliente_asignado === this.cliente.id_cliente) {
-        this.mesaAsignada = numeroMesa;
-        this.mesaVerificada = true;
-        this.enEspera = false;
-        this.showToast(`✅ Mesa ${numeroMesa} verificada`, 'success');
-        return;
-      }
-
-      // Asignar la mesa al cliente
+      // Asignar la mesa al cliente (solo en casos excepcionales)
       const resultado = await this.clienteService.setMesa(this.cliente.id_cliente, numeroMesa);
 
       if (resultado) {
         this.mesaAsignada = numeroMesa;
         this.mesaVerificada = true;
         this.enEspera = false;
-        this.showToast(`✅ Mesa ${numeroMesa} asignada correctamente`, 'success');
+        this.showToast(`✅ Mesa ${numeroMesa} asignada y verificada correctamente`, 'success');
       }
 
     } catch (error: any) {
@@ -281,5 +366,12 @@ export class HomeClientePage implements OnInit {
       return;
     }
     this.router.navigate(["/tabs-cliente-registrado/tab3-consulta"]);
+  }
+
+  /**
+   * Unirse a la lista de espera
+   */
+  async unirseListaEspera() {
+    // Navegar al page de lista de espera
   }
 }

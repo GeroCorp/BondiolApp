@@ -1,3 +1,9 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Menú</ion-title>
+  </ion-toolbar>
+</ion-header>
+
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar>
@@ -14,17 +20,41 @@
       }
     </ion-card-header>
     <ion-card-content>
-      
-      <ion-list>
-        @if (perfil === 'cocinero') {
+      @if (isLoadingData) {
+        <div class="loading-state">
+          <ion-spinner name="crescent" color="primary"></ion-spinner>
+          <p>Cargando menú...</p>
+        </div>
+      } @else {
+        <ion-list>
+          @if (perfil === 'cocinero') {
           @if (platos().length > 0) {
             @for (item of platos(); track $index) {
-              <ion-item>
+              <ion-item class="menu-item">
+                <ion-thumbnail slot="start">
+                  <div class="image-container">
+                    <ion-spinner 
+                      *ngIf="imageLoadingStates[getImageId(item, 'plato')]" 
+                      name="crescent" 
+                      class="image-spinner">
+                    </ion-spinner>
+                    <ion-img 
+                      [src]="getFirstImage(item.imagenes)" 
+                      [alt]="item.nombre"
+                      (ionImgWillLoad)="onImageWillLoad(getImageId(item, 'plato'))"
+                      (ionImgDidLoad)="onImageDidLoad(getImageId(item, 'plato'))"
+                      (ionError)="handleImageError($event, getImageId(item, 'plato'))">
+                    </ion-img>
+                  </div>
+                </ion-thumbnail>
                 <ion-label>
-                  <ion-img [src]="getFirstImage(item.imagenes)"></ion-img>
                   <h2>{{ item.nombre }} - ${{ item.precio }}</h2>
                   <p>{{ item.descripcion }}</p>
                   <small>Tiempo de preparación: {{ item.tiempo }} minutos</small>
+                  <div class="image-count" *ngIf="getAllImages(item.imagenes).length > 1">
+                    <ion-icon name="images-outline"></ion-icon>
+                    {{ getAllImages(item.imagenes).length }} fotos
+                  </div>
                 </ion-label>
               </ion-item>
             }
@@ -40,12 +70,31 @@
         @if (perfil === 'bartender') {
           @if (bebidas().length > 0) {
             @for (item of bebidas(); track $index) {
-              <ion-item>
+              <ion-item class="menu-item">
+                <ion-thumbnail slot="start">
+                  <div class="image-container">
+                    <ion-spinner 
+                      *ngIf="imageLoadingStates[getImageId(item, 'bebida')]" 
+                      name="crescent" 
+                      class="image-spinner">
+                    </ion-spinner>
+                    <ion-img 
+                      [src]="getFirstImage(item.imagenes)" 
+                      [alt]="item.nombre"
+                      (ionImgWillLoad)="onImageWillLoad(getImageId(item, 'bebida'))"
+                      (ionImgDidLoad)="onImageDidLoad(getImageId(item, 'bebida'))"
+                      (ionError)="handleImageError($event, getImageId(item, 'bebida'))">
+                    </ion-img>
+                  </div>
+                </ion-thumbnail>
                 <ion-label>
-                  <ion-img [src]="getFirstImage(item.imagenes)"></ion-img>
                   <h2>{{ item.nombre }} - ${{ item.precio }}</h2>
                   <p>{{ item.descripcion }}</p>
                   <small>Tiempo de preparación: {{ item.tiempo }} minutos</small>
+                  <div class="image-count" *ngIf="getAllImages(item.imagenes).length > 1">
+                    <ion-icon name="images-outline"></ion-icon>
+                    {{ getAllImages(item.imagenes).length }} fotos
+                  </div>
                 </ion-label>
               </ion-item>
             }
@@ -57,8 +106,8 @@
             </div>
           }
         }
-      </ion-list>
-
+        </ion-list>
+      }
     </ion-card-content>
   </ion-card>
 </ion-content>

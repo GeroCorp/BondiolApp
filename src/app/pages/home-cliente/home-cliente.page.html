@@ -25,19 +25,35 @@
     </div>
 
     <!-- Botón de escaneo QR prominente -->
-    @if (!mesaVerificada) {
+    @if (!mesaVerificada && mesaAsignada) {
       <ion-card color="warning">
         <ion-card-header>
           <ion-card-title>
             <ion-icon name="qr-code-outline"></ion-icon>
-            Escanea una Mesa
+            Verifica tu Mesa Asignada
           </ion-card-title>
         </ion-card-header>
         <ion-card-content>
-          <p>Para comenzar a usar el restaurante, escanea el código QR de cualquier mesa disponible.</p>
+          <p>Tienes asignada la Mesa {{ mesaAsignada }}. Para comenzar a usar el restaurante, escanea el código QR de tu mesa para verificarla.</p>
           <ion-button expand="block" size="large" (click)="escanearQRMesa()">
             <ion-icon slot="start" name="qr-code"></ion-icon>
-            Escanear QR de Mesa
+            Verificar Mesa {{ mesaAsignada }}
+          </ion-button>
+        </ion-card-content>
+      </ion-card>
+    } @else if (!mesaVerificada && !mesaAsignada) {
+      <ion-card color="danger">
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon name="alert-circle-outline"></ion-icon>
+            Sin Mesa Asignada
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <p>No tienes una mesa asignada. Debes solicitar al personal del restaurante que te asigne una mesa o unirte a la lista de espera.</p>
+          <ion-button expand="block" size="large" fill="outline" (click)="escanearQRListaEspera()">
+            <ion-icon slot="start" name="time-outline"></ion-icon>
+            Unirse a Lista de Espera
           </ion-button>
         </ion-card-content>
       </ion-card>
