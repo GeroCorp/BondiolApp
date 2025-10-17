@@ -68,7 +68,8 @@ async logout() {
               this.notificationService.clearUserTags();
               
               await this.authService.logout();
-              
+              this.perfilService.setPerfil('');
+              this.notificationService.clearUserTags();
               const toast = await this.toastController.create({
                 message: 'Sesión cerrada correctamente',
                 duration: 2000,

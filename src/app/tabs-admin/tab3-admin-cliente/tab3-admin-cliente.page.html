@@ -1,11 +1,16 @@
-<!-- <ion-header [translucent]="true">
+<ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>Clientes Pendientes</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home" icon="arrow-back"></ion-back-button>
+    </ion-buttons>
+    <ion-title>
+      <ion-icon name="person-add"></ion-icon> Clientes Pendientes
+    </ion-title>
+    
   </ion-toolbar>
-</ion-header> -->
+</ion-header>
 
 <ion-content [fullscreen]="true" class="cliente-content">
-  <h2 class="cliente-title ion-text-center">Listado de Clientes Pendientes</h2>
   <ion-list *ngIf="clientes.length > 0; else noHay">
     
     <div *ngFor="let cliente of clientes" class="cliente-item">

@@ -72,6 +72,7 @@ export class EmailService {
         environment.emailjs.serviceId,
         environment.emailjs.templates.rechazado,
         templateParams
+
       );
 
       console.log('✅ Email de rechazo enviado:', response);

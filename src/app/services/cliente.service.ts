@@ -1,7 +1,7 @@
-import { Injectable, signal } from '@angular/core';
+import { inject, Injectable, Injector, signal } from '@angular/core';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { environment } from 'src/environments/environment';
-import { Subject } from 'rxjs';
+import { Notification } from './notification';
 
 @Injectable({
   providedIn: 'root'
@@ -14,18 +14,22 @@ export class ClienteService {
   // Signal para el historial de pedidos del cliente
   private _historialPedidos = signal<any[]>([]);
   
-  // Subject para emitir eventos de cambios en pedidos
-  private _pedidoEventos = new Subject<{tipo: string, pedido: any, payload?: any}>();
-  
   private supabase: SupabaseClient;
-
   
+  private injector = inject(Injector);
+
+
   constructor() {
     this.supabase = createClient(
       environment.SUPABASE_URL,
       environment.SUPABASE_ANON_KEY
     );
    }
+
+  // Getter para acceso lazy al servicio de notificaciones
+  private get notificationService(): Notification {
+    return this.injector.get(Notification);
+  }
 
   // Getter para acceder al signal desde los componentes
   get pedido() {
@@ -40,11 +44,6 @@ export class ClienteService {
   // Getter para el historial de pedidos
   get historialPedidos() {
     return this._historialPedidos;
-  }
-
-  // Getter para eventos de pedidos (notificaciones)
-  get pedidoEventos$() {
-    return this._pedidoEventos.asObservable();
   }
 
   // Metodos para manejo del pedido
@@ -175,16 +174,6 @@ export class ClienteService {
        }
      }));
 
-    // Emitir evento de pedido creado
-    this._pedidoEventos.next({
-      tipo: 'PEDIDO_CREADO',
-      pedido: {
-        id: idPedido,
-        total: totalCalculado,
-        cantidadItems: detalles.length
-      }
-    });
-
     // Limpiar el pedido después de insertarlo
     this.clearPedido();
     
@@ -214,25 +203,31 @@ export class ClienteService {
   async sendMessage(content: string){
     const idCliente = await this.getClientId()
     const nroMesa = await this.getMesa(idCliente)
-    const nombre = this.getNombreCliente()
+    const nombre = await this.getNombreCliente()
 
-    const { error } = await this.supabase
+    const { data, error } = await this.supabase
     .from('mensajes')
     .insert([
       {
         contenido: content,
-        nombre_usuario: await nombre,
+        nombre_usuario: nombre,
         date_sended: new Date().toISOString(),
         nroMesa
       }
-    ]);
+    ]).select();
 
     if (error) {
       console.error('❌ Error enviando mensaje:', error);
       throw new Error('Error enviando mensaje: ' + error.message);
     }
 
-
+    if (data){
+      this.notificationService.sendNotificationToPerfil(
+        'mozo',
+        `Nueva consulta de la mesa ${nroMesa}`,
+        `${nombre}: ${content}`
+      );
+    }
 
   }
 
@@ -312,6 +307,44 @@ export class ClienteService {
         console.log('🔄 Update detectado en clientes:', payload);
         
         try {
+          // Obtener información del cambio
+          const oldRecord = payload.old as any;
+          const newRecord = payload.new as any;
+          
+          // Verificar si este cambio es para el cliente actual
+          const currentUserId = (await this.supabase.auth.getUser()).data.user?.id;
+          if (newRecord?.user_id === currentUserId) {
+            
+            // Verificar si se asignó una mesa (de null a un número)
+            if (oldRecord?.mesa_asignada === null && newRecord?.mesa_asignada !== null) {
+              try {
+                const numeroMesa = await this.getMesa(newRecord.id_cliente);
+                await this.notificationService.sendNotificationToCliente(
+                  '🎉 ¡Mesa asignada!',
+                  `Te hemos asignado la mesa ${numeroMesa}. ¡Ya puedes realizar tu pedido!`,
+                  ''
+                );
+                console.log('✅ Notificación de mesa asignada enviada');
+              } catch (error) {
+                console.error('❌ Error enviando notificación de mesa:', error);
+              }
+            }
+            
+            // Verificar si se liberó una mesa (de un número a null)
+            if (oldRecord?.mesa_asignada !== null && newRecord?.mesa_asignada === null) {
+              try {
+                await this.notificationService.sendNotificationToCliente(
+                  'Mesa liberada',
+                  'Tu mesa ha sido liberada. Gracias por visitarnos.',
+                  ''
+                );
+                console.log('✅ Notificación de mesa liberada enviada');
+              } catch (error) {
+                console.error('❌ Error enviando notificación de liberación:', error);
+              }
+            }
+          }
+          
           // Llamar a la función y esperar el resultado
           const enEspera = await this.isCLienteEnEspera();
           console.log('✅ Cliente en espera actualizado:', enEspera);
@@ -626,7 +659,7 @@ async subscribeToHistorialPedidos() {
       .on(
         'postgres_changes',
         { 
-          event: '*', 
+          event: 'UPDATE', 
           schema: 'public', 
           table: 'pedidos',
           filter: `id_cliente=eq.${clienteId}`
@@ -634,39 +667,30 @@ async subscribeToHistorialPedidos() {
         async (payload) => {
           console.log('🔄 Cambio en pedidos detectado:', payload);
           
-          // Emitir evento de cambio de pedido
-          this.emitirEventoCambioPedido(payload);
+          // Extraer información del cambio
+          const oldRecord = payload.old as any;
+          const newRecord = payload.new as any;
+          
+          // Verificar si cambió el estado
+          if (oldRecord?.estado !== newRecord?.estado) {
+            const estadoTexto = this.getTextoEstado(newRecord.estado);
+            const mesaNumero = await this.getMesa(clienteId);
+            
+            // Enviar notificación usando tu servicio existente
+            try {
+              await this.notificationService.sendNotificationToCliente(
+                `Estado de tu pedido`,
+                `Tu pedido #${newRecord.id} cambió a: ${estadoTexto}`,
+                '' // URL opcional si quieres redirigir a alguna página específica
+              );
+              console.log('✅ Notificación de cambio de estado enviada');
+            } catch (error) {
+              console.error('❌ Error enviando notificación:', error);
+            }
+          }
           
           // Recargar todo el historial cuando hay cambios
           await this.getHistorialPedidos();
-        }
-      )
-      .on(
-        'postgres_changes',
-        { 
-          event: '*', 
-          schema: 'public', 
-          table: 'detalles_pedido'
-        },
-        async (payload) => {
-          console.log('🔄 Cambio en detalles de pedido detectado:', payload);
-          
-          // Verificar si el cambio corresponde a un pedido del cliente
-          const newRecord = payload.new as any;
-          const oldRecord = payload.old as any;
-          const pedidoId = newRecord?.id_pedido || oldRecord?.id_pedido;
-          
-          if (pedidoId) {
-            const { data: pedido } = await this.supabase
-              .from('pedidos')
-              .select('id_cliente')
-              .eq('id', pedidoId)
-              .single();
-
-            if (pedido?.id_cliente === clienteId) {
-              await this.getHistorialPedidos();
-            }
-          }
         }
       )
       .subscribe();
@@ -753,97 +777,5 @@ getTextoEstado(estado: string): string {
     cancelado: 'Cancelado'
   };
   return textos[estado] || estado;
-}
-
-/**
- * Emite evento de cambio de pedido para que los componentes puedan manejar notificaciones
- */
-private emitirEventoCambioPedido(payload: any) {
-  try {
-    const evento = payload.eventType;
-    const pedidoNuevo = payload.new;
-    const pedidoAnterior = payload.old;
-
-    let datosEvento = {
-      tipo: 'PEDIDO_ACTUALIZADO',
-      pedido: pedidoNuevo || pedidoAnterior,
-      payload: payload,
-      evento: evento,
-      mensaje: this.generarMensajeNotificacion(evento, pedidoNuevo, pedidoAnterior)
-    };
-
-    // Emitir el evento
-    this._pedidoEventos.next(datosEvento);
-    console.log('📤 Evento de pedido emitido:', datosEvento);
-
-  } catch (error) {
-    console.error('❌ Error emitiendo evento de cambio de pedido:', error);
-  }
-}
-
-/**
- * Genera el mensaje de notificación según el tipo de cambio
- */
-private generarMensajeNotificacion(evento: string, pedidoNuevo: any, pedidoAnterior: any) {
-  let titulo = '';
-  let mensaje = '';
-
-  switch (evento) {
-    case 'INSERT':
-      titulo = '🎉 ¡Nuevo Pedido Creado!';
-      mensaje = `Tu pedido #${pedidoNuevo.id} ha sido registrado exitosamente.`;
-      break;
-
-    case 'UPDATE':
-      const estadoAnterior = pedidoAnterior?.estado;
-      const estadoNuevo = pedidoNuevo?.estado;
-
-      if (estadoAnterior !== estadoNuevo) {
-        switch (estadoNuevo) {
-          case 'confirmado':
-            titulo = '✅ Pedido Confirmado';
-            mensaje = `Tu pedido #${pedidoNuevo.id} ha sido confirmado por el restaurante.`;
-            break;
-          case 'en_preparacion':
-            titulo = '👨‍🍳 Preparando tu Pedido';
-            mensaje = `Tu pedido #${pedidoNuevo.id} está siendo preparado en la cocina.`;
-            break;
-          case 'listo':
-            titulo = '🍽️ ¡Pedido Listo!';
-            mensaje = `Tu pedido #${pedidoNuevo.id} está listo para ser servido.`;
-            break;
-          case 'entregado':
-            titulo = '🎊 Pedido Entregado';
-            mensaje = `Tu pedido #${pedidoNuevo.id} ha sido entregado. ¡Que lo disfrutes!`;
-            break;
-          case 'pagado':
-            titulo = '💳 Pago Registrado';
-            mensaje = `El pago de tu pedido #${pedidoNuevo.id} ha sido procesado correctamente.`;
-            break;
-          case 'cancelado':
-            titulo = '❌ Pedido Cancelado';
-            mensaje = `Tu pedido #${pedidoNuevo.id} ha sido cancelado.`;
-            break;
-          default:
-            titulo = '🔄 Pedido Actualizado';
-            mensaje = `Tu pedido #${pedidoNuevo.id} ha sido actualizado.`;
-        }
-      } else {
-        titulo = '🔄 Pedido Actualizado';
-        mensaje = `Se han actualizado los detalles de tu pedido #${pedidoNuevo.id}.`;
-      }
-      break;
-
-    case 'DELETE':
-      titulo = '🗑️ Pedido Eliminado';
-      mensaje = `Tu pedido #${pedidoAnterior.id} ha sido eliminado del sistema.`;
-      break;
-
-    default:
-      titulo = '🔔 Actualización de Pedido';
-      mensaje = 'Ha habido cambios en uno de tus pedidos.';
-  }
-
-  return { titulo, mensaje };
 }
 }

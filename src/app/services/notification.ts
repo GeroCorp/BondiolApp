@@ -178,7 +178,7 @@ export class Notification {
 
   /**
    * Envía notificación a un perfil específico
-   * @param perfil - 'dueño', 'supervisor', 'cocinero', 'bartender', 'maitre'
+   * @param perfil - 'dueño', 'supervisor', 'cocinero', 'bartender', 'maitre', 'mozo'
    * @param title - Título
    * @param body - Cuerpo
    * @param url - URL opcional
@@ -208,8 +208,16 @@ export class Notification {
       return false;
     })
   }
-  async sendNotificationToCliente(title: string, body: string, url: string = '') {
-    const cliente_id = await this.clienteService.getClientId();
+  /*
+  * Envía notificación a un cliente específico
+  * @param title - Título
+  * @param body - Cuerpo
+  * @param url - URL opcional
+  * @param cliente_id - ID del cliente (si no se provee, se obtiene del servicio)
+  */
+  async sendNotificationToCliente(title: string, body: string, url: string = '', cliente_id: number | null = null) {
+    // En caso que no se pase id por parametros obtiene la del cliente actual (sesión)
+    if (!cliente_id) cliente_id = await this.clienteService.getClientId();
 
     return CapacitorHttp.post({
       url: 'https://onesignal.com/api/v1/notifications',

@@ -1,4 +1,4 @@
-<ion-header [translucent]="true">
+<ion-header [translucent]="true" class="chat-header">
   <ion-toolbar>
     <ion-button (click)="volver()" fill="clear" shape="round" slot="end">
       Volver
@@ -8,58 +8,57 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Chat - Mesa {{ id_mesa }}</ion-title>
-    </ion-toolbar>
-  </ion-header>
-  
+<ion-content [fullscreen]="true" class="chat-content">
   <div class="messages-container">
-    <div class="messages-list">
-      @if (loading()) {
-        <div class="d-flex justify-content-center align-items-center h-100">
-          <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Cargando mensajes...</span>
+    <div class="messages-list" #messagesWrapper>
+      <div *ngIf="loading()" class="d-flex justify-content-center align-items-center h-100">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Cargando mensajes...</span>
+        </div>
+      </div>
+      
+      <div *ngFor="let mensaje of messages(); let i = index; trackBy: trackByIndex" 
+           class="message-wrapper" 
+           [ngClass]="mensaje.nombre_usuario == username ? 'sent' : 'received'">
+        <div class="message-bubble">
+          <div class="message-header">
+            <strong class="sender-name">
+              <span *ngIf="mensaje.nombre_usuario == username; else otherUser">Tú</span>
+              <ng-template #otherUser>{{ mensaje.nombre_usuario || 'Anónimo' }}</ng-template>
+            </strong>
+          </div>
+          <div class="message-content">
+            {{ mensaje.contenido }}
+          </div>
+          <div class="message-time">
+            {{ mensaje.date_sended | date:'HH:mm' }}
           </div>
         </div>
-      }
-      @for (mensaje of messages(); track $index) {
-        <div class="message-wrapper" [ngClass]="mensaje.nombre_usuario == username ? 'sent' : 'received'">
-          <div class="message-bubble">
-            <div class="message-header">
-              <strong class="sender-name">
-                @if (mensaje.nombre_usuario == username) {
-                  Tú
-                } @else {
-                  {{ mensaje.nombre_usuario || 'Anónimo' }}
-                }
-              </strong>
-            </div>
-            <div class="message-content">
-              {{ mensaje.contenido }}
-            </div>
-            <div class="message-time">
-              {{ mensaje.date_sended | date:'HH:mm' }}
-            </div>
-          </div>
-        </div>
-      }
-      <ion-item lines="none" class="input-item">
-        <ion-input type="text" placeholder="Escribe un mensaje..." [(ngModel)]="newMessage" class="message-input"></ion-input>
-        <ion-button (click)="sendMessage()" fill="clear" slot="end" [disabled]="!newMessage.trim()" class="send-button">
-          <ion-icon slot="icon-only" name="send-sharp"></ion-icon>
-        </ion-button>
-      </ion-item>
-  
-      @if (messages.length === 0 && !loading) {
-        <div class="no-messages">
-          <p>No hay mensajes aún.</p>
-        </div>
-      }
+      </div>
+
+      <div *ngIf="messages().length === 0 && !loading()" class="no-messages">
+        <p>No hay mensajes aún.</p>
+      </div>
+      <div class="input-container">
+        <ion-item lines="none" class="input-item">
+          <ion-input 
+            type="text" 
+            placeholder="Escribe un mensaje..." 
+            [(ngModel)]="newMessage" 
+            class="message-input"
+            (keydown.enter)="sendMessage()">
+          </ion-input>
+          <ion-button 
+            (click)="sendMessage()" 
+            fill="clear" 
+            slot="end" 
+            [disabled]="!newMessage.trim()" 
+            class="send-button">
+            <ion-icon slot="icon-only" name="send-sharp"></ion-icon>
+          </ion-button>
+        </ion-item>
+      </div>
     </div>
   </div>
-  
-  <!-- Input fijo en la parte inferior -->
-</ion-content>
 
+</ion-content>

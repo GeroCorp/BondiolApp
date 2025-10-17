@@ -5,6 +5,10 @@
       Historial de Pedidos
     </ion-title>
     <ion-buttons slot="end">
+      <ion-button (click)="volverHome()" fill="clear" shape="round">
+        Volver
+        <ion-icon slot="start" name="home-outline"></ion-icon>
+      </ion-button>
       <ion-button (click)="recargar()">
         <ion-icon name="refresh-outline"></ion-icon>
       </ion-button>

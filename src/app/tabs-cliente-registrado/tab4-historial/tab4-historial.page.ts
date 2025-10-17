@@ -1,7 +1,8 @@
 import { Component, OnInit, signal, computed, OnDestroy } from '@angular/core';
-import { LoadingController, ToastController, ModalController } from '@ionic/angular';
+import { LoadingController, ToastController, ModalController, NavController } from '@ionic/angular';
 import { ClienteService } from 'src/app/services/cliente.service';
 import { DetallePedidoModalComponent } from './detalle-pedido-modal/detalle-pedido-modal.component';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-tab4-historial',
@@ -29,10 +30,12 @@ export class Tab4HistorialPage implements OnInit, OnDestroy {
   private subscription: any;
 
   constructor(
+    private router: Router,
     private clienteService: ClienteService,
     private loadingController: LoadingController,
     private toastController: ToastController,
-    private modalController: ModalController
+    private modalController: ModalController,
+    private navController: NavController
   ) {}
 
   async ngOnInit() {
@@ -123,6 +126,10 @@ export class Tab4HistorialPage implements OnInit, OnDestroy {
       cancelado: 'close-circle-outline'
     };
     return iconos[estado] || 'help-circle-outline';
+  }
+
+  volverHome() {
+    this.router.navigate(["/home-cliente"]);
   }
 
   private async showToast(message: string, color: 'success' | 'danger' | 'medium') {

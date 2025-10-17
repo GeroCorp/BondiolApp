@@ -554,7 +554,7 @@ export class AuthService {
         estado: 'pendiente' // Nuevo cliente siempre inicia como pendiente
       }
     ]).select();
-
+    console.log("✅ Cliente insertado con exito: ", data);
     if (error) {
       console.error('Error al insertar cliente:', error.message);
       

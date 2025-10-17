@@ -130,5 +130,5 @@ Fecha estimada de finalización: 3/10
 
 ## Corpus Gerónimo
 - Estilado de paginas
-- Arreglos de funcionalidades
+- Push Notification y Mails automaticos
 - Creación de lista de espera

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { supabase } from './supabase';
+import { Notification } from './notification';
 
 @Injectable({
   providedIn: 'root'
@@ -7,7 +8,9 @@ import { supabase } from './supabase';
 export class ConcinaBar {
   private supabase = supabase;
 
-  constructor() {
+  constructor(
+    private notificationService: Notification
+  ) {
   }
 
   async getPedidosPendientesSector(sector: 'cocina' | 'bar') {
@@ -76,6 +79,12 @@ export class ConcinaBar {
           // Marcar el pedido general como "listo"
           await this.actualizarEstadoPedido(pedidoId, 'listo');
           console.log(`Pedido ${pedidoId} marcado como listo - todos los items completados`);
+          this.notificationService.sendNotificationToPerfil(
+            'mozo',
+            `El pedido #${pedidoId} ha sido actualizado.`,
+            `El pedido ya está listo para ser servido.`
+          );
+
         } else {
           await this.actualizarEstadoPedido(pedidoId, 'en_preparación');
           console.log(`Pedido ${pedidoId} marcado como en preparación - algunos items aún pendientes`);

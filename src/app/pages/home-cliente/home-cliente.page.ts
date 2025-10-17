@@ -1,4 +1,4 @@
-import { Component, effect, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, effect, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/supabase';
 import { ToastController, AlertController } from '@ionic/angular';
@@ -6,7 +6,6 @@ import { ClienteService } from 'src/app/services/cliente.service';
 import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
 import { PerfilService } from 'src/app/services/perfilService';
 import { Notification } from 'src/app/services/notification';
-import { Subscription } from 'rxjs';
 
 
 
@@ -27,14 +26,13 @@ interface Cliente {
   styleUrls: ['./home-cliente.page.scss'],
   standalone: false
 })
-export class HomeClientePage implements OnInit, OnDestroy {
+export class HomeClientePage implements OnInit {
   cliente: Cliente | null = null;
   enEspera: boolean = true;
   mesaAsignada: number | null = null;
-  mesaVerificada: boolean = false;
+  mesaVerificada: boolean = true;
   perfil = "cliente";
   private notificationService: Notification = inject(Notification);
-  private pedidoEventosSubscription?: Subscription;
 
 
 
@@ -79,59 +77,7 @@ export class HomeClientePage implements OnInit, OnDestroy {
 
   async notificationsInit(){
     this.notificationService.setExternalUserId(this.cliente?.id_cliente?.toString() || '');
-    
-    // Suscribirse a eventos de pedidos para enviar notificaciones
-    this.pedidoEventosSubscription = this.clienteService.pedidoEventos$.subscribe((evento) => {
-      this.manejarEventoPedido(evento);
-    });
-  }
-
-  ngOnDestroy() {
-    // Limpiar suscripción al destruir el componente
-    if (this.pedidoEventosSubscription) {
-      this.pedidoEventosSubscription.unsubscribe();
-    }
-  }
-
-  /**
-   * Maneja los eventos de pedidos y envía notificaciones push
-   */
-  private async manejarEventoPedido(evento: any) {
-    try {
-      console.log('📱 Manejando evento de pedido:', evento);
-      
-      let titulo = '';
-      let mensaje = '';
-      const url = '/tabs-cliente-registrado/tab4-historial';
-
-      switch (evento.tipo) {
-        case 'PEDIDO_CREADO':
-          titulo = '🎉 ¡Pedido Creado!';
-          mensaje = `Tu pedido #${evento.pedido.id} ha sido registrado exitosamente. Total: $${evento.pedido.total}`;
-          break;
-          
-        case 'PEDIDO_ACTUALIZADO':
-          if (evento.mensaje) {
-            titulo = evento.mensaje.titulo;
-            mensaje = evento.mensaje.mensaje;
-          } else {
-            titulo = '🔄 Pedido Actualizado';
-            mensaje = `Tu pedido #${evento.pedido.id} ha sido actualizado.`;
-          }
-          break;
-          
-        default:
-          titulo = '🔔 Notificación de Pedido';
-          mensaje = 'Ha habido cambios en uno de tus pedidos.';
-      }
-
-      // Enviar la notificación push
-      await this.notificationService.sendNotificationToCliente(titulo, mensaje, url);
-      console.log('✅ Notificación enviada:', titulo);
-      
-    } catch (error) {
-      console.error('❌ Error manejando evento de pedido:', error);
-    }
+    this.clienteService.subscribeToHistorialPedidos();
   }
 
   async verificarMesaAsignada() {

@@ -1,6 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { environment } from 'src/environments/environment';
+import { Notification } from './notification';
 
 export enum ESTADO {
   PENDIENTE = 'pendiente',
@@ -16,7 +17,9 @@ export enum ESTADO {
 export class Mozo {
   private supabase: SupabaseClient;
 
-  constructor() {
+  constructor(
+    private notificationService: Notification
+  ) {
     this.supabase = createClient(environment.SUPABASE_URL, environment.SUPABASE_ANON_KEY);
   }
   
@@ -52,6 +55,25 @@ export class Mozo {
     }
 
     console.log('✅ Mensaje enviado correctamente a mesa:', id_mesa);
+
+    // Enviar notificación al cliente de esa mesa
+    try {
+      const clienteId = await this.getClienteByMesa(id_mesa);
+      if (clienteId) {
+        await this.notificationService.sendNotificationToCliente(
+          '💬 Nuevo mensaje del mozo',
+          `Tienes un nuevo mensaje en la mesa ${id_mesa}: "${contenido}"`,
+          '', // URL opcional
+          clienteId // Pasar el ID del cliente específico
+        );
+        console.log('✅ Notificación enviada al cliente de la mesa:', id_mesa);
+      } else {
+        console.log('ℹ️ No hay cliente asignado a la mesa:', id_mesa);
+      }
+    } catch (error) {
+      console.error('❌ Error enviando notificación al cliente:', error);
+      // No lanzamos el error para que no afecte el envío del mensaje
+    }
   }
 
   async subscribeToNewMessages(signal: any){
@@ -71,6 +93,37 @@ export class Mozo {
       .subscribe();
     }catch (error){
       console.error('Error al suscribirse a nuevos mensajes: ' + error);
+    }
+  }
+
+  /**
+   * Obtiene el ID del cliente que tiene asignada una mesa específica
+   */
+  private async getClienteByMesa(numeroMesa: number): Promise<number | null> {
+    try {
+      // Primero obtenemos el ID de la mesa por su número
+      const { data: mesaData, error: mesaError } = await this.supabase
+        .from('mesas')
+        .select('id, cliente_asignado')
+        .eq('numero', numeroMesa)
+        .single();
+
+      if (mesaError || !mesaData) {
+        console.error('❌ Error obteniendo mesa:', mesaError);
+        return null;
+      }
+
+      // Si no hay cliente asignado, retornamos null
+      if (!mesaData.cliente_asignado) {
+        console.log('ℹ️ Mesa sin cliente asignado:', numeroMesa);
+        return null;
+      }
+
+      // Retornamos directamente el id_cliente
+      return mesaData.cliente_asignado;
+    } catch (error) {
+      console.error('❌ Error en getClienteByMesa:', error);
+      return null;
     }
   }
 
@@ -149,7 +202,8 @@ export class Mozo {
 
   async enviarPedidoSector (pedidoId: number, sector: 'cocina' | 'bar', items: string){
     try {
-    const pedidoSector = {
+      const perfil = sector === 'cocina' ? 'cocinero' : 'bartender';
+      const pedidoSector = {
       pedido_id: pedidoId,
       sector: sector,
       items: items,
@@ -162,6 +216,23 @@ export class Mozo {
       .select();
 
     if (error) throw error;
+
+    if (sector === 'cocina') {
+
+    this.notificationService.sendNotificationToPerfil(
+      perfil,
+      '🍳 Nuevo pedido para cocina',
+      `Tienes un nuevo pedido #${pedidoId} para preparar. Accede para ver los detalles.`,
+      ''
+    )} else {
+      this.notificationService.sendNotificationToPerfil(
+        perfil,
+        '🍹 Nuevo pedido para bar',
+        `Tienes un nuevo pedido #${pedidoId} para preparar. Accede para ver los detalles.`,
+        ''
+      );
+    }
+
     return data;
   } catch (error) {
     console.error(`Error al enviar pedido a ${sector}:`, error);

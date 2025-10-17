@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, signal } from '@angular/core';
+import { Component, Input, OnInit, signal, ViewChild, ElementRef } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ClienteService } from 'src/app/services/cliente.service';
 import { Mozo } from 'src/app/services/mozo';
@@ -17,7 +17,9 @@ type Msg = {
 })
 export class ChatPage implements OnInit {
 
-  id_mesa!: number;
+  @ViewChild('messagesWrapper') messagesWrapper!: ElementRef;
+
+  id_mesa!: number; // Esto representa el NÚMERO de la mesa, no su ID
 
   messages = signal<Msg[]>([]);
   loading = signal(false);
@@ -35,13 +37,13 @@ export class ChatPage implements OnInit {
   ngOnInit() {
     this.setUsername();
     this.clienteService.subscribeToNewMessages(this.messages);
-    // Obtener el id_mesa desde los parámetros de la ruta
+    // Obtener el numero_mesa desde los parámetros de la ruta
     this.route.paramMap.subscribe(params => {
-      const idMesa = params.get('id_mesa');
-      if (idMesa) {
-        this.id_mesa = parseInt(idMesa, 10);
-        console.log('ID Mesa recibido:', this.id_mesa);
-        // Cargar mensajes una vez que tenemos el ID
+      const numeroMesa = params.get('id_mesa'); // El parámetro sigue siendo 'id_mesa' en la ruta
+      if (numeroMesa) {
+        this.id_mesa = parseInt(numeroMesa, 10);
+        console.log('Número de Mesa recibido:', this.id_mesa);
+        // Cargar mensajes una vez que tenemos el número
         this.loadMessages();
       }
     });
@@ -64,6 +66,9 @@ export class ChatPage implements OnInit {
         // Recargar mensajes para ver el nuevo mensaje
         await this.loadMessages();
         
+        // Scroll automático al último mensaje
+        this.scrollToBottom();
+        
         console.log("Mensaje enviado para mesa:", this.id_mesa);
       } catch (error) {
         console.error('Error enviando mensaje:', error);
@@ -73,14 +78,44 @@ export class ChatPage implements OnInit {
 
   async loadMessages(){
     this.loading.set(true);
+    console.log('🔍 Iniciando carga de mensajes para mesa:', this.id_mesa);
+    
     try{
       const messagesReceived = await this.mozoService.getChatsMesas(this.id_mesa);
+      console.log('📨 Mensajes recibidos desde BD:', messagesReceived);
+      console.log('📊 Cantidad de mensajes:', messagesReceived?.length || 0);
+      
       this.messages.set(messagesReceived || []);
-      console.log('Mensajes cargados para mesa', this.id_mesa, ':', messagesReceived);
+      
+      // Debug del signal
+      console.log('📡 Estado del signal messages después de set:', this.messages());
+      console.log('🔢 Longitud del signal:', this.messages().length);
+      
+      // Scroll al final después de cargar mensajes
+      setTimeout(() => this.scrollToBottom(), 100);
     }catch (error){
-      console.error('Error al cargar los mensajes:', error);
+      console.error('❌ Error al cargar los mensajes:', error);
     }
     this.loading.set(false);
+    console.log('✅ Carga de mensajes completada. Loading:', this.loading());
+  }
+
+  private scrollToBottom(): void {
+    try {
+      if (this.messagesWrapper?.nativeElement) {
+        const element = this.messagesWrapper.nativeElement.closest('.messages-container');
+        if (element) {
+          element.scrollTop = element.scrollHeight;
+        }
+      }
+    } catch (error) {
+      console.error('Error al hacer scroll:', error);
+    }
+  }
+
+  // TrackBy function para mejorar performance de ngFor
+  trackByIndex(index: number, item: any): number {
+    return index;
   }
 
   volver(){
