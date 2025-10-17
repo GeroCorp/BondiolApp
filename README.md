@@ -4,9 +4,11 @@
 # QRs de test
 
 ### Ingreso al local (Lista de espera)
-![Lista de espera](src\assets\QRs\lista_de_espera.png)
+<img width="300" height="300" alt="lista_de_espera" src="https://github.com/user-attachments/assets/de731e55-a413-425b-87ad-89e8cf500d70" />
+
 ### QR para test mesa
-![Test mesa](src\assets\QRs\mesa_test.png)
+![mesa_test](https://github.com/user-attachments/assets/2438d0d5-d004-4b23-9d6f-bf665baa0d02)
+
 
 
 # Primera semana
