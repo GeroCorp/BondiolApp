@@ -1,0 +1,281 @@
+// Estilos para el historial de pedidos del cliente
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  
+  ion-spinner {
+    margin-bottom: 15px;
+  }
+  
+  p {
+    color: var(--ion-color-medium);
+    font-size: 16px;
+    margin: 0;
+  }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  
+  ion-icon {
+    font-size: 80px;
+    margin-bottom: 20px;
+  }
+  
+  h2 {
+    color: var(--ion-color-medium);
+    margin: 0 0 10px 0;
+    font-size: 24px;
+  }
+  
+  p {
+    color: var(--ion-color-medium);
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.4;
+  }
+}
+
+.pedidos-container {
+  padding: 10px;
+}
+
+.pedido-card {
+  margin-bottom: 15px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  
+  .header-pedido {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 15px;
+    
+    .info-pedido {
+      flex: 1;
+      
+      ion-card-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 5px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        
+        ion-icon {
+          font-size: 20px;
+        }
+      }
+      
+      ion-card-subtitle {
+        color: var(--ion-color-medium);
+        font-size: 14px;
+        margin: 0;
+      }
+    }
+    
+    .estado-badge {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+  }
+  
+  .resumen-pedido {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding: 12px;
+    background: var(--ion-color-light);
+    border-radius: 8px;
+    
+    .items-info,
+    .total-info {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      
+      ion-icon {
+        font-size: 16px;
+        color: var(--ion-color-medium);
+      }
+      
+      span {
+        font-size: 14px;
+      }
+    }
+    
+    .total-info span {
+      color: var(--ion-color-primary);
+      font-weight: 600;
+    }
+  }
+  
+  .productos-lista {
+    margin-bottom: 15px;
+    
+    h4 {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 0 0 10px 0;
+      color: var(--ion-color-dark);
+    }
+    
+    .producto-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--ion-color-light);
+      
+      &:last-child {
+        border-bottom: none;
+      }
+      
+      .cantidad {
+        background: var(--ion-color-primary);
+        color: white;
+        border-radius: 12px;
+        padding: 4px 8px;
+        font-size: 12px;
+        font-weight: 600;
+        min-width: 30px;
+        text-align: center;
+      }
+      
+      .nombre {
+        flex: 1;
+        font-size: 14px;
+        color: var(--ion-color-dark);
+      }
+      
+      .precio {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--ion-color-primary);
+      }
+    }
+  }
+  
+  .detalle-button {
+    margin: 15px 0 10px 0;
+    --border-radius: 8px;
+    font-size: 14px;
+  }
+  
+  .info-adicional {
+    margin-top: 10px;
+    
+    ion-chip {
+      --background: var(--ion-color-light);
+      --color: var(--ion-color-dark);
+      font-size: 12px;
+      
+      ion-icon {
+        font-size: 14px;
+        margin-right: 4px;
+      }
+    }
+  }
+}
+
+// Estilos para el header y toolbar
+ion-header {
+  ion-toolbar {
+    --background: var(--ion-color-primary);
+    --color: white;
+    
+    ion-title {
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      
+      ion-icon {
+        font-size: 20px;
+      }
+    }
+    
+    ion-button {
+      --color: white;
+    }
+  }
+  
+  // Toolbar de filtros
+  ion-toolbar:last-child {
+    --background: var(--ion-color-light);
+    
+    ion-segment {
+      --background: transparent;
+      
+      ion-segment-button {
+        --color: var(--ion-color-medium);
+        --color-checked: var(--ion-color-primary);
+        --background-checked: white;
+        --border-radius: 6px;
+        font-size: 12px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+    }
+  }
+}
+
+// Responsividad
+@media (max-width: 768px) {
+  .pedido-card {
+    .header-pedido {
+      .info-pedido {
+        ion-card-title {
+          font-size: 16px;
+        }
+        
+        ion-card-subtitle {
+          font-size: 13px;
+        }
+      }
+      
+      .estado-badge {
+        font-size: 11px;
+      }
+    }
+    
+    .resumen-pedido {
+      flex-direction: column;
+      gap: 10px;
+      align-items: flex-start;
+      
+      .items-info,
+      .total-info {
+        font-size: 13px;
+      }
+    }
+  }
+}
+
+// Animaciones
+ion-card.pedido-card {
+  animation: slideInUp 0.3s ease-out;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

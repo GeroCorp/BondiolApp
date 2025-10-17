@@ -4,6 +4,11 @@ import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 
 const routes: Routes = [
   {
+    path: '',
+    redirectTo: 'splash',
+    pathMatch: 'full'
+  },
+  {
     path: 'home',
     loadChildren: () => import('./pages/home/home.module').then(m => m.HomePageModule),
   },
@@ -14,11 +19,6 @@ const routes: Routes = [
   {
     path: 'home-cliente',
     loadChildren: () => import('./pages/home-cliente/home-cliente.module').then( m => m.HomeClientePageModule)
-  },
-  {
-    path: '',
-    redirectTo: 'splash',
-    pathMatch: 'full'
   },
   {
     path: 'login',
@@ -55,12 +55,7 @@ const routes: Routes = [
   {
     path: 'lista-espera-cliente',
     loadChildren: () => import('./pages/lista-espera-cliente/lista-espera-cliente.module').then( m => m.ListaEsperaClientePageModule)
-  },
-  {
-    path: '**',
-    redirectTo: 'splash',
-    pathMatch: 'full'
-  },
+  }
 
 
 ];

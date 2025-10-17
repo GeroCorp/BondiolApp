@@ -1,0 +1,132 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>
+      <ion-icon name="receipt-outline"></ion-icon>
+      Historial de Pedidos
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="recargar()">
+        <ion-icon name="refresh-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <!-- Filtros -->
+  <ion-toolbar>
+    <ion-segment value="todos" (ionChange)="cambiarFiltro($event.detail.value)">
+      <ion-segment-button value="todos">
+        <ion-label>Todos</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="pendiente">
+        <ion-label>Pendientes</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="en_preparación">
+        <ion-label>En cocina</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="entregado">
+        <ion-label>Entregados</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="pagado">
+        <ion-label>Pagados</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Spinner de carga -->
+  <div *ngIf="isLoading()" class="loading-container">
+    <ion-spinner name="crescent" color="primary"></ion-spinner>
+    <p>Cargando tu historial...</p>
+  </div>
+
+  <!-- Estado vacío -->
+  <div *ngIf="!isLoading() && pedidosFiltrados().length === 0" class="empty-state">
+    <ion-icon name="receipt-outline" color="medium"></ion-icon>
+    <h2>No hay pedidos</h2>
+    <p *ngIf="filtroEstado() === 'todos'">Aún no has realizado ningún pedido</p>
+    <p *ngIf="filtroEstado() !== 'todos'">No hay pedidos con el estado: {{ getTextoEstado(filtroEstado()) }}</p>
+  </div>
+
+  <!-- Lista de pedidos -->
+  <div *ngIf="!isLoading() && pedidosFiltrados().length > 0" class="pedidos-container">
+    <ion-card *ngFor="let pedido of pedidosFiltrados()" class="pedido-card">
+      <ion-card-header>
+        <div class="header-pedido">
+          <div class="info-pedido">
+            <ion-card-title>
+              <ion-icon [name]="getIconoEstado(pedido.estado)"></ion-icon>
+              Pedido #{{ pedido.id }}
+            </ion-card-title>
+            <ion-card-subtitle>
+              Mesa {{ pedido.mesa?.numero }} • {{ formatearFecha(pedido.created_at) }}
+            </ion-card-subtitle>
+          </div>
+          <ion-badge [color]="getColorEstado(pedido.estado)" class="estado-badge">
+            {{ getTextoEstado(pedido.estado) }}
+          </ion-badge>
+        </div>
+      </ion-card-header>
+
+      <ion-card-content>
+        <!-- Resumen del pedido -->
+        <div class="resumen-pedido">
+          <div class="items-info">
+            <ion-icon name="restaurant-outline"></ion-icon>
+            <span>{{ calcularTotalItems(pedido.detalles_pedido) }} productos</span>
+          </div>
+          <div class="total-info">
+            <ion-icon name="card-outline"></ion-icon>
+            <span><strong>Total: ${{ pedido.total }}</strong></span>
+          </div>
+        </div>
+
+        <!-- Lista de productos (solo nombres) -->
+        <div class="productos-lista" *ngIf="pedido.detalles_pedido && pedido.detalles_pedido.length > 0">
+          <h4>Productos:</h4>
+          <div class="producto-item" *ngFor="let detalle of pedido.detalles_pedido">
+            <span class="cantidad">{{ detalle.cantidad }}x</span>
+            <span class="nombre">{{ detalle.nombre_prod }}</span>
+            <span class="precio">${{ detalle.precio_unitario }}</span>
+          </div>
+        </div>
+
+        <!-- Botón ver detalle completo -->
+        <ion-button 
+          expand="block" 
+          fill="outline" 
+          (click)="verDetalle(pedido)"
+          class="detalle-button">
+          <ion-icon name="eye-outline" slot="start"></ion-icon>
+          Ver detalle completo
+        </ion-button>
+
+        <!-- Información adicional según estado -->
+        <div class="info-adicional" *ngIf="pedido.estado === 'en_preparacion'">
+          <ion-chip color="tertiary">
+            <ion-icon name="time-outline"></ion-icon>
+            <ion-label>Tu pedido se está preparando</ion-label>
+          </ion-chip>
+        </div>
+
+        <div class="info-adicional" *ngIf="pedido.estado === 'listo'">
+          <ion-chip color="success">
+            <ion-icon name="checkmark-done-outline"></ion-icon>
+            <ion-label>¡Tu pedido está listo!</ion-label>
+          </ion-chip>
+        </div>
+
+        <div class="info-adicional" *ngIf="pedido.estado === 'entregado'">
+          <ion-chip color="primary">
+            <ion-icon name="happy-outline"></ion-icon>
+            <ion-label>Pedido entregado - ¡Buen provecho!</ion-label>
+          </ion-chip>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

@@ -98,6 +98,39 @@
   }
 }
 
+// Cliente info styling
+.cliente-info {
+  margin-bottom: 16px;
+  
+  ion-item {
+    --background: rgba(var(--ion-color-primary-rgb), 0.1);
+    --border-radius: 12px;
+    --padding-start: 16px;
+    --padding-end: 16px;
+    margin-bottom: 8px;
+    
+    ion-icon {
+      color: var(--ion-color-primary);
+      font-size: 24px;
+    }
+    
+    ion-label {
+      h3 {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0;
+        color: var(--ion-color-primary);
+      }
+      
+      p {
+        font-size: 14px;
+        margin: 4px 0 0 0;
+        color: var(--ion-color-medium);
+      }
+    }
+  }
+}
+
 // Cards styling
 ion-card {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);

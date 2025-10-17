@@ -35,15 +35,15 @@
         </ion-card-header>
 
         <ion-card-content>
-          <ion-item>
-            <ion-label position="stacked">Nombre Completo *</ion-label>
-            <ion-input 
-              [(ngModel)]="nombreCliente"
-              placeholder="Ingresa tu nombre completo"
-              type="text"
-              required>
-            </ion-input>
-          </ion-item>
+          <div class="cliente-info">
+            <ion-item>
+              <ion-icon name="person-outline" slot="start"></ion-icon>
+              <ion-label>
+                <h3>{{ nombreCliente || 'Cargando...' }}</h3>
+                <p>Cliente registrado</p>
+              </ion-label>
+            </ion-item>
+          </div>
 
           <ion-item>
             <ion-label position="stacked">Cantidad de Personas *</ion-label>
@@ -66,7 +66,7 @@
             expand="block" 
             color="primary" 
             (click)="agregarALista()"
-            [disabled]="isLoading">
+            [disabled]="isLoading || !nombreCliente">
             <ion-icon name="add-circle-outline" slot="start"></ion-icon>
             Unirse a la Lista
           </ion-button>

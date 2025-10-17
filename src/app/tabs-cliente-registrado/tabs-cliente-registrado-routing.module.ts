@@ -18,6 +18,10 @@ const routes: Routes = [
   {
     path: 'tab3-consulta',
     loadChildren: () => import('./tab3-consulta/tab3-consulta.module').then( m => m.Tab3ConsultaPageModule)
+  },
+  {
+    path: 'tab4-historial',
+    loadChildren: () => import('./tab4-historial/tab4-historial.module').then( m => m.Tab4HistorialPageModule)
   }
 
 ];

@@ -1,6 +1,7 @@
 <ion-content [fullscreen]="true" class="empleado-content">
   <h2 class="empleado-title ion-text-center">Perfil</h2>
-    <div *ngFor="let empleado of empleadoPerfil" class="empleado-card">
+    @if (empleado) {
+    <div class="empleado-card">
       
       <div class="empleado-avatar">
         <img [src]="empleado.foto || 'assets/avatar-placeholder.png'" id="img-empleado" />
@@ -19,6 +20,6 @@
         Cerrar sesión
       </ion-button>
     </div>
-
+  }
 </ion-content>
 

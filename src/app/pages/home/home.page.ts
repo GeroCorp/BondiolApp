@@ -1,8 +1,7 @@
-
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/supabase';
-import { ToastController } from '@ionic/angular';
+import { ToastController, AlertController } from '@ionic/angular';
 import { PerfilService } from 'src/app/services/perfilService';
 import { Notification } from 'src/app/services/notification';
 
@@ -13,44 +12,86 @@ import { Notification } from 'src/app/services/notification';
   standalone: false,
 })
 export class HomePage implements OnInit {
-  email: string | null = null;
-  perfil: string | null = null;
+  loading = signal<boolean>(false);
+  email= signal<string | null>(null);
+  perfil= signal<string>("");
   private notificationService: Notification = inject(Notification);
 
   constructor(
     private router: Router,
     private authService: AuthService,
     private toastController: ToastController,
-    private perfilService: PerfilService
+    private perfilService: PerfilService,
+    private alertController: AlertController
   ) {
-    this.email = history.state['email'] ?? null;
-    this.perfil = history.state['perfil'] ?? null;
-    if (this.perfil) {
-      this.perfilService.setPerfil(this.perfil);
-    }
-    console.log('Perfil recibido en Home:', this.perfil);
+    console.log('Perfil recibido en Home:', this.perfil());
   }
-
+  
   async ngOnInit() {
-    // Establecer tag de perfil en OneSignal cuando carga el home
-    if (this.perfil) {
-      this.notificationService.setUserTag(this.perfil);
-      
-      // También establecer el External User ID (opcional pero recomendado)
-      const user = await this.authService.getCurrentUser();
-      if (user) {
-        this.notificationService.setExternalUserId(user.id);
-      }
+    this.loading.set(true);
+    try {
+      const perfilData = await this.authService.getUsuarioConPerfil();
+      this.perfil.set(perfilData ? perfilData.perfil : "");
+      this.email = history.state['email'] ?? null;
+
+      console.log('Perfil cargado en Home:', this.perfil());
+        
+        // Establecer tag de perfil en OneSignal cuando carga el home
+        if (this.perfil()) {
+          this.perfilService.setPerfil(this.perfil());
+          this.notificationService.setUserTag(this.perfil());
+        }
+    } catch (error) {
+      console.error('Error al cargar el perfil:', error);
+      this.showToast('Error al cargar el perfil. Intente nuevamente.');
+    }finally {
+      this.loading.set(false);
     }
+    
   }
 
 async logout() {
-    // Limpiar tags de OneSignal al cerrar sesión
-    this.notificationService.clearUserTags();
-    
-    await this.authService.logout();
-    this.router.navigate(['/login'], { replaceUrl: true });
-    this.showToast('Sesión cerrada correctamente');
+    const alert = await this.alertController.create({
+      header: 'Cerrar Sesión',
+      message: '¿Estás seguro de que deseas cerrar sesión?',
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel'
+        },
+        {
+          text: 'Cerrar Sesión',
+          cssClass: 'danger',
+          handler: async () => {
+            try {
+              // Limpiar tags de OneSignal al cerrar sesión
+              this.notificationService.clearUserTags();
+              
+              await this.authService.logout();
+              
+              const toast = await this.toastController.create({
+                message: 'Sesión cerrada correctamente',
+                duration: 2000,
+                color: 'success'
+              });
+              await toast.present();
+              
+              this.router.navigate(['/login'], { replaceUrl: true });
+            } catch (error) {
+              console.error('Error al cerrar sesión:', error);
+              const toast = await this.toastController.create({
+                message: 'Error al cerrar sesión',
+                duration: 2000,
+                color: 'danger'
+              });
+              await toast.present();
+            }
+          }
+        }
+      ]
+    });
+
+    await alert.present();
   }
 
   async showToast(message: string) {

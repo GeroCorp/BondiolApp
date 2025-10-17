@@ -1,6 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { AlertController, ToastController } from '@ionic/angular';
 import { AuthService } from '../../services/supabase';
+import { ClienteService } from 'src/app/services/cliente.service';
 
 @Component({
   selector: 'app-tab2-mesas',
@@ -16,7 +17,8 @@ export class Tab2MesasPage implements OnInit {
   constructor(
     private supabase: AuthService,
     private alertCtrl: AlertController,
-    private toastCtrl: ToastController
+    private toastCtrl: ToastController,
+    private clienteService: ClienteService
   ) { }
 
   ngOnInit() {
@@ -124,7 +126,7 @@ export class Tab2MesasPage implements OnInit {
   private async procesarLiberacion(mesa: any) {
     try {
       // Aquí iría la lógica para liberar la mesa en Supabase
-      await this.supabase.liberarMesa(mesa.id);
+      await this.clienteService.liberarMesaCliente();
       
       const toast = await this.toastCtrl.create({
         message: `Mesa ${mesa.numero} liberada exitosamente`,
@@ -165,6 +167,7 @@ export class Tab2MesasPage implements OnInit {
           text: 'Asignar',
           handler: async (data) => {
             if (data.clienteId && data.clienteId > 0) {
+              console.log(data);
               await this.procesarAsignacion(mesa, data.clienteId);
             }
           }
@@ -177,7 +180,7 @@ export class Tab2MesasPage implements OnInit {
   private async procesarAsignacion(mesa: any, clienteId: number) {
     try {
       // Aquí iría la lógica para asignar la mesa en Supabase
-      // await this.supabase.asignarMesa(mesa.id, clienteId);
+      await this.clienteService.setMesa(mesa.id, clienteId);
       
       const toast = await this.toastCtrl.create({
         message: `Mesa ${mesa.numero} asignada exitosamente`,

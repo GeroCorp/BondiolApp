@@ -3,6 +3,7 @@ import { StatusBar, Style } from '@capacitor/status-bar';
 import { Platform } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { Notification } from './services/notification';
+import { AuthService } from './services/supabase';
 
 @Component({
   selector: 'app-root',
@@ -13,16 +14,23 @@ import { Notification } from './services/notification';
 export class AppComponent {
   private notificationService: Notification = inject(Notification)
 
-  constructor(private platform: Platform, public router: Router) {
+  constructor(
+    private platform: Platform, 
+    public router: Router,
+    private authService: AuthService
+  ) {
     this.initializeApp();
     document.body.classList.add('dark');
   }
 
   initializeApp() {
-    this.platform.ready().then(() => {
+    this.platform.ready().then(async () => {
       this.configureStatusBar();
-      this.router.navigateByUrl('splash');
       this.notificationService.init();
+      
+      // Solo navegar al splash - el splash se encargará de la verificación de sesión
+      console.log('🚀 App inicializada - navegando a splash');
+      this.router.navigateByUrl('/splash', { replaceUrl: true });
     });
   }
 

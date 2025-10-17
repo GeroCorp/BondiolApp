@@ -1,10 +1,14 @@
-import { Component, effect, OnInit } from '@angular/core';
+import { Component, effect, inject, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/supabase';
 import { ToastController, AlertController } from '@ionic/angular';
 import { ClienteService } from 'src/app/services/cliente.service';
-import { ListaEsperaService } from 'src/app/services/lista-espera.service';
 import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
+import { PerfilService } from 'src/app/services/perfilService';
+import { Notification } from 'src/app/services/notification';
+import { Subscription } from 'rxjs';
+
+
 
 interface Cliente {
   id_cliente?: number;
@@ -23,19 +27,23 @@ interface Cliente {
   styleUrls: ['./home-cliente.page.scss'],
   standalone: false
 })
-export class HomeClientePage implements OnInit {
+export class HomeClientePage implements OnInit, OnDestroy {
   cliente: Cliente | null = null;
   enEspera: boolean = true;
   mesaAsignada: number | null = null;
   mesaVerificada: boolean = false;
+  perfil = "cliente";
+  private notificationService: Notification = inject(Notification);
+  private pedidoEventosSubscription?: Subscription;
+
+
 
   constructor(
     private router: Router,
     private authService: AuthService,
     private toastController: ToastController,
-    private alertController: AlertController,
     private clienteService: ClienteService,
-    private listaEsperaService: ListaEsperaService
+    private perfilService: PerfilService,
   ) {
     effect(() => {
       this.enEspera = this.clienteService.clienteEnEspera();
@@ -47,6 +55,9 @@ export class HomeClientePage implements OnInit {
     this.clienteService.detectarUpdate();
     await this.cargarDatosCliente();
     await this.verificarMesaAsignada();
+    this.perfilService.setPerfil(this.perfil);
+    this.notificationService.setUserTag(this.perfil);
+
   }
 
   async cargarDatosCliente() {
@@ -55,7 +66,7 @@ export class HomeClientePage implements OnInit {
       
       if (user) {
         this.cliente = await this.authService.getClienteByUserId(user.id);
-        
+        this.notificationsInit();
         if (this.cliente && !this.cliente.email) {
           this.cliente.email = user.email;
         }
@@ -63,6 +74,63 @@ export class HomeClientePage implements OnInit {
     } catch (error) {
       console.error('Error al cargar datos del cliente:', error);
       this.showToast('Error al cargar tus datos', 'danger');
+    }
+  }
+
+  async notificationsInit(){
+    this.notificationService.setExternalUserId(this.cliente?.id_cliente?.toString() || '');
+    
+    // Suscribirse a eventos de pedidos para enviar notificaciones
+    this.pedidoEventosSubscription = this.clienteService.pedidoEventos$.subscribe((evento) => {
+      this.manejarEventoPedido(evento);
+    });
+  }
+
+  ngOnDestroy() {
+    // Limpiar suscripción al destruir el componente
+    if (this.pedidoEventosSubscription) {
+      this.pedidoEventosSubscription.unsubscribe();
+    }
+  }
+
+  /**
+   * Maneja los eventos de pedidos y envía notificaciones push
+   */
+  private async manejarEventoPedido(evento: any) {
+    try {
+      console.log('📱 Manejando evento de pedido:', evento);
+      
+      let titulo = '';
+      let mensaje = '';
+      const url = '/tabs-cliente-registrado/tab4-historial';
+
+      switch (evento.tipo) {
+        case 'PEDIDO_CREADO':
+          titulo = '🎉 ¡Pedido Creado!';
+          mensaje = `Tu pedido #${evento.pedido.id} ha sido registrado exitosamente. Total: $${evento.pedido.total}`;
+          break;
+          
+        case 'PEDIDO_ACTUALIZADO':
+          if (evento.mensaje) {
+            titulo = evento.mensaje.titulo;
+            mensaje = evento.mensaje.mensaje;
+          } else {
+            titulo = '🔄 Pedido Actualizado';
+            mensaje = `Tu pedido #${evento.pedido.id} ha sido actualizado.`;
+          }
+          break;
+          
+        default:
+          titulo = '🔔 Notificación de Pedido';
+          mensaje = 'Ha habido cambios en uno de tus pedidos.';
+      }
+
+      // Enviar la notificación push
+      await this.notificationService.sendNotificationToCliente(titulo, mensaje, url);
+      console.log('✅ Notificación enviada:', titulo);
+      
+    } catch (error) {
+      console.error('❌ Error manejando evento de pedido:', error);
     }
   }
 
@@ -206,15 +274,15 @@ export class HomeClientePage implements OnInit {
         .from('mesas')
         .select('*')
         .eq('numero', numeroMesa)
-        .maybeSingle();
+        .single();
 
       if (errorMesa || !mesa) {
         this.showToast(`La Mesa ${numeroMesa} no existe en el sistema`, 'danger');
         return;
       }
-
+      
       // Verificar que los datos del QR coincidan con los de la base de datos
-      if (mesa.capacidad !== capacidad || mesa.tipo !== tipo) {
+      if (mesa.cantidad !== capacidad || mesa.tipo !== tipo) {
         this.showToast(`Los datos del QR no coinciden con la mesa registrada`, 'danger');
         return;
       }
@@ -366,6 +434,14 @@ export class HomeClientePage implements OnInit {
       return;
     }
     this.router.navigate(["/tabs-cliente-registrado/tab3-consulta"]);
+  }
+
+  verHistorial(){
+    if (!this.mesaVerificada) {
+      this.showToast('⚠️ Primero debes escanear el QR de una mesa', 'warning');
+      return;
+    }
+    this.router.navigate(["/tabs-cliente-registrado/tab4-historial"]);
   }
 
   /**
