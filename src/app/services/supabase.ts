@@ -1021,7 +1021,6 @@ async actualizarEstadoPedido(pedidoId: number, nuevoEstado: string, observacione
   try {
     const updateData: any = {
       estado: nuevoEstado,
-      updated_at: new Date().toISOString()
     };
 
     if (observaciones) {

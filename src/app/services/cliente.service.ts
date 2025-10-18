@@ -186,10 +186,19 @@ export class ClienteService {
   
   async getChatMessages(){
     const mesa = await this.getMesa(await this.getClientId())
+    const nombreCliente = await this.getNombreCliente()
+    
+    // Obtener la fecha de hoy en formato YYYY-MM-DD
+    const hoy = new Date();
+    const fechaHoy = hoy.toISOString().split('T')[0]; // Esto da formato YYYY-MM-DD
+    
     const { data, error } = await this.supabase
     .from('mensajes')
     .select('*')
     .eq('nroMesa', mesa)
+    .eq('nombre_usuario', nombreCliente)
+    .gte('date_sended', `${fechaHoy}T00:00:00.000Z`) // Desde las 00:00:00 de hoy
+    .lte('date_sended', `${fechaHoy}T23:59:59.999Z`) // Hasta las 23:59:59 de hoy
     .order('date_sended', { ascending: true });
 
     if (error) {
@@ -197,6 +206,7 @@ export class ClienteService {
       return [];
     }
 
+    console.log('📅 Mensajes del día actual obtenidos:', data?.length || 0);
     return data;
   }
 

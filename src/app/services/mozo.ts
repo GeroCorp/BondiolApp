@@ -24,10 +24,15 @@ export class Mozo {
   }
   
   async getChatsMesas(id_mesa: number){
+    const hoy = new Date();
+    const fechaHoy = hoy.toISOString().split('T')[0]; // Esto da formato YYYY-MM-DD
+
     const { data, error } = await this.supabase
     .from('mensajes')
     .select(`*`)
     .eq('nroMesa', id_mesa)
+    .gte('date_sended', `${fechaHoy}T00:00:00.000Z`) // Desde las 00:00:00 de hoy
+    .lte('date_sended', `${fechaHoy}T23:59:59.999Z`) // Hasta las 23:59:59 de hoy
     .order('date_sended', { ascending: true });
 
     if (error) {

@@ -3,6 +3,7 @@ import { AlertController, ToastController, LoadingController } from '@ionic/angu
 import { AuthService } from 'src/app/services/supabase';
 import { Vibration } from '@awesome-cordova-plugins/vibration/ngx';
 import { ESTADO, Mozo } from 'src/app/services/mozo';
+import { Notification } from 'src/app/services/notification';
 
 interface Pedido {
   id: number;
@@ -40,7 +41,8 @@ export class Tab1PedidosPendientesPage implements OnInit {
     private alertController: AlertController,
     private toastController: ToastController,
     private loadingController: LoadingController,
-    private vibration: Vibration
+    private vibration: Vibration,
+    private notificationService: Notification
   ) {}
 
   async ngOnInit() {
@@ -151,10 +153,11 @@ export class Tab1PedidosPendientesPage implements OnInit {
     try {
       await this.mozoService.actualizarEstadoPedido(pedido.id, ESTADO.CONFIRMADO);
 
-      await this.authService.enviarNotificacionCliente(
-        pedido.cliente_id,
+      await this.notificationService.sendNotificationToCliente(
         'Pedido rechazado',
-        `Tu pedido de la mesa ${pedido.mesa?.numero} fue rechazado. Por favor, modifícalo.`
+        `Tu pedido de la mesa ${pedido.mesa?.numero} fue rechazado. Por favor, modifícalo.`,
+        '',
+        pedido.cliente_id
       );
 
       await loading.dismiss();
@@ -215,10 +218,11 @@ export class Tab1PedidosPendientesPage implements OnInit {
         await this.mozoService.enviarPedidoSector(pedido.id, 'bar', nombresBar);
       }
 
-      await this.authService.enviarNotificacionCliente(
-        pedido.cliente_id,
-        'Pedido confirmado',
-        `Tu pedido de la mesa ${pedido.mesa?.numero} está siendo preparado.`
+      await this.notificationService.sendNotificationToCliente(
+        'Pedido Aprobado',
+        `Tu pedido de la mesa ${pedido.mesa?.numero} fue aprobado.`,
+        '',
+        pedido.cliente_id
       );
       // await this.authService.enviarNotificacionSector(
       //     'cocinero',

@@ -22,7 +22,7 @@
       <ion-segment-button value="confirmado">
         <ion-label>Confirmados</ion-label>
       </ion-segment-button>
-      <ion-segment-button value="en_preparacion">
+      <ion-segment-button value="en_preparación">
         <ion-label>En cocina</ion-label>
       </ion-segment-button>
       <ion-segment-button value="listo">
@@ -58,7 +58,7 @@
           <div>
             <ion-card-title> Mesa {{ pedido.mesa?.numero }} </ion-card-title>
             <ion-card-subtitle>
-              {{ formatearFecha(pedido.created_at) }}
+              {{ formatearFecha(pedido.fecha) }}
             </ion-card-subtitle>
           </div>
           <ion-badge [color]="getColorEstado(pedido.estado)">
@@ -109,10 +109,11 @@
           <ion-icon name="eye-outline" slot="start"></ion-icon>
           Ver detalle completo
         </ion-button>
-
+        @if (pedido.estado === 'entregado') {
         <ion-button color="success" (click)="confirmarPago(pedido)">
           Confirmar pago y liberar mesa
         </ion-button>
+      }
       </ion-card-content>
     </ion-card>
   </div>
