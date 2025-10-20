@@ -1,0 +1,36 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-title>
+      <ion-icon name="restaurant"></ion-icon> RestoApp - Anónimo
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="salir()">
+        <ion-icon name="log-out-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-tabs>
+    <ion-tab-bar slot="bottom" color="primary">
+      
+      <ion-tab-button tab="tab1-menu-anonimo">
+        <ion-icon name="book-outline"></ion-icon>
+        <ion-label>Menú</ion-label>
+      </ion-tab-button>
+
+      <ion-tab-button tab="tab2-pedido-anonimo">
+        <ion-icon name="cart-outline"></ion-icon>
+        <ion-label>Pedido</ion-label>
+        <ion-badge *ngIf="cantidadItems > 0" color="danger">{{ cantidadItems }}</ion-badge>
+      </ion-tab-button>
+
+      <ion-tab-button tab="tab3-consulta-anonimo">
+        <ion-icon name="chatbubble-outline"></ion-icon>
+        <ion-label>Consulta</ion-label>
+      </ion-tab-button>
+
+    </ion-tab-bar>
+  </ion-tabs> 
+</ion-content>

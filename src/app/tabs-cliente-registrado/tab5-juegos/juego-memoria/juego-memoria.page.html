@@ -1,0 +1,70 @@
+<ion-card>
+  <ion-card-header>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <ion-card-title>Juego de Memoria</ion-card-title>
+        <ion-card-subtitle>Descuento: 10%</ion-card-subtitle>
+      </div>
+      <ion-button fill="clear" (click)="cerrarJuego()">
+        <ion-icon name="close" slot="icon-only"></ion-icon>
+      </ion-button>
+    </div>
+  </ion-card-header>
+
+  <ion-card-content>
+    
+    <!-- Información del juego -->
+    <div style="display: flex; justify-content: space-around; margin-bottom: 20px;">
+      <div style="text-align: center;">
+        <ion-badge color="primary">Movimientos: {{ movimientos }}</ion-badge>
+      </div>
+      <div style="text-align: center;">
+        <ion-badge color="success">Pares: {{ paresEncontrados }}/{{ iconos.length }}</ion-badge>
+      </div>
+      @if (primerIntentoDisponible && esPrimerIntento) {
+        <div style="text-align: center;">
+          <ion-badge color="warning">⚡ Primer Intento</ion-badge>
+        </div>
+      }
+    </div>
+
+    <!-- Instrucciones -->
+    @if (!juegoIniciado) {
+      <ion-card color="light">
+        <ion-card-content>
+          <p><strong>Cómo jugar:</strong></p>
+          <p>1. Encuentra todos los pares de iconos</p>
+          <p>2. Recuerda las posiciones de las cartas</p>
+          <p>3. ¡Completa el juego para ganar!</p>
+        </ion-card-content>
+      </ion-card>
+    }
+
+    <!-- Tablero de cartas -->
+    <div class="memory-grid">
+      @for (carta of cartas; track carta.id) {
+        <div 
+          class="memory-card"
+          [class.flipped]="carta.volteada || carta.encontrada"
+          [class.found]="carta.encontrada"
+          (click)="seleccionarCarta(carta)">
+          <div class="card-inner">
+            <div class="card-front">
+              <ion-icon name="help-outline"></ion-icon>
+            </div>
+            <div class="card-back">
+              <ion-icon [name]="carta.icono"></ion-icon>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Botón reiniciar -->
+    <ion-button expand="block" (click)="reiniciarJuego()" style="margin-top: 20px;">
+      <ion-icon name="refresh" slot="start"></ion-icon>
+      Reiniciar Juego
+    </ion-button>
+
+  </ion-card-content>
+</ion-card>

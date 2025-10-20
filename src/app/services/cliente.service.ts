@@ -4,7 +4,7 @@ import { environment } from 'src/environments/environment';
 import { Notification } from './notification';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ClienteService {
   // Signal compartido para el pedido
@@ -51,25 +51,28 @@ export class ClienteService {
   // Agregar un item al pedido
   addItem(item: any) {
     const currentPedido = this._pedido();
-    
+
     // Asegurar que el item tenga cantidad y subtotal
     const itemConSubtotal = {
       ...item,
       quantity: item.quantity || 1,
-      subtotal: item.precio * (item.quantity || 1)
+      subtotal: item.precio * (item.quantity || 1),
     };
-    
+
     // Buscar si el item ya existe en el pedido (mismo id)
-    const existingItemIndex = currentPedido.findIndex(pedidoItem => pedidoItem.id === item.id);
-    
+    const existingItemIndex = currentPedido.findIndex(
+      (pedidoItem) => pedidoItem.id === item.id
+    );
+
     if (existingItemIndex !== -1) {
       // Si existe, actualizar la cantidad y subtotal
       const updatedPedido = [...currentPedido];
-      const newQuantity = updatedPedido[existingItemIndex].quantity + (item.quantity || 1);
+      const newQuantity =
+        updatedPedido[existingItemIndex].quantity + (item.quantity || 1);
       updatedPedido[existingItemIndex] = {
         ...updatedPedido[existingItemIndex],
         quantity: newQuantity,
-        subtotal: updatedPedido[existingItemIndex].precio * newQuantity
+        subtotal: updatedPedido[existingItemIndex].precio * newQuantity,
       };
       this._pedido.set(updatedPedido);
     } else {
@@ -90,18 +93,74 @@ export class ClienteService {
     this._pedido.set([]);
   }
 
-  // Obtener el total del pedido
-  getTotal(): number {
-    return this._pedido().reduce((total, item) => {
-      // Priorizar subtotal si existe, sino calcular precio * cantidad
-      const itemTotal = item.subtotal || (item.precio * (item.quantity || 1));
-      return total + itemTotal;
-    }, 0);
+  // Obtener el total del pedido CON descuento aplicado
+async getTotal(): Promise<number> {
+  const subtotal = this._pedido().reduce((total, item) => {
+    const itemTotal = item.subtotal || item.precio * (item.quantity || 1);
+    return total + itemTotal;
+  }, 0);
+
+  try {
+    const clienteId = await this.getClientId();
+    const mesaId = await this.getMesa(clienteId);
+    const descuento = await this.getDescuentoCliente(clienteId, mesaId);
+    
+    if (descuento > 0) {
+      const montoDescuento = subtotal * (descuento / 100);
+      return subtotal - montoDescuento;
+    }
+    
+    return subtotal;
+  } catch (error) {
+    console.error('Error calculando descuento:', error);
+    return subtotal;
+  }
+}
+
+// Método auxiliar para obtener solo el subtotal sin descuento
+getSubtotal(): number {
+  return this._pedido().reduce((total, item) => {
+    const itemTotal = item.subtotal || item.precio * (item.quantity || 1);
+    return total + itemTotal;
+  }, 0);
+}
+
+  async getMontoDescuento(): Promise<number> {
+    const subtotal = this.getSubtotal();
+
+    try {
+      const clienteId = await this.getClientId();
+      const mesaId = await this.getMesa(clienteId);
+      const descuento = await this.getDescuentoCliente(clienteId, mesaId);
+
+      if (descuento > 0) {
+        return subtotal * (descuento / 100);
+      }
+
+      return 0;
+    } catch (error) {
+      console.error('Error calculando monto descuento:', error);
+      return 0;
+    }
+  }
+
+  async getPorcentajeDescuento(): Promise<number> {
+    try {
+      const clienteId = await this.getClientId();
+      const mesaId = await this.getMesa(clienteId);
+      return await this.getDescuentoCliente(clienteId, mesaId);
+    } catch (error) {
+      console.error('Error obteniendo porcentaje descuento:', error);
+      return 0;
+    }
   }
 
   // Obtener la cantidad total de items en el pedido
   getItemCount(): number {
-    return this._pedido().reduce((count, item) => count + (item.quantity || 1), 0);
+    return this._pedido().reduce(
+      (count, item) => count + (item.quantity || 1),
+      0
+    );
   }
 
   // Actualizar la cantidad de un item específico
@@ -110,64 +169,76 @@ export class ClienteService {
       this.removeItem(index);
       return;
     }
-    
+
     const currentPedido = this._pedido();
     const updatedPedido = [...currentPedido];
     updatedPedido[index] = {
       ...updatedPedido[index],
       quantity: newQuantity,
-      subtotal: updatedPedido[index].precio * newQuantity
+      subtotal: updatedPedido[index].precio * newQuantity,
     };
     this._pedido.set(updatedPedido);
   }
 
-
   async insertPedido() {
-    
-    const detalles = this._pedido()
-    console.log('🔍 Detalles del pedido:', detalles);
-    
-    // Calcular total manualmente para debug
-    const totalCalculado = detalles.reduce((total, item) => {
-      const itemTotal = item.subtotal || (item.precio * (item.quantity || 1));
-      console.log(`Item: ${item.nombre}, Precio: ${item.precio}, Cantidad: ${item.quantity || 1}, Subtotal: ${itemTotal}`);
-      return total + itemTotal;
-    }, 0);
-    
-    console.log('💰 Total calculado manualmente:', totalCalculado);
-    console.log('💰 Total del método getTotal():', this.getTotal());
-    
-    const idCliente = await this.getClientId()
-    const nroMesa = await this.getMesa(idCliente)
-    const cabecera = {
-      mesa: nroMesa, 
-      id_cliente: idCliente,
-      fecha: new Date(),
-      estado: "pendiente",
-      total: totalCalculado // Usar el total calculado manualmente
-    }
+  const detalles = this._pedido();
+  console.log('📋 Detalles del pedido:', detalles);
 
-    const { data, error } = await this.supabase
+  const idCliente = await this.getClientId();
+  const nroMesa = await this.getMesa(idCliente);
+  
+  // Calcular totales
+  const subtotal = this.getSubtotal();
+  const totalConDescuento = await this.getTotal();
+  const descuento = await this.getDescuentoCliente(idCliente, nroMesa);
+  
+  console.log('💰 Subtotal:', subtotal);
+  console.log('🎮 Descuento aplicado:', descuento + '%');
+  console.log('💰 Total con descuento:', totalConDescuento);
+
+  const cabecera = {
+    mesa: nroMesa,
+    id_cliente: idCliente,
+    fecha: new Date(),
+    estado: 'pendiente',
+    total: Math.round(totalConDescuento) // Total CON descuento aplicado
+  };
+
+  const { data, error } = await this.supabase
     .from('pedidos')
     .insert([cabecera])
-    .select()
+    .select();
 
-    const idPedido = data![0].id;
+  if (error) {
+    console.error('❌ Error insertando pedido:', error);
+    throw error;
+  }
 
-    console.log(data);
-     await Promise.all(detalles.map(async item => {
-       console.log("🔄️Item a insertar: \nProducto: ", item.nombre, "\nCantidad: ", item.quantity, "\nPrecio: $", item.precio);
-       const { data, error } = await this.supabase
-       .from('detalles_pedido')
-       .insert([
-         {
-          id_pedido: idPedido,
-          nombre_prod: item.nombre,
-          cantidad: item.quantity,
-          precio_unitario: item.precio,
-          tipo: item.tipo
-         }
-       ]).select();
+  const idPedido = data![0].id;
+  console.log('✅ Pedido insertado con ID:', idPedido);
+
+  await Promise.all(
+    detalles.map(async (item) => {
+      console.log(
+        '🔄️ Item a insertar: \nProducto: ',
+        item.nombre,
+        '\nCantidad: ',
+        item.quantity,
+        '\nPrecio: $',
+        item.precio
+      );
+      const { data, error } = await this.supabase
+        .from('detalles_pedido')
+        .insert([
+          {
+            id_pedido: idPedido,
+            nombre_prod: item.nombre,
+            cantidad: item.quantity,
+            precio_unitario: item.precio,
+            tipo: item.tipo,
+          },
+        ])
+        .select();
 
        if (error) {
          console.error('❌ Error insertando detalle de pedido:', error);
@@ -241,68 +312,70 @@ export class ClienteService {
 
   }
 
-  async subscribeToNewMessages(signal: any){
-    try{
-      this.supabase.channel('custom-messages-channel')
+  async subscribeToNewMessages(signal: any) {
+    try {
+      this.supabase
+        .channel('custom-messages-channel')
         .on(
           'postgres_changes',
           { event: 'INSERT', schema: 'public', table: 'mensajes' },
           (payload) => {
             console.log('Nuevo mensaje recibido:', payload);
             const newRow = payload.new;
-            signal.update((arr: any) =>{
-              return [...arr, newRow]
-            })
-        }
-      )
-      .subscribe();
-    }catch (error){
+            signal.update((arr: any) => {
+              return [...arr, newRow];
+            });
+          }
+        )
+        .subscribe();
+    } catch (error) {
       console.error('Error al suscribirse a nuevos mensajes: ' + error);
     }
   }
   // Metodos para manejo de clientes
 
-  async getClientId(){
-    const userid = (await this.supabase.auth.getUser()).data.user?.id
-    const { data , error } = await this.supabase
-    .from('clientes')
-    .select('id_cliente')
-    .eq('user_id', userid)
+  async getClientId() {
+    const userid = (await this.supabase.auth.getUser()).data.user?.id;
+    const { data, error } = await this.supabase
+      .from('clientes')
+      .select('id_cliente')
+      .eq('user_id', userid);
 
-    if (error) throw new Error("Error al obtener id del cliente: " + error.message)
-  
+    if (error)
+      throw new Error('Error al obtener id del cliente: ' + error.message);
+
     return data[0].id_cliente ?? -1;
   }
-  async getNombreCliente(){
-    const userid = await this.getClientId()
-    const { data , error } = await this.supabase
-    .from('clientes')
-    .select('nombre')
-    .eq('id_cliente', userid)
+  async getNombreCliente() {
+    const userid = await this.getClientId();
+    const { data, error } = await this.supabase
+      .from('clientes')
+      .select('nombre')
+      .eq('id_cliente', userid);
 
-    if (error) throw new Error("Error al obtener nombre del cliente: " + error.message)
-      
+    if (error)
+      throw new Error('Error al obtener nombre del cliente: ' + error.message);
 
     return data[0].nombre ?? 'Cliente';
   }
 
+  async getClientesEnEspera() {
+    try {
+      const { data, error } = await this.supabase
+        .from('clientes')
+        .select('*')
+        .is('mesa_asignada', null);
 
-  async getClientesEnEspera(){
-    try{
-      const { data, error} = await this.supabase
-      .from('clientes')
-      .select('*')
-      .is('mesa_asignada', null);
-      
-
-      if (error){
-        throw new Error ('Error al obtener clientes en espera: ' + error.message)
+      if (error) {
+        throw new Error(
+          'Error al obtener clientes en espera: ' + error.message
+        );
       }
 
       console.log('clientes en espera:', data);
 
-      return data ?? []
-    }catch (err: any){
+      return data ?? [];
+    } catch (err: any) {
       console.error('Error en getClientesEnEspera:', err);
       throw new Error(err.message || 'Error desconocido');
     }
@@ -384,15 +457,16 @@ export class ClienteService {
     return channels;
   }
 
+  async isCLienteEnEspera() {
+    const {
+      data: { user },
+    } = await this.supabase.auth.getUser();
 
-  async isCLienteEnEspera(){
-    const { data: { user } } = await this.supabase.auth.getUser()
-    
     const { data, error } = await this.supabase
-    .from('clientes')
-    .select('mesa_asignada')
-    .eq('user_id', user?.id)
-    .single();
+      .from('clientes')
+      .select('mesa_asignada')
+      .eq('user_id', user?.id)
+      .single();
 
     if (error) {
       console.error('Error al verificar cliente en espera:', error);
@@ -401,7 +475,7 @@ export class ClienteService {
 
     // Si mesa_asignada es null, el cliente está en espera
     const bool = data?.mesa_asignada === null;
-    
+
     console.log('Cliente en espera:', bool);
     return bool;
   }
@@ -409,10 +483,10 @@ export class ClienteService {
   // Metodos para manejo de mesas
 
   async isMesaDisponible(nro: number) {
-    const { data, error} = await this.supabase
-    .from('clientes')
-    .select('*')
-    .eq('mesa_asignada', nro);
+    const { data, error } = await this.supabase
+      .from('clientes')
+      .select('*')
+      .eq('mesa_asignada', nro);
 
     if (error) {
       console.error('Error verificando mesa:', error);
@@ -428,23 +502,23 @@ export class ClienteService {
     return true;
   }
 
-  async actualizarMesa(cliente_id:number, mesa_numero: number){
+  async actualizarMesa(cliente_id: number, mesa_numero: number) {
     console.log('🔄 Actualizando mesa:', { cliente_id, mesa_numero });
-    
+
     const { data, error } = await this.supabase
-    .from('mesas')
-    .update({
-      cliente_asignado: cliente_id,
-      disponible: false
-    })
-    .eq('id', mesa_numero) 
-    .select();
+      .from('mesas')
+      .update({
+        cliente_asignado: cliente_id,
+        disponible: false,
+      })
+      .eq('id', mesa_numero)
+      .select();
 
     if (error) {
       console.error('❌ Error actualizando mesa:', error);
       throw new Error('Error actualizando la mesa: ' + error.message);
     }
-    
+
     console.log('✅ Mesa actualizada:', data);
 
     return data;
@@ -484,35 +558,37 @@ export class ClienteService {
     console.log(numeroMesa);
     return numeroMesa;
   }
-  
-  async setMesa(id: number, nroMesa: number){
+
+  async setMesa(id: number, nroMesa: number) {
     try {
-      console.log('🔄 Iniciando asignación de mesa:', { clienteId: id, mesaId: nroMesa });
-      
+      console.log('🔄 Iniciando asignación de mesa:', {
+        clienteId: id,
+        mesaId: nroMesa,
+      });
+
       // Comprobar disponibilidad (con await)
       await this.isMesaDisponible(nroMesa);
       console.log('✅ Mesa disponible verificada');
 
       // Actualizar cliente
       const { data, error } = await this.supabase
-      .from('clientes')
-      .update({mesa_asignada: nroMesa})
-      .eq('id_cliente', id)
-      .select();
+        .from('clientes')
+        .update({ mesa_asignada: nroMesa })
+        .eq('id_cliente', id)
+        .select();
 
       if (error) {
         console.error('❌ Error asignando mesa al cliente:', error);
         throw new Error('Error al asignar mesa: ' + error.message);
       }
-      
+
       console.log('✅ Cliente actualizado:', data);
 
       // Actualizar disponibilidad de la mesa
       await this.actualizarMesa(id, nroMesa);
-      
+
       console.log('✅ Mesa asignada correctamente:', data);
       return data;
-      
     } catch (error: any) {
       console.error('❌ Error en setMesa:', error);
       throw error;
@@ -520,103 +596,218 @@ export class ClienteService {
   }
 
   /**
- * Verifica que el QR escaneado corresponda a la mesa del cliente
- */
-async verificarQRMesa(numeroMesaQR: number): Promise<{ valido: boolean, mensaje: string }> {
-  try {
-    const clienteId = await this.getClientId();
-    const mesaAsignada = await this.getMesa(clienteId);
+   * Verifica que el QR escaneado corresponda a la mesa del cliente
+   */
+  async verificarQRMesa(
+    numeroMesaQR: number
+  ): Promise<{ valido: boolean; mensaje: string }> {
+    try {
+      const clienteId = await this.getClientId();
+      const mesaAsignada = await this.getMesa(clienteId);
 
-    // Verificar que el cliente tenga mesa asignada
-    if (!mesaAsignada) {
+      // Verificar que el cliente tenga mesa asignada
+      if (!mesaAsignada) {
+        return {
+          valido: false,
+          mensaje:
+            'No tienes una mesa asignada. Espera a que el maître te asigne una.',
+        };
+      }
+
+      // Verificar que el QR coincida con la mesa asignada
+      if (numeroMesaQR !== mesaAsignada) {
+        return {
+          valido: false,
+          mensaje: `Este es el QR de la Mesa ${numeroMesaQR}, pero tu mesa asignada es la ${mesaAsignada}.`,
+        };
+      }
+
+      // Verificar en la BD que todo esté correcto
+      const { data: mesa, error } = await this.supabase
+        .from('mesas')
+        .select('*')
+        .eq('numero', numeroMesaQR)
+        .eq('cliente_asignado', clienteId)
+        .maybeSingle();
+
+      if (error || !mesa) {
+        return {
+          valido: false,
+          mensaje: 'Error al verificar la mesa en la base de datos.',
+        };
+      }
+
+      // Verificar que la mesa no esté disponible (debe estar ocupada por este cliente)
+      if (mesa.disponible) {
+        return {
+          valido: false,
+          mensaje: 'Inconsistencia: la mesa aparece como disponible.',
+        };
+      }
+
+      return {
+        valido: true,
+        mensaje: `Mesa ${numeroMesaQR} verificada correctamente.`,
+      };
+    } catch (error) {
+      console.error('Error verificando QR de mesa:', error);
       return {
         valido: false,
-        mensaje: 'No tienes una mesa asignada. Espera a que el maître te asigne una.'
+        mensaje: 'Error al verificar el código QR.',
       };
     }
-
-    // Verificar que el QR coincida con la mesa asignada
-    if (numeroMesaQR !== mesaAsignada) {
-      return {
-        valido: false,
-        mensaje: `Este es el QR de la Mesa ${numeroMesaQR}, pero tu mesa asignada es la ${mesaAsignada}.`
-      };
-    }
-
-    // Verificar en la BD que todo esté correcto
-    const { data: mesa, error } = await this.supabase
-      .from('mesas')
-      .select('*')
-      .eq('numero', numeroMesaQR)
-      .eq('cliente_asignado', clienteId)
-      .maybeSingle();
-
-    if (error || !mesa) {
-      return {
-        valido: false,
-        mensaje: 'Error al verificar la mesa en la base de datos.'
-      };
-    }
-
-    // Verificar que la mesa no esté disponible (debe estar ocupada por este cliente)
-    if (mesa.disponible) {
-      return {
-        valido: false,
-        mensaje: 'Inconsistencia: la mesa aparece como disponible.'
-      };
-    }
-
-    return {
-      valido: true,
-      mensaje: `Mesa ${numeroMesaQR} verificada correctamente.`
-    };
-
-  } catch (error) {
-    console.error('Error verificando QR de mesa:', error);
-    return {
-      valido: false,
-      mensaje: 'Error al verificar el código QR.'
-    };
   }
-}
-async liberarMesaCliente() {
-  try {
-    const clienteId = await this.getClientId();
-    const numeroMesa = await this.getMesa(clienteId);
+  async liberarMesaCliente() {
+    try {
+      const clienteId = await this.getClientId();
+      const numeroMesa = await this.getMesa(clienteId);
 
-    if (!numeroMesa) {
-      console.log('No hay mesa para liberar');
+      if (!numeroMesa) {
+        console.log('No hay mesa para liberar');
+        return true;
+      }
+
+      // Actualizar la mesa
+      const { error: errorMesa } = await this.supabase
+        .from('mesas')
+        .update({
+          cliente_asignado: null,
+          disponible: true,
+        })
+        .eq('numero', numeroMesa);
+
+      if (errorMesa) throw errorMesa;
+
+      // Actualizar el cliente
+      const { error: errorCliente } = await this.supabase
+        .from('clientes')
+        .update({ mesa_asignada: null })
+        .eq('id_cliente', clienteId);
+
+      if (errorCliente) throw errorCliente;
+
+      console.log('Mesa liberada exitosamente');
       return true;
+    } catch (error) {
+      console.error('Error liberando mesa:', error);
+      throw error;
     }
-
-    // Actualizar la mesa
-    const { error: errorMesa } = await this.supabase
-      .from('mesas')
-      .update({
-        cliente_asignado: null,
-        disponible: true
-      })
-      .eq('numero', numeroMesa);
-
-    if (errorMesa) throw errorMesa;
-
-    // Actualizar el cliente
-    const { error: errorCliente } = await this.supabase
-      .from('clientes')
-      .update({ mesa_asignada: null })
-      .eq('id_cliente', clienteId);
-
-    if (errorCliente) throw errorCliente;
-
-    console.log('Mesa liberada exitosamente');
-    return true;
-  } catch (error) {
-    console.error('Error liberando mesa:', error);
-    throw error;
   }
-}
 
-// =====================================
+  // seccion juegos descuentos
+  async getEstadoJuegos(mesaId: number, clienteId: number) {
+    try {
+      const { data, error } = await this.supabase
+        .from('juegos_descuentos')
+        .select('*')
+        .eq('mesa_id', mesaId)
+        .eq('cliente_id', clienteId)
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') {
+        // PGRST116 es "no rows returned"
+        console.error('Error obteniendo estado de juegos:', error);
+        return null;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error en getEstadoJuegos:', error);
+      return null;
+    }
+  }
+
+  async guardarDescuentoJuego(
+    mesaId: number,
+    clienteId: number,
+    descuento: number
+  ) {
+    try {
+      const { data, error } = await this.supabase
+        .from('juegos_descuentos')
+        .upsert(
+          {
+            mesa_id: mesaId,
+            cliente_id: clienteId,
+            descuento_obtenido: descuento,
+            primer_intento_usado: true,
+            fecha: new Date().toISOString(),
+          },
+          {
+            onConflict: 'mesa_id,cliente_id',
+          }
+        )
+        .select();
+
+      if (error) {
+        console.error('Error guardando descuento:', error);
+        throw error;
+      }
+
+      console.log('✅ Descuento guardado correctamente:', data);
+      return data;
+    } catch (error) {
+      console.error('Error en guardarDescuentoJuego:', error);
+      throw error;
+    }
+  }
+
+  async marcarPrimerIntentoUsado(mesaId: number, clienteId: number) {
+    try {
+      const { data, error } = await this.supabase
+        .from('juegos_descuentos')
+        .upsert(
+          {
+            mesa_id: mesaId,
+            cliente_id: clienteId,
+            descuento_obtenido: 0,
+            primer_intento_usado: true,
+            fecha: new Date().toISOString(),
+          },
+          {
+            onConflict: 'mesa_id,cliente_id',
+          }
+        )
+        .select();
+
+      if (error) {
+        console.error('Error marcando primer intento usado:', error);
+        throw error;
+      }
+
+      console.log('✅ Primer intento marcado como usado');
+      return data;
+    } catch (error) {
+      console.error('Error en marcarPrimerIntentoUsado:', error);
+      throw error;
+    }
+  }
+
+  async getDescuentoCliente(
+    clienteId: number,
+    mesaId: number
+  ): Promise<number> {
+    try {
+      const { data, error } = await this.supabase
+        .from('juegos_descuentos')
+        .select('descuento_obtenido')
+        .eq('mesa_id', mesaId)
+        .eq('cliente_id', clienteId)
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error obteniendo descuento del cliente:', error);
+        return 0;
+      }
+
+      return data?.descuento_obtenido || 0;
+    } catch (error) {
+      console.error('Error en getDescuentoCliente:', error);
+      return 0;
+    }
+  }
+
+  // =====================================
 // MÉTODOS PARA HISTORIAL DE PEDIDOS
 // =====================================
 

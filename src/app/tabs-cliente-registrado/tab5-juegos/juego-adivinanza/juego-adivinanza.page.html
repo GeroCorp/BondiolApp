@@ -1,0 +1,91 @@
+<ion-card>
+  <ion-card-header>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <ion-card-title>Adivina el Número</ion-card-title>
+        <ion-card-subtitle>Descuento: 15%</ion-card-subtitle>
+      </div>
+      <ion-button fill="clear" (click)="cerrarJuego()">
+        <ion-icon name="close" slot="icon-only"></ion-icon>
+      </ion-button>
+    </div>
+  </ion-card-header>
+
+  <ion-card-content>
+    
+    <!-- Información del juego -->
+    <div style="display: flex; justify-content: space-around; margin-bottom: 20px;">
+      <div style="text-align: center;">
+        <ion-badge color="primary">Intento: {{ intentosRealizados }}/{{ maxIntentos }}</ion-badge>
+      </div>
+      @if (primerIntentoDisponible && esPrimerIntento) {
+        <div style="text-align: center;">
+          <ion-badge color="warning">⚡ Primer Intento</ion-badge>
+        </div>
+      }
+    </div>
+
+    <!-- Instrucciones -->
+    <ion-card color="light">
+      <ion-card-content>
+        <p><strong>Cómo jugar:</strong></p>
+        <p>Adivina el número secreto entre 1 y 50 en máximo 5 intentos</p>
+        <p>Recibirás pistas de temperatura según qué tan cerca estés</p>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Mensaje actual -->
+    <ion-card [color]="juegoActivo ? 'secondary' : (mensaje.includes('Felicitaciones') ? 'success' : 'danger')">
+      <ion-card-content>
+        <p style="text-align: center; font-size: 18px; margin: 0;">{{ mensaje }}</p>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Input y botón -->
+    @if (juegoActivo) {
+      <div style="display: flex; gap: 10px; margin: 20px 0;">
+        <ion-input
+          type="number"
+          [(ngModel)]="intentoUsuario"
+          placeholder="Tu número"
+          min="1"
+          max="50"
+          fill="outline"
+          style="flex: 1;"
+          (keyup.enter)="verificarNumero()">
+        </ion-input>
+        <ion-button (click)="verificarNumero()" [disabled]="intentoUsuario === null">
+          Verificar
+        </ion-button>
+      </div>
+    }
+
+    <!-- Historial de intentos -->
+    @if (historialIntentos.length > 0) {
+      <ion-card>
+        <ion-card-header>
+          <ion-card-subtitle>Historial</ion-card-subtitle>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-list>
+            @for (intento of historialIntentos; track $index) {
+              <ion-item>
+                <ion-label>
+                  <h3>Intento {{ $index + 1 }}: {{ intento.numero }}</h3>
+                  <p>{{ intento.pista }}</p>
+                </ion-label>
+              </ion-item>
+            }
+          </ion-list>
+        </ion-card-content>
+      </ion-card>
+    }
+
+    <!-- Botón reiniciar -->
+    <ion-button expand="block" (click)="reiniciarJuego()" style="margin-top: 20px;">
+      <ion-icon name="refresh" slot="start"></ion-icon>
+      Reiniciar Juego
+    </ion-button>
+
+  </ion-card-content>
+</ion-card>

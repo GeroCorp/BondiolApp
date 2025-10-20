@@ -23,12 +23,15 @@ export class Tab1MenuPage implements OnInit {
   platos: Item[] = [];
   bebidas: Item[] = [];
   itemSelected: Item | null = null;
+  totalConDescuento: number = 0;
   
   // Estados de carga
   isLoadingQR: boolean = false;
   isLoadingPlatos: boolean = false;
   isLoadingBebidas: boolean = false;
   isLoadingItems: boolean = false;
+  
+  
   constructor(
     private authService: AuthService,
     private clienteService: ClienteService,
@@ -38,12 +41,16 @@ export class Tab1MenuPage implements OnInit {
   }
 
   async ngOnInit() {
-    // Cargar ambos en paralelo para mejor rendimiento
     await Promise.all([
       this.cargarPlatos(),
       this.cargarBebidas()
     ]);
   }
+
+  async actualizarTotal() {
+    this.totalConDescuento = await this.clienteService.getTotal();
+  }
+
   async escanearQr() {
     this.isLoadingQR = true;
     try {
@@ -114,12 +121,6 @@ export class Tab1MenuPage implements OnInit {
     }
   }
 
-  // handleImages(item: any){
-  //   const imgArray = item.imagenes.split(',');
-  //   item.imagenes = imgArray;
-  //   return item.imagenes[0];
-  // }
-
   seleccionarItem(item: Item, tipo: 'plato' | 'bebida'){
     if (this.isLoadingItems) return;
     
@@ -129,19 +130,25 @@ export class Tab1MenuPage implements OnInit {
       this.itemSelected!.tipo = tipo;
       console.log(this.itemSelected);
       this.isLoadingItems = false;
-    }, 300); // Pequeño delay para mostrar el loading
+    }, 300);
   }
 
-  onAddItem(item: Item){
-    // Agregar el item al pedido usando el servicio
+  async onAddItem(item: Item){
     this.clienteService.addItem(item);
     this.showToast(`${item.nombre} agregado al pedido`, 'success');
-    this.itemSelected = null; // Cerrar el popup después de agregar
+    this.itemSelected = null;
     console.log('Pedido actual:', this.clienteService.pedido());
+    await this.actualizarTotal();
   }
 
-  calcularMonto(){
-    return this.clienteService.getTotal();
+  // Método para obtener el subtotal (sin descuento)
+  getSubtotalPedido(): number {
+    return this.clienteService.getSubtotal();
+  }
+
+  // ✅ MODIFICADO: Ahora es async para obtener el total con descuento
+  async calcularMonto() {
+    return await this.clienteService.getTotal();
   }
 
   volverHome(){

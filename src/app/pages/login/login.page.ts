@@ -187,4 +187,8 @@ export class LoginPage {
 
     this.loginForm.setValue({email, password});
   }
+
+  irClienteAnonimo() {
+    this.router.navigate(['/ingreso-anonimo'], { replaceUrl: true });
+  }
 }

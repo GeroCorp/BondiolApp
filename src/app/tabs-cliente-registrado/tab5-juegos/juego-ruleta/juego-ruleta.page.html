@@ -1,0 +1,96 @@
+<ion-card>
+  <ion-card-header>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <ion-card-title>Ruleta de la Suerte</ion-card-title>
+        <ion-card-subtitle>Descuento: 20%</ion-card-subtitle>
+      </div>
+      <ion-button fill="clear" (click)="cerrarJuego()">
+        <ion-icon name="close" slot="icon-only"></ion-icon>
+      </ion-button>
+    </div>
+  </ion-card-header>
+
+  <ion-card-content>
+    
+    <!-- Información del juego -->
+    <div style="display: flex; justify-content: space-around; margin-bottom: 20px;">
+      <div style="text-align: center;">
+        <ion-badge color="primary">Intentos: {{ intentosRealizados }}</ion-badge>
+      </div>
+      @if (primerIntentoDisponible && esPrimerIntento) {
+        <div style="text-align: center;">
+          <ion-badge color="warning">⚡ Primer Intento</ion-badge>
+        </div>
+      }
+    </div>
+
+    <!-- Instrucciones -->
+    <ion-card color="light">
+      <ion-card-content>
+        <p><strong>Cómo jugar:</strong></p>
+        <p>Gira la ruleta y espera a ver en qué sector cae</p>
+        <p>¡Hay 3 sectores ganadores de 8 posibles!</p>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Contenedor de la ruleta -->
+    <div class="ruleta-container">
+      <!-- Indicador -->
+      <div class="ruleta-indicador">▼</div>
+      
+      <!-- Ruleta -->
+      <div class="ruleta" [style.transform]="'rotate(' + rotacion + 'deg)'">
+        @for (sector of sectores; track $index) {
+          <div 
+            class="sector"
+            [style.transform]="'rotate(' + ($index * 45) + 'deg)'"
+            [style.background]="sector.color">
+            <div class="sector-text" [style.transform]="'rotate(' + (22.5) + 'deg)'">
+              {{ sector.gano ? '✓' : '✗' }}
+            </div>
+          </div>
+        }
+        <!-- Centro de la ruleta -->
+        <div class="ruleta-centro">
+          <ion-icon name="disc" style="font-size: 32px;"></ion-icon>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resultado -->
+    @if (resultado && !girando) {
+      <ion-card [color]="resultado.includes('GANASTE') ? 'success' : 'danger'">
+        <ion-card-content>
+          <h2 style="text-align: center; margin: 0; font-size: 24px;">
+            {{ resultado }}
+          </h2>
+        </ion-card-content>
+      </ion-card>
+    }
+
+    <!-- Botones -->
+    <div style="margin-top: 20px;">
+      <ion-button 
+        expand="block" 
+        (click)="girarRuleta()" 
+        [disabled]="girando"
+        color="danger"
+        size="large">
+        @if (girando) {
+          <ion-spinner name="crescent" slot="start"></ion-spinner>
+          Girando...
+        } @else {
+          <ion-icon name="play" slot="start"></ion-icon>
+          Girar Ruleta
+        }
+      </ion-button>
+
+      <ion-button expand="block" (click)="reiniciarJuego()" fill="outline">
+        <ion-icon name="refresh" slot="start"></ion-icon>
+        Reiniciar
+      </ion-button>
+    </div>
+
+  </ion-card-content>
+</ion-card>

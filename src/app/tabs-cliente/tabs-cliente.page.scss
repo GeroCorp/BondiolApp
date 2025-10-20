@@ -1,0 +1,8 @@
+// Estilos mínimos, los tabs usan los estilos globales de Ionic
+ion-tab-bar {
+  ion-badge {
+    position: absolute;
+    top: 4px;
+    right: 20%;
+  }
+}

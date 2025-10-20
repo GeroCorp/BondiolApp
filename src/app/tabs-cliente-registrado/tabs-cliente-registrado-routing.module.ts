@@ -7,7 +7,8 @@ const routes: Routes = [
   {
     path: '',
     component: TabsClienteRegistradoPage
-  },  {
+  },
+  {
     path: 'tab1-menu',
     loadChildren: () => import('./tab1-menu/tab1-menu.module').then( m => m.Tab1MenuPageModule)
   },
@@ -22,7 +23,12 @@ const routes: Routes = [
   {
     path: 'tab4-historial',
     loadChildren: () => import('./tab4-historial/tab4-historial.module').then( m => m.Tab4HistorialPageModule)
+  },
+  {
+    path: 'tab5-juegos',
+    loadChildren: () => import('./tab5-juegos/tab5-juegos.module').then( m => m.Tab5JuegosPageModule)
   }
+  
 
 ];
 

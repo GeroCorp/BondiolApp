@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ClienteService } from '../../services/cliente.service';
 import { Router } from '@angular/router';
+import { ToastController } from '@ionic/angular';
 
 @Component({
   selector: 'app-tab2-pedido',
@@ -9,11 +10,28 @@ import { Router } from '@angular/router';
   standalone: false
 })
 export class Tab2PedidoPage implements OnInit {
+  // Variables para mostrar los cálculos
+  subtotal: number = 0;
+  porcentajeDescuento: number = 0;
+  montoDescuento: number = 0;
+  totalFinal: number = 0;
 
-  constructor(public clienteService: ClienteService, private router: Router) { }
+  constructor(
+    public clienteService: ClienteService, 
+    private router: Router,
+    private toastController: ToastController
+  ) { }
 
   async ngOnInit() {
+    await this.calcularTotales();
+  }
 
+  // ✅ Calcular todos los totales con descuento
+  async calcularTotales() {
+    this.subtotal = this.clienteService.getSubtotal();
+    this.porcentajeDescuento = await this.clienteService.getPorcentajeDescuento();
+    this.montoDescuento = await this.clienteService.getMontoDescuento();
+    this.totalFinal = await this.clienteService.getTotal();
   }
 
   // Getter para acceder al pedido desde el template
@@ -22,38 +40,76 @@ export class Tab2PedidoPage implements OnInit {
   }
 
   // Remover un item del pedido
-  removeItem(index: number) {
+  async removeItem(index: number) {
     this.clienteService.removeItem(index);
+    await this.calcularTotales();
   }
 
   // Limpiar todo el pedido
   clearPedido() {
     this.clienteService.clearPedido();
+    this.subtotal = 0;
+    this.porcentajeDescuento = 0;
+    this.montoDescuento = 0;
+    this.totalFinal = 0;
   }
 
   // Confirmar el pedido
-  confirmarPedido() {
-    // Aquí podrías implementar la lógica para confirmar el pedido,
-    // como enviarlo a un servidor o marcarlo como confirmado.
-    console.log('Pedido confirmado:', this.clienteService.pedido());
-    this.clienteService.insertPedido();
-    this.clienteService.clearPedido();
+  async confirmarPedido() {
+    try {
+      console.log('Confirmando pedido...');
+      console.log('Subtotal:', this.subtotal);
+      console.log('Descuento:', this.porcentajeDescuento + '%');
+      console.log('Monto descuento:', this.montoDescuento);
+      console.log('Total final:', this.totalFinal);
+      
+      await this.clienteService.insertPedido();
+      
+      await this.showToast(
+        this.porcentajeDescuento > 0 
+          ? `¡Pedido confirmado con ${this.porcentajeDescuento}% de descuento!` 
+          : 'Pedido confirmado exitosamente',
+        'success'
+      );
+      
+      this.clienteService.clearPedido();
+      await this.calcularTotales();
+      
+      // Opcional: redirigir al home
+      setTimeout(() => {
+        this.router.navigate(['/home-cliente']);
+      }, 1500);
+    } catch (error) {
+      console.error('Error al confirmar pedido:', error);
+      await this.showToast('Error al confirmar el pedido', 'danger');
+    }
   }
 
   // Aumentar cantidad de un item
-  increaseQuantity(index: number) {
+  async increaseQuantity(index: number) {
     const currentItem = this.clienteService.pedido()[index];
     this.clienteService.updateItemQuantity(index, currentItem.quantity + 1);
+    await this.calcularTotales();
   }
 
   // Disminuir cantidad de un item
-  decreaseQuantity(index: number) {
+  async decreaseQuantity(index: number) {
     const currentItem = this.clienteService.pedido()[index];
     this.clienteService.updateItemQuantity(index, currentItem.quantity - 1);
+    await this.calcularTotales();
   }
 
   volverHome(){
     this.router.navigate(["/home-cliente"])
   }
 
+  async showToast(message: string, color: 'success' | 'danger' | 'medium' = 'medium') {
+    const toast = await this.toastController.create({
+      message,
+      duration: 3000,
+      color,
+      position: 'bottom'
+    });
+    await toast.present();
+  }
 }

@@ -1,0 +1,75 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Ingreso Anónimo</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="ingreso-container">
+    
+    <div class="header-section">
+      <ion-icon name="restaurant-outline" color="primary"></ion-icon>
+      <h1>Bienvenido</h1>
+      <p>Ingresa al restaurante como cliente anónimo</p>
+    </div>
+
+    <ion-card>
+      <ion-card-content>
+        
+        <ion-item lines="full">
+          <ion-label position="floating">Nombre *</ion-label>
+          <ion-input 
+            [(ngModel)]="nombre" 
+            placeholder="Tu nombre"
+            type="text">
+          </ion-input>
+        </ion-item>
+
+        <div class="foto-section">
+          <ion-label>Foto *</ion-label>
+          
+          <div class="foto-preview" *ngIf="foto">
+            <img [src]="foto" alt="Tu foto" />
+            <ion-button 
+              fill="clear" 
+              color="danger" 
+              (click)="eliminarFoto()">
+              <ion-icon name="close-circle"></ion-icon>
+            </ion-button>
+          </div>
+
+          <div class="foto-placeholder" *ngIf="!foto">
+            <ion-icon name="camera-outline"></ion-icon>
+            <p>Sin foto</p>
+          </div>
+
+          <ion-button 
+            expand="block" 
+            fill="outline" 
+            (click)="tomarFoto()"
+            [disabled]="isLoading">
+            <ion-icon name="camera" slot="start"></ion-icon>
+            {{ foto ? 'Cambiar Foto' : 'Tomar Foto' }}
+          </ion-button>
+        </div>
+
+        <ion-button 
+          expand="block" 
+          color="primary" 
+          (click)="ingresar()"
+          [disabled]="isLoading"
+          class="ion-margin-top">
+          <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
+          <span *ngIf="!isLoading">Ingresar</span>
+        </ion-button>
+
+      </ion-card-content>
+    </ion-card>
+
+    <div class="info-section">
+      <ion-icon name="information-circle-outline" color="medium"></ion-icon>
+      <p>Ingresa a la lista de espera. El maître te asignará una mesa.</p>
+    </div>
+
+  </div>
+</ion-content>
