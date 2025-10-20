@@ -1,0 +1,154 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-title>
+      <ion-icon name="restaurant"></ion-icon> RestoApp - Anónimo
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="salir()">
+        <ion-icon name="log-out-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <div class="home-container">
+    
+    <div class="bienvenida-header">
+      <div class="avatar-container">
+        <img [src]="clienteAnonimo?.foto || 'assets/avatar-placeholder.png'" alt="Foto de perfil">
+      </div>
+      <h1>¡Bienvenido/a!</h1>
+      <h2>{{ clienteAnonimo?.nombre }}</h2>
+      <p class="badge-anonimo">
+        <ion-icon name="person-outline"></ion-icon>
+        Cliente Anónimo
+      </p>
+    </div>
+
+    <ion-card *ngIf="clienteAnonimo?.mesa_asignada && !mesaVerificada" color="success">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="checkmark-circle"></ion-icon>
+          ¡Mesa Asignada!
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>Se te ha asignado la <strong>Mesa {{ numeroMesa }}</strong></p>
+        <p>Para comenzar a usar el restaurante, escanea el código QR de tu mesa.</p>
+        <ion-button expand="block" size="large" (click)="escanearQRMesa()">
+          <ion-icon slot="start" name="qr-code"></ion-icon>
+          Escanear QR de Mi Mesa
+        </ion-button>
+
+
+         <ion-button
+          expand="block"
+          size="large"
+          fill="outline"
+          color="dark"
+          (click)="verificarMesaSimulada()"
+          style="margin-top: 10px">
+          <ion-icon slot="start" name="bug-outline"></ion-icon>
+          [TESTING] Verificar Mesa Automáticamente
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card *ngIf="!clienteAnonimo?.mesa_asignada" color="warning">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="time-outline"></ion-icon>
+          En Lista de Espera
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>Estás en la lista de espera. El maître te asignará una mesa pronto.</p>
+        <div style="text-align: center; padding: 20px;">
+          <ion-spinner name="crescent" color="primary"></ion-spinner>
+          <p style="margin-top: 10px; color: var(--ion-color-medium);">
+            Esperando asignación de mesa...
+          </p>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card *ngIf="mesaVerificada && numeroMesa" color="success">
+      <ion-card-content>
+        <div style="text-align: center;">
+          <ion-icon name="checkmark-circle" style="font-size: 48px;"></ion-icon>
+          <h3>Mesa {{ numeroMesa }} Verificada</h3>
+          <p>Ya puedes acceder a todas las funcionalidades</p>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>¿Qué deseas hacer?</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+
+        <ion-button 
+          expand="block" 
+          color="secondary" 
+          (click)="verMenu()"
+          [disabled]="!mesaVerificada">
+          <ion-icon name="book-outline" slot="start"></ion-icon>
+          Ver Menú
+          <ion-icon *ngIf="!mesaVerificada" name="lock-closed" slot="end"></ion-icon>
+        </ion-button>
+
+        <ion-button 
+          expand="block" 
+          color="secondary" 
+          (click)="hacerPedido()"
+          [disabled]="!mesaVerificada">
+          <ion-icon name="cart-outline" slot="start"></ion-icon>
+          Hacer Pedido
+          <ion-icon *ngIf="!mesaVerificada" name="lock-closed" slot="end"></ion-icon>
+        </ion-button>
+
+        <ion-button 
+          expand="block" 
+          color="secondary" 
+          (click)="hacerConsulta()"
+          [disabled]="!mesaVerificada">
+          <ion-icon name="chatbubble-outline" slot="start"></ion-icon>
+          Consulta Mozos
+          <ion-icon *ngIf="!mesaVerificada" name="lock-closed" slot="end"></ion-icon>
+        </ion-button>
+
+        <ion-button 
+          expand="block" 
+          color="tertiary" 
+          (click)="verEncuestas()">
+          <ion-icon name="stats-chart-outline" slot="start"></ion-icon>
+          Ver Encuestas
+        </ion-button>
+
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Estado de tu sesión</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="estado-info">
+          <ion-icon name="information-circle" color="primary"></ion-icon>
+          <div>
+            <p><strong>Sesión Anónima</strong></p>
+            <p class="info-text">
+              Ingresaste el {{ clienteAnonimo?.created_at | date:'dd/MM/yyyy HH:mm' }}
+            </p>
+            <p *ngIf="clienteAnonimo?.mesa_asignada" class="info-text">
+              Mesa asignada: <strong>{{ numeroMesa }}</strong>
+            </p>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+  </div>
+</ion-content>

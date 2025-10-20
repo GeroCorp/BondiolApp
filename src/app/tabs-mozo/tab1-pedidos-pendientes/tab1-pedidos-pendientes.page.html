@@ -47,9 +47,15 @@
               {{ formatearFecha(pedido.fecha) }}
             </ion-card-subtitle>
           </div>
-          <ion-badge *ngIf="esPedidoNuevo(pedido.fecha)" color="danger">
-            ¡NUEVO!
-          </ion-badge>
+          <div style="display: flex; flex-direction: column; gap: 5px; align-items: flex-end;">
+            <ion-badge *ngIf="esPedidoNuevo(pedido.fecha)" color="danger">
+              ¡NUEVO!
+            </ion-badge>
+            <ion-badge *ngIf="pedido.descuento_porcentaje && pedido.descuento_porcentaje > 0" color="success">
+              <ion-icon name="trophy" style="margin-right: 3px;"></ion-icon>
+              -{{ pedido.descuento_porcentaje }}%
+            </ion-badge>
+          </div>
         </div>
       </ion-card-header>
 
@@ -67,7 +73,7 @@
             <ion-item *ngFor="let item of pedido.items" lines="none">
               <ion-label>
                 <h3>{{ item.cantidad }}x {{ item.nombre_prod }}</h3>
-                <p class="precio">${{ item.precio_unitario}}</p>
+                <p class="precio">${{ item.precio_unitario }}</p>
               </ion-label>
               <ion-icon 
                 *ngIf="item.tipo === 'plato'" 
@@ -85,8 +91,21 @@
           </ion-list>
         </div>
 
-        <!-- Total -->
+        <!-- Total con descuento -->
         <div class="total-container">
+          <!-- Mostrar subtotal si hay descuento -->
+          <div *ngIf="pedido.descuento_porcentaje && pedido.descuento_porcentaje > 0" style="margin-bottom: 10px;">
+            <p style="margin: 0; color: #666;">
+              <small>Subtotal: <span style="text-decoration: line-through;">${{ pedido.subtotal }}</span></small>
+            </p>
+            <p style="margin: 0; color: #2dd36f;">
+              <small>
+                <ion-icon name="trophy" style="font-size: 14px; vertical-align: middle;"></ion-icon>
+                Descuento ({{ pedido.descuento_porcentaje }}%): -${{ pedido.subtotal! - pedido.total }}
+              </small>
+            </p>
+          </div>
+          
           <h3>TOTAL: <span class="total-monto">${{ pedido.total }}</span></h3>
           <p class="tiempo-estimado">
             <ion-icon name="alarm-outline"></ion-icon>

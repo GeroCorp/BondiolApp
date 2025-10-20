@@ -1,0 +1,25 @@
+.game-card {
+  margin: 15px 0;
+  cursor: pointer;
+  transition: transform 0.2s;
+
+  &:hover {
+    transform: scale(1.02);
+  }
+
+  h2 {
+    margin: 10px 0 5px 0;
+    font-size: 18px;
+    font-weight: bold;
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+    color: #666;
+  }
+}
+
+.game-container {
+  padding: 10px;
+}

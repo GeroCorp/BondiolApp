@@ -117,91 +117,118 @@ export class ListaEsperaService {
    * Asignar mesa a cliente de lista de espera
    */
   async asignarMesaListaEspera(clienteId: number, mesaId: number): Promise<boolean> {
-    try {
-      // Primero obtener los datos del cliente de la lista de espera
-      const clienteEspera = await this.getClientePorId(clienteId);
-      if (!clienteEspera) {
-        console.error('Cliente no encontrado en lista de espera');
-        return false;
-      }
+  try {
+    // Obtener datos del cliente de la lista de espera
+    const clienteEspera = await this.getClientePorId(clienteId);
+    if (!clienteEspera) {
+      console.error('Cliente no encontrado en lista de espera');
+      return false;
+    }
 
-      // Actualizar la lista de espera
-      const { error } = await supabase
-        .from('lista_espera')
-        .update({ 
-          estado: 'asignado',
-          mesa_asignada: mesaId
-        })
-        .eq('id', clienteId);
+    // Actualizar la lista de espera
+    const { error } = await supabase
+      .from('lista_espera')
+      .update({ 
+        estado: 'asignado',
+        mesa_asignada: mesaId
+      })
+      .eq('id', clienteId);
 
-      if (error) throw error;
+    if (error) throw error;
 
-      // Buscar el cliente en la tabla clientes por nombre completo
-      // Intentamos diferentes formas de búsqueda para mayor precisión
-      const nombreCompleto = clienteEspera.nombre_cliente.trim();
-      const partesNombre = nombreCompleto.split(' ');
+    // ✅ NUEVO: Buscar si es un cliente anónimo
+    const { data: clienteAnonimo, error: errorAnonimo } = await supabase
+      .from('clientes_anonimos')
+      .select('id_clienteanonimo')
+      .ilike('nombre', clienteEspera.nombre_cliente.trim())
+      .eq('en_espera', true)
+      .is('mesa_asignada', null)
+      .maybeSingle();
+
+    if (!errorAnonimo && clienteAnonimo) {
+      console.log('✅ Cliente anónimo encontrado:', clienteAnonimo.id_clienteanonimo);
       
-      let clientesEncontrados: any[] = [];
-      let errorBusqueda: any = null;
+      // Actualizar clientes_anonimos
+      const { error: errorUpdateAnonimo } = await supabase
+        .from('clientes_anonimos')
+        .update({
+          mesa_asignada: mesaId,
+          en_espera: false,
+          fecha_asignacion: new Date().toISOString()
+        })
+        .eq('id_clienteanonimo', clienteAnonimo.id_clienteanonimo);
 
-      // Intento 1: Búsqueda por nombre completo exacto
-      if (partesNombre.length >= 2) {
-        const { data, error } = await supabase
-          .from('clientes')
-          .select('id_cliente, nombre, apellido')
-          .ilike('nombre', partesNombre[0])
-          .ilike('apellido', partesNombre[1]);
-        
-        if (!error && data && data.length > 0) {
-          clientesEncontrados = data;
-        }
-      }
-
-      // Intento 2: Si no encontramos nada, buscar por nombre aproximado
-      if (clientesEncontrados.length === 0) {
-        const { data, error } = await supabase
-          .from('clientes')
-          .select('id_cliente, nombre, apellido')
-          .ilike('nombre', `%${partesNombre[0]}%`);
-        
-        errorBusqueda = error;
-        clientesEncontrados = data || [];
-      }
-
-      if (errorBusqueda) {
-        console.error('Error al buscar cliente:', errorBusqueda);
-        // Aunque falle la búsqueda del cliente, la lista de espera ya se actualizó
-        return true;
-      }
-
-      // Si encontramos cliente(s), actualizar la mesa asignada
-      if (clientesEncontrados && clientesEncontrados.length > 0) {
-        const clienteEncontrado = clientesEncontrados[0];
-        
-        if (clientesEncontrados.length > 1) {
-          console.warn(`⚠️ Se encontraron ${clientesEncontrados.length} clientes con nombre similar a "${clienteEspera.nombre_cliente}". Usando el primero: ${clienteEncontrado.nombre} ${clienteEncontrado.apellido}`);
-        }
-        
-        try {
-          await this.clienteService.setMesa(clienteEncontrado.id_cliente, mesaId);
-          console.log(`✅ Mesa ${mesaId} asignada tanto en lista_espera como en clientes para: ${clienteEspera.nombre_cliente} -> ${clienteEncontrado.nombre} ${clienteEncontrado.apellido}`);
-        } catch (errorAsignacion) {
-          console.error('❌ Error al asignar mesa en tabla clientes:', errorAsignacion);
-          // No fallar completamente si hay error en la tabla clientes
-          console.warn('⚠️ La mesa fue asignada en lista_espera pero no se pudo sincronizar con la tabla clientes');
-        }
+      if (errorUpdateAnonimo) {
+        console.error('Error actualizando cliente anónimo:', errorUpdateAnonimo);
       } else {
-        console.warn(`⚠️ No se encontró cliente registrado con nombre similar a: "${clienteEspera.nombre_cliente}"`);
-        console.info(`💡 Sugerencia: Verifique que el cliente esté registrado en el sistema o use nombres exactos`);
+        console.log('✅ Cliente anónimo actualizado con mesa asignada');
+      }
+
+      // Actualizar la mesa
+      const { error: errorMesa } = await supabase
+        .from('mesas')
+        .update({
+          cliente_asignado: clienteAnonimo.id_clienteanonimo,
+          disponible: false
+        })
+        .eq('id', mesaId);
+
+      if (errorMesa) {
+        console.error('Error actualizando mesa:', errorMesa);
+      } else {
+        console.log('✅ Mesa actualizada como ocupada');
       }
 
       return true;
-
-    } catch (error) {
-      console.error('Error al asignar mesa:', error);
-      return false;
     }
+
+    // Si no es anónimo, buscar cliente registrado (código original)
+    const nombreCompleto = clienteEspera.nombre_cliente.trim();
+    const partesNombre = nombreCompleto.split(' ');
+    
+    let clientesEncontrados: any[] = [];
+
+    if (partesNombre.length >= 2) {
+      const { data } = await supabase
+        .from('clientes')
+        .select('id_cliente, nombre, apellido')
+        .ilike('nombre', partesNombre[0])
+        .ilike('apellido', partesNombre[1]);
+      
+      if (data && data.length > 0) {
+        clientesEncontrados = data;
+      }
+    }
+
+    if (clientesEncontrados.length === 0) {
+      const { data } = await supabase
+        .from('clientes')
+        .select('id_cliente, nombre, apellido')
+        .ilike('nombre', `%${partesNombre[0]}%`);
+      
+      clientesEncontrados = data || [];
+    }
+
+    if (clientesEncontrados && clientesEncontrados.length > 0) {
+      const clienteEncontrado = clientesEncontrados[0];
+      
+      try {
+        await this.clienteService.setMesa(clienteEncontrado.id_cliente, mesaId);
+        console.log(`✅ Mesa ${mesaId} asignada a cliente registrado: ${clienteEncontrado.nombre} ${clienteEncontrado.apellido}`);
+      } catch (errorAsignacion) {
+        console.error('❌ Error al asignar mesa en tabla clientes:', errorAsignacion);
+      }
+    } else {
+      console.warn(`⚠️ No se encontró cliente registrado ni anónimo con nombre: "${clienteEspera.nombre_cliente}"`);
+    }
+
+    return true;
+
+  } catch (error) {
+    console.error('Error al asignar mesa:', error);
+    return false;
   }
+}
 
   /**
    * Marcar cliente como ausente

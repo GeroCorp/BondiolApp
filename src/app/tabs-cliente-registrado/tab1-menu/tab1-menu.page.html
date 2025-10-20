@@ -40,7 +40,7 @@
   <div class="total-display-fixed">
     <div class="total-container">
       <div class="mesa-info">Mesa: {{ nroMesa }}</div>
-      <div class="total-amount">{{ calcularMonto() | currency:'$':'symbol':'1.0-0' }}</div>
+      <div class="total-amount">${{ getSubtotalPedido() }}</div>
     </div>
   </div>
 
@@ -69,9 +69,8 @@
               <ion-col size="4">
                 <ion-card (click)="seleccionarItem(plato, 'plato')" [disabled]="isLoadingItems">
                   <ion-card-header>
-                    <!-- <ion-img [src]="handleImages(plato)"></ion-img> -->
                     <ion-card-title>{{ plato.nombre }}</ion-card-title>
-                    <ion-card-subtitle>{{ plato.precio | currency:'$':'symbol':'1.0-0' }}</ion-card-subtitle>
+                    <ion-card-subtitle>${{ plato.precio }}</ion-card-subtitle>
                   </ion-card-header>
                 </ion-card>
               </ion-col>
@@ -101,7 +100,7 @@
                 <ion-card (click)="seleccionarItem(bebida, 'bebida')" [disabled]="isLoadingItems">
                   <ion-card-header>
                     <ion-card-title>{{ bebida.nombre }}</ion-card-title>
-                    <ion-card-subtitle>{{ bebida.precio | currency:'$':'symbol':'1.0-0' }}</ion-card-subtitle>
+                    <ion-card-subtitle>${{ bebida.precio }}</ion-card-subtitle>
                   </ion-card-header>
                 </ion-card>
               </ion-col>

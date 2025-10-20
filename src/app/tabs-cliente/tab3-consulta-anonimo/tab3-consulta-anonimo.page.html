@@ -1,0 +1,63 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="secondary">
+    <ion-title>Consulta Mozos</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="chat-content">
+
+  @if (loading) {
+    <div class="loading-state">
+      <ion-spinner name="crescent" color="primary"></ion-spinner>
+      <p>Cargando mensajes...</p>
+    </div>
+  }
+  
+  @if (messages.length === 0 && !loading) {
+    <div class="no-messages-state">
+      <ion-icon name="chatbubble-outline"></ion-icon>
+      <p>No hay mensajes aún.</p>
+      <p class="hint">Escribe un mensaje abajo para comenzar</p>
+    </div>
+  }
+  
+  <div class="messages-list" *ngIf="!loading && messages.length > 0">
+    @for (mensaje of messages; track $index) {
+      <div class="message-item" 
+           [class.sent]="mensaje.nombre_usuario === nombreCliente" 
+           [class.received]="mensaje.nombre_usuario !== nombreCliente">
+        <div class="bubble">
+          <div class="name">
+            {{ mensaje.nombre_usuario === nombreCliente ? 'Tú' : mensaje.nombre_usuario }}
+          </div>
+          <div class="text">{{ mensaje.contenido }}</div>
+          <div class="time">{{ mensaje.date_sended | date:'HH:mm' }}</div>
+        </div>
+      </div>
+    }
+  </div>
+
+</ion-content>
+
+<ion-footer class="chat-footer">
+  <ion-toolbar color="light">
+    <ion-item lines="none" class="message-input-container">
+      <ion-input 
+        class="message-input"
+        placeholder="Escribe un mensaje..." 
+        [(ngModel)]="nuevoMensaje"
+        (keyup.enter)="enviar()"
+        type="text">
+      </ion-input>
+      <ion-button 
+        class="send-btn"
+        slot="end" 
+        fill="clear" 
+        shape="round"
+        (click)="enviar()" 
+        [disabled]="!nuevoMensaje || !nuevoMensaje.trim()">
+        <ion-icon slot="icon-only" name="send"></ion-icon>
+      </ion-button>
+    </ion-item>
+  </ion-toolbar>
+</ion-footer>

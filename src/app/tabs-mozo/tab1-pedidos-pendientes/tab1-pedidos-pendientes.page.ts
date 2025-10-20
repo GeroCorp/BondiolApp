@@ -14,6 +14,8 @@ interface Pedido {
   mesa?: { numero: number };
   cliente?: { nombre: string; apellido: string };
   items?: ItemPedido[];
+  subtotal?: number; // Subtotal SIN descuento
+  descuento_porcentaje?: number; // Porcentaje de descuento aplicado
 }
 
 interface ItemPedido {
@@ -54,13 +56,40 @@ export class Tab1PedidosPendientesPage implements OnInit {
       
       if (pedidos) {
         this.pedidosPendientes = pedidos;
-        this.pedidosPendientes.forEach(async (pedido) => {
-          console.log(pedido.id);
+        
+        // Procesar cada pedido
+        for (const pedido of this.pedidosPendientes) {
+          console.log('Pedido ID:', pedido.id);
+          
+          // Obtener items del pedido
           const items = await this.mozoService.getDetallesPedido(pedido.id);
           pedido.items = items;
-          pedido.total = items.reduce((sum, item) => sum + item.precio_unitario * item.cantidad, 0);
-        });
-        console.log(pedidos);
+          
+          // Calcular subtotal (suma de items SIN descuento)
+          const subtotal = items.reduce((sum, item) => 
+            sum + (item.precio_unitario * item.cantidad), 0
+          );
+          pedido.subtotal = subtotal;
+          
+          // El total CON descuento ya viene desde la BD
+          // Si el total es diferente al subtotal, hay descuento
+          if (pedido.total < subtotal) {
+            const descuentoMonto = subtotal - pedido.total;
+            pedido.descuento_porcentaje = Math.round((descuentoMonto / subtotal) * 100);
+            console.log(`✅ Pedido ${pedido.id} tiene ${pedido.descuento_porcentaje}% de descuento`);
+          } else {
+            pedido.descuento_porcentaje = 0;
+          }
+          
+          console.log({
+            pedidoId: pedido.id,
+            subtotal: subtotal,
+            total: pedido.total,
+            descuento: pedido.descuento_porcentaje
+          });
+        }
+        
+        console.log('Pedidos procesados:', this.pedidosPendientes);
       }
 
     } catch (error) {
@@ -171,9 +200,15 @@ export class Tab1PedidosPendientesPage implements OnInit {
   }
 
   async confirmarPedido(pedido: Pedido) {
+    // Preparar mensaje con información del descuento si existe
+    let mensajeDescuento = '';
+    if (pedido.descuento_porcentaje && pedido.descuento_porcentaje > 0) {
+      mensajeDescuento = `<br><small>Descuento aplicado: ${pedido.descuento_porcentaje}%</small>`;
+    }
+
     const alert = await this.alertController.create({
       header: 'Confirmar pedido',
-      message: `¿Confirmar pedido de la mesa ${pedido.mesa?.numero}?<br><strong>Total: $${pedido.total}</strong>`,
+      message: `¿Confirmar pedido de la mesa ${pedido.mesa?.numero}?<br><strong>Total: $${pedido.total}</strong>${mensajeDescuento}`,
       buttons: [
         {
           text: 'Cancelar',
@@ -220,16 +255,7 @@ export class Tab1PedidosPendientesPage implements OnInit {
         'Pedido confirmado',
         `Tu pedido de la mesa ${pedido.mesa?.numero} está siendo preparado.`
       );
-      // await this.authService.enviarNotificacionSector(
-      //     'cocinero',
-      //     'Nuevo pedido',
-      //     `Mesa ${pedido.mesa?.numero}: ${itemsCocina.length} plato(s)`
-      //   );
-      // await this.authService.enviarNotificacionSector(
-      //           'bartender',
-      //           'Nuevo pedido',
-      //           `Mesa ${pedido.mesa?.numero}: ${itemsBar.length} bebida(s)`
-      //         );
+
       await loading.dismiss();
       this.showToast('Pedido confirmado y enviado a cocina/bar', 'success');
 

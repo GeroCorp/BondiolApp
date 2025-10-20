@@ -1,30 +1,48 @@
 import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
-import { TabsClienteComponent } from './tabs-cliente.component';
+import { Routes, RouterModule } from '@angular/router';
+import { TabsClientePage } from './tabs-cliente.page';
 
 const routes: Routes = [
   {
     path: '',
-    component: TabsClienteComponent,
+    component: TabsClientePage,
     children: [
       {
-        path: 'tab1-anonimo',
+        path: 'tab1-menu-anonimo',
         loadChildren: () =>
-          import('./tab1-anonimo/tab1-anonimo.module').then(m => m.Tab1AnonimoModule),
+          import('./tab1-menu-anonimo/tab1-menu-anonimo.module').then(
+            (m) => m.Tab1MenuAnonimoPageModule
+          ),
       },
       {
-        path: 'tab2-encuestas',
+        path: 'tab2-pedido-anonimo',
         loadChildren: () =>
-          import('./tab2-encuestas/tab2-encuestas.module').then(m => m.Tab2EncuestasModule),
+          import('./tab2-pedido-anonimo/tab2-pedido-anonimo.module').then(
+            (m) => m.Tab2PedidoAnonimoPageModule
+          ),
       },
       {
-        path: 'tab3-mesa',
+        path: 'tab3-consulta-anonimo',
         loadChildren: () =>
-          import('./tab3-mesa/tab3-mesa.module').then(m => m.Tab3MesaModule),
+          import('./tab3-consulta-anonimo/tab3-consulta-anonimo.module').then(
+            (m) => m.Tab3ConsultaAnonimoPageModule
+          ),
+      },
+      {
+        path: 'ingreso-anonimo',
+        loadChildren: () =>
+          import('./ingreso-anonimo/ingreso-anonimo.module').then(
+            (m) => m.IngresoAnonimoPageModule
+          ),
+      },
+      {
+        path: 'tabs-cliente',
+        loadChildren: () =>
+          import('./tabs-cliente.module').then((m) => m.TabsClientePageModule),
       },
       {
         path: '',
-        redirectTo: '/tabs-cliente/tab1-anonimo',
+        redirectTo: '/tabs-cliente/tab1-menu-anonimo',
         pathMatch: 'full',
       },
     ],
@@ -35,4 +53,4 @@ const routes: Routes = [
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule],
 })
-export class TabsClientePageRoutingModule {}
+export class TabsClienteAnonimoPageRoutingModule {}

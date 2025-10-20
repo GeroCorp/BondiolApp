@@ -16,6 +16,10 @@ const routes: Routes = [
     loadChildren: () => import('./pages/home-cliente/home-cliente.module').then( m => m.HomeClientePageModule)
   },
   {
+    path: 'home-anonimo',
+    loadChildren: () => import('./pages/home-anonimo/home-anonimo.module').then(m => m.HomeAnonimoPageModule)
+  },
+  {
     path: '',
     redirectTo: 'splash',
     pathMatch: 'full'
@@ -53,13 +57,29 @@ const routes: Routes = [
     loadChildren: () => import('./tabs-cliente-registrado/tabs-cliente-registrado.module').then( m => m.TabsClienteRegistradoPageModule)
   },
   {
+    path: 'tabs-cliente',
+    loadChildren: () => import('./tabs-cliente/tabs-cliente.module').then(m => m.TabsClientePageModule)
+  },
+  {
     path: 'lista-espera-cliente',
     loadChildren: () => import('./pages/lista-espera-cliente/lista-espera-cliente.module').then( m => m.ListaEsperaClientePageModule)
+  },
+  {
+    path: 'ingreso-anonimo',
+    loadChildren: () => import('./tabs-cliente/ingreso-anonimo/ingreso-anonimo.module').then(m => m.IngresoAnonimoPageModule)
+  },
+  {
+    path: 'generador-qr-mesas',
+    loadChildren: () => import('./pages/generador-qr-mesas/generador-qr-mesas.module').then(m => m.GeneradorQrMesasPageModule)
   },
   {
     path: '**',
     redirectTo: 'splash',
     pathMatch: 'full'
+  },
+  {
+    path: 'generador-qr-mesas',
+    loadChildren: () => import('./pages/generador-qr-mesas/generador-qr-mesas.module').then( m => m.GeneradorQrMesasPageModule)
   },
 
 

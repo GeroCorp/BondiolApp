@@ -1,0 +1,116 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="secondary">
+    <ion-title>Menú</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+
+  <!-- Total visible y fijo -->
+  <div class="total-display-fixed">
+    <div class="total-container">
+      <div class="mesa-info">Mesa: {{ numeroMesa }}</div>
+      <div class="total-amount">{{ calcularTotal() | currency:'$':'symbol':'1.0-0' }}</div>
+    </div>
+  </div>
+
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Menú de Platos y Bebidas</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      
+      <ion-card-title>Platos</ion-card-title>
+      <ion-grid fixed>
+        <ion-row>
+          @for (plato of platos; track plato.id) {
+            <ion-col size="4">
+              <ion-card (click)="seleccionarItem(plato, 'plato')">
+                <ion-card-header>
+                  <ion-card-title>{{ plato.nombre }}</ion-card-title>
+                  <ion-card-subtitle>{{ plato.precio | currency:'$':'symbol':'1.0-0' }}</ion-card-subtitle>
+                </ion-card-header>
+              </ion-card>
+            </ion-col>
+          }
+        </ion-row>
+      </ion-grid>
+      
+      <ion-card-title>Bebidas</ion-card-title>
+      <ion-grid fixed>
+        <ion-row>
+          @for (bebida of bebidas; track bebida.id) {
+            <ion-col size="4">
+              <ion-card (click)="seleccionarItem(bebida, 'bebida')">
+                <ion-card-header>
+                  <ion-card-title>{{ bebida.nombre }}</ion-card-title>
+                  <ion-card-subtitle>{{ bebida.precio | currency:'$':'symbol':'1.0-0' }}</ion-card-subtitle>
+                </ion-card-header>
+              </ion-card>
+            </ion-col>
+          }
+        </ion-row>
+      </ion-grid>
+     
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Modal para seleccionar cantidad -->
+  <ion-modal [isOpen]="!!itemSelected" (didDismiss)="itemSelected = null">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar color="primary">
+          <ion-title>{{ itemSelected?.nombre }}</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="itemSelected = null">
+              <ion-icon name="close"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+
+      <ion-content class="ion-padding">
+        <div class="item-details">
+          
+          <h2>{{ itemSelected?.nombre }}</h2>
+          
+          <p *ngIf="itemSelected?.descripcion">{{ itemSelected?.descripcion }}</p>
+          
+          <div class="precio-section">
+            <span>Precio:</span>
+            <strong>{{ itemSelected?.precio | currency:'$':'symbol':'1.0-0' }}</strong>
+          </div>
+
+          <div class="cantidad-control">
+            <ion-label>Cantidad:</ion-label>
+            <div class="quantity-controls">
+              <ion-button fill="outline" (click)="disminuir()">
+                <ion-icon name="remove"></ion-icon>
+              </ion-button>
+              <span class="quantity-display">{{ cantidad }}</span>
+              <ion-button fill="outline" (click)="aumentar()">
+                <ion-icon name="add"></ion-icon>
+              </ion-button>
+            </div>
+          </div>
+
+          <div class="subtotal-section">
+            <span>Subtotal:</span>
+            <strong>{{ getSubtotal() | currency:'$':'symbol':'1.0-0' }}</strong>
+          </div>
+
+          <ion-button 
+            expand="block" 
+            color="primary" 
+            size="large"
+            (click)="agregarAlPedido()">
+            <ion-icon name="cart" slot="start"></ion-icon>
+            Agregar al Pedido
+          </ion-button>
+
+        </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+</ion-content>
