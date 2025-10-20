@@ -3,6 +3,7 @@ import { ModalController, ToastController, LoadingController } from '@ionic/angu
 import { Mozo } from 'src/app/services/mozo';
 import { AuthService } from 'src/app/services/supabase';
 import { DetallePedidoModalComponent } from './detalle-pedido-modal/detalle-pedido-modal.component';
+import { Notification } from 'src/app/services/notification';
 
 @Component({
   selector: 'app-tab2-pedidos-confirmados',
@@ -21,7 +22,8 @@ export class Tab2PedidosConfirmadosPage implements OnInit {
     private authService: AuthService,
     private modalController: ModalController,
     private toastController: ToastController,
-    private loadingController: LoadingController
+    private loadingController: LoadingController,
+    private notificationService: Notification
   ) {}
 
   async ngOnInit() {
@@ -118,12 +120,13 @@ export class Tab2PedidosConfirmadosPage implements OnInit {
     await loading.present();
 
     try {
-      await this.authService.actualizarEstadoPedido(pedido.id_pedido, 'entregado');
-      
-      await this.authService.enviarNotificacionCliente(
-        pedido.cliente_id,
-        'Pedido entregado',
-        `Tu pedido de la mesa ${pedido.mesa?.numero} ha sido entregado. ¡Buen provecho!`
+      await this.authService.actualizarEstadoPedido(pedido.id, 'entregado');
+
+      await this.notificationService.sendNotificationToCliente(
+        `Pedido entregado`,
+        `Su pedido fue marcado como entregado por el mozo, por favor confirme el estado.`,
+        '',
+        pedido.id_cliente
       );
 
       await loading.dismiss();

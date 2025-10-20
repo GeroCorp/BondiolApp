@@ -18,9 +18,20 @@ ion-header {
       text-shadow: 0 1px 3px rgba(0,0,0,0.3);
     }
 
-    ion-buttons ion-button {
-      --color: #fff;
+    ion-buttons ion-button,
+    .btn-volver {
+      --color: #ffffff !important;
+      color: #ffffff !important;
       text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+      font-weight: 600;
+      
+      ion-icon {
+        color: #ffffff !important;
+      }
+      
+      &:hover {
+        --background: rgba(255, 255, 255, 0.1);
+      }
     }
   }
 }

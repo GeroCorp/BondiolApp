@@ -21,9 +21,14 @@ const routes: Routes = [
     loadChildren: () => import('./tab3-consulta/tab3-consulta.module').then( m => m.Tab3ConsultaPageModule)
   },
   {
-    path: 'tab4-juegos',
-    loadChildren: () => import('./tab4-juegos/tab4-juegos.module').then(m => m.Tab4JuegosPageModule)
+    path: 'tab4-historial',
+    loadChildren: () => import('./tab4-historial/tab4-historial.module').then( m => m.Tab4HistorialPageModule)
+  },
+  {
+    path: 'tab5-juegos',
+    loadChildren: () => import('./tab5-juegos/tab5-juegos.module').then( m => m.Tab5JuegosPageModule)
   }
+  
 
 ];
 

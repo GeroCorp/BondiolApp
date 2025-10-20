@@ -4,13 +4,16 @@ import { PushNotifications } from '@capacitor/push-notifications';
 import OneSignal from 'onesignal-cordova-plugin';
 import { environment } from 'src/environments/environment';
 import { INotification } from '../models/notification.model';
+import { ClienteService } from './cliente.service';
 import * as moment from 'moment-timezone';
 
 @Injectable({
   providedIn: 'root'
 })
 export class Notification {
-
+  constructor(
+    private clienteService: ClienteService
+  ) { }
   init() {
     const isPushNotificationAvailable = Capacitor.isPluginAvailable('PushNotifications');
   
@@ -175,7 +178,7 @@ export class Notification {
 
   /**
    * Envía notificación a un perfil específico
-   * @param perfil - 'dueño', 'supervisor', 'cocinero', 'bartender', 'maitre'
+   * @param perfil - 'dueño', 'supervisor', 'cocinero', 'bartender', 'maitre', 'mozo'
    * @param title - Título
    * @param body - Cuerpo
    * @param url - URL opcional
@@ -205,4 +208,41 @@ export class Notification {
       return false;
     })
   }
+  /*
+  * Envía notificación a un cliente específico
+  * @param title - Título
+  * @param body - Cuerpo
+  * @param url - URL opcional
+  * @param cliente_id - ID del cliente (si no se provee, se obtiene del servicio)
+  */
+  async sendNotificationToCliente(title: string, body: string, url: string = '', cliente_id: number | null = null) {
+    // En caso que no se pase id por parametros obtiene la del cliente actual (sesión)
+    if (!cliente_id) cliente_id = await this.clienteService.getClientId();
+
+    return CapacitorHttp.post({
+      url: 'https://onesignal.com/api/v1/notifications',
+      params: {},
+      data: {
+        app_id: environment.oneSignalID,
+        include_external_user_ids: [cliente_id?.toString() || ''],
+        filters: [
+          {"field": "tag", "key": "perfil", "relation": "=", "value": "cliente"}
+        ],
+        headings: { "en": title },
+        contents: { "en": body },
+        data: { url: url }
+      },
+      headers: {
+        'Content-type': 'application/json',
+        'Authorization': `Basic ${environment.oneSignalRestApi}`
+      }
+    }).then((response: HttpResponse) => {
+      console.log(`Notificación a Cliente enviada:`, response);
+      return response.status === 200;
+    }).catch(err => {
+      console.error(`Error enviando notificación a Cliente:`, err);
+      return false;
+    })
+  }
+
 }

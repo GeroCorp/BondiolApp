@@ -4,12 +4,12 @@ import { ClienteService } from 'src/app/services/cliente.service';
 import { ToastController, AlertController } from '@ionic/angular';
 
 @Component({
-  selector: 'app-tab4-juegos',
-  templateUrl: './tab4-juegos.page.html',
-  styleUrls: ['./tab4-juegos.page.scss'],
+  selector: 'app-tab5-juegos',
+  templateUrl: './tab5-juegos.page.html',
+  styleUrls: ['./tab5-juegos.page.scss'],
   standalone: false,
 })
-export class Tab4JuegosPage implements OnInit {
+export class Tab5JuegosPage implements OnInit {
   descuentoObtenido: number = 0;
   primerIntentoUsado: boolean = false;
   juegoActivo: 'memoria' | 'adivinanza' | 'ruleta' | null = null;

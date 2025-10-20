@@ -57,12 +57,12 @@ export class Tab3ConsultasPage implements OnInit {
   }
 
   async recargar() {
-    await this.cargarConsultas();
+    await this.cargarMesas();
     this.showToast('Lista actualizada', 'medium');
   }
 
   async handleRefresh(event: any) {
-    await this.cargarConsultas();
+    await this.cargarMesas();
     event.target.complete();
   }
 
@@ -90,8 +90,8 @@ export class Tab3ConsultasPage implements OnInit {
 
   test(mesa: any) {
     console.log('Mesa seleccionada:', mesa);
-    // Navegar al chat pasando el ID de la mesa como parámetro
-    this.router.navigate(['/tabs-mozo/tab3-consultas/chat', mesa.id]);
+    // Navegar al chat pasando el NUMERO de la mesa como parámetro
+    this.router.navigate(['/tabs-mozo/tab3-consultas/chat', mesa.numero]);
   }
 
   async cargarMesas() {
@@ -181,5 +181,20 @@ export class Tab3ConsultasPage implements OnInit {
       position: 'bottom',
     });
     await toast.present();
+  }
+
+  // TrackBy function para mejorar performance de ngFor
+  trackByIndex(index: number, item: any): number {
+    return index;
+  }
+
+  // Método para verificar si una mesa tiene mensajes nuevos
+  hasNewMessages(numeroMesa: number): boolean {
+    // TODO: Implementar lógica para verificar mensajes nuevos
+    // Por ahora retorna false, pero aquí podrías:
+    // - Verificar timestamp del último mensaje
+    // - Comparar con la última vez que el mozo vio el chat
+    // - Usar un servicio de notificaciones en tiempo real
+    return Math.random() > 0.7; // Simulación temporal
   }
 }

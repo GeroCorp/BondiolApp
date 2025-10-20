@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { RouterModule } from '@angular/router';
 
-import { Tab4JuegosPage } from './tab4-juegos.page';
+import { Tab5JuegosPage } from './tab5-juegos.page';
 import { JuegoMemoriaPage } from './juego-memoria/juego-memoria.page';
 import { JuegoAdivinanzaPage } from './juego-adivinanza/juego-adivinanza.page';
 import { JuegoRuletaPage } from './juego-ruleta/juego-ruleta.page';
@@ -17,15 +17,15 @@ import { JuegoRuletaPage } from './juego-ruleta/juego-ruleta.page';
     RouterModule.forChild([
       {
         path: '',
-        component: Tab4JuegosPage
+        component: Tab5JuegosPage
       }
     ])
   ],
   declarations: [
-    Tab4JuegosPage,
+    Tab5JuegosPage,
     JuegoMemoriaPage,
     JuegoAdivinanzaPage,
     JuegoRuletaPage
   ]
 })
-export class Tab4JuegosPageModule {}
+export class Tab5JuegosPageModule {}

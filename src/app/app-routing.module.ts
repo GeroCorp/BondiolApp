@@ -4,6 +4,11 @@ import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 
 const routes: Routes = [
   {
+    path: '',
+    redirectTo: 'splash',
+    pathMatch: 'full'
+  },
+  {
     path: 'home',
     loadChildren: () => import('./pages/home/home.module').then(m => m.HomePageModule),
   },
@@ -76,10 +81,6 @@ const routes: Routes = [
     path: '**',
     redirectTo: 'splash',
     pathMatch: 'full'
-  },
-  {
-    path: 'generador-qr-mesas',
-    loadChildren: () => import('./pages/generador-qr-mesas/generador-qr-mesas.module').then( m => m.GeneradorQrMesasPageModule)
   },
 
 

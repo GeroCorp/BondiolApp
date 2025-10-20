@@ -54,6 +54,9 @@ export class LoginPage {
         return;
       }
 
+      // ✅ La sesión se guarda automáticamente gracias al authListener
+      console.log('✅ Sesión iniciada y guardada automáticamente');
+
       // Verificar si es empleado
       const empleado = await this.authService.getEmpleadoByUserId(user.id);
       
@@ -100,7 +103,6 @@ export class LoginPage {
         if (cliente.estado === 'aprobado') {
           // ✅ Cliente aprobado - establecer tags y redirigir a homeCliente
           this.notificationService.setUserTag('cliente');
-          this.notificationService.setExternalUserId(user.id);
           
           await loading.dismiss();
           this.router.navigate(['/home-cliente'], { replaceUrl: true });

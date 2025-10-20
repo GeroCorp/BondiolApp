@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ListaEsperaService, ClienteEspera } from 'src/app/services/lista-espera.service';
+import { ClienteService } from 'src/app/services/cliente.service';
 import { ToastController, LoadingController, AlertController } from '@ionic/angular';
 
 @Component({
@@ -32,16 +33,34 @@ export class ListaEsperaClientePage implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private listaEsperaService: ListaEsperaService,
+    private clienteService: ClienteService,
     private toastCtrl: ToastController,
     private loadingCtrl: LoadingController,
     private alertCtrl: AlertController
   ) { }
 
   async ngOnInit() {
+    // Cargar el nombre del cliente logueado
+    await this.cargarNombreCliente();
+    
     // Verificar si viene con un ID de cliente
     const clienteId = this.route.snapshot.queryParamMap.get('id');
     if (clienteId) {
       await this.consultarEstado(clienteId);
+    }
+  }
+
+  /**
+   * Cargar el nombre del cliente logueado
+   */
+  async cargarNombreCliente() {
+    try {
+      this.nombreCliente = await this.clienteService.getNombreCliente();
+      console.log('✅ Nombre del cliente cargado:', this.nombreCliente);
+    } catch (error) {
+      console.error('❌ Error cargando nombre del cliente:', error);
+      this.nombreCliente = 'Cliente';
+      await this.presentToast('Error obteniendo información del usuario', 'warning');
     }
   }
 
@@ -317,8 +336,8 @@ export class ListaEsperaClientePage implements OnInit {
 
 
   private validarFormulario(): boolean {
-    if (!this.nombreCliente.trim()) {
-      this.presentToast('Ingresa tu nombre', 'warning');
+    if (!this.nombreCliente || !this.nombreCliente.trim()) {
+      this.presentToast('Error: No se pudo obtener tu nombre. Intenta recargar la página.', 'danger');
       return false;
     }
     

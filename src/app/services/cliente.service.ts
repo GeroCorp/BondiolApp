@@ -1,6 +1,7 @@
-import { Injectable, signal } from '@angular/core';
+import { inject, Injectable, Injector, signal } from '@angular/core';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { environment } from 'src/environments/environment';
+import { Notification } from './notification';
 
 @Injectable({
   providedIn: 'root',
@@ -10,13 +11,24 @@ export class ClienteService {
   private _pedido = signal<any[]>([]);
   // Signal para el estado de espera del cliente
   private _clienteEnEspera = signal<boolean>(false);
+  // Signal para el historial de pedidos del cliente
+  private _historialPedidos = signal<any[]>([]);
+  
   private supabase: SupabaseClient;
+  
+  private injector = inject(Injector);
+
 
   constructor() {
     this.supabase = createClient(
       environment.SUPABASE_URL,
       environment.SUPABASE_ANON_KEY
     );
+   }
+
+  // Getter para acceso lazy al servicio de notificaciones
+  private get notificationService(): Notification {
+    return this.injector.get(Notification);
   }
 
   // Getter para acceder al signal desde los componentes
@@ -27,6 +39,11 @@ export class ClienteService {
   // Getter para el estado de espera del cliente
   get clienteEnEspera() {
     return this._clienteEnEspera;
+  }
+
+  // Getter para el historial de pedidos
+  get historialPedidos() {
+    return this._historialPedidos;
   }
 
   // Metodos para manejo del pedido
@@ -223,51 +240,76 @@ getSubtotal(): number {
         ])
         .select();
 
-      if (error) {
-        console.error('❌ Error insertando detalle de pedido:', error);
-      }
-    })
-  );
-  
-  console.log('✅ Pedido completo insertado con descuento aplicado');
-}
+       if (error) {
+         console.error('❌ Error insertando detalle de pedido:', error);
+       }
+     }));
+
+    // Limpiar el pedido después de insertarlo
+    this.clearPedido();
+    
+    return idPedido;
+  }
 
   // Metodos del chat de consultas
 
-  async getChatMessages() {
-    const mesa = await this.getMesa(await this.getClientId());
+
+  
+  async getChatMessages(){
+    const mesa = await this.getMesa(await this.getClientId())
+    const nombreCliente = await this.getNombreCliente()
+    
+    // Obtener la fecha de hoy en formato YYYY-MM-DD
+    const hoy = new Date();
+    const fechaHoy = hoy.toISOString().split('T')[0]; // Esto da formato YYYY-MM-DD
+    
     const { data, error } = await this.supabase
-      .from('mensajes')
-      .select('*')
-      .eq('nroMesa', mesa)
-      .order('date_sended', { ascending: true });
+    .from('mensajes')
+    .select('*')
+    .eq('nroMesa', mesa)
+    .eq('nombre_usuario', nombreCliente)
+    .gte('date_sended', `${fechaHoy}T00:00:00.000Z`) // Desde las 00:00:00 de hoy
+    .lte('date_sended', `${fechaHoy}T23:59:59.999Z`) // Hasta las 23:59:59 de hoy
+    .order('date_sended', { ascending: true });
 
     if (error) {
       console.error('❌ Error obteniendo mensajes:', error);
       return [];
     }
 
+    console.log('📅 Mensajes del día actual obtenidos:', data?.length || 0);
     return data;
   }
 
-  async sendMessage(content: string) {
-    const idCliente = await this.getClientId();
-    const nroMesa = await this.getMesa(idCliente);
-    const nombre = this.getNombreCliente();
+  async sendMessage(content: string){
+    const idCliente = await this.getClientId()
+    const nroMesa = await this.getMesa(idCliente)
+    const nombre = await this.getNombreCliente()
 
-    const { error } = await this.supabase.from('mensajes').insert([
+    const { data, error } = await this.supabase
+    .from('mensajes')
+    .insert([
       {
         contenido: content,
-        nombre_usuario: await nombre,
+        nombre_usuario: nombre,
         date_sended: new Date().toISOString(),
-        nroMesa,
-      },
-    ]);
+        nroMesa
+      }
+    ]).select();
 
     if (error) {
       console.error('❌ Error enviando mensaje:', error);
       throw new Error('Error enviando mensaje: ' + error.message);
     }
+
+    if (data){
+      this.notificationService.sendNotificationToPerfil(
+        'mozo',
+        `Nueva consulta de la mesa ${nroMesa}`,
+        `${nombre}: ${content}`
+      );
+    }
+
   }
 
   async subscribeToNewMessages(signal: any) {
@@ -290,7 +332,6 @@ getSubtotal(): number {
       console.error('Error al suscribirse a nuevos mensajes: ' + error);
     }
   }
-
   // Metodos para manejo de clientes
 
   async getClientId() {
@@ -340,33 +381,70 @@ getSubtotal(): number {
     }
   }
 
-  async detectarUpdate(callback?: (enEspera: boolean) => void) {
-    const channels = this.supabase
-      .channel('custom-update-channel')
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'clientes' },
-        async (payload) => {
-          console.log('🔄 Update detectado en clientes:', payload);
-
-          try {
-            // Llamar a la función y esperar el resultado
-            const enEspera = await this.isCLienteEnEspera();
-            console.log('✅ Cliente en espera actualizado:', enEspera);
-
-            // Actualizar el signal
-            this._clienteEnEspera.set(enEspera);
-
-            // Ejecutar callback si se proporciona
-            if (callback) {
-              callback(enEspera);
+  async detectarUpdate(callback?: (enEspera: boolean) => void){
+    const channels = this.supabase.channel('custom-update-channel')
+    .on(
+      'postgres_changes',
+      { event: 'UPDATE', schema: 'public', table: 'clientes' },
+      async (payload) => {
+        console.log('🔄 Update detectado en clientes:', payload);
+        
+        try {
+          // Obtener información del cambio
+          const oldRecord = payload.old as any;
+          const newRecord = payload.new as any;
+          
+          // Verificar si este cambio es para el cliente actual
+          const currentUserId = (await this.supabase.auth.getUser()).data.user?.id;
+          if (newRecord?.user_id === currentUserId) {
+            
+            // Verificar si se asignó una mesa (de null a un número)
+            if (oldRecord?.mesa_asignada === null && newRecord?.mesa_asignada !== null) {
+              try {
+                const numeroMesa = await this.getMesa(newRecord.id_cliente);
+                await this.notificationService.sendNotificationToCliente(
+                  '🎉 ¡Mesa asignada!',
+                  `Te hemos asignado la mesa ${numeroMesa}. ¡Ya puedes realizar tu pedido!`,
+                  ''
+                );
+                console.log('✅ Notificación de mesa asignada enviada');
+              } catch (error) {
+                console.error('❌ Error enviando notificación de mesa:', error);
+              }
             }
-          } catch (error) {
-            console.error('❌ Error verificando cliente en espera:', error);
+            
+            // Verificar si se liberó una mesa (de un número a null)
+            if (oldRecord?.mesa_asignada !== null && newRecord?.mesa_asignada === null) {
+              try {
+                await this.notificationService.sendNotificationToCliente(
+                  'Mesa liberada',
+                  'Tu mesa ha sido liberada. Gracias por visitarnos.',
+                  ''
+                );
+                console.log('✅ Notificación de mesa liberada enviada');
+              } catch (error) {
+                console.error('❌ Error enviando notificación de liberación:', error);
+              }
+            }
           }
+          
+          // Llamar a la función y esperar el resultado
+          const enEspera = await this.isCLienteEnEspera();
+          console.log('✅ Cliente en espera actualizado:', enEspera);
+          
+          // Actualizar el signal
+          this._clienteEnEspera.set(enEspera);
+          
+          // Ejecutar callback si se proporciona
+          if (callback) {
+            callback(enEspera);
+          }
+        } catch (error) {
+          console.error('❌ Error verificando cliente en espera:', error);
         }
-      )
-      .subscribe();
+      }
+    )
+    .subscribe();
 
     // Inicializar el estado actual
     try {
@@ -442,22 +520,43 @@ getSubtotal(): number {
     }
 
     console.log('✅ Mesa actualizada:', data);
+
     return data;
   }
 
-  async getMesa(idCliente: number) {
-    const { data, error } = await this.supabase
-      .from('clientes')
-      .select('mesa_asignada')
-      .eq('id_cliente', idCliente);
+  async getMesa(idCliente: number){
+    // Primero obtenemos el ID de la mesa asignada
+    const { data: clienteData, error: clienteError } = await this.supabase
+    .from('clientes')
+    .select('mesa_asignada')
+    .eq('id_cliente', idCliente)
+    .single();
 
-    if (error)
-      throw new Error(
-        '❗❗Ocurrió un error al obtener mesa asignada: ' + error.message
-      );
+    if (clienteError) throw new Error("❗❗Ocurrió un error al obtener mesa asignada: " + clienteError.message)
 
-    console.log(data[0].mesa_asignada);
-    return data[0].mesa_asignada;
+    const mesaId = clienteData?.mesa_asignada;
+    
+    // Si no tiene mesa asignada, retornamos null
+    if (!mesaId) {
+      console.log('Cliente sin mesa asignada');
+      return null;
+    }
+
+    // Luego obtenemos el número de la mesa
+    const { data: mesaData, error: mesaError } = await this.supabase
+    .from('mesas')
+    .select('numero')
+    .eq('id', mesaId)
+    .single();
+
+    if (mesaError) {
+      console.log('Error obteniendo número de mesa, usando ID:', mesaId);
+      return mesaId; // Fallback al ID si no se puede obtener el número
+    }
+
+    const numeroMesa = mesaData?.numero || mesaId;
+    console.log(numeroMesa);
+    return numeroMesa;
   }
 
   async setMesa(id: number, nroMesa: number) {
@@ -707,4 +806,177 @@ getSubtotal(): number {
       return 0;
     }
   }
+
+  // =====================================
+// MÉTODOS PARA HISTORIAL DE PEDIDOS
+// =====================================
+
+/**
+ * Obtiene el historial de pedidos del cliente actual
+ */
+async getHistorialPedidos() {
+  try {
+    const clienteId = await this.getClientId();
+    
+    const { data, error } = await this.supabase
+      .from('pedidos')
+      .select(`
+        *,
+        mesa:mesas(numero, id),
+        detalles_pedido(
+          id,
+          nombre_prod,
+          cantidad,
+          precio_unitario,
+          tipo
+        )
+      `)
+      .eq('id_cliente', clienteId)
+      .order('fecha', { ascending: false });
+
+    if (error) {
+      console.error('❌ Error obteniendo historial de pedidos:', error);
+      throw new Error('Error al obtener historial: ' + error.message);
+    }
+
+    console.log('✅ Historial de pedidos obtenido:', data);
+    this._historialPedidos.set(data || []);
+    return data || [];
+  } catch (error) {
+    console.error('Error en getHistorialPedidos:', error);
+    throw error;
+  }
+}
+
+/**
+ * Suscripción en tiempo real a cambios en los pedidos del cliente
+ */
+async subscribeToHistorialPedidos() {
+  try {
+    const clienteId = await this.getClientId();
+    
+    const channel = this.supabase
+      .channel('historial-pedidos-channel')
+      .on(
+        'postgres_changes',
+        { 
+          event: 'UPDATE', 
+          schema: 'public', 
+          table: 'pedidos',
+          filter: `id_cliente=eq.${clienteId}`
+        },
+        async (payload) => {
+          console.log('🔄 Cambio en pedidos detectado:', payload);
+          
+          // Extraer información del cambio
+          const oldRecord = payload.old as any;
+          const newRecord = payload.new as any;
+          
+          // Verificar si cambió el estado
+          if (oldRecord?.estado !== newRecord?.estado) {
+            const estadoTexto = this.getTextoEstado(newRecord.estado);
+            const mesaNumero = await this.getMesa(clienteId);
+            
+            // Enviar notificación usando tu servicio existente
+            try {
+              await this.notificationService.sendNotificationToCliente(
+                `Estado de tu pedido`,
+                `Tu pedido #${newRecord.id} cambió a: ${estadoTexto}`,
+                '' // URL opcional si quieres redirigir a alguna página específica
+              );
+              console.log('✅ Notificación de cambio de estado enviada');
+            } catch (error) {
+              console.error('❌ Error enviando notificación:', error);
+            }
+          }
+          
+          // Recargar todo el historial cuando hay cambios
+          await this.getHistorialPedidos();
+        }
+      )
+      .subscribe();
+
+    console.log('✅ Suscripción a historial de pedidos iniciada');
+    return channel;
+  } catch (error) {
+    console.error('❌ Error suscribiéndose al historial:', error);
+    throw error;
+  }
+}
+
+/**
+ * Obtiene los detalles de un pedido específico
+ */
+async getDetallesPedido(pedidoId: number) {
+  try {
+    const { data, error } = await this.supabase
+      .from('detalles_pedido')
+      .select('*')
+      .eq('id_pedido', pedidoId)
+      .order('id', { ascending: true });
+
+    if (error) {
+      console.error('❌ Error obteniendo detalles del pedido:', error);
+      throw new Error('Error al obtener detalles: ' + error.message);
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Error en getDetallesPedido:', error);
+    throw error;
+  }
+}
+
+/**
+ * Formatea la fecha para mostrar en el historial
+ */
+formatearFecha(fecha: string): string {
+  const date = new Date(fecha);
+  const hoy = new Date();
+  
+  const opciones: Intl.DateTimeFormatOptions = {
+    hour: '2-digit',
+    minute: '2-digit',
+  };
+
+  const hora = date.toLocaleTimeString('es-AR', opciones);
+
+  if (date.toDateString() === hoy.toDateString()) {
+    return `Hoy ${hora}`;
+  } else {
+    return `${date.toLocaleDateString('es-AR')} ${hora}`;
+  }
+}
+
+/**
+ * Obtiene el color según el estado del pedido
+ */
+getColorEstado(estado: string): string {
+  const colores: any = {
+    pendiente: 'warning',
+    confirmado: 'tertiary',
+    en_preparacion: 'secondary',
+    listo: 'success',
+    entregado: 'primary',
+    pagado: 'medium',
+    cancelado: 'danger'
+  };
+  return colores[estado] || 'medium';
+}
+
+/**
+ * Obtiene el texto formateado del estado
+ */
+getTextoEstado(estado: string): string {
+  const textos: any = {
+    pendiente: 'Pendiente',
+    confirmado: 'Confirmado',
+    en_preparacion: 'En preparación',
+    listo: 'Listo para servir',
+    entregado: 'Entregado',
+    pagado: 'Pagado',
+    cancelado: 'Cancelado'
+  };
+  return textos[estado] || estado;
+}
 }

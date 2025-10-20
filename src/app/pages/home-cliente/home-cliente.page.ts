@@ -1,10 +1,14 @@
-import { Component, effect, OnInit } from '@angular/core';
+import { Component, effect, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/supabase';
 import { ToastController, AlertController } from '@ionic/angular';
 import { ClienteService } from 'src/app/services/cliente.service';
-import { ListaEsperaService } from 'src/app/services/lista-espera.service';
 import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
+import { PerfilService } from 'src/app/services/perfilService';
+import { Notification } from 'src/app/services/notification';
+import { ListaEsperaService } from 'src/app/services/lista-espera.service';
+
+
 
 interface Cliente {
   id_cliente?: number;
@@ -28,6 +32,10 @@ export class HomeClientePage implements OnInit {
   enEspera: boolean = true;
   mesaAsignada: number | null = null;
   mesaVerificada: boolean = true;
+  perfil = "cliente";
+  private notificationService: Notification = inject(Notification)
+
+
 
   constructor(
     private router: Router,
@@ -35,6 +43,7 @@ export class HomeClientePage implements OnInit {
     private toastController: ToastController,
     private alertController: AlertController,
     private clienteService: ClienteService,
+    private perfilService: PerfilService,
     private listaEsperaService: ListaEsperaService
   ) {
     effect(() => {
@@ -47,6 +56,9 @@ export class HomeClientePage implements OnInit {
     this.clienteService.detectarUpdate();
     await this.cargarDatosCliente();
     await this.verificarMesaAsignada();
+    this.perfilService.setPerfil(this.perfil);
+    this.notificationService.setUserTag(this.perfil);
+
   }
 
   async cargarDatosCliente() {
@@ -55,7 +67,7 @@ export class HomeClientePage implements OnInit {
       
       if (user) {
         this.cliente = await this.authService.getClienteByUserId(user.id);
-        
+        this.notificationsInit();
         if (this.cliente && !this.cliente.email) {
           this.cliente.email = user.email;
         }
@@ -64,6 +76,11 @@ export class HomeClientePage implements OnInit {
       console.error('Error al cargar datos del cliente:', error);
       this.showToast('Error al cargar tus datos', 'danger');
     }
+  }
+
+  async notificationsInit(){
+    this.notificationService.setExternalUserId(this.cliente?.id_cliente?.toString() || '');
+    this.clienteService.subscribeToHistorialPedidos();
   }
 
   async verificarMesaAsignada() {
@@ -191,14 +208,15 @@ export class HomeClientePage implements OnInit {
         .from('mesas')
         .select('*')
         .eq('numero', numeroMesa)
-        .maybeSingle();
+        .single();
 
       if (errorMesa || !mesa) {
         this.showToast(`La Mesa ${numeroMesa} no existe en el sistema`, 'danger');
         return;
       }
-
-      if (mesa.capacidad !== capacidad || mesa.tipo !== tipo) {
+      
+      // Verificar que los datos del QR coincidan con los de la base de datos
+      if (mesa.cantidad !== capacidad || mesa.tipo !== tipo) {
         this.showToast(`Los datos del QR no coinciden con la mesa registrada`, 'danger');
         return;
       }
@@ -338,12 +356,20 @@ export class HomeClientePage implements OnInit {
     this.router.navigate(["/tabs-cliente-registrado/tab3-consulta"]);
   }
 
-   verJuegos() {
+  verHistorial(){
+    if (!this.mesaVerificada) {
+      this.showToast('⚠️ Primero debes escanear el QR de una mesa', 'warning');
+      return;
+    }
+    this.router.navigate(["/tabs-cliente-registrado/tab4-historial"]);
+  }
+
+  verJuegos() {
       if (!this.mesaVerificada) {
         this.showToast('⚠️ Primero debes escanear el QR de una mesa', 'warning');
         return;
       }
-      this.router.navigate(['/tabs-cliente-registrado/tab4-juegos']);
+      this.router.navigate(['/tabs-cliente-registrado/tab5-juegos']);
     }
 
   /**
@@ -516,7 +542,7 @@ export class HomeClientePage implements OnInit {
         return;
       }
 
-      const qrSimulado = `${mesa.numero},${mesa.cantidad},${mesa.tipo}`;
+      const qrSimulado = `${mesa.numero},${mesa.capacidad},${mesa.tipo}`;
       
       console.log('🧪 [TESTING] Simulando escaneo QR de mesa:', qrSimulado);
       

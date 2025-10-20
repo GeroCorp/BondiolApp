@@ -1,11 +1,20 @@
 import { Injectable } from '@angular/core';
 import { createClient, SupabaseClient, AuthError } from '@supabase/supabase-js';
 import { environment } from 'src/environments/environment';
+import { Router } from '@angular/router';
+import { BehaviorSubject } from 'rxjs';
 
 // ✅ Instancia única de Supabase (singleton)
 const supabaseInstance = createClient(
   environment.SUPABASE_URL,
-  environment.SUPABASE_ANON_KEY
+  environment.SUPABASE_ANON_KEY,
+  {
+    auth: {
+      persistSession: true, // ✅ Habilita la persistencia de sesión
+      autoRefreshToken: true, // ✅ Renueva automáticamente el token
+      storage: localStorage // ✅ Usa localStorage para persistir la sesión
+    }
+  }
 );
 
 // ✅ Exporta la instancia para usar en otros servicios
@@ -16,9 +25,313 @@ export const supabase = supabaseInstance;
 })
 export class AuthService {
   private supabase: SupabaseClient;
+  private currentUserSubject = new BehaviorSubject<any>(null);
+  public currentUser$ = this.currentUserSubject.asObservable();
+  private isCheckingSession = false; // ✅ Flag para evitar verificaciones múltiples
+  private isAutoLoginInProgress = false; // ✅ Flag para evitar interferencia del auth listener durante auto-login
 
-  constructor() {
+  constructor(private router: Router) {
     this.supabase = supabaseInstance; // Usa la instancia única
+    this.initAuthListener(); // ✅ Inicializa el listener de autenticación
+  }
+
+  // ✅ Inicializa el listener de cambios de autenticación
+  private initAuthListener() {
+    this.supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state changed:', event, session?.user?.email, 'isAutoLoginInProgress:', this.isAutoLoginInProgress);
+      this.currentUserSubject.next(session?.user || null);
+      
+      // ✅ NO hacer nada si estamos en proceso de auto-login
+      if (this.isAutoLoginInProgress) {
+        console.log('⏳ Auto-login en progreso - ignorando auth state change');
+        return;
+      }
+      
+      // Solo manejar eventos específicos y evitar redirecciones automáticas
+      if (event === 'SIGNED_IN') {
+        console.log('✅ Usuario autenticado - guardando sesión');
+        if (session?.user) {
+          this.saveUserSession(session.user);
+        }
+        // NO redirigir automáticamente aquí - solo guardar sesión
+      } else if (event === 'SIGNED_OUT') {
+        console.log('🚪 Usuario desconectado');
+        this.clearUserSession();
+        
+        // Solo redirigir al login si es un logout manual y no estamos en páginas específicas
+        const currentUrl = this.router?.url || '';
+        const isInAuthFlow = currentUrl.includes('/login') || 
+                            currentUrl.includes('/splash') || 
+                            currentUrl.includes('/register') ||
+                            currentUrl === '/';
+                            
+        if (this.router && !isInAuthFlow) {
+          // Agregar un delay para evitar conflictos con otros navigations
+          setTimeout(() => {
+            console.log('🔄 Redirigiendo al login desde:', currentUrl);
+            this.router.navigate(['/login'], { replaceUrl: true });
+          }, 1000);
+        }
+      } else if (event === 'TOKEN_REFRESHED') {
+        console.log('🔄 Token renovado - NO redirigir');
+        // Importante: NO hacer nada cuando se renueva el token
+        // Esto evita redirecciones inesperadas
+      }
+      // Para otros eventos, no hacer nada
+    });
+  }
+
+  // ✅ Guarda información de sesión en localStorage
+  private async saveUserSession(user: any) {
+    try {
+      console.log('💾 Guardando sesión para usuario:', user.email);
+      
+      // Obtener información adicional del usuario (empleado o cliente)
+      const empleado = await this.getEmpleadoByUserId(user.id);
+      const cliente = await this.getClienteByUserId(user.id);
+      
+      console.log('📋 Información obtenida:', {
+        empleado: empleado?.length || 0,
+        cliente: cliente ? 'encontrado' : 'no encontrado'
+      });
+      
+      let userType = 'unknown';
+      let profile = null;
+      let clientData = null;
+      
+      if (empleado && empleado.length > 0) {
+        userType = 'empleado';
+        profile = empleado[0].perfil;
+        console.log('👨‍💼 Guardando como empleado con perfil:', profile);
+      } else if (cliente) {
+        userType = 'cliente';
+        profile = cliente.estado;
+        clientData = cliente;
+        console.log('👤 Guardando como cliente con estado:', profile);
+      } else {
+        console.log('❌ Usuario sin tipo válido encontrado');
+      }
+      
+      const userSession = {
+        id: user.id,
+        email: user.email,
+        lastLogin: new Date().toISOString(),
+        userType: userType,
+        profile: profile,
+        clientData: clientData
+      };
+      
+      localStorage.setItem('userSession', JSON.stringify(userSession));
+      console.log('✅ Sesión guardada en localStorage:', userSession);
+    } catch (error) {
+      console.error('Error guardando sesión:', error);
+    }
+  }
+
+  // ✅ Limpia la información de sesión
+  private clearUserSession() {
+    localStorage.removeItem('userSession');
+    console.log('✅ Sesión eliminada de localStorage');
+  }
+
+  // ✅ Obtiene la sesión guardada
+  getSavedSession() {
+    const saved = localStorage.getItem('userSession');
+    return saved ? JSON.parse(saved) : null;
+  }
+
+  // ✅ Verifica si hay una sesión activa y válida
+  async checkSession(): Promise<{isValid: boolean, user?: any, userType?: string, profile?: string}> {
+    try {
+      // Primero verificar localStorage para evitar llamadas innecesarias
+      const savedSession = this.getSavedSession();
+      
+      const { data: { session }, error } = await this.supabase.auth.getSession();
+      
+      if (error || !session) {
+        console.log('❌ No hay sesión activa en Supabase');
+        // Limpiar localStorage si no hay sesión en Supabase
+        if (savedSession) {
+          this.clearUserSession();
+        }
+        return { isValid: false };
+      }
+
+      // Verificar que el usuario del localStorage coincide con el de Supabase
+      if (savedSession && savedSession.id !== session.user.id) {
+        console.log('❌ Mismatch entre localStorage y Supabase');
+        this.clearUserSession();
+        return { isValid: false };
+      }
+      
+      // Si hay sesión guardada y coincide, usar esos datos para evitar queries adicionales
+      if (savedSession && savedSession.id === session.user.id) {
+        console.log('✅ Usando sesión guardada:', {
+          userType: savedSession.userType,
+          profile: savedSession.profile
+        });
+        return {
+          isValid: true,
+          user: session.user,
+          userType: savedSession.userType,
+          profile: savedSession.profile
+        };
+      }
+      
+      // Si no hay datos guardados, verificar información adicional del usuario
+      console.log('🔍 Verificando información del usuario en base de datos...');
+      const empleado = await this.getEmpleadoByUserId(session.user.id);
+      const cliente = await this.getClienteByUserId(session.user.id);
+      
+      console.log('📋 Resultados de búsqueda:', {
+        empleado: empleado?.length || 0,
+        cliente: cliente ? 'encontrado' : 'no encontrado'
+      });
+      
+      if (empleado && empleado.length > 0) {
+        console.log('✅ Usuario es empleado con perfil:', empleado[0].perfil);
+        return {
+          isValid: true,
+          user: session.user,
+          userType: 'empleado',
+          profile: empleado[0].perfil
+        };
+      }
+      
+      if (cliente) {
+        console.log('✅ Usuario es cliente con estado:', cliente.estado);
+        return {
+          isValid: true,
+          user: session.user,
+          userType: 'cliente',
+          profile: cliente.estado
+        };
+      }
+      
+      console.log('❌ Usuario sin perfil válido en base de datos');
+      return { isValid: false };
+      
+    } catch (error) {
+      console.error('Error verificando sesión:', error);
+      return { isValid: false };
+    }
+  }
+
+  // ✅ Auto-login basado en sesión guardada
+  async autoLogin(): Promise<{success: boolean, redirectTo?: string}> {
+    if (this.isCheckingSession) {
+      console.log('⏳ Ya hay una verificación de sesión en progreso');
+      return { success: false };
+    }
+
+    this.isCheckingSession = true;
+    this.isAutoLoginInProgress = true; // ✅ Bloquear auth listener durante auto-login
+    
+    try {
+      console.log('🔍 Iniciando autoLogin...');
+      
+      // Verificar si hay sesión activa primero
+      const { data: { session }, error } = await this.supabase.auth.getSession();
+      
+      if (error || !session) {
+        console.log('❌ No hay sesión activa en Supabase');
+        return { success: false };
+      }
+      
+      console.log('✅ Sesión encontrada en Supabase para:', session.user.email);
+      
+      // Verificar información adicional del usuario
+      const sessionCheck = await this.checkSession();
+      
+      if (!sessionCheck.isValid) {
+        console.log('❌ Sesión inválida');
+        return { success: false };
+      }
+
+      const { user, userType, profile } = sessionCheck;
+      console.log('✅ Datos de usuario obtenidos:', { 
+        email: user.email,
+        userType, 
+        profile 
+      });
+      
+      // Determinar redirección según el tipo de usuario
+      let redirectTo = '/login'; // fallback
+      
+      if (userType === 'empleado') {
+        redirectTo = '/home';
+        console.log('👨‍💼 Usuario empleado - redirigiendo a home');
+      } else if (userType === 'cliente') {
+        console.log('👤 Usuario cliente con estado:', profile);
+        
+        if (profile === 'pendiente') {
+          redirectTo = '/pre-sala';
+          console.log('⏳ Cliente pendiente - redirigiendo a pre-sala');
+        } else if (profile === 'aprobado') {
+          redirectTo = '/home-cliente';
+          console.log('✅ Cliente aprobado - redirigiendo a home-cliente');
+        } else if (profile === 'rechazado') {
+          // Cliente rechazado - cerrar sesión
+          console.log('❌ Cliente rechazado - cerrando sesión');
+          await this.logout();
+          return { success: false };
+        } else {
+          // Estado desconocido - ir a pre-sala por defecto
+          console.log('❓ Estado de cliente desconocido:', profile, '- redirigiendo a pre-sala');
+          redirectTo = '/pre-sala';
+        }
+      } else {
+        console.log('❌ Tipo de usuario desconocido:', userType);
+        return { success: false };
+      }
+      
+      console.log('🎯 Decisión final - redirigiendo a:', redirectTo);
+      
+      // ✅ Esperar un poco antes de completar para asegurar que la navegación se haga antes de reactivar el listener
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      return {
+        success: true,
+        redirectTo
+      };
+      
+    } catch (error) {
+      console.error('Error en autoLogin:', error);
+      return { success: false };
+    } finally {
+      this.isCheckingSession = false;
+      // ✅ Reactivar auth listener después de un delay adicional
+      setTimeout(() => {
+        this.isAutoLoginInProgress = false;
+        console.log('🔓 Auth listener reactivado');
+      }, 2000);
+    }
+  }
+
+  // ✅ Verifica si el usuario está autenticado
+  isAuthenticated(): boolean {
+    const session = this.getSavedSession();
+    return !!session && !!session.id;
+  }
+
+  // ✅ Obtiene el tipo de usuario actual
+  getCurrentUserType(): string | null {
+    const session = this.getSavedSession();
+    return session?.userType || null;
+  }
+
+  // ✅ Obtiene el perfil del usuario actual
+  getCurrentUserProfile(): string | null {
+    const session = this.getSavedSession();
+    return session?.profile || null;
+  }
+
+  // ✅ Fuerza la actualización de la sesión guardada
+  async refreshSavedSession() {
+    const { data: { user } } = await this.supabase.auth.getUser();
+    if (user) {
+      await this.saveUserSession(user);
+    }
   }
 
   get client() {
@@ -49,6 +362,12 @@ export class AuthService {
     try {
       const { error } = await this.supabase.auth.signOut();
       if (error) throw new Error(this.mapAuthError(error));
+      
+      // ✅ Limpiar datos locales
+      this.clearUserSession();
+      this.currentUserSubject.next(null);
+      
+      console.log('✅ Sesión cerrada correctamente');
     } catch (err) {
       console.error('Error en logout:', err);
       throw new Error('No se pudo cerrar sesión.');
@@ -235,7 +554,7 @@ export class AuthService {
         estado: 'pendiente' // Nuevo cliente siempre inicia como pendiente
       }
     ]).select();
-
+    console.log("✅ Cliente insertado con exito: ", data);
     if (error) {
       console.error('Error al insertar cliente:', error.message);
       
@@ -596,6 +915,8 @@ export class AuthService {
    * Obtiene datos de cliente por user_id
    */
   async getClienteByUserId(userId: string) {
+    console.log('🔍 Buscando cliente con user_id:', userId);
+    
     const { data, error } = await this.supabase
       .from('clientes')
       .select('*')
@@ -603,10 +924,25 @@ export class AuthService {
       .single();
 
     if (error) {
-      console.error('Error obteniendo cliente:', error);
-      return null;
+      console.error('❌ Error obteniendo cliente:', error);
+      console.log('🔍 Intentando buscar sin .single()...');
+      
+      // Intentar sin .single() para ver si hay múltiples resultados
+      const { data: allData, error: allError } = await this.supabase
+        .from('clientes')
+        .select('*')
+        .eq('user_id', userId);
+        
+      if (allError) {
+        console.error('❌ Error en búsqueda alternativa:', allError);
+        return null;
+      }
+      
+      console.log('📋 Todos los resultados encontrados:', allData);
+      return allData?.length > 0 ? allData[0] : null;
     }
 
+    console.log('✅ Cliente encontrado:', data);
     return data;
   }
 
@@ -637,12 +973,13 @@ export class AuthService {
 
 
   // Carga de perfiles (admin-supervisor y empleados restantes)
-  async cargarEmpleado(perfilBuscado: string){
+  async cargarEmpleado(){
     const user = await this.getCurrentUser();
     const { data, error } = await this.supabase
       .from('empleados')
       .select('*')
       .eq('user_id', user?.id)
+      .single()
       // .order('created_at', { ascending: false });
 
     if (error)
@@ -684,7 +1021,6 @@ async actualizarEstadoPedido(pedidoId: number, nuevoEstado: string, observacione
   try {
     const updateData: any = {
       estado: nuevoEstado,
-      updated_at: new Date().toISOString()
     };
 
     if (observaciones) {

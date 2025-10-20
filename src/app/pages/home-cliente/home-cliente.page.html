@@ -14,10 +14,7 @@
     <!-- Header de bienvenida -->
     <div class="bienvenida-header">
       <div class="avatar-container">
-        <img
-          [src]="cliente?.foto || 'assets/avatar-placeholder.png'"
-          alt="Foto de perfil"
-        />
+        <img [src]="cliente?.foto || 'assets/avatar_placeholder.svg'" alt="Foto de perfil">
       </div>
       <h1>¡Bienvenido/a!</h1>
       <h2>{{ cliente?.nombre }} {{ cliente?.apellido }}</h2>
@@ -119,9 +116,16 @@
           }
         </ion-button>
 
-        <ion-button expand="block" color="secondary" disabled>
+        <ion-button 
+        expand="block" 
+        color="secondary" 
+        (click)="verHistorial()"
+        [disabled]="!mesaVerificada">
           <ion-icon name="list-outline" slot="start"></ion-icon>
           Mis Pedidos
+          @if (!mesaVerificada) {
+            <ion-icon name="lock-closed" slot="end"></ion-icon>
+          }
         </ion-button>
 
         <ion-button

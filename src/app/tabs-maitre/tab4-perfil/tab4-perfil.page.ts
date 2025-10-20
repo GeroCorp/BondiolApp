@@ -26,7 +26,7 @@ interface Empleado {
 export class Tab4PerfilPage implements OnInit {
 
   perfil: any;
-  empleadoPerfil: Empleado[] = [];
+  empleado: Empleado | null = null;
   
   constructor(
     private supabaseService: AuthService,
@@ -50,7 +50,7 @@ export class Tab4PerfilPage implements OnInit {
     await loader.present();
     
     try {
-      this.empleadoPerfil = await this.supabaseService.cargarEmpleado(this.perfil);
+      this.empleado = await this.supabaseService.cargarEmpleado();
     } catch (err: any) {
       console.error('Error cargando empleado:', err);
       await this.showToast('Error cargando empleado: ' + (err.message ?? err), 'danger');

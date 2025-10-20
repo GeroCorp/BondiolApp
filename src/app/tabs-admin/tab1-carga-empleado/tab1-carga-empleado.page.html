@@ -1,5 +1,15 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home" icon="arrow-back"></ion-back-button>
+    </ion-buttons>
+    <ion-title>
+      <ion-icon name="people"></ion-icon> Agregar nuevo empleado
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
 <ion-content [fullscreen]="true" class="tab1-content">
-  <h2 class="cliente-title">Agregar nuevo empleado</h2>
   <div class="empleado-wrapper">
     <ion-card class="empleado-card-content ion-padding">
       <form [formGroup]="empleadoForm" (ngSubmit)="crearEmpleado()">
