@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { ModalController, ToastController, LoadingController } from '@ionic/angular';
 import { Mozo } from 'src/app/services/mozo';
 import { AuthService } from 'src/app/services/supabase';
 import { DetallePedidoModalComponent } from './detalle-pedido-modal/detalle-pedido-modal.component';
 import { Notification } from 'src/app/services/notification';
 
+import { HapticService } from 'src/app/services/haptic.service';
 @Component({
   selector: 'app-tab2-pedidos-confirmados',
   templateUrl: './tab2-pedidos-confirmados.page.html',
@@ -23,7 +24,8 @@ export class Tab2PedidosConfirmadosPage implements OnInit {
     private modalController: ModalController,
     private toastController: ToastController,
     private loadingController: LoadingController,
-    private notificationService: Notification
+    private notificationService: Notification,
+    private hapticService: HapticService
   ) {}
 
   async ngOnInit() {
@@ -38,6 +40,7 @@ export class Tab2PedidosConfirmadosPage implements OnInit {
       this.filtrarPedidos();
     } catch (error) {
       console.error('Error al cargar pedidos:', error);
+      await this.hapticService.vibrateError();
       this.showToast('Error al cargar pedidos confirmados', 'danger');
     } finally {
       this.cargando = false;
@@ -135,6 +138,7 @@ export class Tab2PedidosConfirmadosPage implements OnInit {
     } catch (error) {
       await loading.dismiss();
       console.error('Error al marcar como entregado:', error);
+      await this.hapticService.vibrateError();
       this.showToast('Error al actualizar el pedido', 'danger');
     }
   }
@@ -157,6 +161,7 @@ export class Tab2PedidosConfirmadosPage implements OnInit {
       await modal.present();
     } catch (error) {
       console.error('Error al cargar detalle del pedido:', error);
+      await this.hapticService.vibrateError();
       this.showToast('Error al cargar el detalle del pedido', 'danger');
     }
   }
@@ -190,6 +195,7 @@ export class Tab2PedidosConfirmadosPage implements OnInit {
   } catch (error) {
     await loading.dismiss();
     console.error('Error al confirmar pago:', error);
+    await this.hapticService.vibrateError();
     this.showToast('Error al confirmar pago', 'danger');
   }
 }

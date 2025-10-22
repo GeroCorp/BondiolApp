@@ -1,91 +1,347 @@
+// TEMA OSCURO - Modal Detalle Pedido
+// Variables del tema oscuro
+:host {
+  --background-dark: #1a1a1a;
+  --surface-dark: #2d2d2d;
+  --surface-variant: #3a3a3a;
+  --text-primary: #ffffff;
+  --text-secondary: #b3b3b3;
+  --text-muted: #808080;
+  --primary-color: #bb86fc;
+  --secondary-color: #03dac6;
+  --success-color: #4caf50;
+  --border-color: #404040;
+  --shadow-dark: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+// Fondo del modal
+ion-content {
+  --background: var(--surface-dark);
+  --color: var(--text-primary);
+}
+
+ion-header {
+  ion-toolbar {
+    --background: var(--surface-dark);
+    --color: var(--text-primary);
+    border-bottom: 2px solid var(--border-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    
+    ion-title {
+      color: var(--text-primary);
+      font-weight: 700;
+      font-size: 1.4rem;
+      
+      ion-icon {
+        color: var(--primary-color);
+        margin-right: 8px;
+        font-size: 1.5rem;
+      }
+    }
+    
+    ion-buttons ion-button {
+      --color: var(--text-primary);
+      font-size: 1.2rem;
+      
+      &:hover {
+        --background: var(--surface-variant);
+        border-radius: 8px;
+      }
+      
+      ion-icon {
+        font-size: 1.4rem;
+      }
+    }
+  }
+}
+
 .pedido-info {
-  margin-bottom: 16px;
+  margin-bottom: 20px;
+  padding: 20px;
+  background: var(--surface-variant);
+  border-radius: 16px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-dark);
+  
+  ion-card-header {
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 16px;
+    
+    ion-card-subtitle {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+      
+      ion-icon {
+        color: var(--primary-color);
+        margin-right: 8px;
+        font-size: 1.2rem;
+      }
+    }
+    
+    ion-card-title {
+      font-size: 1.3rem;
+      color: var(--text-primary);
+      
+      ion-chip {
+        font-size: 1rem;
+        font-weight: 600;
+        height: 36px;
+        
+        ion-label {
+          font-size: 1rem;
+          font-weight: 600;
+        }
+      }
+    }
+  }
   
   .info-label {
-    font-size: 0.9rem;
-    font-weight: 500;
-    margin: 0 0 4px 0;
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 6px 0;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
   }
   
   .info-value {
-    font-size: 1rem;
-    font-weight: 600;
-    margin: 0;
-    color: var(--ion-color-dark);
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin: 0 0 16px 0;
+    color: var(--text-primary);
+    line-height: 1.3;
   }
   
   .total-amount {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: var(--ion-color-success);
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--secondary-color);
     margin: 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    letter-spacing: 0.5px;
+  }
+  
+  .estado-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    
+    &.entregado {
+      background: var(--success-color);
+      color: white;
+    }
+    
+    &.pendiente {
+      background: #ff9800;
+      color: white;
+    }
+    
+    &.cancelado {
+      background: #f44336;
+      color: white;
+    }
+  }
+}
+
+.productos-section {
+  margin-bottom: 24px;
+  
+  h3 {
+    color: var(--text-primary);
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+    padding-left: 4px;
+    
+    ion-icon {
+      color: var(--primary-color);
+      margin-right: 10px;
+      font-size: 1.5rem;
+    }
   }
 }
 
 .producto-item {
-  border-bottom: 1px solid var(--ion-color-light);
-  padding: 12px 0;
+  border-bottom: 2px solid var(--border-color);
+  padding: 16px 0;
+  background: transparent;
+  margin-bottom: 8px;
   
   &:last-child {
     border-bottom: none;
   }
   
-  .producto-info {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    margin: 4px 0;
+  ion-label {
+    h3 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
     
-    .cantidad {
-      background: var(--ion-color-primary);
-      color: white;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 0.8rem;
+    .producto-info {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin: 10px 0;
+      flex-wrap: wrap;
+      
+      .cantidad {
+        background: var(--primary-color);
+        color: var(--surface-dark);
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        box-shadow: 0 2px 4px rgba(187, 134, 252, 0.3);
+      }
+      
+      .precio-unitario {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        background: var(--surface-dark);
+        padding: 6px 12px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+      }
+    }
+    
+    .tipo {
+      margin: 10px 0 0 0;
+      font-size: 0.95rem;
       font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: capitalize;
+      
+      ion-text {
+        font-weight: 700;
+      }
     }
-    
-    .precio-unitario {
-      font-size: 0.9rem;
-      color: var(--ion-color-medium);
-    }
-  }
-  
-  .tipo {
-    margin: 4px 0 0 0;
-    font-size: 0.8rem;
   }
   
   .subtotal {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--ion-color-success);
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: var(--secondary-color);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+  
+  ion-icon {
+    font-size: 1.5rem;
+    margin-right: 12px;
   }
 }
 
 .resumen-item {
-  background: var(--ion-color-light);
-  border-radius: 8px;
-  margin-top: 16px;
-  padding: 8px;
+  background: linear-gradient(135deg, var(--surface-variant), var(--surface-dark));
+  border-radius: 16px;
+  padding: 20px;
+  margin-top: 20px;
+  border: 2px solid var(--primary-color);
+  box-shadow: 0 4px 20px rgba(187, 134, 252, 0.2);
+  
+  ion-label {
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 900;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+      
+      strong {
+        color: var(--primary-color);
+      }
+    }
+    
+    p {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin: 0;
+    }
+  }
   
   .total-final {
-    font-size: 1.3rem;
-    font-weight: bold;
-    color: var(--ion-color-success);
+    font-size: 2.2rem;
+    font-weight: 900;
+    color: var(--secondary-color);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    
+    strong {
+      color: var(--secondary-color);
+    }
   }
-}
+  
+  .resumen-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+    
+    h4 {
+      color: var(--text-primary);
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin: 0;
+      
+      ion-icon {
+        color: var(--secondary-color);
+        margin-right: 8px;
+        font-size: 1.4rem;
+      }
+    }
+  }
+  
+  .resumen-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    
+    .detalle {
+      color: var(--text-secondary);
+      font-size: 1rem;
+      font-weight: 600;
+    }
+    }
+    
+    .total {
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+  }
 
+
+// Estilos adicionales para el modal
 .loading-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 40px 20px;
+  color: var(--text-primary);
+  
+  ion-spinner {
+    --color: var(--primary-color);
+    margin-bottom: 16px;
+    transform: scale(1.2);
+  }
   
   p {
-    margin-top: 16px;
-    color: var(--ion-color-medium);
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin: 0;
   }
 }
 
@@ -95,27 +351,185 @@
   align-items: center;
   justify-content: center;
   padding: 40px 20px;
+  text-align: center;
+  color: var(--text-primary);
+  
+  ion-icon {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    color: var(--text-secondary);
+    opacity: 0.7;
+  }
   
   p {
-    margin-top: 16px;
-    color: var(--ion-color-medium);
-    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin: 0;
   }
 }
 
-.icon-small {
-  font-size: 1.2rem;
-  margin-right: 4px;
-}
-
-ion-chip {
-  --background: transparent;
-  --color: var(--ion-color-primary);
-  border: 1px solid var(--ion-color-primary);
-}
-
+// Footer mejorado
 ion-footer {
-  ion-button {
-    margin: 8px;
+  ion-toolbar {
+    --background: var(--surface-dark);
+    --color: var(--text-primary);
+    border-top: 1px solid var(--border-color);
+    padding: 8px;
+    
+    ion-button {
+      --background: var(--primary-color);
+      --color: var(--surface-dark);
+      font-size: 1.1rem;
+      font-weight: 600;
+      height: 48px;
+      margin: 8px;
+      
+      &:hover {
+        --background: color-mix(in srgb, var(--primary-color) 80%, var(--surface-dark));
+      }
+      
+      ion-icon {
+        font-size: 1.2rem;
+        margin-right: 8px;
+      }
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .pedido-info {
+    padding: 16px;
+    margin-bottom: 16px;
+    
+    .info-label {
+      font-size: 0.95rem;
+    }
+    
+    .info-value {
+      font-size: 1.1rem;
+    }
+    
+    .total-amount {
+      font-size: 1.8rem;
+    }
+  }
+  
+  .producto-item {
+    padding: 12px 0;
+    
+    ion-label {
+      h3 {
+        font-size: 1.2rem;
+      }
+      
+      .producto-info {
+        .cantidad, .precio-unitario {
+          font-size: 0.9rem;
+          padding: 4px 8px;
+        }
+      }
+    }
+    
+    .subtotal {
+      font-size: 1.2rem;
+    }
+  }
+  
+  .resumen-item {
+    padding: 16px;
+    
+    ion-label {
+      h2 {
+        font-size: 1.3rem;
+      }
+      
+      p {
+        font-size: 1rem;
+      }
+    }
+    
+    .total-final {
+      font-size: 1.8rem;
+    }
+  }
+}
+
+// Sobrescribir estilos globales
+ion-list {
+  background: transparent;
+}
+
+ion-item {
+  --background: transparent;
+  --color: var(--text-primary);
+  --border-color: var(--border-color);
+}
+
+// Animaciones
+.producto-item {
+  animation: slideInLeft 0.3s ease-out;
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.resumen-item {
+  animation: slideInUp 0.4s ease-out;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .pedido-info {
+    padding: 12px;
+    margin-bottom: 12px;
+    
+    .total-amount {
+      font-size: 1.3rem;
+    }
+  }
+  
+  .producto-item {
+    .producto-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+      
+      .subtotal {
+        margin-left: 0;
+      }
+    }
+    
+    .producto-info {
+      gap: 8px;
+    }
+  }
+  
+  .resumen-item {
+    padding: 12px;
+    
+    .total-final {
+      font-size: 1.2rem;
+    }
   }
 }

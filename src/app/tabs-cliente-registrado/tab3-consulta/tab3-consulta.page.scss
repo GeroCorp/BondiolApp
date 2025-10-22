@@ -1,8 +1,26 @@
+// TEMA OSCURO - Tab3 Consulta (Chat)
+// Variables del tema oscuro
+:host {
+  --background-dark: #1a1a1a;
+  --surface-dark: #2d2d2d;
+  --surface-variant: #3a3a3a;
+  --text-primary: #ffffff;
+  --text-secondary: #b3b3b3;
+  --text-muted: #808080;
+  --primary-color: #bb86fc;
+  --secondary-color: #03dac6;
+  --accent-color: #ff6b47;
+  --chat-sent: #1f2c34;
+  --chat-received: #2a2a2a;
+  --border-color: #404040;
+  --shadow-dark: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
 .messages-container {
   height: 100%;
   padding-bottom: 80px; // Espacio para el footer
   overflow-y: auto;
-  background-color: #e5ddd5; // Fondo estilo WhatsApp
+  background: linear-gradient(180deg, var(--background-dark) 0%, #1a2a2a 100%);
 }
 
 .messages-list {
@@ -11,10 +29,10 @@
   background-image: 
     repeating-linear-gradient(
       45deg,
-      rgba(255,255,255,0.1),
-      rgba(255,255,255,0.1) 1px,
+      rgba(187, 134, 252, 0.05),
+      rgba(187, 134, 252, 0.05) 1px,
       transparent 1px,
-      transparent 8px
+      transparent 12px
     );
 }
 
@@ -26,13 +44,24 @@
     justify-content: flex-end;
     
     .message-bubble {
-      background-color: #dcf8c6; // Verde claro de WhatsApp
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
       border-radius: 18px 18px 4px 18px;
       margin-left: 60px;
+      color: var(--background-dark);
+      box-shadow: var(--shadow-dark);
     }
     
     .sender-name {
-      color: #075e54; // Verde oscuro
+      color: var(--background-dark);
+      font-weight: 700;
+    }
+    
+    .message-content {
+      color: var(--background-dark);
+    }
+    
+    .message-time {
+      color: rgba(26, 26, 26, 0.7);
     }
   }
   
@@ -40,23 +69,26 @@
     justify-content: flex-start;
     
     .message-bubble {
-      background-color: #ffffff;
+      background-color: var(--chat-received);
       border-radius: 18px 18px 18px 4px;
       margin-right: 60px;
-      box-shadow: 0 1px 0.5px rgba(0,0,0,0.13);
+      box-shadow: var(--shadow-dark);
+      border: 1px solid var(--border-color);
     }
     
     .sender-name {
-      color: #25d366; // Verde WhatsApp
+      color: var(--secondary-color);
+      font-weight: 600;
     }
   }
 }
 
 .message-bubble {
   max-width: 280px;
-  padding: 8px 12px;
+  padding: 10px 14px;
   position: relative;
   word-wrap: break-word;
+  backdrop-filter: blur(10px);
 }
 
 .message-header {
@@ -71,13 +103,13 @@
 .message-content {
   font-size: 16px;
   line-height: 1.4;
-  color: #303030;
+  color: var(--text-primary);
   margin-bottom: 2px;
 }
 
 .message-time {
   font-size: 11px;
-  color: #8696a0;
+  color: var(--text-muted);
   text-align: right;
   margin-top: 4px;
 }
@@ -85,8 +117,25 @@
 .no-messages {
   text-align: center;
   padding: 40px 20px;
-  color: #8696a0;
+  color: var(--text-muted);
   font-style: italic;
+  
+  ion-icon {
+    font-size: 64px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+    opacity: 0.6;
+  }
+  
+  h3 {
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+  }
+  
+  p {
+    color: var(--text-muted);
+    line-height: 1.4;
+  }
 }
 
 ion-footer {
@@ -95,8 +144,9 @@ ion-footer {
   left: 0;
   right: 0;
   z-index: 999;
-  background-color: #f0f0f0;
-  border-top: 1px solid #e0e0e0;
+  background: var(--surface-dark);
+  border-top: 1px solid var(--border-color);
+  backdrop-filter: blur(10px);
 }
 
 ion-footer ion-toolbar {
@@ -109,23 +159,33 @@ ion-footer ion-toolbar {
   padding: 8px 16px;
   
   .input-item {
-    --background: #ffffff;
+    --background: var(--surface-variant);
     --border-radius: 25px;
     --padding-start: 16px;
     --padding-end: 8px;
+    --color: var(--text-primary);
     margin: 0;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+    box-shadow: var(--shadow-dark);
+    border: 1px solid var(--border-color);
   }
   
   .message-input {
-    --placeholder-color: #8696a0;
+    --placeholder-color: var(--text-muted);
+    --color: var(--text-primary);
     font-size: 16px;
   }
   
   .send-button {
-    --color: #25d366;
-    --color-hover: #128c7e;
+    --color: var(--secondary-color);
+    --color-hover: var(--primary-color);
     margin: 0 4px;
+    --background: var(--surface-variant);
+    --border-radius: 50%;
+    
+    &:hover {
+      --background: var(--primary-color);
+      --color: var(--background-dark);
+    }
     
     ion-icon {
       font-size: 24px;
@@ -135,38 +195,184 @@ ion-footer ion-toolbar {
 
 // Fondo de la página
 ion-content {
-  --background: #e5ddd5;
+  --background: linear-gradient(180deg, var(--background-dark) 0%, #1a2a2a 100%);
+  --color: var(--text-primary);
 }
 
-// Header con estilo elegante
+// Header con estilo elegante oscuro
 ion-header {
   ion-toolbar {
-    --background: linear-gradient(135deg, #667eea, #764ba2);
-    --color: #fff;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-    border-bottom: 1px solid rgba(255,255,255,0.2);
+    --background: var(--surface-dark);
+    --color: var(--text-primary);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    border-bottom: 1px solid var(--border-color);
     --min-height: 60px;
     
     ion-title {
       font-weight: 700;
       font-size: 1.3rem;
-      text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+      color: var(--text-primary);
+      
+      ion-icon {
+        color: var(--primary-color);
+        margin-right: 8px;
+      }
     }
 
     ion-buttons ion-button,
     .btn-volver {
-      --color: #ffffff !important;
-      color: #ffffff !important;
-      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+      --color: var(--text-primary) !important;
+      color: var(--text-primary) !important;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
       font-weight: 600;
       
       ion-icon {
-        color: #ffffff !important;
+        color: var(--text-primary) !important;
       }
       
       &:hover {
-        --background: rgba(255, 255, 255, 0.1);
+        --background: var(--surface-variant);
       }
+    }
+  }
+}
+
+// Estados de conexión
+.connection-status {
+  padding: 8px 16px;
+  text-align: center;
+  font-size: 12px;
+  background: var(--surface-variant);
+  border-bottom: 1px solid var(--border-color);
+  
+  &.online {
+    color: var(--secondary-color);
+  }
+  
+  &.offline {
+    color: var(--accent-color);
+  }
+  
+  &.connecting {
+    color: var(--primary-color);
+  }
+}
+
+// Loading indicator
+.loading-messages {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  
+  ion-spinner {
+    --color: var(--primary-color);
+    margin-right: 12px;
+  }
+  
+  span {
+    color: var(--text-secondary);
+    font-size: 14px;
+  }
+}
+
+// Typing indicator
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  margin-bottom: 8px;
+  
+  .typing-dots {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    
+    .dot {
+      width: 6px;
+      height: 6px;
+      background: var(--text-muted);
+      border-radius: 50%;
+      animation: typing 1.4s infinite ease-in-out;
+      
+      &:nth-child(1) { animation-delay: 0ms; }
+      &:nth-child(2) { animation-delay: 200ms; }
+      &:nth-child(3) { animation-delay: 400ms; }
+    }
+  }
+  
+  .typing-text {
+    color: var(--text-muted);
+    font-size: 12px;
+    margin-left: 8px;
+    font-style: italic;
+  }
+}
+
+@keyframes typing {
+  0%, 60%, 100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  30% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}
+
+// Scrollbar personalizada
+.messages-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.messages-container::-webkit-scrollbar-track {
+  background: var(--surface-dark);
+}
+
+.messages-container::-webkit-scrollbar-thumb {
+  background: var(--surface-variant);
+  border-radius: 3px;
+}
+
+.messages-container::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-color);
+}
+
+// Animaciones para mensajes
+.message-wrapper {
+  animation: slideInMessage 0.3s ease-out;
+}
+
+@keyframes slideInMessage {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .message-bubble {
+    max-width: 250px;
+    padding: 8px 12px;
+  }
+  
+  .messages-list {
+    padding: 12px;
+  }
+  
+  .message-wrapper {
+    &.sent .message-bubble {
+      margin-left: 40px;
+    }
+    
+    &.received .message-bubble {
+      margin-right: 40px;
     }
   }
 }

@@ -1,6 +1,11 @@
 <ion-header>
   <ion-toolbar color="primary">
     <ion-title>Ingreso Anónimo</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="volver()">
+        <ion-icon slot="start" name="log-in-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
@@ -17,10 +22,12 @@
       <ion-card-content>
         
         <ion-item lines="full">
-          <ion-label position="floating">Nombre *</ion-label>
+          <!-- <ion-label position="fixed">Nombre *</ion-label> -->
           <ion-input 
             [(ngModel)]="nombre" 
-            placeholder="Tu nombre"
+            label="Nombre *"
+            label-placement="floating"
+            placeholder="Ingresa tu nombre"
             type="text">
           </ion-input>
         </ion-item>

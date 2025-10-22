@@ -1,10 +1,12 @@
-import { Component, inject } from '@angular/core';
+﻿import { Component, inject } from '@angular/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { Platform } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { Notification } from './services/notification';
-import { AuthService } from './services/supabase';
+import { AuthService } from './services/supabase'
+import { Haptics } from '@capacitor/haptics';
 
+import { HapticService } from 'src/app/services/haptic.service';
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
@@ -17,12 +19,12 @@ export class AppComponent {
   constructor(
     private platform: Platform, 
     public router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private hapticService: HapticService
   ) {
     this.initializeApp();
     document.body.classList.add('dark');
   }
-
   initializeApp() {
     this.platform.ready().then(async () => {
       this.configureStatusBar();

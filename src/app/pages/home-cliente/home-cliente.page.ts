@@ -1,4 +1,4 @@
-import { Component, effect, inject, OnInit } from '@angular/core';
+﻿import { Component, effect, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/supabase';
 import { ToastController, AlertController } from '@ionic/angular';
@@ -7,6 +7,7 @@ import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
 import { PerfilService } from 'src/app/services/perfilService';
 import { Notification } from 'src/app/services/notification';
 import { ListaEsperaService } from 'src/app/services/lista-espera.service';
+import { HapticService } from 'src/app/services/haptic.service';
 
 
 
@@ -31,7 +32,7 @@ export class HomeClientePage implements OnInit {
   cliente: Cliente | null = null;
   enEspera: boolean = true;
   mesaAsignada: number | null = null;
-  mesaVerificada: boolean = true;
+  mesaVerificada: boolean = false;
   perfil = "cliente";
   private notificationService: Notification = inject(Notification)
 
@@ -44,7 +45,8 @@ export class HomeClientePage implements OnInit {
     private alertController: AlertController,
     private clienteService: ClienteService,
     private perfilService: PerfilService,
-    private listaEsperaService: ListaEsperaService
+    private listaEsperaService: ListaEsperaService,
+    private hapticService: HapticService
   ) {
     effect(() => {
       this.enEspera = this.clienteService.clienteEnEspera();
@@ -74,6 +76,7 @@ export class HomeClientePage implements OnInit {
       }
     } catch (error) {
       console.error('Error al cargar datos del cliente:', error);
+      await this.hapticService.vibrateError();
       this.showToast('Error al cargar tus datos', 'danger');
     }
   }
@@ -86,7 +89,7 @@ export class HomeClientePage implements OnInit {
   async verificarMesaAsignada() {
     try {
       if (this.cliente?.id_cliente) {
-        this.mesaAsignada = await this.clienteService.getMesa(this.cliente.id_cliente);
+        this.mesaAsignada = await this.clienteService.getNroMesa(this.cliente.id_cliente);
         console.log('Mesa asignada al cliente:', this.mesaAsignada);
         
         if (this.mesaAsignada) {
@@ -104,6 +107,7 @@ export class HomeClientePage implements OnInit {
       if (granted.camera !== 'granted') {
         const permission = await BarcodeScanner.requestPermissions();
         if (permission.camera !== 'granted') {
+      await this.hapticService.vibrateError();
           this.showToast('Se necesitan permisos de cámara', 'danger');
           return;
         }
@@ -115,10 +119,12 @@ export class HomeClientePage implements OnInit {
         const qrData = result.barcodes[0].displayValue;
         await this.procesarQRMesa(qrData);
       } else {
+      await this.hapticService.vibrateError();
         this.showToast('No se detectó ningún QR', 'danger');
       }
     } catch (err: any) {
       console.error('Error al escanear QR:', err);
+      await this.hapticService.vibrateError();
       this.showToast('Error al escanear: ' + err.message, 'danger');
     }
   }
@@ -129,6 +135,7 @@ export class HomeClientePage implements OnInit {
       if (granted.camera !== 'granted') {
         const permission = await BarcodeScanner.requestPermissions();
         if (permission.camera !== 'granted') {
+      await this.hapticService.vibrateError();
           this.showToast('Se necesitan permisos de cámara', 'danger');
           return;
         }
@@ -140,10 +147,12 @@ export class HomeClientePage implements OnInit {
         const qrData = result.barcodes[0].displayValue;
         this.router.navigate([qrData]);
       } else {
+      await this.hapticService.vibrateError();
         this.showToast('No se detectó ningún QR', 'danger');
       }
     } catch (err: any) {
       console.error('Error al escanear QR:', err);
+      await this.hapticService.vibrateError();
       this.showToast('Error al escanear: ' + err.message, 'danger');
     }
   }
@@ -153,6 +162,7 @@ export class HomeClientePage implements OnInit {
       const datosQR = qrData.split(',');
       
       if (datosQR.length !== 3) {
+      await this.hapticService.vibrateError();
         this.showToast('QR inválido: formato incorrecto', 'danger');
         return;
       }
@@ -162,6 +172,7 @@ export class HomeClientePage implements OnInit {
       const tipo = datosQR[2];
 
       if (isNaN(numeroMesa) || isNaN(capacidad)) {
+      await this.hapticService.vibrateError();
         this.showToast('QR inválido: datos no válidos', 'danger');
         return;
       }
@@ -193,6 +204,7 @@ export class HomeClientePage implements OnInit {
 
     } catch (error) {
       console.error('Error procesando QR:', error);
+      await this.hapticService.vibrateError();
       this.showToast('Error al procesar el QR', 'danger');
     }
   }
@@ -200,6 +212,7 @@ export class HomeClientePage implements OnInit {
   async verificarMesa(numeroMesa: number, capacidad: number, tipo: string) {
     try {
       if (!this.cliente?.id_cliente) {
+      await this.hapticService.vibrateError();
         this.showToast('Error: No se pudo obtener tu ID de cliente', 'danger');
         return;
       }
@@ -211,12 +224,14 @@ export class HomeClientePage implements OnInit {
         .single();
 
       if (errorMesa || !mesa) {
+        await this.hapticService.vibrateError();
         this.showToast(`La Mesa ${numeroMesa} no existe en el sistema`, 'danger');
         return;
       }
       
       // Verificar que los datos del QR coincidan con los de la base de datos
       if (mesa.cantidad !== capacidad || mesa.tipo !== tipo) {
+        await this.hapticService.vibrateError();
         this.showToast(`Los datos del QR no coinciden con la mesa registrada`, 'danger');
         return;
       }
@@ -237,6 +252,7 @@ export class HomeClientePage implements OnInit {
 
     } catch (error) {
       console.error('Error verificando mesa:', error);
+      await this.hapticService.vibrateError();
       this.showToast('Error al verificar la mesa', 'danger');
     }
   }
@@ -262,6 +278,7 @@ export class HomeClientePage implements OnInit {
   async asignarMesa(numeroMesa: number) {
     try {
       if (!this.cliente?.id_cliente) {
+        await this.hapticService.vibrateError();
         this.showToast('Error: No se pudo obtener tu ID de cliente', 'danger');
         return;
       }
@@ -278,11 +295,13 @@ export class HomeClientePage implements OnInit {
         .maybeSingle();
 
       if (errorMesa || !mesa) {
+        await this.hapticService.vibrateError();
         this.showToast(`La Mesa ${numeroMesa} no existe`, 'danger');
         return;
       }
 
       if (mesa.cliente_asignado && mesa.cliente_asignado !== this.cliente.id_cliente) {
+        await this.hapticService.vibrateError();
         this.showToast(`La Mesa ${numeroMesa} está ocupada por otro cliente`, 'danger');
         return;
       }
@@ -299,8 +318,10 @@ export class HomeClientePage implements OnInit {
     } catch (error: any) {
       console.error('Error asignando mesa:', error);
       if (error.message.includes('ocupada')) {
+        await this.hapticService.vibrateError();
         this.showToast(error.message, 'danger');
       } else {
+        await this.hapticService.vibrateError();
         this.showToast('Error al asignar la mesa', 'danger');
       }
     }
@@ -371,7 +392,13 @@ export class HomeClientePage implements OnInit {
       }
       this.router.navigate(['/tabs-cliente-registrado/tab5-juegos']);
     }
-
+    verEncuestas(){
+      if (!this.mesaVerificada) {
+        this.showToast('⚠️ Primero debes escanear el QR de una mesa', 'warning');
+        return;
+      }
+      this.router.navigate(['/tabs-cliente-registrado/tab6-encuestas']);
+    }
   /**
    * 🧪 [TESTING] Simular unirse a lista de espera sin escanear QR
    * Agrega al cliente directamente a la tabla lista_espera
@@ -379,6 +406,7 @@ export class HomeClientePage implements OnInit {
   async unirseListaEsperaSimulado() {
     try {
       if (!this.cliente?.id_cliente) {
+        await this.hapticService.vibrateError();
         this.showToast('Error: No se pudo obtener tu ID de cliente', 'danger');
         return;
       }
@@ -493,11 +521,13 @@ export class HomeClientePage implements OnInit {
         }, 3500);
 
       } else {
+        await this.hapticService.vibrateError();
         this.showToast('Error al agregar a lista de espera', 'danger');
       }
 
     } catch (error) {
       console.error('Error procesando unión a lista de espera:', error);
+      await this.hapticService.vibrateError();
       this.showToast('Error al procesar la solicitud', 'danger');
     }
   }
@@ -538,6 +568,7 @@ export class HomeClientePage implements OnInit {
         .maybeSingle();
 
       if (error || !mesa) {
+        await this.hapticService.vibrateError();
         this.showToast('Error al obtener datos de la mesa', 'danger');
         return;
       }
@@ -550,6 +581,7 @@ export class HomeClientePage implements OnInit {
       
     } catch (error) {
       console.error('Error en verificación simulada:', error);
+      await this.hapticService.vibrateError();
       this.showToast('Error al verificar la mesa', 'danger');
     }
   }

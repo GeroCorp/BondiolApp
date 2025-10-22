@@ -20,19 +20,7 @@
   <ion-card>
     <ion-card-header>
       <ion-card-subtitle>Mesa no asignada</ion-card-subtitle>
-      <ion-card-title>Por favor, escanee el QR de la mesa.</ion-card-title>
-    </ion-card-header> 
-    <ion-card-content>
-      <ion-button expand="block" (click)="escanearQr()" [disabled]="isLoadingQR">
-        @if (isLoadingQR) {
-          <ion-spinner name="crescent" slot="start"></ion-spinner>
-          Escaneando...
-        } @else {
-          <ion-icon name="qr-code-outline" slot="start"></ion-icon>
-          Escanear QR
-        }
-      </ion-button>
-    </ion-card-content>
+    </ion-card-header>
   </ion-card>
   } @else {
   
@@ -44,7 +32,7 @@
     </div>
   </div>
 
-  <ion-card>
+  <ion-card class="main-card">
     <ion-card-header>
       <ion-card-title>Menú de Platos y Bebidas</ion-card-title>
     </ion-card-header>

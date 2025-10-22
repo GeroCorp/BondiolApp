@@ -1,14 +1,128 @@
+// TEMA OSCURO - Juego Memoria
+// Variables del tema oscuro
+:host {
+  --background-dark: #1a1a1a;
+  --surface-dark: #2d2d2d;
+  --surface-variant: #3a3a3a;
+  --text-primary: #ffffff;
+  --text-secondary: #b3b3b3;
+  --primary-color: #bb86fc;
+  --secondary-color: #03dac6;
+  --accent-color: #ff6b47;
+  --success-color: #4caf50;
+  --border-color: #404040;
+  --shadow-dark: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+// Fondo principal
+ion-content {
+  --background: linear-gradient(180deg, var(--background-dark) 0%, var(--surface-dark) 50%, #1a3a5a 100%);
+  --color: var(--text-primary);
+}
+
+// Header oscuro
+ion-header {
+  ion-toolbar {
+    --background: var(--surface-dark);
+    --color: var(--text-primary);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    border-bottom: 1px solid var(--border-color);
+    
+    ion-title {
+      color: var(--text-primary);
+      font-weight: 600;
+      
+      ion-icon {
+        color: var(--primary-color);
+        margin-right: 8px;
+      }
+    }
+    
+    ion-buttons ion-button {
+      --color: var(--text-primary);
+      
+      &:hover {
+        --background: var(--surface-variant);
+      }
+    }
+  }
+}
+
+.style-card {
+  margin: 0;
+  background: var(--surface-dark) !important;
+  border: 1px solid var(--border-color);
+  border-radius: 15px;
+  box-shadow: var(--shadow-dark);
+  ion-card-title, ion-card-subtitle {
+    color: white !important;
+  }
+}
+
+// Container del juego
+.game-container {
+  padding: 20px;
+  text-align: center;
+}
+
+// Estadísticas del juego
+.game-stats {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 16px;
+  background: var(--surface-variant);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-dark);
+  
+  .stat-item {
+    text-align: center;
+    
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+    
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--secondary-color);
+    }
+    
+    &.moves .stat-value {
+      color: var(--primary-color);
+    }
+    
+    &.timer .stat-value {
+      color: var(--accent-color);
+    }
+  }
+}
+
 .memory-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
+  gap: 12px;
   padding: 10px;
+  max-width: 400px;
+  margin: 0 auto;
+  background: var(--surface-dark);
+  border-radius: 16px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-dark);
 }
 
 .memory-card {
   aspect-ratio: 1;
   perspective: 1000px;
   cursor: pointer;
+  border-radius: 12px;
+  overflow: hidden;
 
   .card-inner {
     position: relative;
@@ -31,25 +145,46 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 8px;
+    border-radius: 12px;
     font-size: 32px;
+    border: 2px solid var(--border-color);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   }
 
   .card-front {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: linear-gradient(135deg, var(--surface-variant) 0%, var(--surface-dark) 100%);
+    color: var(--primary-color);
+    
+    &:before {
+      content: "?";
+      font-weight: bold;
+      font-size: 2rem;
+      opacity: 0.8;
+    }
   }
 
   .card-back {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    color: white;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: var(--background-dark);
     transform: rotateY(180deg);
+    font-weight: bold;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
   }
 
   &.found {
     .card-back {
-      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      background: linear-gradient(135deg, var(--success-color) 0%, var(--secondary-color) 100%);
       animation: pulse 0.5s;
+      border-color: var(--success-color);
+      box-shadow: 0 0 20px rgba(76, 175, 80, 0.4);
+    }
+  }
+
+  &:hover:not(.flipped):not(.found) {
+    .card-front {
+      transform: scale(1.05);
+      box-shadow: 0 6px 12px rgba(187, 134, 252, 0.3);
+      border-color: var(--primary-color);
     }
   }
 }
@@ -60,5 +195,169 @@
   }
   50% {
     transform: rotateY(180deg) scale(1.1);
+  }
+}
+
+// Controles del juego
+.game-controls {
+  margin-top: 20px;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  
+  ion-button {
+    --border-radius: 12px;
+    font-weight: 600;
+    
+    &.new-game {
+      --background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      --color: var(--background-dark);
+    }
+    
+    &.pause {
+      --background: var(--accent-color);
+      --color: white;
+    }
+    
+    &.hint {
+      --background: var(--surface-variant);
+      --color: var(--text-primary);
+      border: 1px solid var(--border-color);
+    }
+  }
+}
+
+// Modal de victoria
+.victory-modal {
+  --background: var(--surface-dark);
+  --color: var(--text-primary);
+  
+  .victory-content {
+    text-align: center;
+    padding: 20px;
+    
+    .victory-icon {
+      font-size: 4rem;
+      color: var(--success-color);
+      margin-bottom: 16px;
+      animation: celebrate 1s ease-in-out;
+    }
+    
+    .victory-title {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+    }
+    
+    .victory-stats {
+      background: var(--surface-variant);
+      border-radius: 8px;
+      padding: 12px;
+      margin: 16px 0;
+      
+      .stat-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        
+        &:last-child {
+          margin-bottom: 0;
+        }
+        
+        .label {
+          color: var(--text-secondary);
+        }
+        
+        .value {
+          color: var(--secondary-color);
+          font-weight: 600;
+        }
+      }
+    }
+  }
+}
+
+@keyframes celebrate {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+  }
+  25% {
+    transform: scale(1.2) rotate(-5deg);
+  }
+  75% {
+    transform: scale(1.2) rotate(5deg);
+  }
+}
+
+// Nivel de dificultad
+.difficulty-selector {
+  margin-bottom: 20px;
+  
+  ion-segment {
+    --background: var(--surface-variant);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    
+    ion-segment-button {
+      --color: var(--text-secondary);
+      --color-checked: var(--primary-color);
+      --background-checked: var(--surface-dark);
+      --border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      
+      &.segment-button-checked {
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      }
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .game-container {
+    padding: 15px;
+  }
+  
+  .memory-grid {
+    gap: 8px;
+    padding: 8px;
+    max-width: 320px;
+    
+    .memory-card .card-front,
+    .memory-card .card-back {
+      font-size: 24px;
+    }
+  }
+  
+  .game-stats {
+    padding: 12px;
+    
+    .stat-item .stat-value {
+      font-size: 1.2rem;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .memory-grid {
+    max-width: 280px;
+    gap: 6px;
+    
+    .memory-card .card-front,
+    .memory-card .card-back {
+      font-size: 20px;
+    }
+  }
+  
+  .game-controls {
+    flex-direction: column;
+    align-items: center;
+    
+    ion-button {
+      width: 200px;
+    }
   }
 }

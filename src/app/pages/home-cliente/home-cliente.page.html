@@ -143,6 +143,17 @@
         <ion-button
           expand="block"
           color="tertiary"
+          (click)="verEncuestas()"
+          [disabled]="!mesaVerificada"
+        >
+          <ion-icon name="game-controller-outline" slot="start"></ion-icon>
+          Encuestas @if (!mesaVerificada) {
+          <ion-icon name="lock-closed" slot="end"></ion-icon>
+        }
+        </ion-button>
+        <ion-button
+          expand="block"
+          color="tertiary"
           (click)="verJuegos()"
           [disabled]="!mesaVerificada"
         >

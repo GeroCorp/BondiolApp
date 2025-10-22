@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { LoadingController, ToastController } from '@ionic/angular';
 import { PerfilService } from 'src/app/services/perfilService';
 import { AuthService } from 'src/app/services/supabase';
 
+import { HapticService } from 'src/app/services/haptic.service';
 interface Empleado {
   id_empleado?: number;
   user_id?: string;
@@ -33,7 +34,8 @@ export class Tab4PerfilPage implements OnInit {
     private perfilService: PerfilService,
     private router: Router,
     private toastController: ToastController,
-    private loadingController: LoadingController
+    private loadingController: LoadingController,
+    private hapticService: HapticService
   ) { 
     this.perfil = this.perfilService.getPerfil();
     console.log('Perfil recibido en Tab4 Cocinero/Bartender:', this.perfil);
@@ -53,6 +55,7 @@ export class Tab4PerfilPage implements OnInit {
       this.empleado = await this.supabaseService.cargarEmpleado();
     } catch (err: any) {
       console.error('Error cargando empleado:', err);
+      await this.hapticService.vibrateError();
       await this.showToast('Error cargando empleado: ' + (err.message ?? err), 'danger');
     } finally {
       await loader.dismiss();

@@ -6,6 +6,7 @@ import { AuthService } from 'src/app/services/supabase';
 import { Notification } from 'src/app/services/notification';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
+import { HapticService } from 'src/app/services/haptic.service';
 
 @Component({
   selector: 'app-register',
@@ -27,7 +28,8 @@ export class RegisterPage {
     private router: Router,
     private toastController: ToastController,
     private loadingController: LoadingController,
-    private authService: AuthService
+    private authService: AuthService,
+    private hapticService: HapticService
   ) {
     this.registerForm = this.formBuilder.group({
       name: ['', [Validators.required, Validators.minLength(4), Validators.pattern(/^[a-zA-ZÀ-ÿ\u00f1\u00d1\s]+$/)]],
@@ -52,9 +54,10 @@ export class RegisterPage {
         this.registerForm.markAllAsTouched();
 
         if (Object.values(this.registerForm.value).some(value => !value)) {
+          await this.hapticService.vibrateError();
           this.showToast('Complete todos los campos.', 'danger');
         } else {
-          this.mostrarErroresFormulario();
+          await this.mostrarErroresFormulario();
         }
       }
       return;
@@ -62,11 +65,13 @@ export class RegisterPage {
 
     // Validación de foto
     if (!this.foto) {
+      await this.hapticService.vibrateError();
       this.showToast('Debe tomarse una foto para completar el registro.', 'danger');
       return;
     }
 
     if (password !== password2) {
+      await this.hapticService.vibrateError();
       this.showToast('Las contraseñas no coinciden.', 'danger');
       return;
     }
@@ -84,6 +89,7 @@ export class RegisterPage {
       if (authError) {
         await loading.dismiss();
         console.error('Error al crear cuenta Auth:', authError.message);
+        await this.hapticService.vibrateError();
         this.showToast('Error al crear usuario', 'danger');
         return;
       }
@@ -94,6 +100,7 @@ export class RegisterPage {
       
       if (!publicUrlData) {
         await loading.dismiss();
+        await this.hapticService.vibrateError();
         this.showToast('Error al subir la foto.', 'danger');
         return;
       }
@@ -115,6 +122,7 @@ export class RegisterPage {
       if (!data) {
         await loading.dismiss();
         console.log(data);
+        await this.hapticService.vibrateError();
         this.showToast('Error al crear el perfil de cliente.', 'danger');
         return;
       }
@@ -144,6 +152,7 @@ export class RegisterPage {
     } catch (error) {
       await loading.dismiss();
       console.error('Error en el registro:', error);
+      await this.hapticService.vibrateError();
       this.showToast('Error en el registro. Intente nuevamente.', 'danger');
     }
   }
@@ -200,17 +209,17 @@ export class RegisterPage {
     email: 'Correo electrónico inválido.'
   };
 
-  private mostrarErroresFormulario() {
+  private async mostrarErroresFormulario() {
     for (const campo in this.registerForm.controls) {
       const control = this.registerForm.get(campo);
       if (control && control.invalid) {
+        await this.hapticService.vibrateError();
         this.showToast(this.validationMessages[campo], 'danger');
+        
         break;
       }
     }
-  }
-
-  volverLogin(){
+  }  volverLogin(){
     this.router.navigate(['/login'], { replaceUrl: true });
   }
 }

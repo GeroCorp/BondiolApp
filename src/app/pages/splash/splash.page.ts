@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { Platform } from '@ionic/angular';
 import { NavController } from '@ionic/angular';
@@ -10,41 +10,47 @@ import { AuthService } from 'src/app/services/supabase';
   styleUrls: ['./splash.page.scss'],
   standalone: false
 })
-export class SplashPage {
+export class SplashPage implements OnInit, OnDestroy {
+  private isInitialized = false;
 
   constructor(
     public router: Router, 
     private platform: Platform, 
     private navCtrl: NavController,
     private authService: AuthService
-  ) { 
-    this.initializeSplash();
+  ) { }
+
+  ngOnInit() {
+    if (!this.isInitialized) {
+      this.isInitialized = true;
+      this.initializeSplash();
+    }
+  }
+
+  ngOnDestroy() {
+    // Limpiar cualquier referencia si es necesario
   }
 
   private async initializeSplash() {
     try {
       await this.platform.ready();
-      console.log('🎬 Splash page iniciada');
       
-      // Esperar tiempo de animación del splash
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      // Reducir tiempo de splash a 1.5 segundos
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
-      console.log('🔍 Splash verificando sesión existente...');
-      
-      // Verificar si hay sesión activa
-      const loginResult = await this.authService.autoLogin();
+      // Verificar sesión de forma más eficiente
+      const loginResult = await this.authService.quickAutoLogin();
       
       if (loginResult.success && loginResult.redirectTo) {
-        console.log('✅ Splash: Sesión válida encontrada, redirigiendo a:', loginResult.redirectTo);
+        console.log('✅ Sesión activa - redirigiendo a:', loginResult.redirectTo);
         this.navCtrl.navigateRoot(loginResult.redirectTo, { animationDirection: 'forward' });
       } else {
-        console.log('❌ Splash: No hay sesión válida, redirigiendo a login');
+        console.log('➡️ Sin sesión - redirigiendo a login');
         this.navCtrl.navigateRoot('/login', { animationDirection: 'forward' });
       }
       
     } catch (error) {
-      console.error('Error en splash initialization:', error);
-      // En caso de error, ir al login por seguridad
+      console.error('Error en splash:', error);
       this.navCtrl.navigateRoot('/login', { animationDirection: 'forward' });
     }
   }

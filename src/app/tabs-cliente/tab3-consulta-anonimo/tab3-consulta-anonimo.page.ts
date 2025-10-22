@@ -1,7 +1,8 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ClienteAnonimoService } from '../../services/cliente-anonimo.service';
 import { ToastController } from '@ionic/angular';
 
+import { HapticService } from 'src/app/services/haptic.service';
 @Component({
   selector: 'app-tab3-consulta-anonimo',
   templateUrl: './tab3-consulta-anonimo.page.html',
@@ -17,7 +18,8 @@ export class Tab3ConsultaAnonimoPage implements OnInit, OnDestroy {
 
   constructor(
     private clienteService: ClienteAnonimoService,
-    private toastCtrl: ToastController
+    private toastCtrl: ToastController,
+    private hapticService: HapticService
   ) {}
 
   async ngOnInit() {
@@ -43,6 +45,7 @@ export class Tab3ConsultaAnonimoPage implements OnInit, OnDestroy {
       this.messages = await this.clienteService.obtenerMensajesChat();
     } catch (error) {
       console.error('Error cargando mensajes:', error);
+      await this.hapticService.vibrateError();
       this.showToast('Error al cargar mensajes', 'danger');
     }
     this.loading = false;
@@ -63,6 +66,7 @@ export class Tab3ConsultaAnonimoPage implements OnInit, OnDestroy {
     try {
       await this.clienteService.enviarMensaje(temp);
     } catch (error: any) {
+      await this.hapticService.vibrateError();
       this.showToast('Error: ' + error.message, 'danger');
       this.nuevoMensaje = temp;
     }

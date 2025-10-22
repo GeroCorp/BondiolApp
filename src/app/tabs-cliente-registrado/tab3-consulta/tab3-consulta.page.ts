@@ -46,7 +46,7 @@ export class Tab3ConsultaPage implements OnInit {
     console.log("Nueva lista: ",this.messages());
     
     // Notificar al mozo del nuevo mensaje (Aunque tira error y no sé pq)
-    this.notificationService.sendNotificationToPerfil("Mozo", "Nuevo mensaje de la mesa "+this.clienteService.getMesa(await this.clienteService.getClientId()), "Tienes un nuevo mensaje de "+this.username+" en el chat.");
+    this.notificationService.sendNotificationToPerfil("Mozo", "Nuevo mensaje de la mesa "+this.clienteService.getNroMesa(await this.clienteService.getClientId()), "Tienes un nuevo mensaje de "+this.username+" en el chat.");
   }
 
   async loadMessages(){

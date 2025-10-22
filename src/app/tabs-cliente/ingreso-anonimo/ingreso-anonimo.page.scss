@@ -1,3 +1,8 @@
+// Fondo con gradiente igual al de admin/mozo
+ion-content {
+  --background: linear-gradient(180deg, #1a1a1a 0%, #2d2d2d 50%, #1a5a8a 100%);
+}
+
 .ingreso-container {
   max-width: 500px;
   margin: 0 auto;
@@ -10,17 +15,22 @@
     ion-icon {
       font-size: 64px;
       margin-bottom: 16px;
+      color: #ff6b47;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
     }
 
     h1 {
       font-size: 28px;
       font-weight: bold;
       margin: 0;
+      color: #ffffff;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
 
     p {
-      color: var(--ion-color-medium);
+      color: rgba(255, 255, 255, 0.8);
       margin-top: 8px;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
     }
   }
 
@@ -78,18 +88,21 @@
     align-items: center;
     gap: 12px;
     padding: 16px;
-    background: var(--ion-color-light);
+    background: rgba(255, 255, 255, 0.2);
     border-radius: 8px;
     margin-top: 20px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
 
     ion-icon {
       font-size: 24px;
+      color: #ff6b47;
     }
 
     p {
       margin: 0;
       font-size: 14px;
-      color: var(--ion-color-medium);
+      color: rgba(255, 255, 255, 0.9);
     }
   }
 }

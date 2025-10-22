@@ -1,10 +1,11 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/supabase';
 import { ClienteAnonimoService } from '../../services/cliente-anonimo.service';
 import { ToastController, AlertController } from '@ionic/angular';
 import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
 
+import { HapticService } from 'src/app/services/haptic.service';
 interface ClienteAnonimo {
   id_clienteanonimo: number;
   nombre: string;
@@ -22,6 +23,7 @@ interface ClienteAnonimo {
   standalone: false
 })
 export class HomeAnonimoPage implements OnInit, OnDestroy {
+  private pollingInterval: any;
   clienteAnonimo: ClienteAnonimo | null = null;
   mesaVerificada: boolean = false;
   numeroMesa: number | null = null;
@@ -32,7 +34,8 @@ export class HomeAnonimoPage implements OnInit, OnDestroy {
     private authService: AuthService,
     private clienteAnonimoService: ClienteAnonimoService,
     private toastController: ToastController,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private hapticService: HapticService
   ) {}
 
   async ngOnInit() {
@@ -66,6 +69,7 @@ export class HomeAnonimoPage implements OnInit, OnDestroy {
       }
       
       if (!storedData) {
+        await this.hapticService.vibrateError();
         this.showToast('No se encontró sesión anónima', 'danger');
         this.router.navigate(['/ingreso-anonimo'], { replaceUrl: true });
         return;
@@ -83,6 +87,7 @@ export class HomeAnonimoPage implements OnInit, OnDestroy {
         console.error('Error cargando cliente anónimo:', error);
         localStorage.removeItem('cliente_anonimo');
         sessionStorage.removeItem('cliente_anonimo');
+        await this.hapticService.vibrateError();
         this.showToast('Sesión expirada', 'danger');
         this.router.navigate(['/ingreso-anonimo'], { replaceUrl: true });
         return;
@@ -102,6 +107,7 @@ export class HomeAnonimoPage implements OnInit, OnDestroy {
 
     } catch (error) {
       console.error('Error al cargar datos del cliente anónimo:', error);
+      await this.hapticService.vibrateError();
       this.showToast('Error al cargar tus datos', 'danger');
     }
   }
@@ -171,6 +177,7 @@ export class HomeAnonimoPage implements OnInit, OnDestroy {
       if (granted.camera !== 'granted') {
         const permission = await BarcodeScanner.requestPermissions();
         if (permission.camera !== 'granted') {
+      await this.hapticService.vibrateError();
           this.showToast('Se necesitan permisos de cámara', 'danger');
           return;
         }
@@ -183,9 +190,11 @@ export class HomeAnonimoPage implements OnInit, OnDestroy {
         const qrData = result.barcodes[0].displayValue;
         await this.procesarQRMesa(qrData);
       } else {
+      await this.hapticService.vibrateError();
         this.showToast('No se detectó ningún QR', 'danger');
       }
     } catch (err: any) {
+      await this.hapticService.vibrateError();
       console.error('Error al escanear QR:', err);
       this.showToast('Error al escanear: ' + err.message, 'danger');
     }
@@ -197,6 +206,7 @@ export class HomeAnonimoPage implements OnInit, OnDestroy {
       const datosQR = qrData.split(',');
 
       if (datosQR.length !== 3) {
+      await this.hapticService.vibrateError();
         this.showToast('QR inválido: formato incorrecto', 'danger');
         return;
       }
@@ -206,6 +216,7 @@ export class HomeAnonimoPage implements OnInit, OnDestroy {
       const tipo = datosQR[2];
 
       if (isNaN(numeroMesaEscaneado) || isNaN(capacidad)) {
+      await this.hapticService.vibrateError();
         this.showToast('QR inválido: datos no válidos', 'danger');
         return;
       }
@@ -234,12 +245,14 @@ export class HomeAnonimoPage implements OnInit, OnDestroy {
         .single();
 
       if (error || !mesa) {
+      await this.hapticService.vibrateError();
         this.showToast('Mesa no encontrada', 'danger');
         return;
       }
 
       // Verificar que los datos del QR coincidan con la base de datos
       if (mesa.cantidad !== capacidad || mesa.tipo !== tipo) {
+      await this.hapticService.vibrateError();
         this.showToast('Los datos del QR no coinciden con la mesa registrada', 'danger');
         return;
       }
@@ -260,6 +273,7 @@ export class HomeAnonimoPage implements OnInit, OnDestroy {
 
     } catch (error: any) {
       console.error('Error procesando QR:', error);
+      await this.hapticService.vibrateError();
       this.showToast('Error al procesar el QR', 'danger');
     }
   }
@@ -288,6 +302,7 @@ export class HomeAnonimoPage implements OnInit, OnDestroy {
         .maybeSingle();
 
       if (error || !mesa) {
+      await this.hapticService.vibrateError();
         this.showToast('Error al obtener datos de la mesa', 'danger');
         console.error('Error obteniendo mesa:', error);
         return;
@@ -315,6 +330,7 @@ export class HomeAnonimoPage implements OnInit, OnDestroy {
       
     } catch (error: any) {
       console.error('❌ Error en verificación simulada:', error);
+      await this.hapticService.vibrateError();
       this.showToast(`Error: ${error.message || 'Error desconocido'}`, 'danger');
     }
   }
@@ -413,6 +429,7 @@ export class HomeAnonimoPage implements OnInit, OnDestroy {
         'Error al cerrar sesión: ' + (error.message || 'Error desconocido'), 
         'danger'
       );
+      await this.hapticService.vibrateError();
       
       // Limpiar de todas formas
       sessionStorage.clear();

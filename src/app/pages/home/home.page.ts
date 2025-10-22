@@ -1,10 +1,11 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+﻿import { Component, inject, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/supabase';
 import { ToastController, AlertController } from '@ionic/angular';
 import { PerfilService } from 'src/app/services/perfilService';
 import { Notification } from 'src/app/services/notification';
 
+import { HapticService } from 'src/app/services/haptic.service';
 @Component({
   selector: 'app-home',
   templateUrl: './home.page.html',
@@ -22,7 +23,8 @@ export class HomePage implements OnInit {
     private authService: AuthService,
     private toastController: ToastController,
     private perfilService: PerfilService,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private hapticService: HapticService
   ) {
     console.log('Perfil recibido en Home:', this.perfil());
   }
@@ -86,6 +88,8 @@ async logout() {
                 color: 'danger'
               });
               await toast.present();
+              await this.hapticService.vibrateError();
+
             }
           }
         }
@@ -103,18 +107,7 @@ async logout() {
       position: 'bottom',
     });
     await toast.present();
-  }
-
-  async getCurrentUserName(){
-    const id = await this.authService.getCurrentUser();
-    if (!id){
-      throw new Error('No user logged in');
-    }
-    const user = await this.authService.getClienteByUserId(id.id);
-    console.log(user![0]?.nombre);
-    const nombre = user![0]?.nombre ?? 'Invitado';
-
-  }
+  }  
 
   // Seccion de dueño y supervisor
   agregarEmpleado() {

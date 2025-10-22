@@ -25,11 +25,6 @@ const routes: Routes = [
     loadChildren: () => import('./pages/home-anonimo/home-anonimo.module').then(m => m.HomeAnonimoPageModule)
   },
   {
-    path: '',
-    redirectTo: 'splash',
-    pathMatch: 'full'
-  },
-  {
     path: 'login',
     loadChildren: () => import('./pages/login/login.module').then(m => m.LoginPageModule)
   },

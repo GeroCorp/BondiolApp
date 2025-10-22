@@ -125,10 +125,20 @@ Fecha estimada de finalización: 3/10
 # Quinta semana
 
 ## Pagés Valentino
-- 22° Funcionalidad (Confirmación de pago)
+- Funcionalidad 15° y 22°  (Confirmación de pago y juegos)
 - Arreglos generales
 
 ## Corpus Gerónimo
 - Estilado de paginas
 - Push Notification y Mails automaticos
 - Creación de lista de espera
+
+# Sexta semana
+
+## Pagés Valentino
+- Funcionalidades 20 y 21
+
+## Corpus Gerónimo
+- Arreglo de UI (Fondos oscuros y fuente mas grande)
+- Arreglo funcionalidad 13°
+- Modificación funcionalidad 22° (Descarga de factura)

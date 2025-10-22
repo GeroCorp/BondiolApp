@@ -1,9 +1,11 @@
-// generador-qr-mesas.page.ts
+﻿// generador-qr-mesas.page.ts
 import { Component, OnInit } from '@angular/core';
 import { AuthService } from 'src/app/services/supabase';
 import { ToastController } from '@ionic/angular';
 import * as QRCode from 'qrcode';
+import { Vibration } from '@awesome-cordova-plugins/vibration/ngx';
 
+import { HapticService } from 'src/app/services/haptic.service';
 interface Mesa {
   id: number;
   numero: number;
@@ -26,7 +28,8 @@ export class GeneradorQrMesasPage implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private hapticService: HapticService
   ) {}
 
   async ngOnInit() {
@@ -47,7 +50,9 @@ export class GeneradorQrMesasPage implements OnInit {
       this.showToast('Mesas cargadas correctamente', 'success');
     } catch (error: any) {
       console.error('Error cargando mesas:', error);
+      await this.hapticService.vibrateError();
       this.showToast('Error al cargar las mesas', 'danger');
+
     } finally {
       this.loading = false;
     }
@@ -69,7 +74,9 @@ export class GeneradorQrMesasPage implements OnInit {
       console.log(`QR generado para mesa ${numeroMesa}`);
     } catch (error) {
       console.error(`Error generando QR para mesa ${numeroMesa}:`, error);
+      await this.hapticService.vibrateError();
       this.showToast(`Error generando QR para mesa ${numeroMesa}`, 'danger');
+
     }
   }
 
@@ -91,7 +98,9 @@ export class GeneradorQrMesasPage implements OnInit {
       this.showToast(`QR de mesa ${numeroMesa} descargado`, 'success');
     } catch (error) {
       console.error('Error descargando QR:', error);
+      await this.hapticService.vibrateError();
       this.showToast('Error al descargar el QR', 'danger');
+
     }
   }
 
@@ -107,6 +116,7 @@ export class GeneradorQrMesasPage implements OnInit {
       // Crear ventana de impresión
       const printWindow = window.open('', '_blank');
       if (!printWindow) {
+        await this.hapticService.vibrateError();
         this.showToast('No se pudo abrir ventana de impresión', 'danger');
         return;
       }
@@ -166,6 +176,7 @@ export class GeneradorQrMesasPage implements OnInit {
       this.showToast('Preparando impresión...', 'success');
     } catch (error) {
       console.error('Error imprimiendo QR:', error);
+      await this.hapticService.vibrateError();
       this.showToast('Error al imprimir el QR', 'danger');
     }
   }
