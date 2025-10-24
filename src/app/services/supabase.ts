@@ -29,6 +29,10 @@ export class AuthService {
   public currentUser$ = this.currentUserSubject.asObservable();
   private isCheckingSession = false; // ✅ Flag para evitar verificaciones múltiples
   private isAutoLoginInProgress = false; // ✅ Flag para evitar interferencia del auth listener durante auto-login
+  private static authListenerInitialized = false; // ✅ Flag para evitar múltiples listeners
+  private authStateSubscription: any = null; // ✅ Para poder desuscribirse
+  private lastProcessedEvent: string = ''; // ✅ Para evitar procesar el mismo evento múltiples veces
+  private lastProcessedUserId: string = ''; // ✅ Para evitar guardar sesión múltiples veces para el mismo usuario
 
   constructor(private router: Router) {
     this.supabase = supabaseInstance; // Usa la instancia única
@@ -37,28 +41,46 @@ export class AuthService {
 
   // ✅ Inicializa el listener de cambios de autenticación
   private initAuthListener() {
-    this.supabase.auth.onAuthStateChange((event, session) => {
-      console.log('Auth state changed:', event, session?.user?.email, 'isAutoLoginInProgress:', this.isAutoLoginInProgress);
+    // ✅ Evitar múltiples listeners registrados
+    if (AuthService.authListenerInitialized) {
+      console.log('⚠️ Auth listener ya inicializado - saltando');
+      return;
+    }
+
+    console.log('🔧 Inicializando auth listener único');
+    AuthService.authListenerInitialized = true;
+
+    this.authStateSubscription = this.supabase.auth.onAuthStateChange((event, session) => {
+      // ✅ Evitar procesar eventos duplicados
+      const eventKey = `${event}_${session?.user?.id || 'none'}`;
+      if (this.lastProcessedEvent === eventKey) {
+        return;
+      }
+      this.lastProcessedEvent = eventKey;
+
+      // Reducir logs - solo mostrar en eventos importantes
+      if (event !== 'TOKEN_REFRESHED') {
+        console.log('Auth state:', event, session?.user?.email);
+      }
+      
       this.currentUserSubject.next(session?.user || null);
       
       // ✅ NO hacer nada si estamos en proceso de auto-login
       if (this.isAutoLoginInProgress) {
-        console.log('⏳ Auto-login en progreso - ignorando auth state change');
         return;
       }
       
-      // Solo manejar eventos específicos y evitar redirecciones automáticas
+      // Solo manejar eventos específicos
       if (event === 'SIGNED_IN') {
-        console.log('✅ Usuario autenticado - guardando sesión');
-        if (session?.user) {
+        if (session?.user && this.lastProcessedUserId !== session.user.id) {
+          this.lastProcessedUserId = session.user.id;
           this.saveUserSession(session.user);
         }
-        // NO redirigir automáticamente aquí - solo guardar sesión
       } else if (event === 'SIGNED_OUT') {
-        console.log('🚪 Usuario desconectado');
+        this.lastProcessedUserId = '';
         this.clearUserSession();
         
-        // Solo redirigir al login si es un logout manual y no estamos en páginas específicas
+        // Solo redirigir si no estamos en páginas de auth
         const currentUrl = this.router?.url || '';
         const isInAuthFlow = currentUrl.includes('/login') || 
                             currentUrl.includes('/splash') || 
@@ -66,34 +88,30 @@ export class AuthService {
                             currentUrl === '/';
                             
         if (this.router && !isInAuthFlow) {
-          // Agregar un delay para evitar conflictos con otros navigations
           setTimeout(() => {
-            console.log('🔄 Redirigiendo al login desde:', currentUrl);
             this.router.navigate(['/login'], { replaceUrl: true });
           }, 1000);
         }
-      } else if (event === 'TOKEN_REFRESHED') {
-        console.log('🔄 Token renovado - NO redirigir');
-        // Importante: NO hacer nada cuando se renueva el token
-        // Esto evita redirecciones inesperadas
       }
-      // Para otros eventos, no hacer nada
+      // TOKEN_REFRESHED - no hacer nada (eliminar logs)
     });
   }
 
   // ✅ Guarda información de sesión en localStorage
   private async saveUserSession(user: any) {
     try {
-      console.log('💾 Guardando sesión para usuario:', user.email);
+      // Verificar si ya existe sesión guardada para evitar queries innecesarias
+      const existingSession = this.getSavedSession();
+      if (existingSession && existingSession.id === user.id) {
+        // Eliminar este log que se ejecuta frecuentemente
+        return;
+      }
       
-      // Obtener información adicional del usuario (empleado o cliente)
+      console.log('💾 Guardando nueva sesión para:', user.email);
+      
+      // Obtener información adicional del usuario
       const empleado = await this.getEmpleadoByUserId(user.id);
       const cliente = await this.getClienteByUserId(user.id);
-      
-      console.log('📋 Información obtenida:', {
-        empleado: empleado?.length || 0,
-        cliente: cliente ? 'encontrado' : 'no encontrado'
-      });
       
       let userType = 'unknown';
       let profile = null;
@@ -102,14 +120,10 @@ export class AuthService {
       if (empleado && empleado.length > 0) {
         userType = 'empleado';
         profile = empleado[0].perfil;
-        console.log('👨‍💼 Guardando como empleado con perfil:', profile);
       } else if (cliente) {
         userType = 'cliente';
         profile = cliente.estado;
         clientData = cliente;
-        console.log('👤 Guardando como cliente con estado:', profile);
-      } else {
-        console.log('❌ Usuario sin tipo válido encontrado');
       }
       
       const userSession = {
@@ -122,7 +136,7 @@ export class AuthService {
       };
       
       localStorage.setItem('userSession', JSON.stringify(userSession));
-      console.log('✅ Sesión guardada en localStorage:', userSession);
+      console.log('✅ Sesión guardada:', userType, profile);
     } catch (error) {
       console.error('Error guardando sesión:', error);
     }
@@ -131,7 +145,6 @@ export class AuthService {
   // ✅ Limpia la información de sesión
   private clearUserSession() {
     localStorage.removeItem('userSession');
-    console.log('✅ Sesión eliminada de localStorage');
   }
 
   // ✅ Obtiene la sesión guardada
@@ -149,7 +162,6 @@ export class AuthService {
       const { data: { session }, error } = await this.supabase.auth.getSession();
       
       if (error || !session) {
-        console.log('❌ No hay sesión activa en Supabase');
         // Limpiar localStorage si no hay sesión en Supabase
         if (savedSession) {
           this.clearUserSession();
@@ -159,17 +171,12 @@ export class AuthService {
 
       // Verificar que el usuario del localStorage coincide con el de Supabase
       if (savedSession && savedSession.id !== session.user.id) {
-        console.log('❌ Mismatch entre localStorage y Supabase');
         this.clearUserSession();
         return { isValid: false };
       }
       
       // Si hay sesión guardada y coincide, usar esos datos para evitar queries adicionales
       if (savedSession && savedSession.id === session.user.id) {
-        console.log('✅ Usando sesión guardada:', {
-          userType: savedSession.userType,
-          profile: savedSession.profile
-        });
         return {
           isValid: true,
           user: session.user,
@@ -179,17 +186,10 @@ export class AuthService {
       }
       
       // Si no hay datos guardados, verificar información adicional del usuario
-      console.log('🔍 Verificando información del usuario en base de datos...');
       const empleado = await this.getEmpleadoByUserId(session.user.id);
       const cliente = await this.getClienteByUserId(session.user.id);
       
-      console.log('📋 Resultados de búsqueda:', {
-        empleado: empleado?.length || 0,
-        cliente: cliente ? 'encontrado' : 'no encontrado'
-      });
-      
       if (empleado && empleado.length > 0) {
-        console.log('✅ Usuario es empleado con perfil:', empleado[0].perfil);
         return {
           isValid: true,
           user: session.user,
@@ -199,7 +199,6 @@ export class AuthService {
       }
       
       if (cliente) {
-        console.log('✅ Usuario es cliente con estado:', cliente.estado);
         return {
           isValid: true,
           user: session.user,
@@ -208,12 +207,57 @@ export class AuthService {
         };
       }
       
-      console.log('❌ Usuario sin perfil válido en base de datos');
       return { isValid: false };
       
     } catch (error) {
       console.error('Error verificando sesión:', error);
       return { isValid: false };
+    }
+  }
+
+  // ✅ Auto-login optimizado y más rápido para splash
+  async quickAutoLogin(): Promise<{success: boolean, redirectTo?: string}> {
+    try {
+      // 1. Verificar localStorage primero (más rápido)
+      const savedSession = this.getSavedSession();
+      if (!savedSession) {
+        return { success: false };
+      }
+
+      // 2. Verificar sesión de Supabase de forma simple
+      const { data: { session } } = await this.supabase.auth.getSession();
+      if (!session || session.user.id !== savedSession.id) {
+        this.clearUserSession();
+        return { success: false };
+      }
+
+      // 3. Usar datos guardados para determinar redirección (evitar queries)
+      const { userType, profile } = savedSession;
+      
+      let redirectTo = '/login';
+      
+      if (userType === 'empleado') {
+        redirectTo = '/home';
+      } else if (userType === 'cliente') {
+        if (profile === 'pendiente') {
+          redirectTo = '/pre-sala';
+        } else if (profile === 'aprobado') {
+          redirectTo = '/home-cliente';
+        } else if (profile === 'rechazado') {
+          await this.logout();
+          return { success: false };
+        } else {
+          redirectTo = '/pre-sala';
+        }
+      } else {
+        return { success: false };
+      }
+      
+      return { success: true, redirectTo };
+      
+    } catch (error) {
+      console.error('Error en quickAutoLogin:', error);
+      return { success: false };
     }
   }
 
@@ -228,66 +272,47 @@ export class AuthService {
     this.isAutoLoginInProgress = true; // ✅ Bloquear auth listener durante auto-login
     
     try {
-      console.log('🔍 Iniciando autoLogin...');
+      console.log('🔍 Iniciando autoLogin completo...');
       
       // Verificar si hay sesión activa primero
       const { data: { session }, error } = await this.supabase.auth.getSession();
       
       if (error || !session) {
-        console.log('❌ No hay sesión activa en Supabase');
         return { success: false };
       }
-      
-      console.log('✅ Sesión encontrada en Supabase para:', session.user.email);
       
       // Verificar información adicional del usuario
       const sessionCheck = await this.checkSession();
       
       if (!sessionCheck.isValid) {
-        console.log('❌ Sesión inválida');
         return { success: false };
       }
 
       const { user, userType, profile } = sessionCheck;
-      console.log('✅ Datos de usuario obtenidos:', { 
-        email: user.email,
-        userType, 
-        profile 
-      });
       
       // Determinar redirección según el tipo de usuario
-      let redirectTo = '/login'; // fallback
+      let redirectTo = '/login';
       
       if (userType === 'empleado') {
         redirectTo = '/home';
-        console.log('👨‍💼 Usuario empleado - redirigiendo a home');
       } else if (userType === 'cliente') {
-        console.log('👤 Usuario cliente con estado:', profile);
-        
         if (profile === 'pendiente') {
           redirectTo = '/pre-sala';
-          console.log('⏳ Cliente pendiente - redirigiendo a pre-sala');
         } else if (profile === 'aprobado') {
           redirectTo = '/home-cliente';
-          console.log('✅ Cliente aprobado - redirigiendo a home-cliente');
         } else if (profile === 'rechazado') {
-          // Cliente rechazado - cerrar sesión
-          console.log('❌ Cliente rechazado - cerrando sesión');
           await this.logout();
           return { success: false };
         } else {
-          // Estado desconocido - ir a pre-sala por defecto
-          console.log('❓ Estado de cliente desconocido:', profile, '- redirigiendo a pre-sala');
           redirectTo = '/pre-sala';
         }
       } else {
-        console.log('❌ Tipo de usuario desconocido:', userType);
         return { success: false };
       }
       
-      console.log('🎯 Decisión final - redirigiendo a:', redirectTo);
+      console.log('🎯 AutoLogin completo - redirigiendo a:', redirectTo);
       
-      // ✅ Esperar un poco antes de completar para asegurar que la navegación se haga antes de reactivar el listener
+      // Esperar antes de completar
       await new Promise(resolve => setTimeout(resolve, 500));
       
       return {
@@ -324,14 +349,6 @@ export class AuthService {
   getCurrentUserProfile(): string | null {
     const session = this.getSavedSession();
     return session?.profile || null;
-  }
-
-  // ✅ Fuerza la actualización de la sesión guardada
-  async refreshSavedSession() {
-    const { data: { user } } = await this.supabase.auth.getUser();
-    if (user) {
-      await this.saveUserSession(user);
-    }
   }
 
   get client() {
@@ -409,20 +426,16 @@ export class AuthService {
 
   // // 🔑 Obtener empleado desde tabla empleados según user_id
   async getEmpleadoByUserId(userId: string) {
-    console.log('Query a empleados con user_id:', userId);
     const { data, error } = await this.supabase
       .from('empleados')
       .select('*')
       .eq('user_id', userId);
       
-      if (error) {
+    if (error) {
       console.error('Error al buscar empleado:', error.message);
       return [];
     }
 
-    console.log('Resultado de empleados:', data); // Add this to see the raw data from Supabase
-    console.log('Es array:', Array.isArray(data));
-    console.log('Array length:', data ? data.length : 0);
     return Array.isArray(data) ? data : [];
   }
   
@@ -915,8 +928,6 @@ export class AuthService {
    * Obtiene datos de cliente por user_id
    */
   async getClienteByUserId(userId: string) {
-    console.log('🔍 Buscando cliente con user_id:', userId);
-    
     const { data, error } = await this.supabase
       .from('clientes')
       .select('*')
@@ -924,9 +935,6 @@ export class AuthService {
       .single();
 
     if (error) {
-      console.error('❌ Error obteniendo cliente:', error);
-      console.log('🔍 Intentando buscar sin .single()...');
-      
       // Intentar sin .single() para ver si hay múltiples resultados
       const { data: allData, error: allError } = await this.supabase
         .from('clientes')
@@ -934,15 +942,12 @@ export class AuthService {
         .eq('user_id', userId);
         
       if (allError) {
-        console.error('❌ Error en búsqueda alternativa:', allError);
         return null;
       }
       
-      console.log('📋 Todos los resultados encontrados:', allData);
       return allData?.length > 0 ? allData[0] : null;
     }
 
-    console.log('✅ Cliente encontrado:', data);
     return data;
   }
 
@@ -1310,6 +1315,18 @@ async responderConsulta(consultaId: number, respuesta: string) {
     console.error('Error al responder consulta:', error);
     throw error;
   }
+}
+
+// ✅ Método de limpieza para desuscribirse del auth listener si es necesario
+ngOnDestroy() {
+  if (this.authStateSubscription) {
+    this.authStateSubscription.data?.subscription?.unsubscribe();
+  }
+}
+
+// ✅ Método para resetear el flag del listener (útil para testing)
+static resetAuthListener() {
+  AuthService.authListenerInitialized = false;
 }
 
 }

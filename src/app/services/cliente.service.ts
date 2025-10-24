@@ -48,6 +48,122 @@ export class ClienteService {
 
   // Metodos para manejo del pedido
 
+  async checkRejected(){
+    const clienteId = await this.getClientId();
+    const { data, error } = await this.supabase
+    .from('pedidos')
+    .select('*')
+    .eq('id_cliente', clienteId)
+    .eq('estado', 'rechazado');
+    if (error) {
+      throw new Error('Error al verificar pedidos rechazados: ' + error.message);
+    }
+    return data;
+  }
+
+  async getRejectedOrder(){
+    const rejectedOrders = await this.checkRejected();
+    if (rejectedOrders.length === 0) {
+      console.log("✅ No se obtuvieron pedidos rechazados");
+      return null;
+    }
+
+    // Tomar el pedido rechazado más reciente
+    const pedidoRechazado = rejectedOrders[0];
+    console.log("📋 Pedido rechazado encontrado:", pedidoRechazado);
+
+    try {
+      // Obtener los detalles del pedido rechazado
+      const detalles = await this.getDetallesPedido(pedidoRechazado.id);
+      
+      if (detalles.length === 0) {
+        console.log("⚠️ No se encontraron detalles para el pedido rechazado");
+        return null;
+      }
+
+      // Convertir los detalles al formato esperado por _pedido
+      const itemsParaPedido = detalles.map(detalle => ({
+        id: `${detalle.nombre_prod}_${Date.now()}`, // ID único temporal
+        nombre: detalle.nombre_prod,
+        precio: detalle.precio_unitario,
+        quantity: detalle.cantidad,
+        subtotal: detalle.precio_unitario * detalle.cantidad,
+        tipo: detalle.tipo
+      }));
+
+      // Limpiar el pedido actual y cargar los items del pedido rechazado
+      this._pedido.set(itemsParaPedido);
+      
+      console.log("✅ Detalles del pedido rechazado cargados en _pedido:", itemsParaPedido);
+      return {
+        pedido: pedidoRechazado,
+        detalles: itemsParaPedido
+      };
+
+    } catch (error) {
+      console.error("❌ Error al obtener detalles del pedido rechazado:", error);
+      return null;
+    }
+  }
+
+  async eliminarPedidoRechazado(pedidoId?: number) {
+    try {
+      let idPedido = pedidoId;
+      
+      // Si no se proporciona ID, obtener el pedido rechazado más reciente
+      if (!idPedido) {
+        const rejectedOrders = await this.checkRejected();
+        if (rejectedOrders.length === 0) {
+          console.log("✅ No hay pedidos rechazados para eliminar");
+          return true;
+        }
+        idPedido = rejectedOrders[0].id;
+      }
+
+      // Primero eliminar los detalles del pedido
+      const { data , error: errorDetalles } = await this.supabase
+        .from('detalles_pedido')
+        .delete()
+        .eq('id_pedido', idPedido)
+        .select();
+
+      if (errorDetalles) {
+        console.error('❌ Error eliminando detalles del pedido:', errorDetalles);
+        throw errorDetalles;
+      }
+      console.log(data);
+
+      // Luego eliminar el pedido principal
+      const { error: errorPedido } = await this.supabase
+        .from('pedidos')
+        .delete()
+        .eq('id', idPedido);
+
+      if (errorPedido) {
+        console.error('❌ Error eliminando pedido:', errorPedido);
+        throw errorPedido;
+      }
+
+      console.log('✅ Pedido rechazado eliminado exitosamente:', idPedido);
+      return true;
+      
+    } catch (error) {
+      console.error('❌ Error al eliminar pedido rechazado:', error);
+      return false;
+    }
+  }
+
+  // Método auxiliar para verificar si hay pedidos rechazados pendientes
+  async tienePedidoRechazado(): Promise<boolean> {
+    try {
+      const rejectedOrders = await this.checkRejected();
+      return rejectedOrders.length > 0;
+    } catch (error) {
+      console.error('Error verificando pedidos rechazados:', error);
+      return false;
+    }
+  }
+
   // Agregar un item al pedido
   addItem(item: any) {
     const currentPedido = this._pedido();
@@ -102,7 +218,7 @@ async getTotal(): Promise<number> {
 
   try {
     const clienteId = await this.getClientId();
-    const mesaId = await this.getMesa(clienteId);
+    const mesaId = await this.getNroMesa(clienteId);
     const descuento = await this.getDescuentoCliente(clienteId, mesaId);
     
     if (descuento > 0) {
@@ -130,7 +246,7 @@ getSubtotal(): number {
 
     try {
       const clienteId = await this.getClientId();
-      const mesaId = await this.getMesa(clienteId);
+      const mesaId = await this.getNroMesa(clienteId);
       const descuento = await this.getDescuentoCliente(clienteId, mesaId);
 
       if (descuento > 0) {
@@ -147,7 +263,7 @@ getSubtotal(): number {
   async getPorcentajeDescuento(): Promise<number> {
     try {
       const clienteId = await this.getClientId();
-      const mesaId = await this.getMesa(clienteId);
+      const mesaId = await this.getNroMesa(clienteId);
       return await this.getDescuentoCliente(clienteId, mesaId);
     } catch (error) {
       console.error('Error obteniendo porcentaje descuento:', error);
@@ -191,7 +307,7 @@ getSubtotal(): number {
     }
 
     const idCliente = await this.getClientId();
-    const nroMesa = await this.getMesa(idCliente);
+    const nroMesa = await this.getNroMesa(idCliente);
     
     // Validar que el cliente tiene mesa asignada
     if (!nroMesa) {
@@ -311,20 +427,14 @@ getSubtotal(): number {
 }
   
   async getChatMessages(){
-  const clienteId = await this.getClientId();
-  const mesa = await this.getMesa(clienteId);
-  const nombreCliente = await this.getNombreCliente();
-  
-  if (!mesa) {
-    console.error('❌ No hay mesa asignada');
-    return [];
-  }
-
-  console.log('📋 Obteniendo mensajes de la mesa:', mesa);
-  
-  // ✅ Obtener TODOS los mensajes de la mesa (sin filtro de fecha)
-  // para que persistan durante toda la sesión
-  const { data, error } = await this.supabase
+    const mesa = await this.getNroMesa(await this.getClientId())
+    const nombreCliente = await this.getNombreCliente()
+    
+    // Obtener la fecha de hoy en formato YYYY-MM-DD
+    const hoy = new Date();
+    const fechaHoy = hoy.toISOString().split('T')[0]; // Esto da formato YYYY-MM-DD
+    
+    const { data, error } = await this.supabase
     .from('mensajes')
     .select('*')
     .eq('nroMesa', mesa)
@@ -341,7 +451,7 @@ getSubtotal(): number {
 
   async sendMessage(content: string){
     const idCliente = await this.getClientId()
-    const nroMesa = await this.getMesa(idCliente)
+    const nroMesa = await this.getNroMesa(idCliente)
     const nombre = await this.getNombreCliente()
 
     const { data, error } = await this.supabase
@@ -459,7 +569,7 @@ getSubtotal(): number {
             // Verificar si se asignó una mesa (de null a un número)
             if (oldRecord?.mesa_asignada === null && newRecord?.mesa_asignada !== null) {
               try {
-                const numeroMesa = await this.getMesa(newRecord.id_cliente);
+                const numeroMesa = await this.getNroMesa(newRecord.id_cliente);
                 await this.notificationService.sendNotificationToCliente(
                   '🎉 ¡Mesa asignada!',
                   `Te hemos asignado la mesa ${numeroMesa}. ¡Ya puedes realizar tu pedido!`,
@@ -582,17 +692,23 @@ getSubtotal(): number {
     return data;
   }
 
-  async getMesa(idCliente: number){
-    // Primero obtenemos el ID de la mesa asignada
-    const { data: clienteData, error: clienteError } = await this.supabase
+  async getMesaID (idCliente: number) {
+    //obtenemos el ID de la mesa asignada
+    const { data, error} = await this.supabase
     .from('clientes')
     .select('mesa_asignada')
     .eq('id_cliente', idCliente)
     .single();
 
-    if (clienteError) throw new Error("❗❗Ocurrió un error al obtener mesa asignada: " + clienteError.message)
+    if (error) throw new Error("❗❗Ocurrió un error al obtener mesa asignada: " + error.message)
 
-    const mesaId = clienteData?.mesa_asignada;
+    return data?.mesa_asignada;
+  }
+
+
+  async getNroMesa(idCliente: number){
+
+    const mesaId = await this.getMesaID(idCliente);
     
     // Si no tiene mesa asignada, retornamos null
     if (!mesaId) {
@@ -661,7 +777,7 @@ getSubtotal(): number {
   ): Promise<{ valido: boolean; mensaje: string }> {
     try {
       const clienteId = await this.getClientId();
-      const mesaAsignada = await this.getMesa(clienteId);
+      const mesaAsignada = await this.getNroMesa(clienteId);
 
       // Verificar que el cliente tenga mesa asignada
       if (!mesaAsignada) {
@@ -715,10 +831,10 @@ getSubtotal(): number {
       };
     }
   }
-  async liberarMesaCliente() {
+  async liberarMesaCliente(nroMesa?: number, clientId?: number) {
     try {
-      const clienteId = await this.getClientId();
-      const numeroMesa = await this.getMesa(clienteId);
+      const clienteId = clientId || (await this.getClientId());
+      const numeroMesa = nroMesa || (await this.getNroMesa(clienteId));
 
       if (!numeroMesa) {
         console.log('No hay mesa para liberar');
@@ -933,7 +1049,7 @@ async getHistorialPedidos() {
   async getPedidoEntregadoActual(): Promise<any | null> {
     try {
       const clienteId = await this.getClientId();
-      const mesaId = await this.getMesa(clienteId);
+      const mesaId = await this.getNroMesa(clienteId);
 
       if (!mesaId) return null;
 
@@ -987,7 +1103,7 @@ async subscribeToHistorialPedidos() {
           // Verificar si cambió el estado
           if (oldRecord?.estado !== newRecord?.estado) {
             const estadoTexto = this.getTextoEstado(newRecord.estado);
-            const mesaNumero = await this.getMesa(clienteId);
+            const mesaNumero = await this.getNroMesa(clienteId);
             
             // Enviar notificación usando tu servicio existente
             try {

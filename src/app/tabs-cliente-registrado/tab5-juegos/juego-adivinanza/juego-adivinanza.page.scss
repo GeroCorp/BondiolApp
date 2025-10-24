@@ -1,17 +1,449 @@
-ion-input {
-  --background: white;
-  --padding-start: 15px;
-  --padding-end: 15px;
-  font-size: 18px;
-  font-weight: bold;
+// TEMA OSCURO - Juego Adivinanza
+// Variables del tema oscuro
+:host {
+  --background-dark: #1a1a1a;
+  --surface-dark: #2d2d2d;
+  --surface-variant: #3a3a3a;
+  --text-primary: #ffffff;
+  --text-secondary: #b3b3b3;
+  --primary-color: #bb86fc;
+  --secondary-color: #03dac6;
+  --accent-color: #ff6b47;
+  --error-color: #cf6679;
+  --success-color: #4caf50;
+  --warning-color: #ff9800;
+  --border-color: #404040;
+  --shadow-dark: 0 8px 24px rgba(0, 0, 0, 0.6);
+}
+
+// Fondo con gradiente oscuro mejorado
+ion-content {
+  --background: linear-gradient(180deg, var(--background-dark) 0%, var(--surface-dark) 50%, #1a3a5a 100%);
+  --color: var(--text-primary);
+}
+
+// Header oscuro
+ion-header {
+  ion-toolbar {
+    --background: var(--surface-dark);
+    --color: var(--text-primary);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    border-bottom: 1px solid var(--border-color);
+    
+    ion-title {
+      color: var(--text-primary);
+      font-weight: 600;
+      
+      ion-icon {
+        color: var(--accent-color);
+        margin-right: 8px;
+      }
+    }
+    
+    ion-buttons ion-button {
+      --color: var(--text-primary);
+      
+      &:hover {
+        --background: var(--surface-variant);
+      }
+    }
+  }
+}
+
+.style-card {
+  margin: 0;
+  background: var(--surface-dark) !important;
+  border: 1px solid var(--border-color);
+  border-radius: 15px;
+  box-shadow: var(--shadow-dark);
+  ion-card-title, ion-card-subtitle {
+    color: white !important;
+  }
+}
+
+// Container principal del juego
+.game-container {
+  padding: 20px;
   text-align: center;
 }
 
+// Título del juego
+.game-title {
+  color: var(--text-primary);
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 8px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.game-subtitle {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  margin-bottom: 30px;
+  opacity: 0.8;
+}
+
+// Estadísticas del juego
+.game-stats {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 30px;
+  padding: 16px;
+  background: var(--surface-variant);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-dark);
+  
+  .stat-item {
+    text-align: center;
+    
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+    
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--secondary-color);
+      
+      &.attempts {
+        color: var(--warning-color);
+      }
+      
+      &.number {
+        color: var(--primary-color);
+      }
+    }
+  }
+}
+
+// Área de número secreto
+.number-display {
+  margin: 30px 0;
+  padding: 20px;
+  background: var(--surface-variant);
+  border-radius: 16px;
+  border: 2px solid var(--border-color);
+  box-shadow: var(--shadow-dark);
+  
+  .secret-number {
+    font-size: 3rem;
+    font-weight: bold;
+    color: var(--secondary-color);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    margin-bottom: 8px;
+    
+    &.hidden {
+      color: var(--text-secondary);
+      opacity: 0.5;
+    }
+  }
+  
+  .number-range {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-bottom: 16px;
+  }
+  
+  .hint-text {
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    font-weight: 500;
+    
+    &.success {
+      color: var(--success-color);
+    }
+    
+    &.error {
+      color: var(--error-color);
+    }
+    
+    &.warning {
+      color: var(--warning-color);
+    }
+  }
+}
+
+// Input de adivinanza
+.guess-input-container {
+  margin: 20px 0;
+  
+  ion-input {
+    --background: var(--surface-dark);
+    --color: var(--text-primary);
+    --placeholder-color: var(--text-secondary);
+    --padding-start: 20px;
+    --padding-end: 20px;
+    --border-radius: 12px;
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center;
+    border: 2px solid var(--border-color);
+    box-shadow: var(--shadow-dark);
+    transition: all 0.3s ease;
+    
+    &:focus {
+      --border-color: var(--primary-color);
+      box-shadow: 0 0 20px rgba(187, 134, 252, 0.3);
+    }
+    
+    &.correct {
+      --border-color: var(--success-color);
+      box-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
+    }
+    
+    &.incorrect {
+      --border-color: var(--error-color);
+      box-shadow: 0 0 20px rgba(207, 102, 121, 0.3);
+    }
+  }
+}
+
+// Controles del juego
+.game-controls {
+  margin-top: 30px;
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+  
+  ion-button {
+    --border-radius: 12px;
+    font-weight: 600;
+    height: 48px;
+    
+    &.guess-button {
+      --background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      --color: white;
+      --box-shadow: 0 4px 12px rgba(187, 134, 252, 0.3);
+      font-size: 1.1rem;
+      
+      &:hover {
+        --box-shadow: 0 6px 16px rgba(187, 134, 252, 0.4);
+        transform: translateY(-2px);
+      }
+      
+      &:disabled {
+        --background: var(--surface-variant);
+        --color: var(--text-secondary);
+        --box-shadow: none;
+      }
+    }
+    
+    &.new-game-button {
+      --background: linear-gradient(135deg, var(--accent-color), var(--error-color));
+      --color: white;
+      --box-shadow: 0 4px 12px rgba(255, 107, 71, 0.3);
+      
+      &:hover {
+        --box-shadow: 0 6px 16px rgba(255, 107, 71, 0.4);
+        transform: translateY(-2px);
+      }
+    }
+    
+    &.hint-button {
+      --background: var(--surface-variant);
+      --color: var(--text-primary);
+      border: 1px solid var(--border-color);
+      
+      &:hover {
+        --background: var(--border-color);
+      }
+    }
+  }
+}
+
+// Lista de intentos
 ion-list {
   background: transparent;
+  margin-top: 20px;
+  
+  .list-header {
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    text-align: center;
+  }
 }
 
 ion-item {
-  --background: transparent;
-  margin-bottom: 5px;
+  --background: var(--surface-variant);
+  --color: var(--text-primary);
+  --border-color: var(--border-color);
+  border-radius: 8px;
+  margin-bottom: 8px;
+  border: 1px solid var(--border-color);
+  
+  &:hover {
+    --background: var(--surface-dark);
+  }
+  
+  .attempt-number {
+    color: var(--text-secondary);
+    font-weight: 600;
+    margin-right: 12px;
+  }
+  
+  .attempt-guess {
+    color: var(--text-primary);
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-right: 12px;
+  }
+  
+  .attempt-hint {
+    color: var(--text-secondary);
+    font-style: italic;
+    
+    &.too-high {
+      color: var(--error-color);
+    }
+    
+    &.too-low {
+      color: var(--warning-color);
+    }
+    
+    &.correct {
+      color: var(--success-color);
+    }
+  }
+  
+  ion-icon {
+    &.arrow-up {
+      color: var(--error-color);
+    }
+    
+    &.arrow-down {
+      color: var(--warning-color);
+    }
+    
+    &.checkmark {
+      color: var(--success-color);
+    }
+  }
+}
+
+// Resultado del juego
+.game-result {
+  margin-top: 20px;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+  border: 1px solid var(--border-color);
+  
+  &.win {
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.2), rgba(76, 175, 80, 0.1));
+    border-color: var(--success-color);
+    
+    .result-title {
+      color: var(--success-color);
+    }
+  }
+  
+  &.lose {
+    background: linear-gradient(135deg, rgba(207, 102, 121, 0.2), rgba(207, 102, 121, 0.1));
+    border-color: var(--error-color);
+    
+    .result-title {
+      color: var(--error-color);
+    }
+  }
+  
+  .result-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
+  
+  .result-message {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-bottom: 12px;
+  }
+  
+  .result-stats {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+}
+
+// Animaciones
+.number-reveal {
+  animation: reveal-glow 1s ease-in-out;
+}
+
+@keyframes reveal-glow {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 0 30px rgba(3, 218, 198, 0.6);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+    box-shadow: var(--shadow-dark);
+  }
+}
+
+.guess-feedback {
+  animation: feedback-pulse 0.5s ease-in-out;
+}
+
+@keyframes feedback-pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .game-container {
+    padding: 15px;
+  }
+  
+  .number-display .secret-number {
+    font-size: 2.5rem;
+  }
+  
+  .guess-input-container ion-input {
+    font-size: 20px;
+  }
+  
+  .game-stats {
+    padding: 12px;
+    
+    .stat-item .stat-value {
+      font-size: 1.2rem;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .game-controls {
+    flex-direction: column;
+    align-items: center;
+    
+    ion-button {
+      width: 200px;
+    }
+  }
+  
+  .number-display .secret-number {
+    font-size: 2rem;
+  }
+  
+  .guess-input-container ion-input {
+    font-size: 18px;
+  }
 }

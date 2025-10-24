@@ -28,18 +28,18 @@
           } @else if (primerIntentoUsado) {
             <ion-icon name="information-circle" style="font-size: 64px;"></ion-icon>
             <h2 style="margin: 10px 0;">Primer Intento Usado</h2>
-            <p>Puedes seguir jugando libremente, pero no obtendrás más descuentos en esta visita.</p>
+            <p style="color: var(--text-muted);">Puedes seguir jugando libremente, pero no obtendrás más descuentos en esta visita.</p>
           } @else {
             <ion-icon name="game-controller" style="font-size: 64px;"></ion-icon>
             <h2 style="margin: 10px 0;">¡Gana Descuentos!</h2>
-            <p>Gana en el primer intento de cualquier juego para obtener un descuento en tu cuenta.</p>
+            <p style="color: var(--text-muted);">Gana en el primer intento de cualquier juego para obtener un descuento en tu cuenta.</p>
           }
         </div>
       </ion-card-content>
     </ion-card>
 
     <!-- Selector de juegos -->
-    <ion-card>
+    <ion-card class="style-card main-card">
       <ion-card-header>
         <ion-card-title>Elige un Juego</ion-card-title>
         <ion-card-subtitle>Gana en el primer intento para obtener descuentos</ion-card-subtitle>
@@ -47,7 +47,7 @@
       <ion-card-content>
         
         <!-- Juego de Memoria - 10% -->
-        <ion-card button (click)="seleccionarJuego('memoria')" class="game-card">
+        <ion-card button (click)="seleccionarJuego('memoria')" class="style-card game-card">
           <ion-card-content>
             <div style="display: flex; align-items: center; justify-content: space-between;">
               <div>
@@ -64,7 +64,7 @@
         </ion-card>
 
         <!-- Juego de Adivinanza - 15% -->
-        <ion-card button (click)="seleccionarJuego('adivinanza')" class="game-card">
+        <ion-card button (click)="seleccionarJuego('adivinanza')" class="style-card game-card">
           <ion-card-content>
             <div style="display: flex; align-items: center; justify-content: space-between;">
               <div>
@@ -81,8 +81,8 @@
         </ion-card>
 
         <!-- Juego de Ruleta - 20% -->
-        <ion-card button (click)="seleccionarJuego('ruleta')" class="game-card">
-          <ion-card-content>
+        <ion-card button (click)="seleccionarJuego('ruleta')" class="style-card game-card">
+          <ion-card-content class="ion-align-content-center">
             <div style="display: flex; align-items: center; justify-content: space-between;">
               <div>
                 <ion-icon name="disc" style="font-size: 48px; color: #eb445a;"></ion-icon>
@@ -101,7 +101,7 @@
     </ion-card>
 
     <!-- Información adicional -->
-    <ion-card>
+    <ion-card class="style-card main-card">
       <ion-card-header>
         <ion-card-title>
           <ion-icon name="information-circle-outline"></ion-icon>
@@ -109,7 +109,7 @@
         </ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        <ion-list lines="none">
+        <ion-list lines="none" class="dark-list">
           <ion-item>
             <ion-icon name="checkmark-circle" slot="start" color="success"></ion-icon>
             <ion-label class="ion-text-wrap">

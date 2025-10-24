@@ -11,29 +11,22 @@
 </ion-header>
 
 <ion-content [fullscreen]="true" class="ion-padding">
-  <!-- Ya respondió la encuesta -->
-  <div *ngIf="yaRespondio" class="mensaje-container">
-    <ion-card color="success">
-      <ion-card-header>
-        <ion-card-title>
-          <ion-icon name="checkmark-circle"></ion-icon>
-          ¡Gracias por tu opinión!
-        </ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <p>Ya has respondido la encuesta para esta estadía.</p>
-        <p>Puedes ver los resultados de todas las encuestas más abajo.</p>
-      </ion-card-content>
-    </ion-card>
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
 
-    <ion-button expand="block" (click)="verResultados()">
-      <ion-icon name="stats-chart-outline" slot="start"></ion-icon>
-      Ver Resultados de Encuestas
-    </ion-button>
-  </div>
+  <!-- Botón para ver resultados (siempre visible) -->
+  <ion-button 
+    expand="block" 
+    fill="outline" 
+    (click)="verResultados()"
+    style="margin-bottom: 20px;">
+    <ion-icon name="stats-chart-outline" slot="start"></ion-icon>
+    Ver Resultados de Encuestas
+  </ion-button>
 
-  <!-- Formulario de encuesta -->
-  <div *ngIf="!yaRespondio && !enviando" class="encuesta-form">
+  <!-- Formulario de encuesta (siempre disponible) -->
+  <div *ngIf="!enviando" class="encuesta-form">
     <ion-card>
       <ion-card-header>
         <ion-card-title>Tu opinión es importante</ion-card-title>

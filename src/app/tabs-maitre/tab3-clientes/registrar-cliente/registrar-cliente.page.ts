@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+﻿import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ToastController, LoadingController } from '@ionic/angular';
@@ -7,6 +7,7 @@ import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
 
 
+import { HapticService } from 'src/app/services/haptic.service';
 @Component({
   selector: 'app-registrar-cliente',
   templateUrl: './registrar-cliente.page.html',
@@ -24,7 +25,8 @@ export class RegistrarClientePage {
     private router: Router,
     private toastController: ToastController,
     private loadingController: LoadingController,
-    private authService: AuthService
+    private authService: AuthService,
+    private hapticService: HapticService
   ) {
     this.registerForm = this.formBuilder.group({
       name: ['', Validators.required, Validators.minLength(4), Validators.pattern(/^[a-zA-ZÀ-ÿ\u00f1\u00d1\s]+$/)],
@@ -48,9 +50,10 @@ export class RegistrarClientePage {
         this.registerForm.markAllAsTouched();
 
         if (Object.values(this.registerForm.value).some(value => !value)) {
+          await this.hapticService.vibrateError();
           this.showToast('Complete todos los campos.', 'danger');
         }else {
-          this.mostrarErroresFormulario();
+          await this.mostrarErroresFormulario();
         }
       }
       return;
@@ -58,11 +61,13 @@ export class RegistrarClientePage {
 
      // Validacion de foto aparte ya que no forma parte del formGroup
     if (!this.foto) {
+      await this.hapticService.vibrateError();
       this.showToast('Debe tomarse una foto para completar el registro.', 'danger');
       return;
     }
 
     if (password !== password2) {
+      await this.hapticService.vibrateError();
       this.showToast('Las contraseñas no coinciden.', 'danger');
       return;
     }
@@ -76,6 +81,7 @@ export class RegistrarClientePage {
 
        if (authError) {
          console.error('Error al crear cuenta Auth:', authError.message);
+         await this.hapticService.vibrateError();
          this.showToast('Error al crear usuario', 'danger');
          return;
        }
@@ -85,6 +91,7 @@ export class RegistrarClientePage {
         const publicUrlData = await this.authService.subirImagenCliente(user.user?.id || '', blob); // Usar user.id como nombre de archivo
         
         if (!publicUrlData) {
+          await this.hapticService.vibrateError();
           this.showToast('Error al subir la foto.', 'danger');
           return;
         }
@@ -104,6 +111,7 @@ export class RegistrarClientePage {
 
       if(!data) {
         console.log(data);
+        await this.hapticService.vibrateError();
         this.showToast('Error al crear el perfil de cliente.', 'danger');
         return;
       }
@@ -112,6 +120,7 @@ export class RegistrarClientePage {
 
     } catch (error) {
       console.error('Error en el registro:', error);
+      await this.hapticService.vibrateError();
       this.showToast('Error en el registro. Intente nuevamente.', 'danger');
     }
   
@@ -173,10 +182,11 @@ export class RegistrarClientePage {
     email: 'Correo electrónico inválido.'
   };
 
-  private mostrarErroresFormulario() {
+  private async mostrarErroresFormulario() {
     for (const campo in this.registerForm.controls) {
       const control = this.registerForm.get(campo);
       if (control && control.invalid) {
+        await this.hapticService.vibrateError();
         this.showToast(this.validationMessages[campo], 'danger');
         break; // solo muestra el primer error
       }

@@ -28,7 +28,7 @@ export class Tab5JuegosPage implements OnInit {
   async cargarEstadoJuegos() {
     try {
       const clienteId = await this.clienteService.getClientId();
-      const mesaId = await this.clienteService.getMesa(clienteId);
+      const mesaId = await this.clienteService.getNroMesa(clienteId);
       
       const estado = await this.clienteService.getEstadoJuegos(mesaId, clienteId);
       
@@ -80,7 +80,7 @@ export class Tab5JuegosPage implements OnInit {
   async guardarDescuento(descuento: number) {
     try {
       const clienteId = await this.clienteService.getClientId();
-      const mesaId = await this.clienteService.getMesa(clienteId);
+      const mesaId = await this.clienteService.getNroMesa(clienteId);
       
       await this.clienteService.guardarDescuentoJuego(mesaId, clienteId, descuento);
       
@@ -93,7 +93,7 @@ export class Tab5JuegosPage implements OnInit {
   async marcarPrimerIntentoUsado() {
     try {
       const clienteId = await this.clienteService.getClientId();
-      const mesaId = await this.clienteService.getMesa(clienteId);
+      const mesaId = await this.clienteService.getNroMesa(clienteId);
       
       await this.clienteService.marcarPrimerIntentoUsado(mesaId, clienteId);
     } catch (error) {

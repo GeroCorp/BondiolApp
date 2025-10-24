@@ -1,33 +1,59 @@
+// TEMA OSCURO - Menu Item Component
+// Variables del tema oscuro
+:host {
+  --background-dark: #1a1a1a;
+  --surface-dark: #2d2d2d;
+  --surface-variant: #3a3a3a;
+  --text-primary: #ffffff;
+  --text-secondary: #b3b3b3;
+  --text-muted: #808080;
+  --primary-color: #bb86fc;
+  --secondary-color: #03dac6;
+  --border-color: #404040;
+  --shadow-dark: 0 8px 24px rgba(0, 0, 0, 0.6);
+}
+
 .main-container {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100vh;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.8);
   z-index: 9999;
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 20px;
   overflow-y: auto;
+  backdrop-filter: blur(10px);
 
-    ion-card {
+  ion-card {
     position: relative;
     width: 90%;
     max-width: 500px;
     margin: auto;
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    background: var(--surface-dark);
+    border: 1px solid var(--border-color);
+    border-radius: 15px;
+    box-shadow: var(--shadow-dark);
     display: flex;
     flex-direction: column;
-    max-height: fit-content;    
+    max-height: fit-content;
+    
     ion-button[name="close-outline"] {
       position: absolute;
       top: 10px;
       right: 10px;
       z-index: 1;
+      --background: var(--surface-variant);
+      --color: var(--text-primary);
+      --border-radius: 50%;
+      
+      &:hover {
+        --background: var(--primary-color);
+        --color: var(--background-dark);
+      }
     }
 
     .carrusel {
@@ -42,6 +68,8 @@
         width: 100%;
         max-height: 300px;
         object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
       }
 
       .carrusel-controls {
@@ -54,8 +82,8 @@
         padding: 0 16px;
 
         button {
-          background: rgba(255, 255, 255, 0.8);
-          border: none;
+          background: var(--surface-variant);
+          border: 1px solid var(--border-color);
           border-radius: 50%;
           width: 40px;
           height: 40px;
@@ -64,10 +92,20 @@
           justify-content: center;
           cursor: pointer;
           font-size: 20px;
-          color: black;
+          color: var(--text-primary);
+          backdrop-filter: blur(10px);
+          transition: all 0.3s ease;
+          
+          &:hover {
+            background: var(--primary-color);
+            color: var(--background-dark);
+            border-color: var(--primary-color);
+          }
+          
           &:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+            background: var(--surface-dark);
           }
         }
       }
@@ -75,16 +113,20 @@
 
     .sub-header {
       padding: 16px;
-      border-bottom: 1px solid #eee;
+      border-bottom: 1px solid var(--border-color);
+      background: transparent;
 
       ion-card-title {
         margin-bottom: 8px;
         font-size: 1.5rem;
+        color: var(--text-primary) !important;
+        font-weight: 600;
       }
 
       ion-label {
-        color: var(--ion-color-primary);
+        color: var(--secondary-color) !important;
         font-weight: bold;
+        font-size: 1.1rem;
       }
     }
 
@@ -92,10 +134,12 @@
       padding: 16px;
       overflow-y: auto;
       flex: 1;
+      background: transparent;
       
       p {
         margin: 0;
         line-height: 1.6;
+        color: var(--text-secondary);
       }
     }
 
@@ -104,10 +148,12 @@
       flex-direction: column;
       gap: 12px;
       padding: 16px;
-      border-top: 1px solid #eee;
+      border-top: 1px solid var(--border-color);
+      background: var(--surface-variant);
+      border-radius: 0 0 15px 15px;
 
       small {
-        color: var(--ion-color-medium);
+        color: var(--text-muted);
       }
 
       .quantity-container {
@@ -126,12 +172,40 @@
             font-weight: bold;
             min-width: 30px;
             text-align: center;
-            padding: 0 8px;
+            padding: 4px 12px;
+            background: var(--surface-dark);
+            color: var(--secondary-color);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
           }
 
           ion-button {
             --padding-start: 8px;
             --padding-end: 8px;
+            --background: var(--primary-color);
+            --color: var(--background-dark);
+            --border-radius: 8px;
+            
+            &:hover {
+              --background: color-mix(in srgb, var(--primary-color) 80%, var(--surface-dark));
+            }
+            
+            &[disabled] {
+              --background: var(--surface-dark);
+              --color: var(--text-muted);
+              opacity: 0.5;
+            }
+          }
+        }
+        
+        .add-button {
+          --background: var(--secondary-color);
+          --color: var(--background-dark);
+          --border-radius: 12px;
+          font-weight: 600;
+          
+          &:hover {
+            --background: color-mix(in srgb, var(--secondary-color) 80%, var(--surface-dark));
           }
         }
       }
@@ -139,16 +213,90 @@
   }
 }
 
-// Animación de entrada
+// Animación de entrada mejorada
 @keyframes fadeIn {
   from {
     opacity: 0;
+    transform: scale(0.9);
   }
   to {
     opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
 .main-container {
   animation: fadeIn 0.3s ease-out;
+  
+  ion-card {
+    animation: slideUp 0.4s ease-out;
+  }
+}
+
+// Sobrescribir estilos de Ionic para el tema oscuro
+ion-card-header {
+  --background: transparent !important;
+  background: transparent !important;
+}
+
+ion-card-content {
+  --background: transparent !important;
+  background: transparent !important;
+}
+
+// Responsividad mejorada
+@media (max-width: 480px) {
+  .main-container {
+    padding: 10px;
+    
+    ion-card {
+      width: 95%;
+      
+      .carrusel {
+        ion-img {
+          max-height: 250px;
+        }
+        
+        .carrusel-controls button {
+          width: 35px;
+          height: 35px;
+          font-size: 18px;
+        }
+      }
+      
+      .sub-header {
+        padding: 12px;
+        
+        ion-card-title {
+          font-size: 1.3rem;
+        }
+      }
+      
+      .bottom {
+        padding: 12px;
+        
+        .quantity-container {
+          flex-direction: column;
+          gap: 16px;
+          
+          .quantity-controls {
+            .quantity-display {
+              font-size: 1.1rem;
+            }
+          }
+        }
+      }
+    }
+  }
 }

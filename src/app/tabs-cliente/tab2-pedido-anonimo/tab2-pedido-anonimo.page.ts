@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { ClienteAnonimoService } from '../../services/cliente-anonimo.service';
 import { ToastController, AlertController } from '@ionic/angular';
 
+import { HapticService } from 'src/app/services/haptic.service';
 @Component({
   selector: 'app-tab2-pedido-anonimo',
   templateUrl: './tab2-pedido-anonimo.page.html',
@@ -14,7 +15,8 @@ export class Tab2PedidoAnonimoPage implements OnInit {
   constructor(
     private clienteService: ClienteAnonimoService,
     private toastCtrl: ToastController,
-    private alertCtrl: AlertController
+    private alertCtrl: AlertController,
+    private hapticService: HapticService
   ) {}
 
   ngOnInit() {
@@ -86,6 +88,7 @@ export class Tab2PedidoAnonimoPage implements OnInit {
       await alert.present();
 
     } catch (error: any) {
+      await this.hapticService.vibrateError();
       this.showToast('Error: ' + error.message, 'danger');
     }
   }

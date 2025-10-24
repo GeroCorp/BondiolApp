@@ -1,10 +1,11 @@
-import { Component } from '@angular/core';
+﻿import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { AuthService } from 'src/app/services/supabase';
 import { Router } from '@angular/router';
 import { ToastController, LoadingController } from '@ionic/angular';
 import { PerfilService } from 'src/app/services/perfilService';
+import { HapticService } from 'src/app/services/haptic.service';
 //Implementar loadingController
 
 //Implementar loadingController
@@ -21,13 +22,14 @@ export class Tab1AgregarProductoPage {
   imagenes: string[] = [];
   perfil: string | null = null;
 
-  constructor (
+  constructor(
     private fb: FormBuilder, 
     private supabaseService: AuthService, 
     private router: Router, 
     private toastController: ToastController,
-    private perfilService: PerfilService
-    // private loadingCtrl: LoadingController // implementarlo
+    private perfilService: PerfilService,
+    // private loadingCtrl: LoadingController // implementarlo,
+    private hapticService: HapticService
   ) {
     this.perfil = this.perfilService.getPerfil();
     console.log('Perfil recibido en Tabs cocinero-bartender:', this.perfil);
@@ -42,6 +44,7 @@ export class Tab1AgregarProductoPage {
 
   async seleccionarDeGaleria() {
     if (this.imagenes.length >= 3) {
+      await this.hapticService.vibrateError();
       this.showToast('Ya cargaste las 3 fotos permitidas', 'danger');
       return;
     }
@@ -60,6 +63,7 @@ export class Tab1AgregarProductoPage {
 
   async tomarFoto() {
     if (this.imagenes.length >= 3) {
+      await this.hapticService.vibrateError();
       this.showToast('Ya cargaste las 3 fotos permitidas', 'danger');
       return;
     }
@@ -91,10 +95,11 @@ export class Tab1AgregarProductoPage {
     precio: 'Precio inválido: debe ser un número mayor a 2000 y menor a 70 000 (máximo 2 decimales).',
   };
   // funcion auxiliar para verificacion del formulario
-  private mostrarErroresFormulario() {
+  private async mostrarErroresFormulario() {
     for (const campo in this.productoForm.controls) {
       const control = this.productoForm.get(campo);
       if (control && control.invalid) {
+        await this.hapticService.vibrateError();
         this.showToast(this.validationMessages[campo], 'danger');
         break; // solo muestra el primer error
       }
@@ -112,16 +117,18 @@ export class Tab1AgregarProductoPage {
 
       // 1️⃣ Si hay campos vacíos
       if (Object.values(this.productoForm.value).some(val => !val)) {
+        await this.hapticService.vibrateError();
         this.showToast('Aún faltan campos por completar.', 'danger');
       } else {
         // 2️⃣ Si están completos pero con errores (ej: precio con letras)
-        this.mostrarErroresFormulario();
+        await this.mostrarErroresFormulario();
       }
       return;
     }
 
     // Validacion de imagen aparte ya que no forma parte del formGroup
     if (this.imagenes.length < 3) {
+      await this.hapticService.vibrateError();
       this.showToast('Debe cargar 3 fotos para completar el registro.', 'danger');
       return;
     }
@@ -143,11 +150,13 @@ export class Tab1AgregarProductoPage {
 
         if (errBuscar) {
           console.error('Error verificando plato:', errBuscar.message);
+          await this.hapticService.vibrateError();
           this.showToast('No se pudo verificar el menú', 'danger');
           return;
         }
 
         if (existente && existente.length > 0) {
+          await this.hapticService.vibrateError();
           this.showToast('El plato ya existe en la carta.', 'danger');
           return;
         }
@@ -156,6 +165,7 @@ export class Tab1AgregarProductoPage {
 
         if (error) {
           console.error('Error al insertar producto:', error.message);
+          await this.hapticService.vibrateError();
           this.showToast('Error al guardar datos del producto', 'danger');
         } else {
           console.log('Producto creado:', data);
@@ -169,11 +179,13 @@ export class Tab1AgregarProductoPage {
 
         if (errBuscar) {
           console.error('Error verificando plato:', errBuscar.message);
+          await this.hapticService.vibrateError();
           this.showToast('No se pudo verificar el menú', 'danger');
           return;
         }
 
         if (existente && existente.length > 0) {
+          await this.hapticService.vibrateError();
           this.showToast('El plato ya existe en la carta.', 'danger');
           return;
         }
@@ -182,6 +194,7 @@ export class Tab1AgregarProductoPage {
 
         if (error) {
           console.error('Error al insertar producto:', error.message);
+          await this.hapticService.vibrateError();
           this.showToast('Error al guardar datos del producto', 'danger');
         } else {
           console.log('Producto creado:', data);
@@ -192,6 +205,7 @@ export class Tab1AgregarProductoPage {
       }
 
     } catch (err: any) {
+      await this.hapticService.vibrateError();
       this.showToast(err.message, 'danger');
     }
 

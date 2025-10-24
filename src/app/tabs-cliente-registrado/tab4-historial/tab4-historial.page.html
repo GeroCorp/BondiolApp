@@ -67,7 +67,7 @@
               Pedido #{{ pedido.id }}
             </ion-card-title>
             <ion-card-subtitle>
-              Mesa {{ pedido.mesa?.numero }} • {{ formatearFecha(pedido.created_at) }}
+              Mesa {{ pedido.mesa?.numero }} • {{ formatearFecha(pedido.fecha) }}
             </ion-card-subtitle>
           </div>
           <ion-badge [color]="getColorEstado(pedido.estado)" class="estado-badge">

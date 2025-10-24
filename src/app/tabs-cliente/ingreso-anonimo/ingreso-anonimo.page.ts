@@ -1,10 +1,12 @@
-import { Component, OnDestroy } from '@angular/core';
+﻿import { Component, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/supabase';
 import { ListaEsperaService } from '../../services/lista-espera.service';
 import { ToastController, AlertController } from '@ionic/angular';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { Notification } from 'src/app/services/notification';
 
+import { HapticService } from 'src/app/services/haptic.service';
 @Component({
   selector: 'app-ingreso-anonimo',
   templateUrl: './ingreso-anonimo.page.html',
@@ -22,7 +24,9 @@ export class IngresoAnonimoPage implements OnDestroy {
     private listaEsperaService: ListaEsperaService,
     private router: Router,
     private toastCtrl: ToastController,
-    private alertCtrl: AlertController
+    private alertCtrl: AlertController,
+    private hapticService: HapticService,
+    private notificationService: Notification
   ) {
     this.limpiarSesionAnterior();
   }
@@ -46,6 +50,10 @@ export class IngresoAnonimoPage implements OnDestroy {
     }
   }
 
+  volver(){
+    this.router.navigate(["/login"])
+  }
+
   async tomarFoto() {
     try {
       const image = await Camera.getPhoto({
@@ -59,6 +67,7 @@ export class IngresoAnonimoPage implements OnDestroy {
       this.showToast('Foto capturada', 'success');
     } catch (error: any) {
       if (error.message !== 'User cancelled photos app') {
+        await this.hapticService.vibrateError();
         this.showToast('Error al capturar foto', 'danger');
       }
     }
@@ -123,6 +132,11 @@ export class IngresoAnonimoPage implements OnDestroy {
         console.error('Error insertando cliente anónimo:', errorCliente);
         throw new Error('Error al registrar cliente anónimo');
       }
+      this.notificationService.sendNotificationToPerfil(
+        "maitre",
+        "Nuevo cliente anónimo en lista de espera", 
+        "El cliente "+this.nombre.trim()+" ha ingresado como anónimo y está en la lista de espera.");
+      
 
       console.log('✅ Cliente anónimo registrado:', clienteAnonimo);
 
@@ -157,6 +171,7 @@ export class IngresoAnonimoPage implements OnDestroy {
 
     } catch (error: any) {
       console.error('❌ Error en procesarIngreso:', error);
+      await this.hapticService.vibrateError();
       this.showToast('Error al ingresar: ' + error.message, 'danger');
       this.isLoading = false;
     }
@@ -181,60 +196,7 @@ export class IngresoAnonimoPage implements OnDestroy {
   private iniciarPolling(clienteId: number) {
     console.log('🔄 Iniciando polling para cliente:', clienteId);
 
-    this.pollingInterval = setInterval(async () => {
-      try {
-        const { data, error } = await this.supabase.client
-          .from('clientes_anonimos')
-          .select('mesa_asignada')
-          .eq('id_clienteanonimo', clienteId)
-          .single();
-
-        if (error) {
-          console.error('Error en polling:', error);
-          return;
-        }
-
-        console.log('📊 Polling - Mesa asignada:', data?.mesa_asignada);
-
-        if (data?.mesa_asignada) {
-          // ✅ Mesa asignada!
-          clearInterval(this.pollingInterval);
-          this.pollingInterval = null;
-          
-          console.log('🎉 Mesa asignada detectada:', data.mesa_asignada);
-          
-          // Obtener número de mesa
-          const { data: mesa, error: mesaError } = await this.supabase.client
-            .from('mesas')
-            .select('numero')
-            .eq('id', data.mesa_asignada)
-            .single();
-
-          if (mesaError || !mesa) {
-            console.error('Error obteniendo número de mesa:', mesaError);
-            this.showToast('Error al obtener información de la mesa', 'danger');
-            this.isLoading = false;
-            return;
-          }
-
-          // Guardar número de mesa
-          sessionStorage.setItem('numero_mesa', mesa.numero.toString());
-          localStorage.setItem('mesa_actual', mesa.numero.toString());
-
-          console.log('✅ Mesa número:', mesa.numero);
-
-          this.showToast(`🎉 ¡Te asignaron la Mesa ${mesa.numero}!`, 'success');
-          
-          this.isLoading = false;
-          
-          // Navegar a home-anonimo
-          console.log('🚀 Navegando a /home-anonimo');
-          await this.router.navigate(['/home-anonimo'], { replaceUrl: true });
-        }
-      } catch (error) {
-        console.error('Error en polling:', error);
-      }
-    }, 3000);
+    this.router.navigate(['/home-anonimo']);
   }
 
   async showToast(message: string, color: 'success' | 'danger' | 'warning') {

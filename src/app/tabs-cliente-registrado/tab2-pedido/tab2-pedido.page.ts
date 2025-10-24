@@ -24,6 +24,7 @@ export class Tab2PedidoPage implements OnInit {
 
   async ngOnInit() {
     await this.calcularTotales();
+    await this.clienteService.getRejectedOrder();
   }
 
   // ✅ Calcular todos los totales con descuento

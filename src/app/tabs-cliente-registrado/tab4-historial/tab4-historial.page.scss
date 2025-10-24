@@ -1,4 +1,26 @@
-// Estilos para el historial de pedidos del cliente
+// Estilos para el historial de pedidos del cliente - TEMA OSCURO
+// Variables del tema oscuro
+:host {
+  --background-dark: #1a1a1a;
+  --surface-dark: #2d2d2d;
+  --surface-variant: #3a3a3a;
+  --text-primary: #ffffff;
+  --text-secondary: #b3b3b3;
+  --text-muted: #808080;
+  --primary-color: #bb86fc;
+  --secondary-color: #03dac6;
+  --error-color: #cf6679;
+  --success-color: #4caf50;
+  --warning-color: #ff9800;
+  --border-color: #404040;
+  --shadow-dark: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+ion-content {
+  --background: var(--background-dark);
+  --color: var(--text-primary);
+}
+
 .loading-container {
   display: flex;
   flex-direction: column;
@@ -8,10 +30,11 @@
   
   ion-spinner {
     margin-bottom: 15px;
+    --color: var(--primary-color);
   }
   
   p {
-    color: var(--ion-color-medium);
+    color: var(--text-secondary);
     font-size: 16px;
     margin: 0;
   }
@@ -28,16 +51,17 @@
   ion-icon {
     font-size: 80px;
     margin-bottom: 20px;
+    color: var(--text-muted);
   }
   
   h2 {
-    color: var(--ion-color-medium);
+    color: var(--text-secondary);
     margin: 0 0 10px 0;
     font-size: 24px;
   }
   
   p {
-    color: var(--ion-color-medium);
+    color: var(--text-muted);
     margin: 0;
     font-size: 16px;
     line-height: 1.4;
@@ -46,12 +70,20 @@
 
 .pedidos-container {
   padding: 10px;
+  background: var(--background-dark);
 }
 
 .pedido-card {
   margin-bottom: 15px;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-dark);
+  background: var(--surface-dark) !important;
+  border: 1px solid var(--border-color);
+  
+  ion-card-header,
+  ion-card-content {
+    background: transparent !important;
+  }
   
   .header-pedido {
     display: flex;
@@ -69,14 +101,16 @@
         display: flex;
         align-items: center;
         gap: 8px;
+        color: var(--text-primary) !important;
         
         ion-icon {
           font-size: 20px;
+          color: var(--primary-color);
         }
       }
       
       ion-card-subtitle {
-        color: var(--ion-color-medium);
+        color: var(--text-secondary) !important;
         font-size: 14px;
         margin: 0;
       }
@@ -87,6 +121,25 @@
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.5px;
+      background: var(--surface-variant);
+      color: var(--text-primary);
+      padding: 4px 8px;
+      border-radius: 6px;
+      
+      &.entregado {
+        background: var(--success-color);
+        color: white;
+      }
+      
+      &.pendiente {
+        background: var(--warning-color);
+        color: white;
+      }
+      
+      &.cancelado {
+        background: var(--error-color);
+        color: white;
+      }
     }
   }
   
@@ -96,8 +149,9 @@
     align-items: center;
     margin-bottom: 15px;
     padding: 12px;
-    background: var(--ion-color-light);
+    background: var(--surface-variant);
     border-radius: 8px;
+    border: 1px solid var(--border-color);
     
     .items-info,
     .total-info {
@@ -107,16 +161,17 @@
       
       ion-icon {
         font-size: 16px;
-        color: var(--ion-color-medium);
+        color: var(--text-secondary);
       }
       
       span {
         font-size: 14px;
+        color: var(--text-primary);
       }
     }
     
     .total-info span {
-      color: var(--ion-color-primary);
+      color: var(--secondary-color);
       font-weight: 600;
     }
   }
@@ -128,7 +183,7 @@
       font-size: 16px;
       font-weight: 600;
       margin: 0 0 10px 0;
-      color: var(--ion-color-dark);
+      color: var(--text-primary);
     }
     
     .producto-item {
@@ -136,15 +191,15 @@
       align-items: center;
       gap: 10px;
       padding: 8px 0;
-      border-bottom: 1px solid var(--ion-color-light);
+      border-bottom: 1px solid var(--border-color);
       
       &:last-child {
         border-bottom: none;
       }
       
       .cantidad {
-        background: var(--ion-color-primary);
-        color: white;
+        background: var(--primary-color);
+        color: var(--background-dark);
         border-radius: 12px;
         padding: 4px 8px;
         font-size: 12px;
@@ -156,13 +211,13 @@
       .nombre {
         flex: 1;
         font-size: 14px;
-        color: var(--ion-color-dark);
+        color: var(--text-primary);
       }
       
       .precio {
         font-size: 14px;
         font-weight: 600;
-        color: var(--ion-color-primary);
+        color: var(--secondary-color);
       }
     }
   }
@@ -171,19 +226,27 @@
     margin: 15px 0 10px 0;
     --border-radius: 8px;
     font-size: 14px;
+    --background: var(--primary-color);
+    --color: var(--background-dark);
+    
+    &:hover {
+      --background: color-mix(in srgb, var(--primary-color) 80%, var(--surface-dark));
+    }
   }
   
   .info-adicional {
     margin-top: 10px;
     
     ion-chip {
-      --background: var(--ion-color-light);
-      --color: var(--ion-color-dark);
+      --background: var(--surface-variant);
+      --color: var(--text-primary);
+      border: 1px solid var(--border-color);
       font-size: 12px;
       
       ion-icon {
         font-size: 14px;
         margin-right: 4px;
+        color: var(--text-secondary);
       }
     }
   }
@@ -192,56 +255,80 @@
 // Estilos para el header y toolbar
 ion-header {
   ion-toolbar {
-    --background: var(--ion-color-primary);
-    --color: white;
+    --background: var(--surface-dark);
+    --color: var(--text-primary);
+    border-bottom: 1px solid var(--border-color);
     
     ion-title {
       font-weight: 600;
       display: flex;
       align-items: center;
       gap: 8px;
+      color: var(--text-primary);
       
       ion-icon {
         font-size: 20px;
+        color: var(--primary-color);
       }
     }
     
     ion-buttons ion-button,
     .btn-volver {
-      --color: #ffffff !important;
-      color: #ffffff !important;
-      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+      --color: var(--text-primary) !important;
+      color: var(--text-primary) !important;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
       font-weight: 600;
       
       ion-icon {
-        color: #ffffff !important;
+        color: var(--text-primary) !important;
       }
       
       &:hover {
-        --background: rgba(255, 255, 255, 0.1);
+        --background: var(--surface-variant);
       }
     }
   }
   
   // Toolbar de filtros
   ion-toolbar:last-child {
-    --background: var(--ion-color-light);
+    --background: var(--surface-variant);
+    border-bottom: 1px solid var(--border-color);
     
     ion-segment {
       --background: transparent;
       
       ion-segment-button {
-        --color: var(--ion-color-medium);
-        --color-checked: var(--ion-color-primary);
-        --background-checked: white;
+        --color: var(--text-secondary);
+        --color-checked: var(--primary-color);
+        --background-checked: var(--surface-dark);
         --border-radius: 6px;
         font-size: 12px;
         font-weight: 500;
         text-transform: uppercase;
         letter-spacing: 0.5px;
+        border: 1px solid var(--border-color);
+        
+        &.segment-button-checked {
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
       }
     }
   }
+}
+
+// Sobrescribir estilos de Ionic para el tema oscuro
+ion-item {
+  --background: var(--surface-dark);
+  --color: var(--text-primary);
+  --border-color: var(--border-color);
+}
+
+ion-list {
+  background: var(--background-dark);
+}
+
+ion-refresher-content {
+  --color: var(--text-secondary);
 }
 
 // Responsividad
@@ -276,9 +363,16 @@ ion-header {
   }
 }
 
-// Animaciones
+// Animaciones mejoradas para tema oscuro
 ion-card.pedido-card {
   animation: slideInUp 0.3s ease-out;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+    border-color: var(--primary-color);
+  }
 }
 
 @keyframes slideInUp {
@@ -290,4 +384,22 @@ ion-card.pedido-card {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+// Scrollbar personalizada para tema oscuro
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--surface-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--surface-variant);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-color);
 }

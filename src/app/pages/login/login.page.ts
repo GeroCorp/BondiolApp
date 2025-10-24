@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { ToastController, LoadingController } from '@ionic/angular';
 import { AuthService } from 'src/app/services/supabase';
 import { Notification } from 'src/app/services/notification';
+import { HapticService } from 'src/app/services/haptic.service';
 
 @Component({
   selector: 'app-login',
@@ -21,12 +22,24 @@ export class LoginPage {
     private router: Router,
     private toastController: ToastController,
     private loadingController: LoadingController,
-    private authService: AuthService
+    private authService: AuthService,
+    private v: HapticService
   ) {
     this.loginForm = this.formBuilder.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]]
     });
+  }
+
+  // Método para probar la vibración
+  async vibrate() {
+    console.log('🎯 Botón de vibración presionado');
+    try {
+      await this.v.vibrateError();
+      console.log('✅ Vibración ejecutada correctamente');
+    } catch (error) {
+      console.error('❌ Error en vibración:', error);
+    }
   }
 
   cambiarVisibilidadPassword() {

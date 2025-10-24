@@ -1,8 +1,9 @@
-import { Component, OnInit, signal } from '@angular/core';
+﻿import { Component, OnInit, signal } from '@angular/core';
 import { AlertController, ToastController } from '@ionic/angular';
 import { AuthService } from '../../services/supabase';
 import { ClienteService } from 'src/app/services/cliente.service';
 
+import { HapticService } from 'src/app/services/haptic.service';
 @Component({
   selector: 'app-tab2-mesas',
   templateUrl: './tab2-mesas.page.html',
@@ -18,7 +19,8 @@ export class Tab2MesasPage implements OnInit {
     private supabase: AuthService,
     private alertCtrl: AlertController,
     private toastCtrl: ToastController,
-    private clienteService: ClienteService
+    private clienteService: ClienteService,
+    private hapticService: HapticService
   ) { }
 
   ngOnInit() {
@@ -30,6 +32,7 @@ export class Tab2MesasPage implements OnInit {
 
     try {
       const data = await this.supabase.getMesasConEstado();
+      console.log(data);
       this.mesas.set(data);
     }catch (err){
       console.error('Error loading mesas:', err);
@@ -55,7 +58,8 @@ export class Tab2MesasPage implements OnInit {
   }
 
   get mesasOcupadas(): number {
-    return this.mesas().filter(m => m.cliente_asignado).length;
+    const mesasOcupadas = this.mesas().filter(m => m.cliente_asignado).length;
+    return mesasOcupadas;
   }
 
   get mesasNoDisponibles(): number {
@@ -126,7 +130,8 @@ export class Tab2MesasPage implements OnInit {
   private async procesarLiberacion(mesa: any) {
     try {
       // Aquí iría la lógica para liberar la mesa en Supabase
-      await this.clienteService.liberarMesaCliente();
+      const id_cliente = mesa.cliente_asignado?.id_cliente || mesa.cliente_asignado?.cliente_id || mesa.cliente_asignado;
+      await this.clienteService.liberarMesaCliente(mesa.numero, id_cliente);
       
       const toast = await this.toastCtrl.create({
         message: `Mesa ${mesa.numero} liberada exitosamente`,
@@ -137,6 +142,7 @@ export class Tab2MesasPage implements OnInit {
       
       await this.loadMesas(); // Recargar datos
     } catch (err: any) {
+      await this.hapticService.vibrateError();
       const toast = await this.toastCtrl.create({
         message: err.message || 'Error al liberar la mesa',
         duration: 4000,
@@ -191,6 +197,7 @@ export class Tab2MesasPage implements OnInit {
       
       await this.loadMesas(); // Recargar datos
     } catch (err: any) {
+      await this.hapticService.vibrateError();
       const toast = await this.toastCtrl.create({
         message: err.message || 'Error al asignar la mesa',
         duration: 4000,
@@ -237,6 +244,7 @@ export class Tab2MesasPage implements OnInit {
       
       await this.loadMesas(); // Recargar datos
     } catch (err: any) {
+      await this.hapticService.vibrateError();
       const toast = await this.toastCtrl.create({
         message: err.message || 'Error al cambiar la disponibilidad',
         duration: 4000,

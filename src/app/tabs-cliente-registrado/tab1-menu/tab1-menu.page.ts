@@ -51,40 +51,9 @@ export class Tab1MenuPage implements OnInit {
     this.totalConDescuento = await this.clienteService.getTotal();
   }
 
-  async escanearQr() {
-    this.isLoadingQR = true;
-    try {
-      const granted = await BarcodeScanner.checkPermissions();
-      if (granted.camera !== 'granted') {
-        await BarcodeScanner.requestPermissions();
-      }  
-      
-      const result = await BarcodeScanner.scan();
 
-      console.log(result);
-      if (result.barcodes) {
-        try {
-            const barcode = result.barcodes[0].displayValue;
-           
-            const nro = barcode ? parseInt(barcode) : null;
-
-            this.nroMesa = nro ? nro : 0;
-            this.cargarPlatos();
-            this.cargarBebidas();
-            this.showToast('Datos cargados desde QR', 'success');
-          } catch (e) {
-            console.error('Error al parsear QR:', e);
-            this.showToast('El QR no contiene datos válidos', 'danger');
-          } 
-      } else {
-        this.showToast('No se detectó ningún QR', 'danger');
-      }
-    } catch (err: any) {
-      console.error('Error al escanear QR:', err);
-      this.showToast(err.message, 'danger');
-    } finally {
-      this.isLoadingQR = false;
-    }
+  async checkDenied(){
+    
   }
 
   async cargarPlatos(){

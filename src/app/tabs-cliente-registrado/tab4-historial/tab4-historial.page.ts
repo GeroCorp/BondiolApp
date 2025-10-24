@@ -1,9 +1,10 @@
-import { Component, OnInit, signal, computed, OnDestroy } from '@angular/core';
+﻿import { Component, OnInit, signal, computed, OnDestroy } from '@angular/core';
 import { LoadingController, ToastController, ModalController, NavController } from '@ionic/angular';
 import { ClienteService } from 'src/app/services/cliente.service';
 import { DetallePedidoModalComponent } from './detalle-pedido-modal/detalle-pedido-modal.component';
 import { Router } from '@angular/router';
 
+import { HapticService } from 'src/app/services/haptic.service';
 @Component({
   selector: 'app-tab4-historial',
   templateUrl: './tab4-historial.page.html',
@@ -35,7 +36,8 @@ export class Tab4HistorialPage implements OnInit, OnDestroy {
     private loadingController: LoadingController,
     private toastController: ToastController,
     private modalController: ModalController,
-    private navController: NavController
+    private navController: NavController,
+    private hapticService: HapticService
   ) {}
 
   async ngOnInit() {
@@ -56,6 +58,7 @@ export class Tab4HistorialPage implements OnInit, OnDestroy {
       console.log('✅ Historial cargado:', this.clienteService.historialPedidos());
     } catch (error) {
       console.error('❌ Error cargando historial:', error);
+      await this.hapticService.vibrateError();
       await this.showToast('Error al cargar el historial de pedidos', 'danger');
     } finally {
       this.isLoading.set(false);

@@ -23,11 +23,13 @@ export class Tab6HistorialAnonimoPage implements OnInit, OnDestroy {
   ) {}
 
   async ngOnInit() {
+    console.log('✅ Historial anónimo - ngOnInit');
     await this.cargarHistorial();
     await this.iniciarSuscripcion();
   }
 
   async ngOnDestroy() {
+    console.log('🔄 Historial anónimo - ngOnDestroy');
     if (this.subscription) {
       await this.subscription.unsubscribe();
     }
@@ -61,7 +63,7 @@ export class Tab6HistorialAnonimoPage implements OnInit, OnDestroy {
       }
       const mesaId = mesaInfo.id;
 
-      // Obtener pedidos de esta mesa (cliente anónimo)
+      // ✅ Obtener pedidos de esta mesa (cliente anónimo)
       const { data, error } = await this.authService.client
         .from('pedidos')
         .select(`
@@ -89,6 +91,7 @@ export class Tab6HistorialAnonimoPage implements OnInit, OnDestroy {
       this.isLoading = false;
     }
   }
+  
   async iniciarSuscripcion() {
     try {
       const mesaData = sessionStorage.getItem('numero_mesa');

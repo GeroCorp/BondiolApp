@@ -27,7 +27,8 @@ const routes: Routes = [
   {
     path: 'tab5-juegos',
     loadChildren: () => import('./tab5-juegos/tab5-juegos.module').then( m => m.Tab5JuegosPageModule)
-  },  {
+  },
+  {
     path: 'tab6-encuesta',
     loadChildren: () => import('./tab6-encuesta/tab6-encuesta.module').then( m => m.Tab6EncuestaPageModule)
   },

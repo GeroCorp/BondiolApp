@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ToastController, LoadingController, AlertController } from '@ionic/angular';
 import { AuthService } from 'src/app/services/supabase';
+import { HapticService } from 'src/app/services/haptic.service';
 
 interface Consulta {
   id_consulta: number;
@@ -33,7 +34,8 @@ export class Tab3ConsultasPage implements OnInit {
     private authService: AuthService,
     private toastController: ToastController,
     private loadingController: LoadingController,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private hapticService: HapticService
   ) {}
 
   async ngOnInit() {
@@ -50,6 +52,7 @@ export class Tab3ConsultasPage implements OnInit {
       this.consultas.forEach(c => c.respuestaTemp = '');
     } catch (error) {
       console.error('Error al cargar consultas:', error);
+      await this.hapticService.vibrateError();
       this.showToast('Error al cargar las consultas', 'danger');
     } finally {
       this.cargando = false;
@@ -100,6 +103,7 @@ export class Tab3ConsultasPage implements OnInit {
       this.showToast('Mesas cargadas correctamente', 'success');
     } catch (error) {
       console.error('Error al cargar mesas:', error);
+      await this.hapticService.vibrateError();
       this.showToast('Error al cargar las mesas', 'danger');
     } finally {
       this.cargando = false;

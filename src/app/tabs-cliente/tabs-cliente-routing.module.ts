@@ -29,6 +29,27 @@ const routes: Routes = [
           ),
       },
       {
+        path: 'tab4-resultados-anonimo',
+        loadChildren: () =>
+          import('./tab4-resultados-anonimo/tab4-resultados-anonimo.module').then(
+            (m) => m.Tab4ResultadosAnonimoPageModule
+          ),
+      },
+      {
+        path: 'tab5-cuenta-anonimo',
+        loadChildren: () =>
+          import('./tab5-cuenta-anonimo/tab5-cuenta-anonimo.module').then(
+            (m) => m.Tab5CuentaAnonimoPageModule
+          ),
+      },
+      {
+        path: 'tab6-consulta-anonimo',
+        loadChildren: () =>
+          import('./tab6-historial-anonimo/tab6-historial-anonimo.module').then(
+            (m) => m.Tab6HistorialAnonimoPageModule
+          ),
+      },
+      {
         path: 'ingreso-anonimo',
         loadChildren: () =>
           import('./ingreso-anonimo/ingreso-anonimo.module').then(
@@ -46,7 +67,8 @@ const routes: Routes = [
         pathMatch: 'full',
       },
     ],
-  },  {
+  },
+  {
     path: 'tab4-resultados-anonimo',
     loadChildren: () => import('./tab4-resultados-anonimo/tab4-resultados-anonimo.module').then( m => m.Tab4ResultadosAnonimoPageModule)
   },

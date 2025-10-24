@@ -39,7 +39,7 @@ export class Tab3ConsultaPage implements OnInit, OnDestroy {
       // Obtener datos del cliente
       this.username = await this.clienteService.getNombreCliente();
       const clienteId = await this.clienteService.getClientId();
-      this.mesaActual = await this.clienteService.getMesa(clienteId);
+      this.mesaActual = await this.clienteService.getNroMesa(clienteId);
 
       console.log('📱 Cliente conectado:', {
         nombre: this.username,
@@ -114,27 +114,18 @@ export class Tab3ConsultaPage implements OnInit, OnDestroy {
 
     try {
       await this.clienteService.sendMessage(tempContent);
-      console.log('✅ Mensaje enviado:', tempContent);
-
-      // Scroll al final después de enviar
-      setTimeout(() => this.scrollToBottom(), 100);
-
     } catch (error) {
-      console.error('❌ Error al enviar mensaje:', error);
-      // Restaurar el mensaje si falla
-      this.newMessage = tempContent;
+      console.error('❌ Error:', error);
+      
     }
+
+    console.log("Nueva lista: ",this.messages());
+    
+    // Notificar al mozo del nuevo mensaje (Aunque tira error y no sé pq)
+    this.notificationService.sendNotificationToPerfil("Mozo", "Nuevo mensaje de la mesa "+this.clienteService.getNroMesa(await this.clienteService.getClientId()), "Tienes un nuevo mensaje de "+this.username+" en el chat.");
   }
 
-  /**
-   * 📥 Cargar mensajes iniciales
-   */
-  async loadMessages() {
-    if (!this.mesaActual) {
-      console.error('❌ No hay mesa asignada');
-      return;
-    }
-
+  async loadMessages(){
     this.loading.set(true);
     try {
       const messagesReceived = await this.clienteService.getChatMessages();

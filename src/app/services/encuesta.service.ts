@@ -16,25 +16,112 @@ export class EncuestaService {
   }
 
   /**
-   * Verifica si el cliente ya respondió la encuesta en esta estadía
+   * ✅ NUEVA LÓGICA: Verifica si ya respondió la encuesta HOY
+   * Permite múltiples encuestas en diferentes visitas
    */
-  async yaRespondiEncuesta(clienteId: number, mesaId: number): Promise<boolean> {
+  async yaRespondioEncuestaHoy(clienteId: number, mesaId: number): Promise<boolean> {
     try {
-      const { data, error } = await this.supabase
-        .from('respuestas_encuesta')
-        .select('id')
-        .eq('cliente_id', clienteId)
-        .eq('mesa_id', mesaId)
-        .maybeSingle();
+      console.log('🔍 Verificando encuesta de hoy para:', { clienteId, mesaId });
 
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error verificando encuesta:', error);
+      // ✅ Validar parámetros
+      if (!clienteId || !mesaId) {
+        console.error('❌ Parámetros inválidos:', { clienteId, mesaId });
         return false;
       }
 
-      return !!data;
+      // Obtener la fecha de hoy (inicio del día)
+      const hoy = new Date();
+      hoy.setHours(0, 0, 0, 0);
+      const inicioHoy = hoy.toISOString();
+
+      console.log('📅 Buscando respuestas desde:', inicioHoy);
+
+      // Buscar respuestas de hoy para esta mesa y cliente
+      const { data, error } = await this.supabase
+        .from('respuestas_encuesta')
+        .select('*')
+        .eq('cliente_id', clienteId)
+        .eq('mesa_id', mesaId)
+        .gte('fecha', inicioHoy);
+
+      console.log('🔎 Respuestas de hoy encontradas:', {
+        cliente_id: clienteId,
+        mesa_id: mesaId,
+        cantidad: data?.length || 0,
+        respuestas: data
+      });
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('❌ Error verificando encuesta:', error);
+        return false;
+      }
+
+      const yaRespondio: boolean = !!(data && data.length > 0); // ✅ Tipo explícito
+      console.log('✅ Ya respondió hoy:', yaRespondio);
+      
+      return yaRespondio;
     } catch (error) {
-      console.error('Error en yaRespondiEncuesta:', error);
+      console.error('❌ Error en yaRespondioEncuestaHoy:', error);
+      return false;
+    }
+  }
+
+  /**
+   * MÉTODO ANTIGUO - Mantener por compatibilidad pero ya no se usa
+   */
+  async yaRespondiEncuesta(clienteId: number, mesaId: number): Promise<boolean> {
+    try {
+      console.log('🔍 Verificando encuesta para:', { clienteId, mesaId });
+
+      // ✅ Validar parámetros
+      if (!clienteId || !mesaId) {
+        console.error('❌ Parámetros inválidos:', { clienteId, mesaId });
+        return false;
+      }
+
+      // Primero verificar todas las respuestas del cliente
+      const { data: todasRespuestas, error: errorTodas } = await this.supabase
+        .from('respuestas_encuesta')
+        .select('*')
+        .eq('cliente_id', clienteId);
+
+      console.log('📊 Todas las respuestas del cliente:', todasRespuestas);
+      console.log('📊 Cantidad total de respuestas:', todasRespuestas?.length || 0);
+
+      // Ahora verificar si hay respuesta para esta mesa específica
+      const { data, error } = await this.supabase
+        .from('respuestas_encuesta')
+        .select('*')
+        .eq('cliente_id', clienteId)
+        .eq('mesa_id', mesaId);
+
+      console.log('🔎 Query realizada para mesa específica:', {
+        cliente_id: clienteId,
+        mesa_id: mesaId,
+        resultados: data,
+        cantidadResultados: data?.length || 0,
+        error: error
+      });
+
+      if (data && data.length > 0) {
+        console.log('📝 Detalles de la(s) respuesta(s) encontrada(s):', data);
+      }
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('❌ Error verificando encuesta:', error);
+        return false;
+      }
+
+      const yaRespondio: boolean = !!(data && data.length > 0); // ✅ Tipo explícito
+      console.log('✅ Resultado verificación:', {
+        yaRespondio,
+        cantidadRespuestas: data?.length || 0,
+        mesaEnRespuestas: data?.map(r => r.mesa_id)
+      });
+      
+      return yaRespondio;
+    } catch (error) {
+      console.error('❌ Error en yaRespondiEncuesta:', error);
       return false;
     }
   }
@@ -53,6 +140,35 @@ export class EncuestaService {
         mesaId,
         respuestas
       });
+
+      // ✅ Validar todos los parámetros necesarios
+      if (!clienteId) {
+        throw new Error('ID de cliente no válido');
+      }
+
+      if (!mesaId) {
+        throw new Error('ID de mesa no válido');
+      }
+
+      if (!respuestas.calidadComida || respuestas.calidadComida < 1 || respuestas.calidadComida > 5) {
+        throw new Error('Calificación de comida inválida');
+      }
+
+      if (!respuestas.calidadServicio || respuestas.calidadServicio < 1 || respuestas.calidadServicio > 5) {
+        throw new Error('Calificación de servicio inválida');
+      }
+
+      if (!respuestas.ambiente || respuestas.ambiente < 1 || respuestas.ambiente > 5) {
+        throw new Error('Calificación de ambiente inválida');
+      }
+
+      if (!respuestas.precioCalidad || respuestas.precioCalidad < 1 || respuestas.precioCalidad > 5) {
+        throw new Error('Calificación de precio-calidad inválida');
+      }
+
+      if (respuestas.recomendaria === null || respuestas.recomendaria === undefined) {
+        throw new Error('Debe indicar si recomendaría el restaurante');
+      }
 
       const dataToInsert = {
         cliente_id: clienteId,
@@ -74,13 +190,25 @@ export class EncuestaService {
         .select();
 
       if (error) {
-        console.error('❌ Error guardando respuestas:', error);
-        throw error;
+        console.error('❌ Error de Supabase:', error);
+        
+        // Mensajes de error más específicos
+        if (error.code === '23503') {
+          throw new Error('Error de referencia: Cliente o mesa no válidos');
+        } else if (error.code === '23505') {
+          throw new Error('Ya existe una respuesta para esta mesa y cliente');
+        } else {
+          throw new Error(`Error al guardar: ${error.message}`);
+        }
+      }
+
+      if (!data || data.length === 0) {
+        throw new Error('No se pudo guardar la encuesta');
       }
 
       console.log('✅ Encuesta guardada correctamente:', data);
       return data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Error en guardarRespuestas:', error);
       throw error;
     }
@@ -185,5 +313,61 @@ export class EncuestaService {
 
     console.log('✅ Resultados procesados:', resultados);
     return resultados;
+  }
+
+  /**
+   * Método de utilidad para debugging - eliminar respuestas de prueba
+   * SOLO USAR EN DESARROLLO
+   */
+  async limpiarRespuestasCliente(clienteId: number, mesaId?: number) {
+    try {
+      console.log('🧹 Limpiando respuestas para:', { clienteId, mesaId });
+
+      let query = this.supabase
+        .from('respuestas_encuesta')
+        .delete()
+        .eq('cliente_id', clienteId);
+
+      if (mesaId) {
+        query = query.eq('mesa_id', mesaId);
+      }
+
+      const { data, error } = await query.select();
+
+      if (error) {
+        console.error('❌ Error limpiando respuestas:', error);
+        throw error;
+      }
+
+      console.log('✅ Respuestas eliminadas:', data);
+      return data;
+    } catch (error) {
+      console.error('❌ Error en limpiarRespuestasCliente:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtener todas las respuestas de un cliente (para debugging)
+   */
+  async obtenerRespuestasCliente(clienteId: number) {
+    try {
+      const { data, error } = await this.supabase
+        .from('respuestas_encuesta')
+        .select('*')
+        .eq('cliente_id', clienteId)
+        .order('fecha', { ascending: false });
+
+      if (error) {
+        console.error('❌ Error obteniendo respuestas:', error);
+        throw error;
+      }
+
+      console.log('📋 Respuestas del cliente:', data);
+      return data;
+    } catch (error) {
+      console.error('❌ Error en obtenerRespuestasCliente:', error);
+      throw error;
+    }
   }
 }

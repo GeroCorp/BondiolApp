@@ -11,7 +11,7 @@ import { EncuestaService } from 'src/app/services/encuesta.service';
   standalone: false,
 })
 export class Tab6EncuestaPage implements OnInit {
-  yaRespondio = false;
+  yaRespondio: boolean = false; // ✅ Solo boolean, no null
   enviando = false;
   
   respuestas = {
@@ -23,8 +23,9 @@ export class Tab6EncuestaPage implements OnInit {
     comentarios: ''
   };
 
-  private clienteId: number = 0;
-  private mesaId: number = 0;
+  // ✅ Públicas para el HTML
+  public clienteId: number = 0;
+  public mesaId: number = 0;
 
   constructor(
     private router: Router,
@@ -41,25 +42,31 @@ export class Tab6EncuestaPage implements OnInit {
   async verificarEstadoEncuesta() {
     try {
       this.clienteId = await this.clienteService.getClientId();
-      this.mesaId = await this.clienteService.getMesa(this.clienteId);
+      
+      // ✅ Obtener el ID de la mesa
+      this.mesaId = await this.clienteService.getMesaID(this.clienteId);
+
+      console.log('📋 Datos cliente completos:', {
+        clienteId: this.clienteId,
+        mesaId: this.mesaId
+      });
 
       if (!this.mesaId) {
+        console.log('⚠️ No hay mesa asignada');
         this.showToast('No tienes una mesa asignada', 'warning');
         this.router.navigate(['/home-cliente']);
         return;
       }
 
-      this.yaRespondio = await this.encuestaService.yaRespondiEncuesta(
-        this.clienteId,
-        this.mesaId
-      );
+      // ✅ Permitir SIEMPRE responder la encuesta
+      this.yaRespondio = false;
 
-      if (this.yaRespondio) {
-        this.showToast('Ya has respondido la encuesta para esta estadía', 'medium');
-      }
+      console.log('✅ Cliente puede responder encuesta libremente');
+      
     } catch (error) {
-      console.error('Error verificando encuesta:', error);
-      this.showToast('Error al verificar encuesta', 'danger');
+      console.error('❌ Error verificando encuesta:', error);
+      this.showToast('Error al cargar la encuesta', 'danger');
+      this.yaRespondio = false;
     }
   }
 
@@ -83,6 +90,13 @@ export class Tab6EncuestaPage implements OnInit {
       return;
     }
 
+    // ✅ Validar datos necesarios
+    if (!this.clienteId || !this.mesaId) {
+      console.error('❌ Faltan datos:', { clienteId: this.clienteId, mesaId: this.mesaId });
+      this.showToast('Error: Datos de cliente o mesa no disponibles', 'danger');
+      return;
+    }
+
     const loading = await this.loadingController.create({
       message: 'Enviando encuesta...',
       spinner: 'crescent',
@@ -92,6 +106,12 @@ export class Tab6EncuestaPage implements OnInit {
     this.enviando = true;
 
     try {
+      console.log('📤 Enviando encuesta con datos:', {
+        clienteId: this.clienteId,
+        mesaId: this.mesaId,
+        respuestas: this.respuestas
+      });
+
       await this.encuestaService.guardarRespuestas(
         this.clienteId,
         this.mesaId,
@@ -100,22 +120,50 @@ export class Tab6EncuestaPage implements OnInit {
 
       await loading.dismiss();
       this.enviando = false;
-      this.yaRespondio = true;
 
       this.showToast(
         '¡Gracias por tu opinión! Tu encuesta ha sido enviada correctamente',
         'success'
       );
-    } catch (error) {
+
+      // ✅ Limpiar el formulario para nueva respuesta
+      this.respuestas = {
+        calidadComida: 0,
+        calidadServicio: 0,
+        ambiente: 0,
+        precioCalidad: 0,
+        recomendaria: null,
+        comentarios: ''
+      };
+
+      // ✅ Redirigir a resultados después de 2 segundos
+      setTimeout(() => {
+        this.verResultados();
+      }, 2000);
+
+    } catch (error: any) {
       await loading.dismiss();
       this.enviando = false;
-      console.error('Error enviando encuesta:', error);
-      this.showToast('Error al enviar la encuesta. Intenta nuevamente', 'danger');
+      console.error('❌ Error enviando encuesta:', error);
+      
+      const errorMsg = error?.message || 'Error desconocido';
+      this.showToast(`Error al enviar la encuesta: ${errorMsg}`, 'danger');
     }
   }
 
   async verResultados() {
     this.router.navigate(['/tabs-cliente-registrado/tab7-resultados']);
+  }
+
+  // ✅ Método para el ion-refresher
+  async handleRefresh(event: any) {
+    try {
+      await this.verificarEstadoEncuesta();
+      event.target.complete();
+    } catch (error) {
+      console.error('Error al refrescar:', error);
+      event.target.complete();
+    }
   }
 
   private async showToast(

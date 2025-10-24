@@ -1,4 +1,3 @@
-
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/supabase';
@@ -13,33 +12,37 @@ import { AlertController, ToastController } from '@ionic/angular';
 })
 export class TabsClientePage implements OnInit, OnDestroy {
   cantidadItems: number = 0;
+  private pedidoSubscription: any;
 
   constructor(
     private router: Router,
     private supabase: AuthService,
     private clienteService: ClienteAnonimoService,
     private alertCtrl: AlertController,
-    private toastCtrl: ToastController // ✅ AGREGADO
+    private toastCtrl: ToastController
   ) {}
 
   ngOnInit() {
+    console.log('🔄 Tabs-cliente inicializado');
+    
     // Suscribirse a cambios en el pedido
-    this.clienteService.pedido$.subscribe(pedido => {
+    this.pedidoSubscription = this.clienteService.pedido$.subscribe(pedido => {
       this.cantidadItems = pedido.reduce((sum, item) => sum + item.quantity, 0);
     });
   }
 
   ngOnDestroy() {
-    // ❌ ELIMINADO: No limpiar automáticamente en ngOnDestroy
-    // porque puede ejecutarse al cambiar de tab
-    console.log('🔄 ngOnDestroy ejecutado (tabs-cliente)');
-    // NO llamar a limpiarSesion() aquí
+    console.log('🔄 Tabs-cliente destruido');
+    
+    // Solo desuscribirse del observable, NO limpiar la sesión
+    if (this.pedidoSubscription) {
+      this.pedidoSubscription.unsubscribe();
+    }
   }
 
-  // ❌ ELIMINADO: private verificarSesion()
-  // Ya no es necesario
-
-  // ✅ MODIFICADO: Ahora muestra confirmación antes de salir
+  /**
+   * ✅ ÚNICO método que cierra sesión - Se ejecuta al presionar el botón de salir
+   */
   async salir() {
     const alert = await this.alertCtrl.create({
       header: 'Cerrar Sesión',
@@ -59,13 +62,15 @@ export class TabsClientePage implements OnInit, OnDestroy {
     await alert.present();
   }
 
-  // ✅ MODIFICADO COMPLETAMENTE: Ahora usa el servicio correctamente
+  /**
+   * ✅ Cierra la sesión, libera la mesa y limpia los datos
+   */
   private async cerrarSesion() {
     try {
       console.log('🔐 Cerrando sesión desde tabs-cliente...');
 
-      // ✅ CAMBIO PRINCIPAL: Usar el servicio para liberar la mesa correctamente
-      // Esto ahora:
+      // Usar el servicio para liberar la mesa correctamente
+      // Esto:
       // 1. Limpia los mensajes del chat
       // 2. Libera la mesa en la BD
       // 3. Actualiza el cliente anónimo
@@ -86,10 +91,9 @@ export class TabsClientePage implements OnInit, OnDestroy {
     }
   }
 
-  // ❌ ELIMINADO: private limpiarSesion()
-  // Ahora el servicio ClienteAnonimoService se encarga de todo
-
-  // ✅ AGREGADO: Método helper para mostrar toasts
+  /**
+   * ✅ Helper para mostrar toasts
+   */
   private async showToast(message: string, color: 'success' | 'danger' | 'warning') {
     const toast = await this.toastCtrl.create({
       message,
