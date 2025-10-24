@@ -1,0 +1,201 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home-cliente"></ion-back-button>
+    </ion-buttons>
+    <ion-title>
+      <ion-icon name="clipboard-outline"></ion-icon>
+      Encuesta de Satisfacción
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Botón para ver resultados (siempre visible) -->
+  <ion-button 
+    expand="block" 
+    fill="outline" 
+    (click)="verResultados()"
+    style="margin-bottom: 20px;">
+    <ion-icon name="stats-chart-outline" slot="start"></ion-icon>
+    Ver Resultados de Encuestas
+  </ion-button>
+
+  <!-- Formulario de encuesta (siempre disponible) -->
+  <div *ngIf="!enviando" class="encuesta-form">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Tu opinión es importante</ion-card-title>
+        <ion-card-subtitle>
+          Ayúdanos a mejorar tu experiencia
+        </ion-card-subtitle>
+      </ion-card-header>
+    </ion-card>
+
+    <!-- Calidad de la comida -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-subtitle>
+          <ion-icon name="restaurant"></ion-icon>
+          ¿Cómo calificarías la calidad de la comida?
+        </ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="estrellas-container">
+          <ion-button
+            *ngFor="let star of [1, 2, 3, 4, 5]"
+            fill="clear"
+            size="large"
+            (click)="setRating('calidadComida', star)"
+          >
+            <ion-icon
+              [name]="star <= respuestas.calidadComida ? 'star' : 'star-outline'"
+              [color]="star <= respuestas.calidadComida ? 'warning' : 'medium'"
+            ></ion-icon>
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Calidad del servicio -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-subtitle>
+          <ion-icon name="people"></ion-icon>
+          ¿Cómo calificarías la calidad del servicio?
+        </ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="estrellas-container">
+          <ion-button
+            *ngFor="let star of [1, 2, 3, 4, 5]"
+            fill="clear"
+            size="large"
+            (click)="setRating('calidadServicio', star)"
+          >
+            <ion-icon
+              [name]="star <= respuestas.calidadServicio ? 'star' : 'star-outline'"
+              [color]="star <= respuestas.calidadServicio ? 'warning' : 'medium'"
+            ></ion-icon>
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Ambiente -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-subtitle>
+          <ion-icon name="musical-notes"></ion-icon>
+          ¿Cómo calificarías el ambiente del restaurante?
+        </ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="estrellas-container">
+          <ion-button
+            *ngFor="let star of [1, 2, 3, 4, 5]"
+            fill="clear"
+            size="large"
+            (click)="setRating('ambiente', star)"
+          >
+            <ion-icon
+              [name]="star <= respuestas.ambiente ? 'star' : 'star-outline'"
+              [color]="star <= respuestas.ambiente ? 'warning' : 'medium'"
+            ></ion-icon>
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Relación precio-calidad -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-subtitle>
+          <ion-icon name="cash"></ion-icon>
+          ¿Cómo calificarías la relación precio-calidad?
+        </ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="estrellas-container">
+          <ion-button
+            *ngFor="let star of [1, 2, 3, 4, 5]"
+            fill="clear"
+            size="large"
+            (click)="setRating('precioCalidad', star)"
+          >
+            <ion-icon
+              [name]="star <= respuestas.precioCalidad ? 'star' : 'star-outline'"
+              [color]="star <= respuestas.precioCalidad ? 'warning' : 'medium'"
+            ></ion-icon>
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- ¿Recomendarías? -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-subtitle>
+          <ion-icon name="heart"></ion-icon>
+          ¿Recomendarías nuestro restaurante?
+        </ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-segment [(ngModel)]="respuestas.recomendaria" mode="md">
+          <ion-segment-button [value]="true">
+            <ion-label>Sí</ion-label>
+          </ion-segment-button>
+          <ion-segment-button [value]="false">
+            <ion-label>No</ion-label>
+          </ion-segment-button>
+        </ion-segment>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Comentarios adicionales -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-subtitle>
+          <ion-icon name="chatbox"></ion-icon>
+          Comentarios adicionales (opcional)
+        </ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-textarea
+          [(ngModel)]="respuestas.comentarios"
+          placeholder="Cuéntanos más sobre tu experiencia..."
+          rows="4"
+          maxlength="500"
+        ></ion-textarea>
+        <p class="contador-caracteres">
+          {{ respuestas.comentarios.length || 0 }}/500
+        </p>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Botón enviar -->
+    <ion-button
+      expand="block"
+      size="large"
+      [disabled]="!formularioCompleto()"
+      (click)="enviarEncuesta()"
+    >
+      <ion-icon name="send" slot="start"></ion-icon>
+      Enviar Encuesta
+    </ion-button>
+
+    <p class="texto-ayuda" *ngIf="!formularioCompleto()">
+      * Por favor completa todas las calificaciones y responde si recomendarías el restaurante
+    </p>
+  </div>
+
+  <!-- Enviando -->
+  <div *ngIf="enviando" class="loading-container">
+    <ion-spinner name="crescent" color="primary"></ion-spinner>
+    <p>Enviando tu encuesta...</p>
+  </div>
+</ion-content>

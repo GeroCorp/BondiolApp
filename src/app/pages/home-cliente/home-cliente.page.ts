@@ -392,13 +392,33 @@ export class HomeClientePage implements OnInit {
       }
       this.router.navigate(['/tabs-cliente-registrado/tab5-juegos']);
     }
-    verEncuestas(){
-      if (!this.mesaVerificada) {
-        this.showToast('⚠️ Primero debes escanear el QR de una mesa', 'warning');
-        return;
-      }
-      this.router.navigate(['/tabs-cliente-registrado/tab6-encuestas']);
+
+
+    solicitarCuenta() {
+    if (!this.mesaVerificada) {
+      this.showToast('⚠️ Primero debes escanear el QR de una mesa', 'warning');
+      return;
     }
+    this.router.navigate(['/tabs-cliente-registrado/tab8-cuenta']);
+  }
+
+
+    verEncuesta() {
+    if (!this.mesaVerificada) {
+      this.showToast('⚠️ Primero debes escanear el QR de una mesa', 'warning');
+      return;
+    }
+    this.router.navigate(['/tabs-cliente-registrado/tab6-encuesta']);
+  }
+
+  verResultados() {
+    if (!this.mesaVerificada) {
+      this.showToast('⚠️ Primero debes escanear el QR de una mesa', 'warning');
+      return;
+    }
+    this.router.navigate(['/tabs-cliente-registrado/tab7-resultados']);
+  }
+
   /**
    * 🧪 [TESTING] Simular unirse a lista de espera sin escanear QR
    * Agrega al cliente directamente a la tabla lista_espera
