@@ -54,13 +54,11 @@ export class HomeAnonimoPage implements OnInit, OnDestroy {
 
   async cargarDatosClienteAnonimo() {
     try {
-      // Primero intentar sessionStorage, luego localStorage
       let storedData = sessionStorage.getItem('cliente_anonimo');
       
       if (!storedData) {
         storedData = localStorage.getItem('cliente_anonimo');
         if (storedData) {
-          // Sincronizar a sessionStorage
           sessionStorage.setItem('cliente_anonimo', storedData);
         }
       }
@@ -93,7 +91,6 @@ export class HomeAnonimoPage implements OnInit, OnDestroy {
       if (data.mesa_asignada) {
         await this.cargarNumeroMesa(data.mesa_asignada);
         
-        // ✅ Verificar si la mesa ya fue verificada anteriormente
         const mesaVerificadaStorage = sessionStorage.getItem('mesa_verificada');
         if (mesaVerificadaStorage === 'true') {
           this.mesaVerificada = true;
@@ -166,7 +163,6 @@ export class HomeAnonimoPage implements OnInit, OnDestroy {
     }
 
     try {
-      // Verificar permisos de cámara
       const granted = await BarcodeScanner.checkPermissions();
       if (granted.camera !== 'granted') {
         const permission = await BarcodeScanner.requestPermissions();
@@ -176,7 +172,6 @@ export class HomeAnonimoPage implements OnInit, OnDestroy {
         }
       }
 
-      // Escanear QR
       const result = await BarcodeScanner.scan();
 
       if (result.barcodes && result.barcodes.length > 0) {
@@ -193,7 +188,6 @@ export class HomeAnonimoPage implements OnInit, OnDestroy {
 
   private async procesarQRMesa(qrData: string) {
     try {
-      // Parsear el QR que viene en formato "numero,capacidad,tipo"
       const datosQR = qrData.split(',');
 
       if (datosQR.length !== 3) {
@@ -210,14 +204,6 @@ export class HomeAnonimoPage implements OnInit, OnDestroy {
         return;
       }
 
-      console.log('Mesa escaneada:', {
-        numero: numeroMesaEscaneado,
-        capacidad: capacidad,
-        tipo: tipo,
-      });
-      console.log('Mesa actual asignada:', this.numeroMesa);
-
-      // VERIFICACIÓN: La mesa escaneada debe coincidir con la asignada
       if (numeroMesaEscaneado !== this.numeroMesa) {
         this.showToast(
           `⚠️ Esta no es tu mesa. Tu mesa asignada es la ${this.numeroMesa}`,
@@ -226,7 +212,6 @@ export class HomeAnonimoPage implements OnInit, OnDestroy {
         return;
       }
 
-      // Verificar que la mesa existe en la base de datos
       const { data: mesa, error } = await this.authService.client
         .from('mesas')
         .select('*')
@@ -238,13 +223,11 @@ export class HomeAnonimoPage implements OnInit, OnDestroy {
         return;
       }
 
-      // Verificar que los datos del QR coincidan con la base de datos
       if (mesa.cantidad !== capacidad || mesa.tipo !== tipo) {
         this.showToast('Los datos del QR no coinciden con la mesa registrada', 'danger');
         return;
       }
 
-      // ✅ Marcar mesa como verificada
       this.mesaVerificada = true;
       sessionStorage.setItem('mesa_verificada', 'true');
       
@@ -264,10 +247,6 @@ export class HomeAnonimoPage implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * 🧪 [TESTING] Simular escaneo de QR para testing (sin cámara)
-   * Verifica automáticamente la mesa asignada sin necesidad de escanear
-   */
   async verificarMesaSimulada() {
     try {
       if (!this.clienteAnonimo?.mesa_asignada || !this.numeroMesa) {
@@ -275,12 +254,6 @@ export class HomeAnonimoPage implements OnInit, OnDestroy {
         return;
       }
 
-      console.log('🧪 [TESTING] Verificando mesa sin QR...', {
-        clienteId: this.clienteAnonimo.id_clienteanonimo,
-        mesaAsignada: this.numeroMesa
-      });
-
-      // Obtener datos de la mesa para mostrar info
       const { data: mesa, error } = await this.authService.client
         .from('mesas')
         .select('*')
@@ -289,11 +262,9 @@ export class HomeAnonimoPage implements OnInit, OnDestroy {
 
       if (error || !mesa) {
         this.showToast('Error al obtener datos de la mesa', 'danger');
-        console.error('Error obteniendo mesa:', error);
         return;
       }
 
-      // 🧪 TESTING: Marcar como verificada sin escanear
       this.mesaVerificada = true;
       sessionStorage.setItem('mesa_verificada', 'true');
       
@@ -301,12 +272,6 @@ export class HomeAnonimoPage implements OnInit, OnDestroy {
         .from('clientes_anonimos')
         .update({ en_espera: false })
         .eq('id_clienteanonimo', this.clienteAnonimo.id_clienteanonimo);
-      
-      console.log('✅ [TESTING] Mesa verificada automáticamente:', {
-        numero: mesa.numero,
-        capacidad: mesa.cantidad,
-        tipo: mesa.tipo
-      });
       
       this.showToast(
         `✅ [TESTING] Mesa ${mesa.numero} verificada\nCapacidad: ${mesa.cantidad} personas\nTipo: ${mesa.tipo}`,
@@ -319,13 +284,11 @@ export class HomeAnonimoPage implements OnInit, OnDestroy {
     }
   }
 
-  // ✅ NAVEGACIÓN CORREGIDA - Ir a tabs-cliente que contiene las tabs
   verMenu() {
     if (!this.mesaVerificada) {
       this.showToast('⚠️ Primero debes escanear el QR de tu mesa', 'warning');
       return;
     }
-    // Navegar a tabs-cliente (que contiene las tabs)
     this.router.navigate(['/tabs-cliente'], { 
       queryParams: { tab: 'tab1-menu-anonimo' } 
     });
@@ -336,7 +299,6 @@ export class HomeAnonimoPage implements OnInit, OnDestroy {
       this.showToast('⚠️ Primero debes escanear el QR de tu mesa', 'warning');
       return;
     }
-    // Navegar a tabs-cliente
     this.router.navigate(['/tabs-cliente'], { 
       queryParams: { tab: 'tab2-pedido-anonimo' } 
     });
@@ -347,15 +309,39 @@ export class HomeAnonimoPage implements OnInit, OnDestroy {
       this.showToast('⚠️ Primero debes escanear el QR de tu mesa', 'warning');
       return;
     }
-    // Navegar a tabs-cliente
     this.router.navigate(['/tabs-cliente'], { 
       queryParams: { tab: 'tab3-consulta-anonimo' } 
     });
   }
 
+  verHistorial() {
+    if (!this.mesaVerificada) {
+      this.showToast('⚠️ Primero debes escanear el QR de tu mesa', 'warning');
+      return;
+    }
+     this.router.navigate(['/tabs-cliente'], { 
+      queryParams: { tab: 'tab6-historial-anonimo' } 
+    });
+  }
+
   verEncuestas() {
-    // Esta funcionalidad parece estar en otra sección
-    this.router.navigate(['/tabs-cliente/tab2-encuestas']);
+    if (!this.mesaVerificada) {
+      this.showToast('⚠️ Primero debes escanear el QR de tu mesa', 'warning');
+      return;
+    }
+    this.router.navigate(['/tabs-cliente'], { 
+      queryParams: { tab: 'tab4-resultados-anonimo' } 
+    });
+  }
+
+  verCuenta() {
+    if (!this.mesaVerificada) {
+      this.showToast('⚠️ Primero debes escanear el QR de tu mesa', 'warning');
+      return;
+    }
+    this.router.navigate(['/tabs-cliente'], { 
+      queryParams: { tab: 'tab5-cuenta-anonimo' } 
+    });
   }
 
   async salir() {
@@ -383,27 +369,17 @@ export class HomeAnonimoPage implements OnInit, OnDestroy {
     try {
       console.log('🔄 Iniciando cierre de sesión...');
       
-      // Detener intervalo
       if (this.intervalId) {
         clearInterval(this.intervalId);
         this.intervalId = null;
       }
 
-      // Llamar al servicio para liberar mesa
       await this.clienteAnonimoService.cerrarSesionYLiberarMesa();
-      
-      // Limpiar todos los datos de sesión
-      sessionStorage.removeItem('cliente_anonimo');
-      sessionStorage.removeItem('numero_mesa');
-      sessionStorage.removeItem('mesa_verificada');
-      localStorage.removeItem('cliente_anonimo');
-      localStorage.removeItem('mesa_actual');
       
       console.log('✅ Sesión cerrada correctamente');
       
       await this.showToast('Sesión cerrada correctamente. Mesa liberada.', 'success');
       
-      // Navegar a ingreso anónimo
       await this.router.navigate(['/ingreso-anonimo'], { replaceUrl: true });
       
     } catch (error: any) {
@@ -413,11 +389,6 @@ export class HomeAnonimoPage implements OnInit, OnDestroy {
         'Error al cerrar sesión: ' + (error.message || 'Error desconocido'), 
         'danger'
       );
-      
-      // Limpiar de todas formas
-      sessionStorage.clear();
-      localStorage.removeItem('cliente_anonimo');
-      localStorage.removeItem('mesa_actual');
       
       await this.router.navigate(['/ingreso-anonimo'], { replaceUrl: true });
     }

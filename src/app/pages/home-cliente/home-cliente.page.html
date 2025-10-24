@@ -151,6 +151,43 @@
           <ion-icon name="lock-closed" slot="end"></ion-icon>
           }
         </ion-button>
+
+
+        <ion-button
+          expand="block"
+          color="success"
+          (click)="solicitarCuenta()"
+          [disabled]="!mesaVerificada"
+        >
+          <ion-icon name="card-outline" slot="start"></ion-icon>
+          Pedir la Cuenta @if (!mesaVerificada) {
+          <ion-icon name="lock-closed" slot="end"></ion-icon>
+          }
+        </ion-button>
+
+        <ion-button
+          expand="block"
+          color="secondary"
+          (click)="verEncuesta()"
+          [disabled]="!mesaVerificada"
+        >
+          <ion-icon name="clipboard-outline" slot="start"></ion-icon>
+          Encuesta @if (!mesaVerificada) {
+          <ion-icon name="lock-closed" slot="end"></ion-icon>
+          }
+        </ion-button>
+
+        <ion-button
+          expand="block"
+          color="secondary"
+          (click)="verResultados()"
+          [disabled]="!mesaVerificada"
+        >
+          <ion-icon name="clipboard-outline" slot="start"></ion-icon>
+          resultados encuestas @if (!mesaVerificada) {
+          <ion-icon name="lock-closed" slot="end"></ion-icon>
+          }
+        </ion-button>
       </ion-card-content>
     </ion-card>
 

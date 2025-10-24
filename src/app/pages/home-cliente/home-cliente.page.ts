@@ -31,7 +31,7 @@ export class HomeClientePage implements OnInit {
   cliente: Cliente | null = null;
   enEspera: boolean = true;
   mesaAsignada: number | null = null;
-  mesaVerificada: boolean = true;
+  mesaVerificada: boolean = false;
   perfil = "cliente";
   private notificationService: Notification = inject(Notification)
 
@@ -371,6 +371,32 @@ export class HomeClientePage implements OnInit {
       }
       this.router.navigate(['/tabs-cliente-registrado/tab5-juegos']);
     }
+
+
+    solicitarCuenta() {
+    if (!this.mesaVerificada) {
+      this.showToast('⚠️ Primero debes escanear el QR de una mesa', 'warning');
+      return;
+    }
+    this.router.navigate(['/tabs-cliente-registrado/tab8-cuenta']);
+  }
+
+
+    verEncuesta() {
+    if (!this.mesaVerificada) {
+      this.showToast('⚠️ Primero debes escanear el QR de una mesa', 'warning');
+      return;
+    }
+    this.router.navigate(['/tabs-cliente-registrado/tab6-encuesta']);
+  }
+
+  verResultados() {
+    if (!this.mesaVerificada) {
+      this.showToast('⚠️ Primero debes escanear el QR de una mesa', 'warning');
+      return;
+    }
+    this.router.navigate(['/tabs-cliente-registrado/tab7-resultados']);
+  }
 
   /**
    * 🧪 [TESTING] Simular unirse a lista de espera sin escanear QR

@@ -27,7 +27,19 @@ const routes: Routes = [
   {
     path: 'tab5-juegos',
     loadChildren: () => import('./tab5-juegos/tab5-juegos.module').then( m => m.Tab5JuegosPageModule)
+  },  {
+    path: 'tab6-encuesta',
+    loadChildren: () => import('./tab6-encuesta/tab6-encuesta.module').then( m => m.Tab6EncuestaPageModule)
+  },
+  {
+    path: 'tab7-resultados',
+    loadChildren: () => import('./tab7-resultados/tab7-resultados.module').then( m => m.Tab7ResultadosPageModule)
+  },
+  {
+    path: 'tab8-cuenta',
+    loadChildren: () => import('./tab8-cuenta/tab8-cuenta.module').then( m => m.Tab8CuentaPageModule)
   }
+
   
 
 ];

@@ -181,105 +181,163 @@ getSubtotal(): number {
   }
 
   async insertPedido() {
-  const detalles = this._pedido();
-  console.log('📋 Detalles del pedido:', detalles);
+  try {
+    const detalles = this._pedido();
+    console.log('📋 Detalles del pedido:', detalles);
 
-  const idCliente = await this.getClientId();
-  const nroMesa = await this.getMesa(idCliente);
-  
-  // Calcular totales
-  const subtotal = this.getSubtotal();
-  const totalConDescuento = await this.getTotal();
-  const descuento = await this.getDescuentoCliente(idCliente, nroMesa);
-  
-  console.log('💰 Subtotal:', subtotal);
-  console.log('🎮 Descuento aplicado:', descuento + '%');
-  console.log('💰 Total con descuento:', totalConDescuento);
+    // Validar que hay items en el pedido
+    if (!detalles || detalles.length === 0) {
+      throw new Error('No hay items en el pedido');
+    }
 
-  const cabecera = {
-    mesa: nroMesa,
-    id_cliente: idCliente,
-    fecha: new Date(),
-    estado: 'pendiente',
-    total: Math.round(totalConDescuento) // Total CON descuento aplicado
-  };
+    const idCliente = await this.getClientId();
+    const nroMesa = await this.getMesa(idCliente);
+    
+    // Validar que el cliente tiene mesa asignada
+    if (!nroMesa) {
+      throw new Error('No tienes una mesa asignada');
+    }
 
-  const { data, error } = await this.supabase
-    .from('pedidos')
-    .insert([cabecera])
-    .select();
+    // ✅ CORRECCIÓN: Obtener el ID de la mesa desde mesa_asignada del cliente
+    const { data: clienteData, error: clienteError } = await this.supabase
+      .from('clientes')
+      .select('mesa_asignada')
+      .eq('id_cliente', idCliente)
+      .single();
 
-  if (error) {
-    console.error('❌ Error insertando pedido:', error);
-    throw error;
-  }
+    if (clienteError || !clienteData?.mesa_asignada) {
+      throw new Error('No se pudo obtener el ID de la mesa asignada');
+    }
 
-  const idPedido = data![0].id;
-  console.log('✅ Pedido insertado con ID:', idPedido);
+    const mesaId = clienteData.mesa_asignada; // Este es el ID correcto
+    
+    // Calcular totales
+    const subtotal = this.getSubtotal();
+    const totalConDescuento = await this.getTotal();
+    const descuento = await this.getDescuentoCliente(idCliente, mesaId);
+    
+    console.log('💰 Subtotal:', subtotal);
+    console.log('🎮 Descuento aplicado:', descuento + '%');
+    console.log('💰 Total con descuento:', totalConDescuento);
+    console.log('🪑 Mesa ID:', mesaId, '(Número:', nroMesa + ')');
 
-  await Promise.all(
-    detalles.map(async (item) => {
+    const cabecera = {
+      mesa: mesaId, // ✅ Usar el ID de la mesa, no el número
+      id_cliente: idCliente,
+      fecha: new Date().toISOString(),
+      estado: 'pendiente',
+      total: Math.round(totalConDescuento)
+    };
+
+    console.log('📤 Insertando cabecera del pedido:', cabecera);
+
+    const { data, error } = await this.supabase
+      .from('pedidos')
+      .insert([cabecera])
+      .select();
+
+    if (error) {
+      console.error('❌ Error insertando pedido:', error);
+      throw new Error('Error al crear el pedido: ' + error.message);
+    }
+
+    if (!data || data.length === 0) {
+      throw new Error('No se pudo obtener el ID del pedido');
+    }
+
+    const idPedido = data[0].id;
+    console.log('✅ Pedido insertado con ID:', idPedido);
+
+    // Insertar detalles del pedido
+    const detallesPromises = detalles.map(async (item) => {
       console.log(
         '🔄️ Item a insertar: \nProducto: ',
         item.nombre,
         '\nCantidad: ',
         item.quantity,
         '\nPrecio: $',
-        item.precio
+        item.precio,
+        '\nTipo: ',
+        item.tipo
       );
-      const { data, error } = await this.supabase
+
+      // Validar que el item tiene los campos necesarios
+      if (!item.nombre || !item.quantity || !item.precio || !item.tipo) {
+        console.error('❌ Item inválido:', item);
+        throw new Error('Item con datos incompletos: ' + item.nombre);
+      }
+
+      const detalle = {
+        id_pedido: idPedido,
+        nombre_prod: item.nombre,
+        cantidad: item.quantity,
+        precio_unitario: item.precio,
+        tipo: item.tipo,
+      };
+
+      const { data: detalleData, error: detalleError } = await this.supabase
         .from('detalles_pedido')
-        .insert([
-          {
-            id_pedido: idPedido,
-            nombre_prod: item.nombre,
-            cantidad: item.quantity,
-            precio_unitario: item.precio,
-            tipo: item.tipo,
-          },
-        ])
+        .insert([detalle])
         .select();
 
-       if (error) {
-         console.error('❌ Error insertando detalle de pedido:', error);
-       }
-     }));
+      if (detalleError) {
+        console.error('❌ Error insertando detalle de pedido:', detalleError);
+        throw new Error('Error al insertar detalle: ' + detalleError.message);
+      }
+
+      console.log('✅ Detalle insertado:', detalleData);
+      return detalleData;
+    });
+
+    // Esperar a que todos los detalles se inserten
+    await Promise.all(detallesPromises);
+
+    console.log('✅ Todos los detalles insertados correctamente');
 
     // Limpiar el pedido después de insertarlo
     this.clearPedido();
     
     return idPedido;
+  } catch (error: any) {
+    console.error('❌ Error en insertPedido:', error);
+    throw error;
   }
+}
 
   // Metodos del chat de consultas
 
-
+  get client() {
+  return this.supabase;
+}
   
   async getChatMessages(){
-    const mesa = await this.getMesa(await this.getClientId())
-    const nombreCliente = await this.getNombreCliente()
-    
-    // Obtener la fecha de hoy en formato YYYY-MM-DD
-    const hoy = new Date();
-    const fechaHoy = hoy.toISOString().split('T')[0]; // Esto da formato YYYY-MM-DD
-    
-    const { data, error } = await this.supabase
+  const clienteId = await this.getClientId();
+  const mesa = await this.getMesa(clienteId);
+  const nombreCliente = await this.getNombreCliente();
+  
+  if (!mesa) {
+    console.error('❌ No hay mesa asignada');
+    return [];
+  }
+
+  console.log('📋 Obteniendo mensajes de la mesa:', mesa);
+  
+  // ✅ Obtener TODOS los mensajes de la mesa (sin filtro de fecha)
+  // para que persistan durante toda la sesión
+  const { data, error } = await this.supabase
     .from('mensajes')
     .select('*')
     .eq('nroMesa', mesa)
-    .eq('nombre_usuario', nombreCliente)
-    .gte('date_sended', `${fechaHoy}T00:00:00.000Z`) // Desde las 00:00:00 de hoy
-    .lte('date_sended', `${fechaHoy}T23:59:59.999Z`) // Hasta las 23:59:59 de hoy
     .order('date_sended', { ascending: true });
 
-    if (error) {
-      console.error('❌ Error obteniendo mensajes:', error);
-      return [];
-    }
-
-    console.log('📅 Mensajes del día actual obtenidos:', data?.length || 0);
-    return data;
+  if (error) {
+    console.error('❌ Error obteniendo mensajes:', error);
+    return [];
   }
+
+  console.log('✅ Mensajes obtenidos:', data?.length || 0);
+  return data || [];
+}
 
   async sendMessage(content: string){
     const idCliente = await this.getClientId()
@@ -849,6 +907,60 @@ async getHistorialPedidos() {
 }
 
 /**
+   * Solicita la cuenta para el pedido actual
+   */
+  async solicitarCuenta(pedidoId: number) {
+    try {
+      const { data, error } = await this.supabase
+        .from('pedidos')
+        .update({ estado: 'cuenta_solicitada' })
+        .eq('id', pedidoId)
+        .select();
+
+      if (error) throw error;
+
+      console.log('✅ Cuenta solicitada:', data);
+      return data;
+    } catch (error) {
+      console.error('❌ Error solicitando cuenta:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene el pedido entregado actual del cliente
+   */
+  async getPedidoEntregadoActual(): Promise<any | null> {
+    try {
+      const clienteId = await this.getClientId();
+      const mesaId = await this.getMesa(clienteId);
+
+      if (!mesaId) return null;
+
+      const { data, error } = await this.supabase
+        .from('pedidos')
+        .select(`
+          *,
+          mesa:mesas(numero, id),
+          detalles_pedido(*)
+        `)
+        .eq('id_cliente', clienteId)
+        .eq('mesa', mesaId)
+        .eq('estado', 'entregado')
+        .order('fecha', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      return data;
+    } catch (error) {
+      console.error('❌ Error obteniendo pedido entregado:', error);
+      return null;
+    }
+  }
+
+/**
  * Suscripción en tiempo real a cambios en los pedidos del cliente
  */
 async subscribeToHistorialPedidos() {
@@ -952,31 +1064,35 @@ formatearFecha(fecha: string): string {
  * Obtiene el color según el estado del pedido
  */
 getColorEstado(estado: string): string {
-  const colores: any = {
-    pendiente: 'warning',
-    confirmado: 'tertiary',
-    en_preparacion: 'secondary',
-    listo: 'success',
-    entregado: 'primary',
-    pagado: 'medium',
-    cancelado: 'danger'
-  };
-  return colores[estado] || 'medium';
-}
+    const colores: any = {
+      pendiente: 'warning',
+      confirmado: 'tertiary',
+      en_preparacion: 'secondary',
+      listo: 'success',
+      entregado: 'primary',
+      cuenta_solicitada: 'medium',
+      pago_pendiente: 'warning',
+      pagado: 'success',
+      cancelado: 'danger'
+    };
+    return colores[estado] || 'medium';
+  }
 
 /**
  * Obtiene el texto formateado del estado
  */
 getTextoEstado(estado: string): string {
-  const textos: any = {
-    pendiente: 'Pendiente',
-    confirmado: 'Confirmado',
-    en_preparacion: 'En preparación',
-    listo: 'Listo para servir',
-    entregado: 'Entregado',
-    pagado: 'Pagado',
-    cancelado: 'Cancelado'
-  };
-  return textos[estado] || estado;
-}
+    const textos: any = {
+      pendiente: 'Pendiente',
+      confirmado: 'Confirmado',
+      en_preparacion: 'En preparación',
+      listo: 'Listo para servir',
+      entregado: 'Entregado',
+      cuenta_solicitada: 'Cuenta solicitada',
+      pago_pendiente: 'Pago pendiente',
+      pagado: 'Pagado',
+      cancelado: 'Cancelado'
+    };
+    return textos[estado] || estado;
+  }
 }

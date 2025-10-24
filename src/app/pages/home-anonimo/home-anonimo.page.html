@@ -41,8 +41,7 @@
           Escanear QR de Mi Mesa
         </ion-button>
 
-
-         <ion-button
+        <ion-button
           expand="block"
           size="large"
           fill="outline"
@@ -122,9 +121,29 @@
         <ion-button 
           expand="block" 
           color="tertiary" 
+          (click)="verHistorial()"
+          [disabled]="!mesaVerificada">
+          <ion-icon name="receipt-outline" slot="start"></ion-icon>
+          Historial de Pedidos
+          <ion-icon *ngIf="!mesaVerificada" name="lock-closed" slot="end"></ion-icon>
+        </ion-button>
+
+        <ion-button 
+          expand="block" 
+          color="tertiary" 
           (click)="verEncuestas()">
           <ion-icon name="stats-chart-outline" slot="start"></ion-icon>
           Ver Encuestas
+        </ion-button>
+
+        <ion-button 
+          expand="block" 
+          color="success" 
+          (click)="verCuenta()"
+          [disabled]="!mesaVerificada">
+          <ion-icon name="card-outline" slot="start"></ion-icon>
+          Mi Cuenta
+          <ion-icon *ngIf="!mesaVerificada" name="lock-closed" slot="end"></ion-icon>
         </ion-button>
 
       </ion-card-content>

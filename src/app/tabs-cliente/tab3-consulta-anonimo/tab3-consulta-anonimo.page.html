@@ -21,7 +21,7 @@
     </div>
   }
   
-  <div class="messages-list" *ngIf="!loading && messages.length > 0">
+  <div class="messages-list" #messagesContainer *ngIf="!loading && messages.length > 0">
     @for (mensaje of messages; track $index) {
       <div class="message-item" 
            [class.sent]="mensaje.nombre_usuario === nombreCliente" 

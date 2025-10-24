@@ -23,15 +23,22 @@ export class DetallePedidoModalComponent implements OnInit {
   }
 
   async cargarDetalles() {
-    try {
-      this.isLoading = true;
+  try {
+    this.isLoading = true;
+    
+    // Si el pedido ya tiene detalles, usarlos
+    if (this.pedido.detalles_pedido && this.pedido.detalles_pedido.length > 0) {
+      this.detalles = this.pedido.detalles_pedido;
+    } else {
+      // Si no, cargarlos desde el servicio
       this.detalles = await this.clienteService.getDetallesPedido(this.pedido.id);
-    } catch (error) {
-      console.error('❌ Error cargando detalles:', error);
-    } finally {
-      this.isLoading = false;
     }
+  } catch (error) {
+    console.error('❌ Error cargando detalles:', error);
+  } finally {
+    this.isLoading = false;
   }
+}
 
   calcularSubtotal(detalle: any): number {
     return detalle.cantidad * detalle.precio_unitario;

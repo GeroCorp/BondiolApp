@@ -15,7 +15,7 @@
     </ion-toolbar>
   </ion-header>
 
-  <div class="messages-container">
+  <div class="messages-container" #messagesContainer>
     <div class="messages-list">
       @if (loading()) {
         <div class="d-flex justify-content-center align-items-center h-100">
@@ -24,6 +24,7 @@
           </div>
         </div>
       }
+      
       @for (mensaje of messages(); track $index) {
         <div class="message-wrapper" [ngClass]="mensaje.nombre_usuario == username ? 'sent' : 'received'">
           <div class="message-bubble">
@@ -32,7 +33,7 @@
                 @if (mensaje.nombre_usuario == username) {
                   Tú
                 } @else {
-                  {{ mensaje.nombre_usuario || 'Anónimo' }}
+                  {{ mensaje.nombre_usuario || 'Mozo' }}
                 }
               </strong>
             </div>
@@ -46,9 +47,11 @@
         </div>
       }
 
-      @if (messages.length === 0 && !loading) {
+      @if (messages().length === 0 && !loading()) {
         <div class="no-messages">
+          <ion-icon name="chatbubble-outline" class="large-icon"></ion-icon>
           <p>No hay mensajes aún.</p>
+          <p class="hint">Escribe un mensaje para comenzar</p>
         </div>
       }
     </div>
@@ -60,8 +63,19 @@
   <ion-toolbar>
     <div class="input-container">
       <ion-item lines="none" class="input-item">
-        <ion-input type="text" placeholder="Escribe un mensaje..." [(ngModel)]="newMessage" class="message-input"></ion-input>
-        <ion-button (click)="sendMessage()" fill="clear" slot="end" [disabled]="!newMessage.trim()" class="send-button">
+        <ion-input 
+          type="text" 
+          placeholder="Escribe un mensaje..." 
+          [(ngModel)]="newMessage" 
+          (keyup.enter)="sendMessage()"
+          class="message-input">
+        </ion-input>
+        <ion-button 
+          (click)="sendMessage()" 
+          fill="clear" 
+          slot="end" 
+          [disabled]="!newMessage.trim()" 
+          class="send-button">
           <ion-icon slot="icon-only" name="send-sharp"></ion-icon>
         </ion-button>
       </ion-item>

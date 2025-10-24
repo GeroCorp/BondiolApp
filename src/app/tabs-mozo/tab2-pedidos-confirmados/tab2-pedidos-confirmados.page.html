@@ -28,6 +28,12 @@
       <ion-segment-button value="listo">
         <ion-label>Listos</ion-label>
       </ion-segment-button>
+      <ion-segment-button value="entregado">
+        <ion-label>Entregados</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="pago_pendiente">
+        <ion-label>💳 Pagos</ion-label>
+      </ion-segment-button>
     </ion-segment>
   </ion-toolbar>
 </ion-header>
@@ -80,8 +86,7 @@
                 [name]="sector.sector === 'cocina' ? 'restaurant-outline' : 'cafe-outline'"
               ></ion-icon>
               <ion-label>
-                {{ sector.sector | titlecase }}: {{
-                getTextoEstado(sector.estado) }}
+                {{ sector.sector | titlecase }}: {{ getTextoEstado(sector.estado) }}
               </ion-label>
             </ion-chip>
           </div>
@@ -92,7 +97,7 @@
           <strong>Total:</strong> ${{ pedido.total }}
         </div>
 
-        <!-- Acciones según estado -->
+        <!-- Acciones según estado LISTO -->
         <div class="botones-accion" *ngIf="pedido.estado === 'listo'">
           <ion-button
             expand="block"
@@ -104,16 +109,43 @@
           </ion-button>
         </div>
 
+        <!-- Info cuando está ENTREGADO -->
+        <div *ngIf="pedido.estado === 'entregado'">
+          <ion-card color="primary">
+            <ion-card-content style="text-align: center;">
+              <ion-icon name="checkmark-done" style="font-size: 32px;"></ion-icon>
+              <p><strong>Pedido entregado</strong></p>
+              <p style="font-size: 14px;">Esperando que el cliente solicite la cuenta</p>
+            </ion-card-content>
+          </ion-card>
+        </div>
+
+        <!-- Acciones cuando está PAGO_PENDIENTE -->
+        <div *ngIf="pedido.estado === 'pago_pendiente'">
+          <ion-card color="warning">
+            <ion-card-content style="text-align: center;">
+              <ion-icon name="card" style="font-size: 32px;"></ion-icon>
+              <p><strong>💳 Pago pendiente de confirmación</strong></p>
+              <p style="font-size: 14px;">Mesa {{ pedido.mesa?.numero }} - Total: ${{ pedido.total }}</p>
+            </ion-card-content>
+          </ion-card>
+          
+          <ion-button
+            expand="block"
+            color="success"
+            size="large"
+            (click)="confirmarPago(pedido)"
+          >
+            <ion-icon name="checkmark-circle" slot="start"></ion-icon>
+            Confirmar Pago y Liberar Mesa
+          </ion-button>
+        </div>
+
         <!-- Ver detalle -->
         <ion-button expand="block" fill="outline" (click)="verDetalle(pedido)">
           <ion-icon name="eye-outline" slot="start"></ion-icon>
           Ver detalle completo
         </ion-button>
-        @if (pedido.estado === 'entregado') {
-        <ion-button color="success" (click)="confirmarPago(pedido)">
-          Confirmar pago y liberar mesa
-        </ion-button>
-      }
       </ion-card-content>
     </ion-card>
   </div>

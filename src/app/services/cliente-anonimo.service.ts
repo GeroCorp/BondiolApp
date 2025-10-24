@@ -142,122 +142,168 @@ export class ClienteAnonimoService {
 
   // ========== CHAT ==========
 
+  /**
+   * 📥 Obtener mensajes del chat SOLO de la mesa actual
+   */
   async obtenerMensajesChat() {
-  try {
-    const mesaData = sessionStorage.getItem('numero_mesa');
-    if (!mesaData) return [];
+    try {
+      const mesaData = sessionStorage.getItem('numero_mesa');
+      if (!mesaData) {
+        console.error('❌ No hay número de mesa en sessionStorage');
+        return [];
+      }
 
-    const numeroMesa = parseInt(mesaData);
+      const numeroMesa = parseInt(mesaData);
 
-    const { data, error } = await this.authService.client
-      .from('mensajes')
-      .select('*')
-      .eq('nroMesa', numeroMesa)
-      .order('date_sended', { ascending: true });
+      console.log('📋 Obteniendo mensajes de la mesa:', numeroMesa);
 
-    if (error) {
-      console.error('Error al obtener mensajes:', error);
+      // ✅ Filtrar por mesa Y ordenar por fecha
+      const { data, error } = await this.authService.client
+        .from('mensajes')
+        .select('*')
+        .eq('nroMesa', numeroMesa)
+        .order('date_sended', { ascending: true });
+
+      if (error) {
+        console.error('❌ Error al obtener mensajes:', error);
+        return [];
+      }
+
+      console.log('✅ Mensajes obtenidos:', data?.length || 0);
+      return data || [];
+    } catch (error) {
+      console.error('❌ Error en obtenerMensajesChat:', error);
       return [];
     }
-
-    return data || [];
-  } catch (error) {
-    console.error('Error en obtenerMensajesChat:', error);
-    return [];
   }
-}
 
-async enviarMensaje(contenido: string) {
-  try {
-    const clienteData = sessionStorage.getItem('cliente_anonimo');
-    const mesaData = sessionStorage.getItem('numero_mesa');
+  /**
+   * 📨 Enviar mensaje al chat
+   */
+  async enviarMensaje(contenido: string) {
+    try {
+      const clienteData = sessionStorage.getItem('cliente_anonimo');
+      const mesaData = sessionStorage.getItem('numero_mesa');
 
-    if (!clienteData || !mesaData) {
-      throw new Error('Faltan datos de sesión');
-    }
+      if (!clienteData || !mesaData) {
+        throw new Error('Faltan datos de sesión');
+      }
 
-    const cliente = JSON.parse(clienteData);
-    const numeroMesa = parseInt(mesaData);
+      const cliente = JSON.parse(clienteData);
+      const numeroMesa = parseInt(mesaData);
 
-    const { error } = await this.authService.client
-      .from('mensajes')
-      .insert({
-        nroMesa: numeroMesa,
-        nombre_usuario: cliente.nombre,
-        contenido: contenido,
-        date_sended: new Date().toISOString()
+      console.log('📤 Enviando mensaje:', {
+        mesa: numeroMesa,
+        usuario: cliente.nombre,
+        contenido: contenido.substring(0, 50) + '...'
       });
 
-    if (error) {
-      throw new Error('Error al enviar mensaje: ' + error.message);
-    }
-    
-    console.log('✅ Mensaje enviado correctamente');
-  } catch (error: any) {
-    console.error('Error al enviar mensaje:', error);
-    throw error;
-  }
-}
+      const { data, error } = await this.authService.client
+        .from('mensajes')
+        .insert({
+          nroMesa: numeroMesa,
+          nombre_usuario: cliente.nombre,
+          contenido: contenido,
+          date_sended: new Date().toISOString()
+        })
+        .select()
+        .single();
 
-/**
- * Suscribirse a nuevos mensajes en tiempo real
- * Similar al método del cliente registrado
- */
-suscribirseAMensajes(callback: (mensajes: any[]) => void) {
-  try {
-    const mesaData = sessionStorage.getItem('numero_mesa');
-    if (!mesaData) {
-      console.error('No hay número de mesa en sessionStorage');
+      if (error) {
+        console.error('❌ Error al enviar mensaje:', error);
+        throw new Error('Error al enviar mensaje: ' + error.message);
+      }
+      
+      console.log('✅ Mensaje enviado correctamente:', data);
+      return data;
+    } catch (error: any) {
+      console.error('❌ Error al enviar mensaje:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 🔔 Suscribirse a nuevos mensajes en tiempo real
+   * SOLO de la mesa actual del cliente anónimo
+   */
+  suscribirseAMensajes(callback: (mensajes: any[]) => void) {
+    try {
+      const mesaData = sessionStorage.getItem('numero_mesa');
+      if (!mesaData) {
+        console.error('❌ No hay número de mesa en sessionStorage');
+        return null;
+      }
+
+      const numeroMesa = parseInt(mesaData);
+      console.log('🔔 Suscribiéndose a mensajes de la mesa:', numeroMesa);
+
+      const subscription = this.authService.client
+        .channel(`chat-anonimo-mesa-${numeroMesa}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'mensajes',
+            filter: `nroMesa=eq.${numeroMesa}` // ✅ FILTRO CRUCIAL
+          },
+          async (payload) => {
+            console.log('📩 Nuevo mensaje recibido:', payload);
+            
+            // Recargar todos los mensajes de ESTA mesa
+            const mensajes = await this.obtenerMensajesChat();
+            callback(mensajes);
+          }
+        )
+        .subscribe((status) => {
+          console.log('📡 Estado de suscripción:', status);
+        });
+
+      return subscription;
+    } catch (error) {
+      console.error('❌ Error al suscribirse a mensajes:', error);
       return null;
     }
-
-    const numeroMesa = parseInt(mesaData);
-    console.log('🔔 Suscribiéndose a mensajes de la mesa:', numeroMesa);
-
-    const subscription = this.authService.client
-      .channel(`chat-anonimo-mesa-${numeroMesa}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'mensajes',
-          filter: `nroMesa=eq.${numeroMesa}`
-        },
-        async (payload) => {
-          console.log('📩 Nuevo mensaje recibido:', payload);
-          
-          // Recargar todos los mensajes para mantener sincronización
-          const mensajes = await this.obtenerMensajesChat();
-          callback(mensajes);
-        }
-      )
-      .subscribe((status) => {
-        console.log('Estado de suscripción:', status);
-      });
-
-    return subscription;
-  } catch (error) {
-    console.error('Error al suscribirse a mensajes:', error);
-    return null;
   }
-}
 
-  // ========== ✅ CERRAR SESIÓN Y LIBERAR MESA ==========
-  
   /**
-   * Cierra la sesión del cliente anónimo y libera la mesa asignada
+   * 🧹 Limpia mensajes de la mesa cuando se libera
+   */
+  private async limpiarMensajesMesa(numeroMesa: number): Promise<void> {
+    try {
+      console.log('🧹 Limpiando mensajes de la mesa:', numeroMesa);
+
+      const { error } = await this.authService.client
+        .from('mensajes')
+        .delete()
+        .eq('nroMesa', numeroMesa);
+
+      if (error) {
+        console.error('❌ Error limpiando mensajes:', error);
+      } else {
+        console.log('✅ Mensajes de la mesa limpiados correctamente');
+      }
+    } catch (error) {
+      console.error('❌ Error en limpiarMensajesMesa:', error);
+    }
+  }
+
+  /**
+   * 🚪 Cierra la sesión del cliente anónimo y libera la mesa asignada
+   * ✅ CORREGIDO: Ahora limpia correctamente la mesa Y los mensajes
    */
   async cerrarSesionYLiberarMesa(): Promise<void> {
     try {
-      // Intentar obtener datos de sessionStorage primero, luego localStorage
+      console.log('🔄 Iniciando cierre de sesión y liberación de mesa...');
+
+      // Obtener datos del cliente
       let clienteData = sessionStorage.getItem('cliente_anonimo');
       if (!clienteData) {
         clienteData = localStorage.getItem('cliente_anonimo');
       }
       
       if (!clienteData) {
-        console.warn('No hay datos de cliente en storage');
+        console.warn('⚠️ No hay datos de cliente en storage');
         this.limpiarDatosLocales();
         return;
       }
@@ -266,80 +312,121 @@ suscribirseAMensajes(callback: (mensajes: any[]) => void) {
       const clienteId = cliente.id || cliente.id_clienteanonimo;
 
       if (!clienteId) {
-        console.error('No se encontró ID del cliente');
+        console.error('❌ No se encontró ID del cliente');
         this.limpiarDatosLocales();
         return;
       }
 
-      // Obtener mesa asignada
-      const { data, error: errorConsulta } = await this.authService.client
+      console.log('📋 Cliente ID:', clienteId);
+
+      // 1️⃣ Obtener información completa del cliente anónimo
+      const { data: clienteInfo, error: errorClienteInfo } = await this.authService.client
         .from('clientes_anonimos')
         .select('mesa_asignada')
         .eq('id_clienteanonimo', clienteId)
         .single();
 
-      if (errorConsulta) {
-        console.error('Error al obtener mesa asignada:', errorConsulta);
-        // Limpiar datos locales aunque falle la consulta
+      if (errorClienteInfo || !clienteInfo) {
+        console.error('❌ Error obteniendo info del cliente:', errorClienteInfo);
         this.limpiarDatosLocales();
         return;
       }
 
-      // Liberar mesa si existe
-      if (data?.mesa_asignada) {
-        console.log('Liberando mesa:', data.mesa_asignada);
+      console.log('📊 Info del cliente:', clienteInfo);
 
-        // Actualizar mesa
-        const { error: errorMesa } = await this.authService.client
+      // 2️⃣ Si tiene mesa asignada, liberarla completamente
+      if (clienteInfo.mesa_asignada) {
+        const mesaId = clienteInfo.mesa_asignada;
+        console.log('🔓 Liberando mesa ID:', mesaId);
+
+        // Obtener el número de la mesa para limpiar mensajes
+        const { data: mesaData, error: errorMesa } = await this.authService.client
+          .from('mesas')
+          .select('numero')
+          .eq('id', mesaId)
+          .single();
+
+        if (errorMesa) {
+          console.error('❌ Error obteniendo datos de mesa:', errorMesa);
+        } else if (mesaData) {
+          const numeroMesa = mesaData.numero;
+          console.log('📍 Número de mesa:', numeroMesa);
+
+          // 🧹 Limpiar mensajes del chat ANTES de liberar la mesa
+          await this.limpiarMensajesMesa(numeroMesa);
+        }
+
+        // 3️⃣ Liberar la mesa en la tabla mesas
+        console.log('🔄 Actualizando tabla mesas...');
+        const { error: errorLiberarMesa } = await this.authService.client
           .from('mesas')
           .update({
             cliente_asignado: null,
             disponible: true
           })
-          .eq('id', data.mesa_asignada);
+          .eq('id', mesaId);
 
-        if (errorMesa) {
-          console.error('Error al liberar mesa:', errorMesa);
+        if (errorLiberarMesa) {
+          console.error('❌ Error liberando mesa:', errorLiberarMesa);
         } else {
-          console.log('✅ Mesa liberada correctamente');
-        }
-
-        // Actualizar cliente anónimo
-        const { error: errorCliente } = await this.authService.client
-          .from('clientes_anonimos')
-          .update({
-            mesa_asignada: null,
-            en_espera: false
-          })
-          .eq('id_clienteanonimo', clienteId);
-
-        if (errorCliente) {
-          console.error('Error al actualizar cliente:', errorCliente);
-        } else {
-          console.log('✅ Cliente anónimo actualizado correctamente');
+          console.log('✅ Mesa liberada en tabla mesas');
         }
       }
 
-      // Limpiar datos locales
+      // 4️⃣ Actualizar cliente anónimo (quitar mesa asignada)
+      console.log('🔄 Actualizando cliente anónimo...');
+      const { error: errorActualizarCliente } = await this.authService.client
+        .from('clientes_anonimos')
+        .update({
+          mesa_asignada: null,
+          en_espera: false
+        })
+        .eq('id_clienteanonimo', clienteId);
+
+      if (errorActualizarCliente) {
+        console.error('❌ Error actualizando cliente:', errorActualizarCliente);
+      } else {
+        console.log('✅ Cliente anónimo actualizado');
+      }
+
+      // 5️⃣ Eliminar de lista de espera si existe
+      console.log('🔄 Limpiando lista de espera...');
+      const nombreCompleto = `${cliente.nombre}`;
+      const { error: errorListaEspera } = await this.authService.client
+        .from('lista_espera')
+        .delete()
+        .eq('nombre_cliente', nombreCompleto);
+
+      if (errorListaEspera) {
+        console.log('⚠️ Error limpiando lista de espera:', errorListaEspera);
+      } else {
+        console.log('✅ Cliente eliminado de lista de espera');
+      }
+
+      // 6️⃣ Limpiar datos locales
       this.limpiarDatosLocales();
 
-      console.log('✅ Sesión cerrada y mesa liberada correctamente');
+      console.log('✅ ¡Sesión cerrada completamente! Mesa liberada, mensajes eliminados');
+
     } catch (error: any) {
-      console.error('❌ Error en cerrarSesionYLiberarMesa:', error);
-      // Intentar limpiar datos locales aunque falle
+      console.error('❌ Error crítico en cerrarSesionYLiberarMesa:', error);
+      // Limpiar datos locales de todas formas
       this.limpiarDatosLocales();
       throw error;
     }
   }
 
   /**
-   * Limpia todos los datos locales del cliente anónimo
+   * 🧹 Limpia todos los datos locales del cliente anónimo
    */
   private limpiarDatosLocales(): void {
     try {
+      console.log('🧹 Limpiando datos locales...');
+      
       // Limpiar sessionStorage
       sessionStorage.removeItem('cliente_anonimo');
       sessionStorage.removeItem('numero_mesa');
+      sessionStorage.removeItem('mesa_verificada');
       sessionStorage.removeItem('polling_interval');
       
       // Limpiar localStorage también
@@ -349,9 +436,9 @@ suscribirseAMensajes(callback: (mensajes: any[]) => void) {
       // Limpiar pedido
       this.limpiarPedido();
       
-      console.log('✅ Datos locales limpiados');
+      console.log('✅ Datos locales limpiados completamente');
     } catch (error) {
-      console.error('Error limpiando datos locales:', error);
+      console.error('❌ Error limpiando datos locales:', error);
     }
   }
 }
