@@ -1,0 +1,65 @@
+// ✅ Variables optimizadas para rendimiento
+// Ionic Variables and Theming. For more info, please see:
+// http://ionicframework.com/docs/theming/
+
+/** Ionic CSS Variables **/
+:root {
+  // ✅ Colores principales optimizados (menos variables = menos memoria)
+  --ion-color-primary: #ff2525;
+  --ion-color-primary-rgb: 255, 37, 37;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #e02121;
+  --ion-color-primary-tint: #ff3b3b;
+
+  // ✅ Usar menos variaciones de secondary para ahorrar memoria
+  --ion-color-secondary: #3dc2ff;
+  --ion-color-secondary-rgb: 61, 194, 255;
+  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+  --ion-color-secondary-shade: #36abe0;
+  --ion-color-secondary-tint: #50c8ff;
+
+  // ✅ Estados básicos
+  --ion-color-success: #2dd36f;
+  --ion-color-warning: #ffc409;
+  --ion-color-danger: #eb445a;
+  --ion-color-dark: #222428;
+  --ion-color-medium: #92949c;
+  --ion-color-light: #f4f5f8;
+
+  // ✅ Optimización de tipografía (menos fuentes = menos memoria)
+  --ion-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  
+  // ✅ Espaciado consistente (reutilizar valores)
+  --ion-padding: 16px;
+  --ion-margin: 16px;
+}
+
+// ✅ Optimización para modo oscuro (solo si es necesario)
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ion-color-primary: #ff4757;
+    --ion-color-secondary: #5dade2;
+    --ion-background-color: #121212;
+    --ion-text-color: #ffffff;
+  }
+}
+
+// ✅ Clases utilitarias optimizadas (evitar CSS innecesario)
+.text-center { text-align: center; }
+.text-bold { font-weight: bold; }
+.margin-top { margin-top: var(--ion-margin); }
+.padding-all { padding: var(--ion-padding); }
+
+// ✅ Optimización específica para la app
+.resto-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.resto-button {
+  --border-radius: 8px;
+  --padding-start: 16px;
+  --padding-end: 16px;
+}

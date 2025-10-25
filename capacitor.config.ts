@@ -1,24 +1,35 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'io.ionic.starter',
-  appName: 'restoApp',
+  appId: 'com.restoapp.mobile', // ✅ App ID único y profesional
+  appName: 'RestoApp',          // ✅ Nombre más corto
   webDir: 'www',
   android: {
-    allowMixedContent: true
+    allowMixedContent: true,
+    // ✅ Configuraciones para evitar crashes del WebView
+    webContentsDebuggingEnabled: true, // Habilitar debugging remoto
+    useLegacyBridge: false,
+    backgroundColor: '#ffffff',
+    // ✅ Configuraciones adicionales para evitar errores del sistema
+    appendUserAgent: 'RestoAppMobile/1.0',
+    overrideUserAgent: 'Mozilla/5.0 (Linux; Android 10; Mobile) AppleWebKit/537.36 RestoApp/1.0'
   },
   plugins: {
     StatusBar: {
-      overlaysWebView: false, // 👈 evita que el contenido se meta debajo de la barra
-      style: 'WHITE',          // texto oscuro (ideal si el fondo es claro)
-      backgroundColor: '#000000ff', // fondo blanco para la barra
+      overlaysWebView: false,
+      style: 'WHITE',
+      backgroundColor: '#000000ff',
     },
     SplashScreen: {
-      // Va a tardar segundo y medio, con esto se ve splash estatico que es mejor que la pantalla negra a mi parecer
-      launchShowDuration: 1000, // indica cuanto tiempo va a durar el splash, por defecto viene en 3000
+      // ✅ Configuración muy conservadora para evitar crashes
+      launchShowDuration: 2000, // ✅ Más tiempo para cargar
       launchAutoHide: true,
-      launchFadeOutDuration: 500, // fade out del splash, para no tener un cambio brusco
-      backgroundColor: "#ff2525", // Darle el color de mi splash screen
+      launchFadeOutDuration: 500,
+      backgroundColor: "#ff2525",
+      showSpinner: false, // ✅ Sin spinner para evitar problemas
+      splashFullScreen: false,
+      splashImmersive: false,
+      androidSpinnerStyle: 'small'
     },
     PushNotifications: {
       presentationOptions: ["badge", "sound", "alert"]
@@ -27,6 +38,12 @@ const config: CapacitorConfig = {
       enabled: true
     }
   },
+  // ✅ Configuración del servidor para mejor compatibilidad
+  server: {
+    androidScheme: 'https',
+    allowNavigation: ['*'],
+    errorPath: 'error.html' // ✅ Página de error personalizada
+  }
 };
 
 export default config;

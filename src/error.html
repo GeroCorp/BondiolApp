@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Error - Resto App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            text-align: center; 
+            padding: 50px;
+            background: #f5f5f5;
+            margin: 0;
+        }
+        .error-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        button {
+            background: #ff2525;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            margin: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #e02121;
+        }
+        .logo {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="logo">🍽️</div>
+        <h2>Error de Aplicación</h2>
+        <p>La aplicación encontró un problema al inicializar.</p>
+        <p><small>Si este problema persiste, contacta al soporte técnico.</small></p>
+        
+        <button onclick="window.location.reload()">🔄 Reintentar</button>
+        <button onclick="clearAndReload()">🗑️ Limpiar Datos</button>
+        <button onclick="goToLogin()">🔑 Ir a Login</button>
+    </div>
+    
+    <script>
+        function clearAndReload() {
+            try {
+                if (typeof localStorage !== 'undefined') {
+                    localStorage.clear();
+                }
+                if (typeof sessionStorage !== 'undefined') {
+                    sessionStorage.clear();
+                }
+            } catch(e) {
+                console.log('No se pudo limpiar storage:', e);
+            }
+            window.location.reload();
+        }
+        
+        function goToLogin() {
+            try {
+                window.location.href = '/login';
+            } catch(e) {
+                window.location.reload();
+            }
+        }
+    </script>
+</body>
+</html>

@@ -7,11 +7,16 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "build:prod": "ng build --configuration=production",
+    "build:optimized": "ng build --configuration=production --aot --build-optimizer --common-chunk=false --vendor-chunk=false",
     "watch": "ng build --watch --configuration development",
     "phone": "ionic cap run android --external --livereload --public-host=192.168.0.121",
     "test": "ng test",
     "lint": "ng lint",
-    "android:refresh": "ionic build && npx cap sync android && npx cap open android"
+    "android:refresh": "ionic build && npx cap sync android && npx cap open android",
+    "android:build": "npm run build:optimized && npx cap sync android && npx cap run android --build",
+    "android:build:gradle": "npm run build:optimized && npx cap sync android && cd android && gradlew clean assembleRelease",
+    "android:build:debug": "npm run build:optimized && npx cap sync android && cd android && ./gradlew clean assembleDebug"
   },
   "private": true,
   "dependencies": {
