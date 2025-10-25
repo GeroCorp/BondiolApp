@@ -4,17 +4,17 @@ import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
-import { Tab6EncuestasPageRoutingModule } from './tab6-encuestas-routing.module';
+import { Tab7ResultadosPageRoutingModule } from './tab7-resultados-routing.module';
 
-import { Tab6EncuestasPage } from './tab6-encuestas.page';
+import { Tab7ResultadosPage } from './tab7-resultados.page';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    Tab6EncuestasPageRoutingModule
+    Tab7ResultadosPageRoutingModule
   ],
-  declarations: [Tab6EncuestasPage]
+  declarations: [Tab7ResultadosPage]
 })
-export class Tab6EncuestasPageModule {}
+export class Tab7ResultadosPageModule {}

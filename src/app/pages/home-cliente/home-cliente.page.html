@@ -14,7 +14,10 @@
     <!-- Header de bienvenida -->
     <div class="bienvenida-header">
       <div class="avatar-container">
-        <img [src]="cliente?.foto || 'assets/avatar_placeholder.svg'" alt="Foto de perfil">
+        <img
+          [src]="cliente?.foto || 'assets/avatar_placeholder.svg'"
+          alt="Foto de perfil"
+        />
       </div>
       <h1>¡Bienvenido/a!</h1>
       <h2>{{ cliente?.nombre }} {{ cliente?.apellido }}</h2>
@@ -64,10 +67,17 @@
           Unirse a Lista de Espera
         </ion-button>
 
-         <ion-button expand="block" size="large" fill="outline" color="dark" (click)="unirseListaEsperaSimulado()" style="margin-top: 10px;">
-            <ion-icon slot="start" name="bug-outline"></ion-icon>
-            [TESTING] Unirse a Lista de Espera
-          </ion-button>
+        <ion-button
+          expand="block"
+          size="large"
+          fill="outline"
+          color="dark"
+          (click)="unirseListaEsperaSimulado()"
+          style="margin-top: 10px"
+        >
+          <ion-icon slot="start" name="bug-outline"></ion-icon>
+          [TESTING] Unirse a Lista de Espera
+        </ion-button>
       </ion-card-content>
     </ion-card>
     }
@@ -116,16 +126,19 @@
           }
         </ion-button>
 
-        <ion-button 
-        expand="block" 
-        color="secondary" 
-        (click)="verHistorial()"
-        [disabled]="!mesaVerificada">
-          <ion-icon name="list-outline" slot="start"></ion-icon>
-          Mis Pedidos
-          @if (!mesaVerificada) {
-            <ion-icon name="lock-closed" slot="end"></ion-icon>
-          }
+        <ion-button
+          expand="block"
+          color="tertiary"
+          (click)="verHistorial()"
+          [disabled]="!mesaVerificada"
+        >
+          <ion-icon name="receipt-outline" slot="start"></ion-icon>
+          Historial de Pedidos
+          <ion-icon
+            *ngIf="!mesaVerificada"
+            name="lock-closed"
+            slot="end"
+          ></ion-icon>
         </ion-button>
 
         <ion-button
@@ -143,22 +156,47 @@
         <ion-button
           expand="block"
           color="tertiary"
-          (click)="verEncuestas()"
-          [disabled]="!mesaVerificada"
-        >
-          <ion-icon name="game-controller-outline" slot="start"></ion-icon>
-          Encuestas @if (!mesaVerificada) {
-          <ion-icon name="lock-closed" slot="end"></ion-icon>
-        }
-        </ion-button>
-        <ion-button
-          expand="block"
-          color="tertiary"
           (click)="verJuegos()"
           [disabled]="!mesaVerificada"
         >
           <ion-icon name="game-controller-outline" slot="start"></ion-icon>
           Juegos y Descuentos @if (!mesaVerificada) {
+          <ion-icon name="lock-closed" slot="end"></ion-icon>
+          }
+        </ion-button>
+
+        <ion-button
+          expand="block"
+          color="success"
+          (click)="solicitarCuenta()"
+          [disabled]="!mesaVerificada"
+        >
+          <ion-icon name="card-outline" slot="start"></ion-icon>
+          Pedir la Cuenta @if (!mesaVerificada) {
+          <ion-icon name="lock-closed" slot="end"></ion-icon>
+          }
+        </ion-button>
+
+        <ion-button
+          expand="block"
+          color="secondary"
+          (click)="verEncuesta()"
+          [disabled]="!mesaVerificada"
+        >
+          <ion-icon name="clipboard-outline" slot="start"></ion-icon>
+          Encuesta @if (!mesaVerificada) {
+          <ion-icon name="lock-closed" slot="end"></ion-icon>
+          }
+        </ion-button>
+
+        <ion-button
+          expand="block"
+          color="secondary"
+          (click)="verResultados()"
+          [disabled]="!mesaVerificada"
+        >
+          <ion-icon name="clipboard-outline" slot="start"></ion-icon>
+          resultados encuestas @if (!mesaVerificada) {
           <ion-icon name="lock-closed" slot="end"></ion-icon>
           }
         </ion-button>

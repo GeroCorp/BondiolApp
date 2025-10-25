@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/supabase';
 import { ClienteAnonimoService } from '../services/cliente-anonimo.service';
-import { AlertController } from '@ionic/angular';
+import { AlertController, ToastController } from '@ionic/angular';
 
 @Component({
   selector: 'app-tabs-cliente',
@@ -12,42 +12,46 @@ import { AlertController } from '@ionic/angular';
 })
 export class TabsClientePage implements OnInit, OnDestroy {
   cantidadItems: number = 0;
+  private pedidoSubscription: any;
 
   constructor(
     private router: Router,
     private supabase: AuthService,
     private clienteService: ClienteAnonimoService,
-    private alertCtrl: AlertController
+    private alertCtrl: AlertController,
+    private toastCtrl: ToastController
   ) {}
 
   ngOnInit() {
+    console.log('🔄 Tabs-cliente inicializado');
     
     // Suscribirse a cambios en el pedido
-    this.clienteService.pedido$.subscribe(pedido => {
+    this.pedidoSubscription = this.clienteService.pedido$.subscribe(pedido => {
       this.cantidadItems = pedido.reduce((sum, item) => sum + item.quantity, 0);
     });
   }
 
   ngOnDestroy() {
-    // Limpiar al salir
-    this.limpiarSesion();
-  }
-
-  private verificarSesion() {
-    const cliente = sessionStorage.getItem('cliente_anonimo');
-    const mesa = sessionStorage.getItem('numero_mesa');
-
-    if (!cliente || !mesa) {
-      this.router.navigate(['/ingreso-anonimo'], { replaceUrl: true });
+    console.log('🔄 Tabs-cliente destruido');
+    
+    // Solo desuscribirse del observable, NO limpiar la sesión
+    if (this.pedidoSubscription) {
+      this.pedidoSubscription.unsubscribe();
     }
   }
 
+  /**
+   * ✅ ÚNICO método que cierra sesión - Se ejecuta al presionar el botón de salir
+   */
   async salir() {
     const alert = await this.alertCtrl.create({
-      header: 'Salir',
-      message: '¿Deseas salir? Perderás tu sesión y la mesa será liberada.',
+      header: 'Cerrar Sesión',
+      message: '¿Deseas salir? Tu mesa será liberada y deberás registrarte nuevamente.',
       buttons: [
-        { text: 'Cancelar', role: 'cancel' },
+        { 
+          text: 'Cancelar', 
+          role: 'cancel' 
+        },
         {
           text: 'Salir',
           handler: async () => await this.cerrarSesion()
@@ -58,52 +62,45 @@ export class TabsClientePage implements OnInit, OnDestroy {
     await alert.present();
   }
 
+  /**
+   * ✅ Cierra la sesión, libera la mesa y limpia los datos
+   */
   private async cerrarSesion() {
     try {
-      const clienteData = sessionStorage.getItem('cliente_anonimo');
+      console.log('🔐 Cerrando sesión desde tabs-cliente...');
+
+      // Usar el servicio para liberar la mesa correctamente
+      // Esto:
+      // 1. Limpia los mensajes del chat
+      // 2. Libera la mesa en la BD
+      // 3. Actualiza el cliente anónimo
+      // 4. Limpia el storage local
+      await this.clienteService.cerrarSesionYLiberarMesa();
+
+      await this.showToast('Sesión cerrada correctamente', 'success');
       
-      if (clienteData) {
-        const cliente = JSON.parse(clienteData);
-
-        // Obtener mesa asignada
-        const { data } = await this.supabase.client
-          .from('clientes_anonimos')
-          .select('mesa_asignada')
-          .eq('id_clienteanonimo', cliente.id)
-          .single();
-
-        // Liberar mesa
-        if (data?.mesa_asignada) {
-          await this.supabase.client
-            .from('mesas')
-            .update({
-              cliente_asignado: null,
-              disponible: true
-            })
-            .eq('id', data.mesa_asignada);
-
-          // Actualizar cliente
-          await this.supabase.client
-            .from('clientes_anonimos')
-            .update({
-              mesa_asignada: null,
-              en_espera: false
-            })
-            .eq('id_clienteanonimo', cliente.id);
-        }
-      }
-
-      this.limpiarSesion();
-      this.router.navigate(['/ingreso-anonimo'], { replaceUrl: true });
-    } catch (error) {
-      console.error('Error al cerrar sesión:', error);
+      // Navegar a ingreso anónimo
+      await this.router.navigate(['/ingreso-anonimo'], { replaceUrl: true });
+      
+    } catch (error: any) {
+      console.error('❌ Error al cerrar sesión:', error);
+      await this.showToast('Error al cerrar sesión: ' + error.message, 'danger');
+      
+      // Navegar de todas formas para que no quede atascado
+      await this.router.navigate(['/ingreso-anonimo'], { replaceUrl: true });
     }
   }
 
-  private limpiarSesion() {
-    sessionStorage.removeItem('cliente_anonimo');
-    sessionStorage.removeItem('numero_mesa');
-    sessionStorage.removeItem('polling_interval');
-    this.clienteService.limpiarPedido();
+  /**
+   * ✅ Helper para mostrar toasts
+   */
+  private async showToast(message: string, color: 'success' | 'danger' | 'warning') {
+    const toast = await this.toastCtrl.create({
+      message,
+      duration: 2500,
+      color,
+      position: 'bottom'
+    });
+    await toast.present();
   }
 }
