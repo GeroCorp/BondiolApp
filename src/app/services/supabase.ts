@@ -39,6 +39,19 @@ export class AuthService {
     this.initAuthListener(); // ✅ Inicializa el listener de autenticación
   }
 
+  // ✅ Verifica si localStorage está disponible (importante para Android WebView)
+  private isLocalStorageAvailable(): boolean {
+    try {
+      const test = '__localStorage_test__';
+      localStorage.setItem(test, test);
+      localStorage.removeItem(test);
+      return true;
+    } catch (e) {
+      console.warn('localStorage no disponible:', e);
+      return false;
+    }
+  }
+
   // ✅ Inicializa el listener de cambios de autenticación
   private initAuthListener() {
     // ✅ Evitar múltiples listeners registrados
@@ -100,6 +113,12 @@ export class AuthService {
   // ✅ Guarda información de sesión en localStorage
   private async saveUserSession(user: any) {
     try {
+      // Verificar si localStorage está disponible
+      if (!this.isLocalStorageAvailable()) {
+        console.log('⚠️ localStorage no disponible - usando memoria');
+        return;
+      }
+      
       // Verificar si ya existe sesión guardada para evitar queries innecesarias
       const existingSession = this.getSavedSession();
       if (existingSession && existingSession.id === user.id) {
@@ -144,13 +163,27 @@ export class AuthService {
 
   // ✅ Limpia la información de sesión
   private clearUserSession() {
-    localStorage.removeItem('userSession');
+    try {
+      if (this.isLocalStorageAvailable()) {
+        localStorage.removeItem('userSession');
+      }
+    } catch (error) {
+      console.warn('Error limpiando sesión:', error);
+    }
   }
 
   // ✅ Obtiene la sesión guardada
   getSavedSession() {
-    const saved = localStorage.getItem('userSession');
-    return saved ? JSON.parse(saved) : null;
+    try {
+      if (!this.isLocalStorageAvailable()) {
+        return null;
+      }
+      const saved = localStorage.getItem('userSession');
+      return saved ? JSON.parse(saved) : null;
+    } catch (error) {
+      console.warn('Error obteniendo sesión guardada:', error);
+      return null;
+    }
   }
 
   // ✅ Verifica si hay una sesión activa y válida
@@ -224,11 +257,18 @@ export class AuthService {
         return { success: false };
       }
 
-      // 2. Verificar sesión de Supabase de forma simple
-      const { data: { session } } = await this.supabase.auth.getSession();
-      if (!session || session.user.id !== savedSession.id) {
-        this.clearUserSession();
-        return { success: false };
+      // 2. Verificar si la sesión es muy antigua (opcional: evitar verificaciones innecesarias)
+      const lastLogin = new Date(savedSession.lastLogin);
+      const now = new Date();
+      const hoursSinceLogin = (now.getTime() - lastLogin.getTime()) / (1000 * 60 * 60);
+      
+      // Si es mayor a 24 horas, verificar con Supabase
+      if (hoursSinceLogin > 24) {
+        const { data: { session } } = await this.supabase.auth.getSession();
+        if (!session || session.user.id !== savedSession.id) {
+          this.clearUserSession();
+          return { success: false };
+        }
       }
 
       // 3. Usar datos guardados para determinar redirección (evitar queries)

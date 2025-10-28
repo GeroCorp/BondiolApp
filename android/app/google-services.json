@@ -9,7 +9,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:730225999697:android:b55735bf11ad17508e9d70",
         "android_client_info": {
-          "package_name": "io.ionic.starter"
+          "package_name": "com.restoapp.mobile"
         }
       },
       "oauth_client": [],
