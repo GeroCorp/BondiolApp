@@ -24,23 +24,23 @@ export class Mozo {
   }
   
   async getChatsMesas(id_mesa: number){
-    const hoy = new Date();
-    const fechaHoy = hoy.toISOString().split('T')[0]; // Esto da formato YYYY-MM-DD
+  const hoy = new Date();
+  const fechaHoy = hoy.toISOString().split('T')[0]; // Esto da formato YYYY-MM-DD
 
-    const { data, error } = await this.supabase
-    .from('mensajes')
-    .select(`*`)
-    .eq('nroMesa', id_mesa)
-    .gte('date_sended', `${fechaHoy}T00:00:00.000Z`) // Desde las 00:00:00 de hoy
-    .lte('date_sended', `${fechaHoy}T23:59:59.999Z`) // Hasta las 23:59:59 de hoy
-    .order('date_sended', { ascending: true });
+  const { data, error } = await this.supabase
+  .from('mensajes')
+  .select(`*`)
+  .eq('nroMesa', id_mesa)
+  .gte('date_sended', `${fechaHoy}T00:00:00.000Z`) // Desde las 00:00:00 de hoy
+  .lte('date_sended', `${fechaHoy}T23:59:59.999Z`) // Hasta las 23:59:59 de hoy
+  .order('date_sended', { ascending: true });
 
-    if (error) {
-      console.error('Error al obtener los mensajes del chat:', error);
-      return [];
-    }
-    return data;
+  if (error) {
+    console.error('Error al obtener los mensajes del chat:', error);
+    return [];
   }
+  return data;
+}
 
   async sendMessage(id_mesa: number, contenido: string, nombre_usuario: string = 'Mozo') {
     const { error } = await this.supabase
@@ -150,35 +150,120 @@ export class Mozo {
   /////////////////////
   // Handle pedidos //
 
-  async getPedidosPendientes(){
-    const { data, error } = await this.supabase
+  async getPedidosPendientes() {
+  const { data, error } = await this.supabase
     .from('pedidos')
-    .select(`*,
-      mesa:mesas(numero),
-      cliente:clientes(nombre, apellido)`)
+    .select(`
+      *,
+      mesa:mesas(numero, id),
+      cliente:clientes(nombre, apellido)
+    `)
     .eq('estado', 'pendiente');
 
-    if (error) throw new Error('Error obteniendo pedidos pendientes: ' + error.message);
-    
-    console.log(data);
-
-    return data || []; 
+  if (error) {
+    console.error('❌ Error obteniendo pedidos:', error);
+    throw new Error('Error obteniendo pedidos pendientes: ' + error.message);
   }
 
-  async getPedidosConfirmados(){
-    const { data, error } = await this.supabase
+  console.log('📋 Pedidos pendientes obtenidos:', data?.length || 0);
+
+  if (data) {
+    const pedidosConCliente = await Promise.all(
+      data.map(async (pedido) => {
+        if (!pedido.cliente && pedido.mesa) {
+          const mesaId = pedido.mesa.id || pedido.mesa;
+          
+          console.log('🔍 Buscando cliente anónimo para mesa:', mesaId);
+          
+          const { data: mesaData } = await this.supabase
+            .from('mesas')
+            .select('cliente_asignado, numero')
+            .eq('id', mesaId)
+            .single();
+
+          if (mesaData?.cliente_asignado) {
+            const { data: anonimo } = await this.supabase
+              .from('clientes_anonimos')
+              .select('nombre')
+              .eq('id_clienteanonimo', mesaData.cliente_asignado)
+              .single();
+
+            if (anonimo) {
+              pedido.cliente = {
+                nombre: anonimo.nombre,
+                apellido: '(Anónimo)'
+              };
+              console.log('✅ Cliente anónimo encontrado:', anonimo.nombre);
+            } else {
+              console.log('⚠️ No se encontró cliente anónimo con ID:', mesaData.cliente_asignado);
+            }
+          }
+        }
+        return pedido;
+      })
+    );
+    
+    return pedidosConCliente;
+  }
+
+  return [];
+}
+
+  async getPedidosConfirmados() {
+  const { data, error } = await this.supabase
     .from('pedidos')
-    .select(`*,
-      mesa:mesas(numero),
-      cliente:clientes(nombre, apellido)`)
-    .in('estado', ['confirmado', 'en_preparación', 'listo'])
+    .select(`
+      *,
+      mesa:mesas(numero, id),
+      cliente:clientes(nombre, apellido)
+    `)
+    .in('estado', ['confirmado', 'en_preparación', 'listo', 'entregado', 'pago_pendiente'])
     .order('fecha', { ascending: false })
     .limit(20);
-    if (error) throw new Error('Error obteniendo pedidos confirmados: ' + error.message);
-    
-    console.log(data);
-    return data || [];
+
+  if (error) {
+    console.error('❌ Error obteniendo pedidos:', error);
+    throw new Error('Error obteniendo pedidos confirmados: ' + error.message);
   }
+
+  console.log('📋 Pedidos confirmados obtenidos:', data?.length || 0);
+
+  if (data) {
+    const pedidosConCliente = await Promise.all(
+      data.map(async (pedido) => {
+        if (!pedido.cliente && pedido.mesa) {
+          const mesaId = pedido.mesa.id || pedido.mesa;
+          
+          const { data: mesaData } = await this.supabase
+            .from('mesas')
+            .select('cliente_asignado')
+            .eq('id', mesaId)
+            .single();
+
+          if (mesaData?.cliente_asignado) {
+            const { data: anonimo } = await this.supabase
+              .from('clientes_anonimos')
+              .select('nombre')
+              .eq('id_clienteanonimo', mesaData.cliente_asignado)
+              .single();
+
+            if (anonimo) {
+              pedido.cliente = {
+                nombre: anonimo.nombre,
+                apellido: '(Anónimo)'
+              };
+            }
+          }
+        }
+        return pedido;
+      })
+    );
+    
+    return pedidosConCliente;
+  }
+
+  return [];
+}
 
   /**
  * Actualiza el estado de un pedido

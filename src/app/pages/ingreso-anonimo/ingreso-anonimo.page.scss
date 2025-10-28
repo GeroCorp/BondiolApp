@@ -1,0 +1,262 @@
+// TEMA OSCURO - Ingreso Anónimo
+// Variables del tema oscuro
+:host {
+  --background-dark: #1a1a1a;
+  --surface-dark: #2d2d2d;
+  --surface-variant: #3a3a3a;
+  --text-primary: #ffffff;
+  --text-secondary: #b3b3b3;
+  --primary-color: #bb86fc;
+  --secondary-color: #03dac6;
+  --accent-color: #ff6b47;
+  --error-color: #cf6679;
+  --success-color: #4caf50;
+  --border-color: #404040;
+  --shadow-dark: 0 8px 24px rgba(0, 0, 0, 0.6);
+}
+
+// Header personalizado
+ion-header {
+  ion-toolbar {
+    --background: linear-gradient(135deg, var(--surface-dark) 0%, var(--surface-variant) 100%);
+    --color: var(--text-primary);
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: var(--shadow-dark);
+
+    ion-title {
+      font-size: 22px;
+      font-weight: 600;
+      text-align: center;
+      color: var(--primary-color);
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    }
+  }
+}
+
+// Contenido con gradiente oscuro
+ion-content {
+  --background: linear-gradient(180deg, var(--background-dark) 0%, var(--surface-dark) 50%, #1a3a5a 100%);
+  --color: var(--text-primary);
+}
+
+// Wrapper del contenido
+.ion-padding {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 30px 20px !important;
+}
+
+// Estilo del item de entrada
+ion-item {
+  --background: var(--surface-dark);
+  --border-color: var(--border-color);
+  --color: var(--text-primary);
+  --placeholder-color: var(--text-secondary);
+  --highlight-color-focused: var(--primary-color);
+  border-radius: 12px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-dark);
+  border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+  overflow: hidden;
+
+  &::part(native) {
+    padding: 15px;
+  }
+
+  &.item-has-focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 8px 24px rgba(187, 134, 252, 0.4);
+    transform: translateY(-2px);
+  }
+
+  ion-label {
+    --color: var(--primary-color) !important;
+    font-weight: 500;
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+
+  ion-input {
+    --color: var(--text-primary);
+    --placeholder-color: var(--text-secondary);
+    font-size: 16px;
+  }
+}
+
+// Botones principales
+ion-button {
+  --border-radius: 12px;
+  --box-shadow: var(--shadow-dark);
+  font-weight: 600;
+  font-size: 16px;
+  text-transform: none;
+  letter-spacing: 0.5px;
+  margin: 10px 0;
+  height: 50px;
+  transition: all 0.3s ease;
+
+  ion-icon {
+    font-size: 24px;
+    margin-right: 8px;
+  }
+
+  // Botón primario (tomar foto e ingresar)
+  &:not([color]) {
+    --background: var(--primary-color);
+    --background-hover: color-mix(in srgb, var(--primary-color) 85%, white);
+    --background-activated: color-mix(in srgb, var(--primary-color) 75%, white);
+    --color: var(--background-dark);
+
+    &:hover {
+      box-shadow: 0 12px 30px rgba(187, 134, 252, 0.5);
+      transform: translateY(-2px);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+
+  // Botón secundario
+  &[color="secondary"] {
+    --background: var(--secondary-color);
+    --background-hover: color-mix(in srgb, var(--secondary-color) 85%, white);
+    --background-activated: color-mix(in srgb, var(--secondary-color) 75%, white);
+    --color: var(--background-dark);
+
+    &:hover {
+      box-shadow: 0 12px 30px rgba(3, 218, 198, 0.5);
+      transform: translateY(-2px);
+    }
+  }
+
+  // Botón deshabilitado
+  &[disabled] {
+    --background: var(--surface-variant);
+    --color: var(--text-secondary);
+    opacity: 0.6;
+    cursor: not-allowed;
+
+    &:hover {
+      box-shadow: var(--shadow-dark);
+      transform: none;
+    }
+  }
+}
+
+// Contenedor de preview de foto
+.foto-preview {
+  width: 100%;
+  max-width: 400px;
+  margin: 20px auto;
+  padding: 15px;
+  background: var(--surface-dark);
+  border-radius: 15px;
+  box-shadow: var(--shadow-dark);
+  border: 2px solid var(--border-color);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+    border-radius: 15px 15px 0 0;
+  }
+
+  &:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 12px 30px rgba(187, 134, 252, 0.4);
+    transform: scale(1.02);
+  }
+
+  img {
+    width: 100%;
+    height: auto;
+    max-height: 400px;
+    object-fit: cover;
+    border-radius: 10px;
+    display: block;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  }
+}
+
+// Animaciones de entrada
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+ion-item,
+ion-button,
+.foto-preview {
+  animation: fadeInUp 0.5s ease-out backwards;
+}
+
+ion-item {
+  animation-delay: 0.1s;
+}
+
+ion-button:nth-of-type(1) {
+  animation-delay: 0.2s;
+}
+
+.foto-preview {
+  animation-delay: 0.3s;
+}
+
+ion-button:nth-of-type(2) {
+  animation-delay: 0.4s;
+}
+
+ion-button:nth-of-type(3) {
+  animation-delay: 0.5s;
+}
+
+// Efectos de resplandor para botones activos
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(187, 134, 252, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(187, 134, 252, 0);
+  }
+}
+
+ion-button:not([disabled]):active {
+  animation: pulse 0.6s ease-out;
+}
+
+// Responsive
+@media (max-width: 576px) {
+  .ion-padding {
+    padding: 20px 15px !important;
+  }
+
+  ion-button {
+    height: 48px;
+    font-size: 15px;
+
+    ion-icon {
+      font-size: 22px;
+    }
+  }
+
+  .foto-preview {
+    img {
+      max-height: 300px;
+    }
+  }
+}

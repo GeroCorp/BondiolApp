@@ -1,8 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { ToastController, LoadingController } from '@ionic/angular';
+import { ToastController, LoadingController, AlertController } from '@ionic/angular';
 import { ClienteService } from 'src/app/services/cliente.service';
 import { EncuestaService } from 'src/app/services/encuesta.service';
+import { HapticService } from 'src/app/services/haptic.service';
+import { TipoClienteService } from 'src/app/services/tipo-cliente.service';
 
 @Component({
   selector: 'app-tab6-encuesta',
@@ -25,19 +27,77 @@ export class Tab6EncuestaPage implements OnInit {
 
   // ✅ Públicas para el HTML
   public clienteId: number = 0;
-  public mesaId: number = 0;
+  public mesaId: number | null = 0;
+  
 
   constructor(
     private router: Router,
     private clienteService: ClienteService,
     private encuestaService: EncuestaService,
     private toastController: ToastController,
-    private loadingController: LoadingController
+    private loadingController: LoadingController,
+    private hapticService: HapticService,
+    private alertController: AlertController,
+    private tipoClienteService: TipoClienteService
   ) {}
 
   async ngOnInit() {
-    await this.verificarEstadoEncuesta();
+  try {
+    // ✅ VERIFICAR SI YA RESPONDIÓ
+    const isAnonimo = this.tipoClienteService.isAnonimo();
+    const clienteData = this.tipoClienteService.getClienteData();
+    
+    let clienteId: number | null = null;
+    let mesaId: number | null = null;
+
+    if (isAnonimo) {
+      mesaId = clienteData?.mesa_asignada || null;
+      clienteId = null;
+    } else {
+      clienteId = await this.clienteService.getClientId();
+      mesaId = await this.clienteService.getMesaID(clienteId);
+    }
+
+    if (!mesaId) {
+      console.warn('⚠️ Sin mesa asignada');
+      return;
+    }
+
+    // ✅ VERIFICAR CON EL PARÁMETRO esAnonimo
+    const yaRespondio = await this.encuestaService.yaRespondiEncuesta(
+      clienteId,
+      mesaId,
+      isAnonimo  // ✅ PARÁMETRO FALTANTE
+    );
+
+    if (yaRespondio) {
+      const alert = await this.alertController.create({
+        header: 'Encuesta ya completada',
+        message: 'Ya has respondido la encuesta para esta mesa',
+        buttons: [
+          {
+            text: 'Ver resultados',
+            handler: () => {
+              this.router.navigate(['/tabs-cliente-registrado/tab7-resultados']);
+            }
+          },
+          {
+            text: 'Volver',
+            handler: () => {
+              this.router.navigate(['/home-cliente']);
+            }
+          }
+        ],
+        backdropDismiss: false
+      });
+      
+      await alert.present();
+    }
+    
+  } catch (error) {
+    console.error('❌ Error verificando encuesta:', error);
   }
+}
 
   async verificarEstadoEncuesta() {
     try {
@@ -85,71 +145,84 @@ export class Tab6EncuestaPage implements OnInit {
   }
 
   async enviarEncuesta() {
-    if (!this.formularioCompleto()) {
-      this.showToast('Por favor completa todas las preguntas', 'warning');
-      return;
-    }
-
-    // ✅ Validar datos necesarios
-    if (!this.clienteId || !this.mesaId) {
-      console.error('❌ Faltan datos:', { clienteId: this.clienteId, mesaId: this.mesaId });
-      this.showToast('Error: Datos de cliente o mesa no disponibles', 'danger');
-      return;
-    }
-
+  if (this.formularioCompleto()) {
     const loading = await this.loadingController.create({
       message: 'Enviando encuesta...',
       spinner: 'crescent',
     });
     await loading.present();
 
-    this.enviando = true;
-
     try {
-      console.log('📤 Enviando encuesta con datos:', {
-        clienteId: this.clienteId,
-        mesaId: this.mesaId,
-        respuestas: this.respuestas
-      });
+      // ✅ OBTENER DATOS DEL CLIENTE
+      const isAnonimo = this.tipoClienteService.isAnonimo();
+      const clienteData = this.tipoClienteService.getClienteData();
+      
+      let clienteId: number | null = null;
+      let mesaId: number | null = null;
 
+      if (isAnonimo) {
+        // ✅ ANÓNIMO
+        mesaId = clienteData?.mesa_asignada || null;
+        clienteId = null;
+        
+        console.log('🎭 Enviando encuesta de anónimo:', {
+          mesaId,
+          nombre: clienteData?.nombre
+        });
+      } else {
+        // ✅ REGISTRADO
+        clienteId = await this.clienteService.getClientId();
+        mesaId = await this.clienteService.getMesaID(clienteId);
+        
+        console.log('👤 Enviando encuesta de registrado:', {
+          clienteId,
+          mesaId
+        });
+      }
+
+      if (!mesaId) {
+        throw new Error('No se pudo obtener la mesa asignada');
+      }
+
+      // ✅ CRÍTICO: Pasar el parámetro esAnonimo
       await this.encuestaService.guardarRespuestas(
-        this.clienteId,
-        this.mesaId,
-        this.respuestas
+        clienteId,
+        mesaId,
+        this.respuestas,
+        isAnonimo  // ✅ PARÁMETRO FALTANTE
       );
 
       await loading.dismiss();
-      this.enviando = false;
-
-      this.showToast(
-        '¡Gracias por tu opinión! Tu encuesta ha sido enviada correctamente',
-        'success'
-      );
-
-      // ✅ Limpiar el formulario para nueva respuesta
-      this.respuestas = {
-        calidadComida: 0,
-        calidadServicio: 0,
-        ambiente: 0,
-        precioCalidad: 0,
-        recomendaria: null,
-        comentarios: ''
-      };
-
-      // ✅ Redirigir a resultados después de 2 segundos
-      setTimeout(() => {
-        this.verResultados();
-      }, 2000);
-
+      
+      await this.hapticService.vibrateSuccess();
+      
+      const alert = await this.alertController.create({
+        header: '✅ ¡Gracias!',
+        message: 'Tu opinión es muy importante para nosotros',
+        buttons: [
+          {
+            text: 'Aceptar',
+            handler: () => {
+              this.router.navigate(['/home-cliente']);
+            }
+          }
+        ]
+      });
+      
+      await alert.present();
+      
     } catch (error: any) {
       await loading.dismiss();
-      this.enviando = false;
       console.error('❌ Error enviando encuesta:', error);
+      await this.hapticService.vibrateError();
       
-      const errorMsg = error?.message || 'Error desconocido';
-      this.showToast(`Error al enviar la encuesta: ${errorMsg}`, 'danger');
+      this.showToast(
+        error.message || 'Error al enviar la encuesta',
+        'danger'
+      );
     }
   }
+}
 
   async verResultados() {
     this.router.navigate(['/tabs-cliente-registrado/tab7-resultados']);

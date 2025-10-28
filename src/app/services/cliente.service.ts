@@ -2,6 +2,7 @@ import { inject, Injectable, Injector, signal } from '@angular/core';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { environment } from 'src/environments/environment';
 import { Notification } from './notification';
+import { TipoClienteService } from './tipo-cliente.service';
 
 @Injectable({
   providedIn: 'root',
@@ -19,7 +20,7 @@ export class ClienteService {
   private injector = inject(Injector);
 
 
-  constructor() {
+  constructor(private tipoClienteService: TipoClienteService) {
     this.supabase = createClient(
       environment.SUPABASE_URL,
       environment.SUPABASE_ANON_KEY
@@ -301,45 +302,112 @@ getSubtotal(): number {
     const detalles = this._pedido();
     console.log('📋 Detalles del pedido:', detalles);
 
-    // Validar que hay items en el pedido
     if (!detalles || detalles.length === 0) {
       throw new Error('No hay items en el pedido');
     }
 
-    const idCliente = await this.getClientId();
-    const nroMesa = await this.getNroMesa(idCliente);
-    
-    // Validar que el cliente tiene mesa asignada
-    if (!nroMesa) {
-      throw new Error('No tienes una mesa asignada');
+    const isAnonimo = this.tipoClienteService.isAnonimo();
+    console.log('🎭 Es anónimo:', isAnonimo);
+
+    let idCliente: number | null = null;
+    let mesaId: number;
+    let nroMesa: number | null;
+
+    if (isAnonimo) {
+      // ✅ CLIENTE ANÓNIMO
+      console.log('🎭 Procesando pedido de cliente anónimo');
+      
+      const clienteData = this.tipoClienteService.getClienteData();
+      const idAnon = clienteData?.id_clienteanonimo ?? clienteData?.id_cliente;
+      
+      console.log('📊 Datos cliente anónimo:', {
+        id_clienteanonimo: idAnon,
+        mesa_asignada: clienteData?.mesa_asignada,
+        nombre: clienteData?.nombre
+      });
+
+      if (!idAnon) {
+        throw new Error('No se pudo obtener el ID del cliente anónimo');
+      }
+
+      mesaId = clienteData?.mesa_asignada;
+      
+      if (!mesaId) {
+        throw new Error('Cliente anónimo sin mesa asignada');
+      }
+
+      // ✅ CRÍTICO: Para anónimos, id_cliente = NULL en tabla pedidos
+      idCliente = null;
+      
+      // Obtener número de mesa para logs
+      const { data: mesaData } = await this.supabase
+        .from('mesas')
+        .select('numero')
+        .eq('id', mesaId)
+        .single();
+      
+      nroMesa = mesaData?.numero || mesaId;
+      
+      console.log('✅ Datos para pedido anónimo:', {
+        idCliente: 'NULL (anónimo)',
+        idAnonimoReal: idAnon,
+        mesaId,
+        nroMesa
+      });
+
+    } else {
+      // ✅ CLIENTE REGISTRADO
+      console.log('👥 Procesando pedido de cliente registrado');
+      
+      idCliente = await this.getClientId();
+      console.log('👤 ID Cliente registrado:', idCliente);
+
+      const { data: clienteData, error: clienteError } = await this.supabase
+        .from('clientes')
+        .select('mesa_asignada')
+        .eq('id_cliente', idCliente)
+        .single();
+
+      if (clienteError || !clienteData?.mesa_asignada) {
+        console.error('❌ Error obteniendo mesa del cliente:', clienteError);
+        throw new Error('No se pudo obtener el ID de la mesa asignada');
+      }
+
+      mesaId = clienteData.mesa_asignada;
+      
+      // Obtener número de mesa
+      const { data: mesaData } = await this.supabase
+        .from('mesas')
+        .select('numero')
+        .eq('id', mesaId)
+        .single();
+      
+      nroMesa = mesaData?.numero || mesaId;
+
+      console.log('✅ Datos para pedido registrado:', {
+        idCliente,
+        mesaId,
+        nroMesa
+      });
     }
-
-    // ✅ CORRECCIÓN: Obtener el ID de la mesa desde mesa_asignada del cliente
-    const { data: clienteData, error: clienteError } = await this.supabase
-      .from('clientes')
-      .select('mesa_asignada')
-      .eq('id_cliente', idCliente)
-      .single();
-
-    if (clienteError || !clienteData?.mesa_asignada) {
-      throw new Error('No se pudo obtener el ID de la mesa asignada');
-    }
-
-    const mesaId = clienteData.mesa_asignada; // Este es el ID correcto
     
     // Calcular totales
     const subtotal = this.getSubtotal();
     const totalConDescuento = await this.getTotal();
-    const descuento = await this.getDescuentoCliente(idCliente, mesaId);
+    const descuento = idCliente ? await this.getDescuentoCliente(idCliente, mesaId) : 0;
     
-    console.log('💰 Subtotal:', subtotal);
-    console.log('🎮 Descuento aplicado:', descuento + '%');
-    console.log('💰 Total con descuento:', totalConDescuento);
-    console.log('🪑 Mesa ID:', mesaId, '(Número:', nroMesa + ')');
+    console.log('💰 Cálculos del pedido:', {
+      subtotal,
+      descuento: descuento + '%',
+      totalConDescuento,
+      mesaId,
+      nroMesa
+    });
 
-    const cabecera = {
-      mesa: mesaId, // ✅ Usar el ID de la mesa, no el número
-      id_cliente: idCliente,
+    // ✅ CABECERA: id_cliente puede ser NULL para anónimos
+    const cabecera: any = {
+      mesa: mesaId,
+      id_cliente: idCliente, // NULL para anónimos, número para registrados
       fecha: new Date().toISOString(),
       estado: 'pendiente',
       total: Math.round(totalConDescuento)
@@ -354,6 +422,18 @@ getSubtotal(): number {
 
     if (error) {
       console.error('❌ Error insertando pedido:', error);
+      console.error('📋 Detalles del error:', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        cabeceraEnviada: cabecera
+      });
+      
+      if (error.code === '23503') {
+        throw new Error('Error de referencia: El cliente o mesa no existe en la base de datos');
+      }
+      
       throw new Error('Error al crear el pedido: ' + error.message);
     }
 
@@ -366,18 +446,13 @@ getSubtotal(): number {
 
     // Insertar detalles del pedido
     const detallesPromises = detalles.map(async (item) => {
-      console.log(
-        '🔄️ Item a insertar: \nProducto: ',
-        item.nombre,
-        '\nCantidad: ',
-        item.quantity,
-        '\nPrecio: $',
-        item.precio,
-        '\nTipo: ',
-        item.tipo
-      );
+      console.log('🔄️ Insertando item:', {
+        nombre: item.nombre,
+        cantidad: item.quantity,
+        precio: item.precio,
+        tipo: item.tipo
+      });
 
-      // Validar que el item tiene los campos necesarios
       if (!item.nombre || !item.quantity || !item.precio || !item.tipo) {
         console.error('❌ Item inválido:', item);
         throw new Error('Item con datos incompletos: ' + item.nombre);
@@ -397,25 +472,38 @@ getSubtotal(): number {
         .select();
 
       if (detalleError) {
-        console.error('❌ Error insertando detalle de pedido:', detalleError);
+        console.error('❌ Error insertando detalle:', detalleError);
         throw new Error('Error al insertar detalle: ' + detalleError.message);
       }
 
-      console.log('✅ Detalle insertado:', detalleData);
+      console.log('✅ Detalle insertado correctamente');
       return detalleData;
     });
 
-    // Esperar a que todos los detalles se inserten
     await Promise.all(detallesPromises);
 
     console.log('✅ Todos los detalles insertados correctamente');
+
+    // ✅ ENVIAR NOTIFICACIÓN AL MOZO
+    try {
+      await this.notificationService.sendNotificationToPerfil(
+        'mozo',
+        '🍽️ Nuevo pedido',
+        `Mesa ${nroMesa} - Pedido #${idPedido}${isAnonimo ? ' (Cliente anónimo)' : ''}`
+      );
+      console.log('✅ Notificación enviada al mozo');
+    } catch (notifError) {
+      console.error('⚠️ Error enviando notificación:', notifError);
+      // No fallar el pedido si falla la notificación
+    }
 
     // Limpiar el pedido después de insertarlo
     this.clearPedido();
     
     return idPedido;
   } catch (error: any) {
-    console.error('❌ Error en insertPedido:', error);
+    console.error('❌ Error completo en insertPedido:', error);
+    console.error('📋 Stack trace:', error.stack);
     throw error;
   }
 }
@@ -426,106 +514,250 @@ getSubtotal(): number {
   return this.supabase;
 }
   
-  async getChatMessages(){
-    const mesa = await this.getNroMesa(await this.getClientId())
-    const nombreCliente = await this.getNombreCliente()
+  async getChatMessages() {
+  try {
+    const isAnonimo = this.tipoClienteService.isAnonimo();
+    const clienteData = this.tipoClienteService.getClienteData();
     
-    // Obtener la fecha de hoy en formato YYYY-MM-DD
-    const hoy = new Date();
-    const fechaHoy = hoy.toISOString().split('T')[0]; // Esto da formato YYYY-MM-DD
+    let nroMesa: number | null = null;
+
+    if (isAnonimo) {
+      const mesaId = clienteData?.mesa_asignada || null;
+      
+      if (!mesaId) {
+        console.warn('⚠️ Cliente anónimo sin mesa');
+        return [];
+      }
+
+      // ✅ CRÍTICO: Obtener el NÚMERO de mesa desde la tabla mesas
+      const { data: mesaData, error: mesaError } = await this.supabase
+        .from('mesas')
+        .select('numero')
+        .eq('id', mesaId)
+        .single();
+
+      if (mesaError || !mesaData) {
+        console.error('❌ Error obteniendo número de mesa:', mesaError);
+        return [];
+      }
+
+      nroMesa = mesaData.numero;
+      console.log('🎭 Cliente anónimo - Mesa ID:', mesaId, '→ Número:', nroMesa);
+      
+    } else {
+      const clienteId = await this.getClientId();
+      nroMesa = await this.getNroMesa(clienteId);
+      
+      console.log('👤 Cliente registrado - Mesa número:', nroMesa);
+    }
+    
+    if (!nroMesa) {
+      console.warn('⚠️ No se pudo obtener número de mesa');
+      return [];
+    }
+
+    const nombreCliente = isAnonimo 
+      ? clienteData?.nombre 
+      : await this.getNombreCliente();
+    
+    console.log('📋 Cargando mensajes para:', {
+      cliente: nombreCliente,
+      nroMesa: nroMesa,
+      isAnonimo
+    });
     
     const { data, error } = await this.supabase
-    .from('mensajes')
-    .select('*')
-    .eq('nroMesa', mesa)
-    .order('date_sended', { ascending: true });
+      .from('mensajes')
+      .select('*')
+      .eq('nroMesa', nroMesa)
+      .order('date_sended', { ascending: true });
 
-  if (error) {
-    console.error('❌ Error obteniendo mensajes:', error);
+    if (error) {
+      console.error('❌ Error obteniendo mensajes:', error);
+      return [];
+    }
+
+    console.log('✅ Mensajes obtenidos de la mesa', nroMesa, ':', data?.length || 0);
+    
+    if (data && data.length > 0) {
+      console.log('📝 Primeros mensajes:', data.slice(0, 3));
+    }
+    
+    return data || [];
+  } catch (error) {
+    console.error('❌ Error en getChatMessages:', error);
     return [];
   }
-
-  console.log('✅ Mensajes obtenidos:', data?.length || 0);
-  return data || [];
 }
 
-  async sendMessage(content: string){
-    const idCliente = await this.getClientId()
-    const nroMesa = await this.getNroMesa(idCliente)
-    const nombre = await this.getNombreCliente()
+async sendMessage(content: string) {
+  try {
+    const isAnonimo = this.tipoClienteService.isAnonimo();
+    const clienteData = this.tipoClienteService.getClienteData();
+    
+    let nroMesa: number | null = null;
+    let nombre: string;
+
+    if (isAnonimo) {
+      const mesaId = clienteData?.mesa_asignada || null;
+      
+      if (!mesaId) {
+        throw new Error('No tienes una mesa asignada');
+      }
+
+      const { data: mesaData, error: mesaError } = await this.supabase
+        .from('mesas')
+        .select('numero')
+        .eq('id', mesaId)
+        .single();
+
+      if (mesaError || !mesaData) {
+        console.error('❌ Error obteniendo número de mesa:', mesaError);
+        throw new Error('Error al obtener número de mesa');
+      }
+
+      nroMesa = mesaData.numero;
+      nombre = clienteData?.nombre || 'Cliente Anónimo';
+      
+      console.log('🎭 Enviando mensaje de anónimo:', {
+        nombre,
+        mesaId,
+        nroMesa
+      });
+    } else {
+      const idCliente = await this.getClientId();
+      nroMesa = await this.getNroMesa(idCliente);
+      nombre = await this.getNombreCliente();
+      
+      console.log('👤 Enviando mensaje de registrado:', {
+        nombre,
+        nroMesa
+      });
+    }
+
+    if (!nroMesa) {
+      throw new Error('No se pudo obtener el número de mesa');
+    }
 
     const { data, error } = await this.supabase
-    .from('mensajes')
-    .insert([
-      {
-        contenido: content,
-        nombre_usuario: nombre,
-        date_sended: new Date().toISOString(),
-        nroMesa
-      }
-    ]).select();
+      .from('mensajes')
+      .insert([
+        {
+          contenido: content,
+          nombre_usuario: nombre,
+          date_sended: new Date().toISOString(),
+          nroMesa
+        }
+      ])
+      .select();
 
     if (error) {
       console.error('❌ Error enviando mensaje:', error);
       throw new Error('Error enviando mensaje: ' + error.message);
     }
 
-    if (data){
-      this.notificationService.sendNotificationToPerfil(
-        'mozo',
-        `Nueva consulta de la mesa ${nroMesa}`,
-        `${nombre}: ${content}`
-      );
+    if (data) {
+      console.log('✅ Mensaje enviado correctamente a mesa', nroMesa);
+      
+      try {
+        await this.notificationService.sendNotificationToPerfil(
+          'mozo',
+          `Nueva consulta de la mesa ${nroMesa}`,
+          `${nombre}: ${content}`
+        );
+      } catch (notifError) {
+        console.error('⚠️ Error enviando notificación:', notifError);
+      }
     }
-
+  } catch (error) {
+    console.error('❌ Error en sendMessage:', error);
+    throw error;
   }
+}
 
-  async subscribeToNewMessages(signal: any) {
-    try {
-      this.supabase
-        .channel('custom-messages-channel')
-        .on(
-          'postgres_changes',
-          { event: 'INSERT', schema: 'public', table: 'mensajes' },
-          (payload) => {
-            console.log('Nuevo mensaje recibido:', payload);
-            const newRow = payload.new;
-            signal.update((arr: any) => {
-              return [...arr, newRow];
-            });
-          }
-        )
-        .subscribe();
-    } catch (error) {
-      console.error('Error al suscribirse a nuevos mensajes: ' + error);
-    }
+async subscribeToNewMessages(signal: any) {
+  try {
+    this.supabase
+      .channel('custom-messages-channel')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'mensajes' },
+        (payload) => {
+          console.log('Nuevo mensaje recibido:', payload);
+          const newRow = payload.new;
+          signal.update((arr: any) => {
+            return [...arr, newRow];
+          });
+        }
+      )
+      .subscribe();
+  } catch (error) {
+    console.error('Error al suscribirse a nuevos mensajes: ' + error);
   }
+}
   // Metodos para manejo de clientes
 
-  async getClientId() {
-    const userid = (await this.supabase.auth.getUser()).data.user?.id;
-    const { data, error } = await this.supabase
-      .from('clientes')
-      .select('id_cliente')
-      .eq('user_id', userid);
-
-    if (error)
-      throw new Error('Error al obtener id del cliente: ' + error.message);
-
-    return data[0].id_cliente ?? -1;
+  async getClientId(): Promise<number> {
+  // ✅ Verificar si es anónimo
+  if (this.tipoClienteService.isAnonimo()) {
+    const clienteData = this.tipoClienteService.getClienteData();
+    const idAnonimo = clienteData?.id_clienteanonimo ?? clienteData?.id_cliente;
+    
+    if (idAnonimo) {
+      console.log('✅ ID Cliente Anónimo:', idAnonimo);
+      return idAnonimo;
+    }
+    
+    throw new Error('No se pudo obtener el ID del cliente anónimo');
   }
-  async getNombreCliente() {
+  
+  // ✅ Si es registrado, usar el método original
+  const userid = (await this.supabase.auth.getUser()).data.user?.id;
+  if (!userid) {
+    throw new Error('Usuario no autenticado');
+  }
+  
+  const { data, error } = await this.supabase
+    .from('clientes')
+    .select('id_cliente')
+    .eq('user_id', userid)
+    .single();
+
+  if (error) {
+    throw new Error('Error al obtener id del cliente: ' + error.message);
+  }
+
+  console.log('✅ ID Cliente Registrado:', data.id_cliente);
+  return data.id_cliente ?? -1;
+}
+
+  async getNombreCliente(): Promise<string> {
+  try {
+    if (this.tipoClienteService.isAnonimo()) {
+      const clienteData = this.tipoClienteService.getClienteData();
+      const nombre = clienteData?.nombre || 'Cliente Anónimo';
+      console.log('✅ Nombre Cliente Anónimo:', nombre);
+      return nombre;
+    }
+
     const userid = await this.getClientId();
     const { data, error } = await this.supabase
       .from('clientes')
       .select('nombre')
-      .eq('id_cliente', userid);
+      .eq('id_cliente', userid)
+      .single();
 
-    if (error)
+    if (error) {
       throw new Error('Error al obtener nombre del cliente: ' + error.message);
+    }
 
-    return data[0].nombre ?? 'Cliente';
+    console.log('✅ Nombre Cliente Registrado:', data.nombre);
+    return data.nombre ?? 'Cliente';
+  } catch (error) {
+    console.error('❌ Error en getNombreCliente:', error);
+    return 'Cliente';
   }
+}
 
   async getClientesEnEspera() {
     try {
@@ -549,104 +781,115 @@ getSubtotal(): number {
     }
   }
 
-  async detectarUpdate(callback?: (enEspera: boolean) => void){
-    const channels = this.supabase.channel('custom-update-channel')
-    .on(
-      'postgres_changes',
-      { event: 'UPDATE', schema: 'public', table: 'clientes' },
-      async (payload) => {
-        console.log('🔄 Update detectado en clientes:', payload);
-        
-        try {
-          // Obtener información del cambio
-          const oldRecord = payload.old as any;
-          const newRecord = payload.new as any;
-          
-          // Verificar si este cambio es para el cliente actual
-          const currentUserId = (await this.supabase.auth.getUser()).data.user?.id;
-          if (newRecord?.user_id === currentUserId) {
-            
-            // Verificar si se asignó una mesa (de null a un número)
-            if (oldRecord?.mesa_asignada === null && newRecord?.mesa_asignada !== null) {
-              try {
-                const numeroMesa = await this.getNroMesa(newRecord.id_cliente);
-                await this.notificationService.sendNotificationToCliente(
-                  '🎉 ¡Mesa asignada!',
-                  `Te hemos asignado la mesa ${numeroMesa}. ¡Ya puedes realizar tu pedido!`,
-                  ''
-                );
-                console.log('✅ Notificación de mesa asignada enviada');
-              } catch (error) {
-                console.error('❌ Error enviando notificación de mesa:', error);
-              }
-            }
-            
-            // Verificar si se liberó una mesa (de un número a null)
-            if (oldRecord?.mesa_asignada !== null && newRecord?.mesa_asignada === null) {
-              try {
-                await this.notificationService.sendNotificationToCliente(
-                  'Mesa liberada',
-                  'Tu mesa ha sido liberada. Gracias por visitarnos.',
-                  ''
-                );
-                console.log('✅ Notificación de mesa liberada enviada');
-              } catch (error) {
-                console.error('❌ Error enviando notificación de liberación:', error);
-              }
-            }
-          }
-          
-          // Llamar a la función y esperar el resultado
-          const enEspera = await this.isCLienteEnEspera();
-          console.log('✅ Cliente en espera actualizado:', enEspera);
-          
-          // Actualizar el signal
-          this._clienteEnEspera.set(enEspera);
-          
-          // Ejecutar callback si se proporciona
-          if (callback) {
-            callback(enEspera);
-          }
-        } catch (error) {
-          console.error('❌ Error verificando cliente en espera:', error);
-        }
-      }
-    )
-    .subscribe();
-
-    // Inicializar el estado actual
-    try {
-      const estadoInicial = await this.isCLienteEnEspera();
-      this._clienteEnEspera.set(estadoInicial);
-    } catch (error) {
-      console.error('❌ Error obteniendo estado inicial:', error);
-    }
-
-    return channels;
+  async detectarUpdate(callback?: (enEspera: boolean) => void) {
+  // ✅ VERIFICAR: Solo para clientes registrados
+  if (this.tipoClienteService.isAnonimo()) {
+    console.log('🎭 Cliente anónimo - detectarUpdate no necesario');
+    return null;
   }
+
+  const channels = this.supabase.channel('custom-update-channel')
+  .on(
+    'postgres_changes',
+    { event: 'UPDATE', schema: 'public', table: 'clientes' },
+    async (payload) => {
+      console.log('🔄 Update detectado en clientes:', payload);
+      
+      try {
+        const oldRecord = payload.old as any;
+        const newRecord = payload.new as any;
+        
+        // Verificar si este cambio es para el cliente actual
+        const currentUserId = (await this.supabase.auth.getUser()).data.user?.id;
+        if (newRecord?.user_id === currentUserId) {
+          
+          // Verificar si se asignó una mesa (de null a un número)
+          if (oldRecord?.mesa_asignada === null && newRecord?.mesa_asignada !== null) {
+            try {
+              const numeroMesa = await this.getNroMesa(newRecord.id_cliente);
+              await this.notificationService.sendNotificationToCliente(
+                '🎉 ¡Mesa asignada!',
+                `Te hemos asignado la mesa ${numeroMesa}. ¡Ya puedes realizar tu pedido!`,
+                ''
+              );
+              console.log('✅ Notificación de mesa asignada enviada');
+            } catch (error) {
+              console.error('❌ Error enviando notificación de mesa:', error);
+            }
+          }
+          
+          // Verificar si se liberó una mesa (de un número a null)
+          if (oldRecord?.mesa_asignada !== null && newRecord?.mesa_asignada === null) {
+            try {
+              await this.notificationService.sendNotificationToCliente(
+                'Mesa liberada',
+                'Tu mesa ha sido liberada. Gracias por visitarnos.',
+                ''
+              );
+              console.log('✅ Notificación de mesa liberada enviada');
+            } catch (error) {
+              console.error('❌ Error enviando notificación de liberación:', error);
+            }
+          }
+        }
+        
+        // Llamar a la función y esperar el resultado
+        const enEspera = await this.isCLienteEnEspera();
+        console.log('✅ Cliente en espera actualizado:', enEspera);
+        
+        // Actualizar el signal
+        this._clienteEnEspera.set(enEspera);
+        
+        // Ejecutar callback si se proporciona
+        if (callback) {
+          callback(enEspera);
+        }
+      } catch (error) {
+        console.error('❌ Error verificando cliente en espera:', error);
+      }
+    }
+  )
+  .subscribe();
+
+  // Inicializar el estado actual
+  try {
+    const estadoInicial = await this.isCLienteEnEspera();
+    this._clienteEnEspera.set(estadoInicial);
+  } catch (error) {
+    console.error('❌ Error obteniendo estado inicial:', error);
+  }
+
+  return channels;
+}
 
   async isCLienteEnEspera() {
-    const {
-      data: { user },
-    } = await this.supabase.auth.getUser();
-
-    const { data, error } = await this.supabase
-      .from('clientes')
-      .select('mesa_asignada')
-      .eq('user_id', user?.id)
-      .single();
-
-    if (error) {
-      console.error('Error al verificar cliente en espera:', error);
-      return false;
-    }
-
-    // Si mesa_asignada es null, el cliente está en espera
-    const bool = data?.mesa_asignada === null;
-
-    console.log('Cliente en espera:', bool);
-    return bool;
+  // ✅ VERIFICAR: Solo para clientes registrados
+  if (this.tipoClienteService.isAnonimo()) {
+    console.log('🎭 Cliente anónimo - no usar isCLienteEnEspera');
+    return false;
   }
+
+  const {
+    data: { user },
+  } = await this.supabase.auth.getUser();
+
+  const { data, error } = await this.supabase
+    .from('clientes')
+    .select('mesa_asignada')
+    .eq('user_id', user?.id)
+    .single();
+
+  if (error) {
+    console.error('❌ Error al verificar cliente en espera:', error);
+    return false;
+  }
+
+  // Si mesa_asignada es null, el cliente está en espera
+  const bool = data?.mesa_asignada === null;
+
+  console.log('👤 Cliente registrado en espera:', bool);
+  return bool;
+}
 
   // Metodos para manejo de mesas
 
@@ -692,46 +935,80 @@ getSubtotal(): number {
     return data;
   }
 
-  async getMesaID (idCliente: number) {
-    //obtenemos el ID de la mesa asignada
-    const { data, error} = await this.supabase
-    .from('clientes')
-    .select('mesa_asignada')
-    .eq('id_cliente', idCliente)
-    .single();
+ async getMesaID(idCliente: number): Promise<number | null> {
+  try {
+    console.log('🔍 getMesaID para cliente:', idCliente);
+    
+    if (this.tipoClienteService.isAnonimo()) {
+      console.log('🎭 Buscando mesa para cliente anónimo');
+      
+      const { data, error } = await this.supabase
+        .from('clientes_anonimos')
+        .select('mesa_asignada')
+        .eq('id_clienteanonimo', idCliente)
+        .single();
 
-    if (error) throw new Error("❗❗Ocurrió un error al obtener mesa asignada: " + error.message)
+      if (error) {
+        console.error('❌ Error obteniendo mesa de anónimo:', error);
+        return null;
+      }
 
-    return data?.mesa_asignada;
+      console.log('✅ Mesa ID (anónimo):', data?.mesa_asignada);
+      return data?.mesa_asignada ?? null;
+    }
+
+    // Cliente registrado
+    console.log('👥 Buscando mesa para cliente registrado');
+    
+    const { data, error } = await this.supabase
+      .from('clientes')
+      .select('mesa_asignada')
+      .eq('id_cliente', idCliente)
+      .single();
+
+    if (error) {
+      console.error('❌ Error obteniendo mesa de registrado:', error);
+      throw new Error('Error al obtener mesa asignada: ' + error.message);
+    }
+
+    console.log('✅ Mesa ID (registrado):', data?.mesa_asignada);
+    return data?.mesa_asignada ?? null;
+  } catch (error) {
+    console.error('❌ Error en getMesaID:', error);
+    return null;
   }
+}
 
 
-  async getNroMesa(idCliente: number){
-
+  async getNroMesa(idCliente: number): Promise<number | null> {
+  try {
     const mesaId = await this.getMesaID(idCliente);
     
-    // Si no tiene mesa asignada, retornamos null
     if (!mesaId) {
-      console.log('Cliente sin mesa asignada');
+      console.log('⚠️ Cliente sin mesa asignada');
       return null;
     }
 
-    // Luego obtenemos el número de la mesa
+    // Obtener número de mesa desde tabla mesas
     const { data: mesaData, error: mesaError } = await this.supabase
-    .from('mesas')
-    .select('numero')
-    .eq('id', mesaId)
-    .single();
+      .from('mesas')
+      .select('numero')
+      .eq('id', mesaId)
+      .single();
 
     if (mesaError) {
-      console.log('Error obteniendo número de mesa, usando ID:', mesaId);
-      return mesaId; // Fallback al ID si no se puede obtener el número
+      console.log('⚠️ Error obteniendo número de mesa, usando ID:', mesaId);
+      return mesaId;
     }
 
     const numeroMesa = mesaData?.numero || mesaId;
-    console.log(numeroMesa);
+    console.log('✅ Número de mesa:', numeroMesa);
     return numeroMesa;
+  } catch (error) {
+    console.error('❌ Error en getNroMesa:', error);
+    return null;
   }
+}
 
   async setMesa(id: number, nroMesa: number) {
     try {
@@ -869,7 +1146,7 @@ getSubtotal(): number {
   }
 
   // seccion juegos descuentos
-  async getEstadoJuegos(mesaId: number, clienteId: number) {
+  async getEstadoJuegos(mesaId: number | null, clienteId: number) {
     try {
       const { data, error } = await this.supabase
         .from('juegos_descuentos')
@@ -892,7 +1169,7 @@ getSubtotal(): number {
   }
 
   async guardarDescuentoJuego(
-    mesaId: number,
+    mesaId: number | null,
     clienteId: number,
     descuento: number
   ) {
@@ -926,7 +1203,7 @@ getSubtotal(): number {
     }
   }
 
-  async marcarPrimerIntentoUsado(mesaId: number, clienteId: number) {
+  async marcarPrimerIntentoUsado(mesaId: number | null, clienteId: number) {
     try {
       const { data, error } = await this.supabase
         .from('juegos_descuentos')
@@ -959,7 +1236,7 @@ getSubtotal(): number {
 
   async getDescuentoCliente(
     clienteId: number,
-    mesaId: number
+    mesaId: number | null
   ): Promise<number> {
     try {
       const { data, error } = await this.supabase
@@ -990,34 +1267,91 @@ getSubtotal(): number {
  */
 async getHistorialPedidos() {
   try {
-    const clienteId = await this.getClientId();
+    const isAnonimo = this.tipoClienteService.isAnonimo();
+    const clienteData = this.tipoClienteService.getClienteData();
     
-    const { data, error } = await this.supabase
-      .from('pedidos')
-      .select(`
-        *,
-        mesa:mesas(numero, id),
-        detalles_pedido(
-          id,
-          nombre_prod,
-          cantidad,
-          precio_unitario,
-          tipo
-        )
-      `)
-      .eq('id_cliente', clienteId)
-      .order('fecha', { ascending: false });
+    console.log('📋 getHistorialPedidos llamado:', {
+      isAnonimo,
+      clienteData
+    });
 
-    if (error) {
-      console.error('❌ Error obteniendo historial de pedidos:', error);
-      throw new Error('Error al obtener historial: ' + error.message);
+    let mesaId: number | null = null;
+
+    if (isAnonimo) {
+      mesaId = clienteData?.mesa_asignada || null;
+      
+      if (!mesaId) {
+        console.warn('⚠️ Cliente anónimo sin mesa asignada');
+        this._historialPedidos.set([]);
+        return [];
+      }
+
+      console.log('🎭 Buscando pedidos de cliente anónimo en mesa:', mesaId);
+
+      // ✅ QUERY PARA ANÓNIMOS
+      const { data, error } = await this.supabase
+        .from('pedidos')
+        .select(`
+          *,
+          mesa:mesas(numero, id),
+          detalles_pedido(
+            id,
+            nombre_prod,
+            cantidad,
+            precio_unitario,
+            tipo
+          )
+        `)
+        .eq('mesa', mesaId)
+        .is('id_cliente', null)  // ✅ Solo anónimos
+        .order('fecha', { ascending: false });
+
+      if (error) {
+        console.error('❌ Error obteniendo historial anónimo:', error);
+        throw new Error('Error al obtener historial: ' + error.message);
+      }
+
+      console.log('✅ Historial anónimo obtenido:', data?.length || 0, 'pedidos');
+      console.log('📦 Datos completos:', data);
+      
+      this._historialPedidos.set(data || []);
+      return data || [];
+
+    } else {
+      const clienteId = await this.getClientId();
+      
+      console.log('👤 Buscando pedidos de cliente registrado:', clienteId);
+
+      // ✅ QUERY PARA REGISTRADOS
+      const { data, error } = await this.supabase
+        .from('pedidos')
+        .select(`
+          *,
+          mesa:mesas(numero, id),
+          detalles_pedido(
+            id,
+            nombre_prod,
+            cantidad,
+            precio_unitario,
+            tipo
+          )
+        `)
+        .eq('id_cliente', clienteId)
+        .order('fecha', { ascending: false });
+
+      if (error) {
+        console.error('❌ Error obteniendo historial registrado:', error);
+        throw new Error('Error al obtener historial: ' + error.message);
+      }
+
+      console.log('✅ Historial registrado obtenido:', data?.length || 0, 'pedidos');
+      console.log('📦 Datos completos:', data);
+      
+      this._historialPedidos.set(data || []);
+      return data || [];
     }
-
-    console.log('✅ Historial de pedidos obtenido:', data);
-    this._historialPedidos.set(data || []);
-    return data || [];
   } catch (error) {
-    console.error('Error en getHistorialPedidos:', error);
+    console.error('❌ Error en getHistorialPedidos:', error);
     throw error;
   }
 }
@@ -1047,7 +1381,39 @@ async getHistorialPedidos() {
    * Obtiene el pedido entregado actual del cliente
    */
   async getPedidoEntregadoActual(): Promise<any | null> {
-    try {
+  try {
+    const isAnonimo = this.tipoClienteService.isAnonimo();
+    const clienteData = this.tipoClienteService.getClienteData();
+
+    if (isAnonimo) {
+      // ✅ ANÓNIMO: Buscar por mesa
+      const mesaId = clienteData?.mesa_asignada;
+      
+      if (!mesaId) {
+        console.warn('⚠️ Cliente anónimo sin mesa');
+        return null;
+      }
+
+      const { data, error } = await this.supabase
+        .from('pedidos')
+        .select(`
+          *,
+          mesa:mesas(numero, id),
+          detalles_pedido(*)
+        `)
+        .eq('mesa', mesaId)
+        .is('id_cliente', null)
+        .eq('estado', 'entregado')
+        .order('fecha', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      return data;
+
+    } else {
+      // ✅ REGISTRADO: Buscar por id_cliente
       const clienteId = await this.getClientId();
       const mesaId = await this.getNroMesa(clienteId);
 
@@ -1070,47 +1436,78 @@ async getHistorialPedidos() {
       if (error) throw error;
 
       return data;
-    } catch (error) {
-      console.error('❌ Error obteniendo pedido entregado:', error);
-      return null;
     }
+  } catch (error) {
+    console.error('❌ Error obteniendo pedido entregado:', error);
+    return null;
   }
+}
 
 /**
  * Suscripción en tiempo real a cambios en los pedidos del cliente
  */
 async subscribeToHistorialPedidos() {
   try {
-    const clienteId = await this.getClientId();
+    const isAnonimo = this.tipoClienteService.isAnonimo();
+    const clienteData = this.tipoClienteService.getClienteData();
+    
+    let filtro: string;
+    let canalNombre: string;
+
+    if (isAnonimo) {
+      // ✅ ANÓNIMO: Suscribirse a cambios por MESA
+      const mesaId = clienteData?.mesa_asignada;
+      
+      if (!mesaId) {
+        console.warn('⚠️ Cliente anónimo sin mesa, no se puede suscribir');
+        return null;
+      }
+
+      filtro = `mesa=eq.${mesaId}`;
+      canalNombre = `historial-pedidos-anonimo-mesa-${mesaId}`;
+      
+      console.log('🎭 Suscripción anónimo por mesa:', mesaId);
+
+    } else {
+      // ✅ REGISTRADO: Suscribirse a cambios por ID_CLIENTE
+      const clienteId = await this.getClientId();
+      
+      filtro = `id_cliente=eq.${clienteId}`;
+      canalNombre = `historial-pedidos-cliente-${clienteId}`;
+      
+      console.log('👤 Suscripción registrado por cliente:', clienteId);
+    }
     
     const channel = this.supabase
-      .channel('historial-pedidos-channel')
+      .channel(canalNombre)
       .on(
         'postgres_changes',
         { 
           event: 'UPDATE', 
           schema: 'public', 
           table: 'pedidos',
-          filter: `id_cliente=eq.${clienteId}`
+          filter: filtro
         },
         async (payload) => {
           console.log('🔄 Cambio en pedidos detectado:', payload);
           
-          // Extraer información del cambio
           const oldRecord = payload.old as any;
           const newRecord = payload.new as any;
           
           // Verificar si cambió el estado
           if (oldRecord?.estado !== newRecord?.estado) {
             const estadoTexto = this.getTextoEstado(newRecord.estado);
-            const mesaNumero = await this.getNroMesa(clienteId);
             
-            // Enviar notificación usando tu servicio existente
+            // Enviar notificación
             try {
+              const mesaNumero = isAnonimo 
+                ? clienteData?.mesa_asignada 
+                : await this.getNroMesa(await this.getClientId());
+
               await this.notificationService.sendNotificationToCliente(
                 `Estado de tu pedido`,
                 `Tu pedido #${newRecord.id} cambió a: ${estadoTexto}`,
-                '' // URL opcional si quieres redirigir a alguna página específica
+                ''
               );
               console.log('✅ Notificación de cambio de estado enviada');
             } catch (error) {
@@ -1118,7 +1515,7 @@ async subscribeToHistorialPedidos() {
             }
           }
           
-          // Recargar todo el historial cuando hay cambios
+          // Recargar historial
           await this.getHistorialPedidos();
         }
       )
@@ -1211,4 +1608,38 @@ getTextoEstado(estado: string): string {
     };
     return textos[estado] || estado;
   }
+
+  async debugPedidoData() {
+  try {
+    const idCliente = await this.getClientId();
+    const mesaId = await this.getMesaID(idCliente);
+    const nroMesa = await this.getNroMesa(idCliente);
+    const nombre = await this.getNombreCliente();
+    const esAnonimo = this.tipoClienteService.isAnonimo();
+    
+    console.log('🐛 DEBUG - Datos del pedido:', {
+      idCliente,
+      mesaId,
+      nroMesa,
+      nombre,
+      esAnonimo,
+      pedido: this._pedido()
+    });
+    
+    // Verificar que la mesa existe en la BD
+    if (mesaId) {
+      const { data: mesa, error } = await this.supabase
+        .from('mesas')
+        .select('*')
+        .eq('id', mesaId)
+        .single();
+        
+      console.log('🐛 Mesa en BD:', mesa);
+      console.log('🐛 Error (si existe):', error);
+    }
+    
+  } catch (error) {
+    console.error('🐛 Error en debug:', error);
+  }
+}
 }

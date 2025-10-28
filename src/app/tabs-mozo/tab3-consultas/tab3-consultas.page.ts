@@ -14,7 +14,7 @@ interface Consulta {
   created_at: string;
   mesa?: { numero: number };
   cliente?: { nombre: string; apellido: string };
-  respuestaTemp?: string; // Para el ngModel
+  respuestaTemp?: string;
 }
 
 @Component({
@@ -28,7 +28,6 @@ export class Tab3ConsultasPage implements OnInit {
   cargando = true;
   mesas : any[] = [];
 
-
   constructor(
     private router: Router,
     private authService: AuthService,
@@ -39,7 +38,6 @@ export class Tab3ConsultasPage implements OnInit {
   ) {}
 
   async ngOnInit() {
-    // await this.cargarConsultas();
     await this.cargarMesas();
   }
 
@@ -48,7 +46,6 @@ export class Tab3ConsultasPage implements OnInit {
     try {
       const consultas = await this.authService.getConsultasPendientes();
       this.consultas = consultas || [];
-      // Inicializar campo temporal para respuesta
       this.consultas.forEach(c => c.respuestaTemp = '');
     } catch (error) {
       console.error('Error al cargar consultas:', error);
@@ -92,17 +89,56 @@ export class Tab3ConsultasPage implements OnInit {
   }
 
   test(mesa: any) {
-    console.log('Mesa seleccionada:', mesa);
+    console.log('🔍 Mesa seleccionada completa:', mesa);
+    console.log('🔍 Cliente asignado:', mesa.cliente_asignado);
+    console.log('🔍 Info del cliente:', mesa.clientes);
+    
+    // ✅ Verificar si hay cliente (registrado o anónimo)
+    if (!mesa.clientes && !mesa.cliente_asignado) {
+      this.showToast('Esta mesa no tiene cliente asignado', 'warning');
+      return;
+    }
+    
+    console.log('✅ Abriendo chat para mesa:', mesa.numero);
     // Navegar al chat pasando el NUMERO de la mesa como parámetro
     this.router.navigate(['/tabs-mozo/tab3-consultas/chat', mesa.numero]);
   }
 
   async cargarMesas() {
     try {
+      console.log('📋 Cargando TODAS las mesas...');
+      
+      // Obtener TODAS las mesas con su estado
       this.mesas = await this.authService.getMesasConEstado();
-      this.showToast('Mesas cargadas correctamente', 'success');
+      
+      console.log('✅ Total de mesas cargadas:', this.mesas.length);
+      
+      // Debug: mostrar resumen de mesas
+      const mesasOcupadas = this.mesas.filter(m => m.cliente_asignado || m.clientes);
+      const mesasLibres = this.mesas.filter(m => !m.cliente_asignado && !m.clientes);
+      
+      console.log('📊 Desglose de mesas:', {
+        total: this.mesas.length,
+        ocupadas: mesasOcupadas.length,
+        libres: mesasLibres.length,
+        registrados: mesasOcupadas.filter(m => m.clientes && !m.clientes.esAnonimo).length,
+        anonimos: mesasOcupadas.filter(m => m.clientes && m.clientes.esAnonimo).length
+      });
+      
+      // Mostrar detalle de cada mesa
+      this.mesas.forEach(mesa => {
+        const estado = (mesa.cliente_asignado || mesa.clientes) ? '🔴 OCUPADA' : '🟢 LIBRE';
+        const cliente = mesa.clientes 
+          ? `${mesa.clientes.nombre} ${mesa.clientes.esAnonimo ? '(Anónimo)' : '(Registrado)'}`
+          : 'Sin cliente';
+        console.log(`  Mesa ${mesa.numero}: ${estado} - ${cliente}`);
+      });
+      
+      if (this.mesas.length > 0) {
+        this.showToast(`${this.mesas.length} mesas cargadas correctamente`, 'success');
+      }
     } catch (error) {
-      console.error('Error al cargar mesas:', error);
+      console.error('❌ Error al cargar mesas:', error);
       await this.hapticService.vibrateError();
       this.showToast('Error al cargar las mesas', 'danger');
     } finally {
@@ -111,67 +147,8 @@ export class Tab3ConsultasPage implements OnInit {
   }
 
   async loadChats(){
-
+    // Implementar si es necesario
   }
-
-  // async responderConsulta(consulta: Consulta) {
-  //   if (!consulta.respuestaTemp || consulta.respuestaTemp.trim() === '') {
-  //     this.showToast('Debes escribir una respuesta', 'warning');
-  //     return;
-  //   }
-
-  //   const alert = await this.alertController.create({
-  //     header: 'Confirmar respuesta',
-  //     message: '¿Enviar esta respuesta al cliente?',
-  //     buttons: [
-  //       {
-  //         text: 'Cancelar',
-  //         role: 'cancel',
-  //       },
-  //       {
-  //         text: 'Enviar',
-  //         handler: async () => {
-  //           await this.enviarRespuesta(consulta);
-  //         },
-  //       },
-  //     ],
-  //   });
-
-  //   await alert.present();
-  // }
-
-  // async enviarRespuesta(consulta: Consulta) {
-  //   const loading = await this.loadingController.create({
-  //     message: 'Enviando respuesta...',
-  //     spinner: 'crescent',
-  //   });
-  //   await loading.present();
-
-  //   try {
-  //     // Actualizar la consulta con la respuesta
-  //     await this.authService.responderConsulta(
-  //       consulta.id_consulta,
-  //       consulta.respuestaTemp || ''
-  //     );
-
-  //     // Enviar notificación al cliente
-  //     await this.authService.enviarNotificacionCliente(
-  //       consulta.cliente_id,
-  //       'Respuesta del mozo',
-  //       `Tu consulta de la mesa ${consulta.mesa?.numero} ha sido respondida.`
-  //     );
-
-  //     await loading.dismiss();
-  //     this.showToast('Respuesta enviada correctamente', 'success');
-
-  //     // Recargar lista
-  //     await this.cargarConsultas();
-  //   } catch (error) {
-  //     await loading.dismiss();
-  //     console.error('Error al enviar respuesta:', error);
-  //     this.showToast('Error al enviar la respuesta', 'danger');
-  //   }
-  // }
 
   async verHistorial() {
     this.showToast('Función en desarrollo', 'medium');
@@ -187,18 +164,11 @@ export class Tab3ConsultasPage implements OnInit {
     await toast.present();
   }
 
-  // TrackBy function para mejorar performance de ngFor
   trackByIndex(index: number, item: any): number {
     return index;
   }
 
-  // Método para verificar si una mesa tiene mensajes nuevos
   hasNewMessages(numeroMesa: number): boolean {
-    // TODO: Implementar lógica para verificar mensajes nuevos
-    // Por ahora retorna false, pero aquí podrías:
-    // - Verificar timestamp del último mensaje
-    // - Comparar con la última vez que el mozo vio el chat
-    // - Usar un servicio de notificaciones en tiempo real
-    return Math.random() > 0.7; // Simulación temporal
+    return false;
   }
 }

@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, signal, ViewChild, ElementRef } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, signal, ViewChild, ElementRef } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ClienteService } from 'src/app/services/cliente.service';
 import { Mozo } from 'src/app/services/mozo';
@@ -15,7 +15,7 @@ type Msg = {
   styleUrls: ['./chat.page.scss'],
   standalone: false,
 })
-export class ChatPage implements OnInit {
+export class ChatPage implements OnInit, OnDestroy {
 
   @ViewChild('messagesWrapper') messagesWrapper!: ElementRef;
 
@@ -24,7 +24,8 @@ export class ChatPage implements OnInit {
   messages = signal<Msg[]>([]);
   loading = signal(false);
   newMessage: string = '';
-  username: string = ''
+  username: string = '';
+  private realtimeSubscription: any = null; // ✅ NUEVO
 
   constructor(
     private clienteService: ClienteService, 
@@ -34,24 +35,70 @@ export class ChatPage implements OnInit {
   ) {
   }
   
-  ngOnInit() {
-    this.setUsername();
-    this.clienteService.subscribeToNewMessages(this.messages);
+  async ngOnInit() {
+    await this.setUsername();
+    
     // Obtener el numero_mesa desde los parámetros de la ruta
     this.route.paramMap.subscribe(params => {
-      const numeroMesa = params.get('id_mesa'); // El parámetro sigue siendo 'id_mesa' en la ruta
+      const numeroMesa = params.get('id_mesa');
       if (numeroMesa) {
         this.id_mesa = parseInt(numeroMesa, 10);
-        console.log('Número de Mesa recibido:', this.id_mesa);
+        console.log('📢 Número de Mesa recibido:', this.id_mesa);
         // Cargar mensajes una vez que tenemos el número
         this.loadMessages();
+        // ✅ NUEVO: Suscribirse a mensajes en tiempo real
+        this.subscribeToMessages();
       }
     });
   }
 
+  // ✅ NUEVO: Limpiar suscripción al salir
+  ngOnDestroy() {
+    if (this.realtimeSubscription) {
+      this.realtimeSubscription.unsubscribe();
+      console.log('🔌 Desuscrito del chat de mozo');
+    }
+  }
+
+  // ✅ NUEVO: Suscripción en tiempo real para el mozo
+  private subscribeToMessages() {
+    if (!this.id_mesa) {
+      console.error('❌ No hay mesa para suscribirse');
+      return;
+    }
+
+    console.log('📡 Mozo suscribiéndose a mensajes de mesa:', this.id_mesa);
+
+    this.realtimeSubscription = this.clienteService.client
+      .channel(`chat-mozo-mesa-${this.id_mesa}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'mensajes',
+          filter: `nroMesa=eq.${this.id_mesa}`
+        },
+        async (payload) => {
+          console.log('📩 Nuevo mensaje recibido en mozo:', payload);
+          
+          const nuevoMensaje = payload.new as Msg;
+          
+          // Agregar el mensaje solo si no es del mozo actual (para evitar duplicados)
+          if (nuevoMensaje.nombre_usuario !== this.username) {
+            this.messages.update(mensajes => [...mensajes, nuevoMensaje]);
+            setTimeout(() => this.scrollToBottom(), 100);
+          }
+        }
+      )
+      .subscribe((status) => {
+        console.log('📡 Estado suscripción mozo:', status);
+      });
+  }
+
   async setUsername () {
     this.username = await this.mozoService.getNombreMozo();  
-    console.log(this.username);
+    console.log('👤 Usuario mozo:', this.username);
   }
 
   async sendMessage(){
@@ -63,15 +110,22 @@ export class ChatPage implements OnInit {
         // Enviar mensaje del mozo
         await this.mozoService.sendMessage(this.id_mesa, tempContent, this.username);
         
-        // Recargar mensajes para ver el nuevo mensaje
-        await this.loadMessages();
+        console.log("✅ Mensaje enviado por mozo a mesa:", this.id_mesa);
+        
+        // ✅ Agregar el mensaje localmente de inmediato (para que aparezca sin recargar)
+        const nuevoMensaje: Msg = {
+          contenido: tempContent,
+          nombre_usuario: this.username,
+          date_sended: new Date().toISOString()
+        };
+        this.messages.update(mensajes => [...mensajes, nuevoMensaje]);
         
         // Scroll automático al último mensaje
-        this.scrollToBottom();
+        setTimeout(() => this.scrollToBottom(), 100);
         
-        console.log("Mensaje enviado para mesa:", this.id_mesa);
       } catch (error) {
-        console.error('Error enviando mensaje:', error);
+        console.error('❌ Error enviando mensaje:', error);
+        this.newMessage = tempContent; // Restaurar mensaje si falla
       }
     }
   }
@@ -89,7 +143,7 @@ export class ChatPage implements OnInit {
       
       // Debug del signal
       console.log('📡 Estado del signal messages después de set:', this.messages());
-      console.log('🔢 Longitud del signal:', this.messages().length);
+      console.log('📢 Longitud del signal:', this.messages().length);
       
       // Scroll al final después de cargar mensajes
       setTimeout(() => this.scrollToBottom(), 100);

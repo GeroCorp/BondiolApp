@@ -167,74 +167,135 @@ export class Tab2PedidosConfirmadosPage implements OnInit {
   }
 
   async confirmarPago(pedido: any) {
-    // Verificar que el pedido esté en estado pago_pendiente
-    if (pedido.estado !== 'pago_pendiente') {
-      this.showToast('El cliente aún no ha realizado el pago', 'warning');
-      return;
+  if (pedido.estado !== 'pago_pendiente') {
+    this.showToast('El cliente aún no ha realizado el pago', 'warning');
+    return;
+  }
+
+  const loading = await this.loadingController.create({
+    message: 'Confirmando pago y liberando mesa...',
+    spinner: 'crescent',
+  });
+  await loading.present();
+
+  try {
+    const pedidoId = pedido.id || pedido.id_pedido;
+    const mesaId = pedido.mesa?.id || pedido.mesa;
+    const numeroMesa = pedido.mesa?.numero;
+
+    console.log('💳 Confirmando pago:', {
+      pedidoId,
+      mesaId,
+      numeroMesa,
+      id_cliente: pedido.id_cliente
+    });
+
+    // 1️⃣ Cambiar estado del pedido a 'pagado'
+    const { error: errorPedido } = await this.authService.client
+      .from('pedidos')
+      .update({ estado: 'pagado' })
+      .eq('id', pedidoId);
+
+    if (errorPedido) {
+      console.error('❌ Error actualizando pedido:', errorPedido);
+      throw errorPedido;
     }
 
-    const loading = await this.loadingController.create({
-      message: 'Confirmando pago y liberando mesa...',
-      spinner: 'crescent',
-    });
-    await loading.present();
+    console.log('✅ Pedido marcado como pagado');
 
-    try {
-      const pedidoId = pedido.id || pedido.id_pedido;
-      const mesaId = pedido.mesa?.id || pedido.mesa;
+    // 2️⃣ Liberar la mesa
+    const { error: errorMesa } = await this.authService.client
+      .from('mesas')
+      .update({ 
+        disponible: true, 
+        cliente_asignado: null 
+      })
+      .eq('id', mesaId);
 
-      // Cambiar estado del pedido a 'pagado'
-      await this.authService.client
-        .from('pedidos')
-        .update({ estado: 'pagado' })
-        .eq('id', pedidoId);
+    if (errorMesa) {
+      console.error('❌ Error liberando mesa:', errorMesa);
+      throw errorMesa;
+    }
 
-      // Liberar la mesa
-      await this.authService.client
+    console.log('✅ Mesa liberada');
+
+    // 3️⃣ Limpiar datos del cliente
+    if (pedido.id_cliente) {
+      // ✅ CLIENTE REGISTRADO
+      console.log('👤 Limpiando mesa de cliente registrado:', pedido.id_cliente);
+      
+      const { error: errorCliente } = await this.authService.client
+        .from('clientes')
+        .update({ mesa_asignada: null })
+        .eq('id_cliente', pedido.id_cliente);
+
+      if (errorCliente) {
+        console.error('❌ Error actualizando cliente:', errorCliente);
+      } else {
+        console.log('✅ Mesa limpiada de cliente registrado');
+      }
+      
+    } else {
+      // ✅ CLIENTE ANÓNIMO
+      console.log('🎭 Buscando cliente anónimo en mesa:', mesaId);
+      
+      // Obtener cliente_asignado actual de la mesa
+      const { data: mesaData, error: errorMesaData } = await this.authService.client
         .from('mesas')
-        .update({ 
-          disponible: true, 
-          cliente_asignado: null 
-        })
-        .eq('id', mesaId);
+        .select('cliente_asignado')
+        .eq('id', mesaId)
+        .single();
 
-      // Limpiar mesa_asignada del cliente
-      if (pedido.id_cliente) {
-        await this.authService.client
-          .from('clientes')
-          .update({ mesa_asignada: null })
-          .eq('id_cliente', pedido.id_cliente);
+      if (errorMesaData) {
+        console.error('❌ Error obteniendo mesa:', errorMesaData);
+      } else if (mesaData?.cliente_asignado) {
+        console.log('🎭 Limpiando datos de cliente anónimo:', mesaData.cliente_asignado);
+        
+        const { error: errorAnonimo } = await this.authService.client
+          .from('clientes_anonimos')
+          .update({ 
+            mesa_asignada: null,
+            en_espera: false 
+          })
+          .eq('id_clienteanonimo', mesaData.cliente_asignado);
+
+        if (errorAnonimo) {
+          console.error('❌ Error actualizando anónimo:', errorAnonimo);
+        } else {
+          console.log('✅ Cliente anónimo actualizado');
+        }
       }
+    }
 
-      // Notificar a dueño y supervisor
-      await this.notificationService.sendNotificationToPerfil(
-        'dueño',
-        '💰 Pago confirmado',
-        `Mesa ${pedido.mesa?.numero} - Pedido #${pedidoId} pagado y liberado. Total: $${pedido.total}`
+    // 4️⃣ Notificaciones
+    await this.notificationService.sendNotificationToPerfil(
+      'dueño',
+      '💰 Pago confirmado',
+      `Mesa ${numeroMesa} - Pedido #${pedidoId} pagado y liberado. Total: $${pedido.total}`
+    );
+
+    await this.notificationService.sendNotificationToPerfil(
+      'supervisor',
+      '💰 Pago confirmado',
+      `Mesa ${numeroMesa} - Pedido #${pedidoId} pagado y liberado. Total: $${pedido.total}`
+    );
+
+    if (pedido.id_cliente) {
+      await this.notificationService.sendNotificationToCliente(
+        '✅ Pago confirmado',
+        'Tu pago fue confirmado. ¡Gracias por visitarnos! Esperamos verte pronto.',
+        '',
+        pedido.id_cliente
       );
-
-      await this.notificationService.sendNotificationToPerfil(
-        'supervisor',
-        '💰 Pago confirmado',
-        `Mesa ${pedido.mesa?.numero} - Pedido #${pedidoId} pagado y liberado. Total: $${pedido.total}`
-      );
-
-      // Notificar al cliente
-      if (pedido.id_cliente) {
-        await this.notificationService.sendNotificationToCliente(
-          '✅ Pago confirmado',
-          'Tu pago fue confirmado. ¡Gracias por visitarnos! Esperamos verte pronto.',
-          '',
-          pedido.id_cliente
-        );
-      }
+    }
 
     await loading.dismiss();
     this.showToast('Pago confirmado y mesa liberada', 'success');
     await this.cargarPedidos();
+    
   } catch (error) {
     await loading.dismiss();
-    console.error('Error al confirmar pago:', error);
+    console.error('❌ Error al confirmar pago:', error);
     await this.hapticService.vibrateError();
     this.showToast('Error al confirmar pago', 'danger');
   }
