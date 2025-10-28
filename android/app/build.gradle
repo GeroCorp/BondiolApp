@@ -1,11 +1,5 @@
 apply plugin: 'com.android.application'
 
-def keystorePropertiesFile = rootProject.file("keystore.properties")
-def keystoreProperties = new Properties()
-if (keystorePropertiesFile.exists()) {
-    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
-}
-
 android {
     namespace "com.restoapp.mobile"
     compileSdk rootProject.ext.compileSdkVersion
@@ -22,45 +16,10 @@ android {
             ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
-    
-    signingConfigs {
-        release {
-            if (keystoreProperties['storeFile']) {
-                storeFile file(keystoreProperties['storeFile'])
-                storePassword keystoreProperties['storePassword']
-                keyAlias keystoreProperties['keyAlias']
-                keyPassword keystoreProperties['keyPassword']
-            }
-        }
-    }
-    
     buildTypes {
-        debug {
-            minifyEnabled false
-            debuggable true
-        }
         release {
-            minifyEnabled true  // ✅ HABILITAR minificación para reducir tamaño
-            shrinkResources true  // ✅ HABILITAR shrink resources
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            zipAlignEnabled true
-            debuggable false
-            multiDexEnabled true  // ✅ Habilitar MultiDex para evitar crashes
-            crunchPngs true  // ✅ Comprimir PNG para reducir tamaño
-            // signingConfig signingConfigs.release  // ✅ Comentado temporalmente
-        }
-    }
-
-    // ✅ CONFIGURACIÓN PARA REDUCIR TAMAÑO APK
-    bundle {
-        density {
-            enableSplit true
-        }
-        abi {
-            enableSplit true
-        }
-        language {
-            enableSplit false
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
 }
