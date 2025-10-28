@@ -698,51 +698,118 @@ export class AuthService {
 
   // 🔑 Obtener todas las mesas con su estado y cliente asignado
   async getMesasConEstado() {
-    try {
-      // Intentar query con JOIN primero
-      const { data, error } = await this.supabase
-        .from('mesas')
-        .select(`
-          id,
-          numero,
-          cantidad,
-          tipo,
-          disponible,
-          cliente_asignado,
-          clientes:cliente_asignado (
-            id_cliente,
-            nombre,
-            apellido,
-            email,
-            estado
-          )
-        `)
-        .order('numero', { ascending: true });
+  try {
+    console.log('📋 Obteniendo mesas con estado...');
+    
+    // Obtener todas las mesas
+    const { data: mesas, error: mesasError } = await this.supabase
+      .from('mesas')
+      .select('*')
+      .order('numero', { ascending: true });
 
-      if (error) {
-        console.error('❌ Error en query con JOIN:', error);
-        
-        // Fallback: query simple
-        const { data: simpleData, error: simpleError } = await this.supabase
-          .from('mesas')
-          .select('*')
-          .order('numero', { ascending: true });
-          
-        if (simpleError) {
-          throw new Error('Error al obtener mesas: ' + simpleError.message);
-        }
-        
-        console.log('✅ Usando query simple, mesas encontradas:', simpleData?.length);
-        return simpleData || [];
-      }
-
-      console.log('✅ Query con JOIN exitosa, mesas encontradas:', data?.length);
-      return data || [];
-    } catch (error: any) {
-      console.error('Error en getMesasConEstado:', error);
-      throw error;
+    if (mesasError) {
+      console.error('❌ Error obteniendo mesas:', mesasError);
+      throw new Error('Error al obtener mesas: ' + mesasError.message);
     }
+
+    if (!mesas || mesas.length === 0) {
+      console.log('⚠️ No se encontraron mesas');
+      return [];
+    }
+
+    console.log(`✅ ${mesas.length} mesas obtenidas`);
+
+    // ✅ CAMBIO CRÍTICO: Obtener todos los clientes anónimos con mesa asignada
+    const { data: clientesAnonimos, error: errorAnonimos } = await this.supabase
+      .from('clientes_anonimos')
+      .select('*')
+      .not('mesa_asignada', 'is', null);
+
+    if (errorAnonimos) {
+      console.error('❌ Error obteniendo clientes anónimos:', errorAnonimos);
+    }
+
+    console.log('🎭 Clientes anónimos con mesa:', clientesAnonimos?.length || 0);
+
+    // Para cada mesa, verificar si tiene cliente asignado (registrado o anónimo)
+    const mesasConEstado = await Promise.all(
+      mesas.map(async (mesa) => {
+        let clienteInfo = null;
+
+        // 1️⃣ Primero buscar cliente REGISTRADO por mesa.cliente_asignado
+        if (mesa.cliente_asignado) {
+          console.log(`🔍 Buscando cliente registrado ${mesa.cliente_asignado} para mesa ${mesa.numero}`);
+          
+          const { data: clienteRegistrado, error: errorRegistrado } = await this.supabase
+            .from('clientes')
+            .select('id_cliente, nombre, apellido, email, estado')
+            .eq('id_cliente', mesa.cliente_asignado)
+            .maybeSingle();
+
+          if (clienteRegistrado) {
+            clienteInfo = clienteRegistrado;
+            console.log(`✅ Mesa ${mesa.numero}: Cliente registrado "${clienteRegistrado.nombre} ${clienteRegistrado.apellido}"`);
+          }
+        }
+
+        // 2️⃣ Si NO hay cliente registrado, buscar cliente ANÓNIMO por mesa.id
+        if (!clienteInfo) {
+          // ✅ CAMBIO CLAVE: Buscar en clientes_anonimos donde mesa_asignada = mesa.id
+          const clienteAnonimo = clientesAnonimos?.find(
+            c => c.mesa_asignada === mesa.id
+          );
+
+          if (clienteAnonimo) {
+            // Cliente anónimo encontrado - Normalizar estructura
+            clienteInfo = {
+              id_cliente: clienteAnonimo.id_clienteanonimo,
+              nombre: clienteAnonimo.nombre,
+              apellido: '(Anónimo)',
+              email: null,
+              estado: 'anonimo',
+              esAnonimo: true,
+              foto: clienteAnonimo.foto
+            };
+            console.log(`✅ Mesa ${mesa.numero}: Cliente anónimo "${clienteAnonimo.nombre}"`);
+          } else {
+            console.log(`🟢 Mesa ${mesa.numero}: Libre`);
+          }
+        }
+
+        // ✅ RETORNAR con cliente_asignado correcto
+        return {
+          ...mesa,
+          // ✅ Si hay clienteInfo (anónimo o registrado), marcar como ocupada
+          cliente_asignado: clienteInfo ? clienteInfo.id_cliente : null,
+          clientes: clienteInfo
+        };
+      })
+    );
+
+    console.log('✅ Mesas con estado procesadas:', mesasConEstado.length);
+    
+    // Log resumen de mesas ocupadas
+    const mesasOcupadas = mesasConEstado.filter(m => m.cliente_asignado);
+    console.log(`📊 Resumen de mesas ocupadas: ${mesasOcupadas.length}/${mesasConEstado.length}`);
+    
+    if (mesasOcupadas.length > 0) {
+      mesasOcupadas.forEach(m => {
+        const tipo = m.clientes?.esAnonimo ? '🎭 Anónimo' : '👤 Registrado';
+        console.log(`  - Mesa ${m.numero}: ${m.clientes?.nombre || 'Sin nombre'} ${tipo}`);
+      });
+    }
+    
+    return mesasConEstado;
+
+  } catch (error: any) {
+    console.error('❌ Error en getMesasConEstado:', error);
+    console.error('📋 Detalles del error:', {
+      message: error.message,
+      stack: error.stack
+    });
+    throw error;
   }
+}
 
   // 🔑 Obtener solo mesas disponibles
   async getMesasDisponibles() {

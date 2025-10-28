@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { ClienteService } from 'src/app/services/cliente.service';
 import { Notification } from 'src/app/services/notification';
 import { ViewChild, ElementRef } from '@angular/core';
+import { TipoClienteService } from 'src/app/services/tipo-cliente.service';
 
 type Msg = {
   contenido: string, 
@@ -25,31 +26,95 @@ export class Tab3ConsultaPage implements OnInit, OnDestroy {
   newMessage: string = '';
   username: string = '';
   mesaActual: number | null = null;
+  mesaId: number | null = null;
   private subscription: any;
+  private sessionStartTime: string = ''; // ✅ Timestamp de inicio de sesión del cliente
 
   private notificationService: Notification = inject(Notification);
 
   constructor(
     private clienteService: ClienteService,
-    private router: Router
+    private router: Router,
+    private tipoClienteService: TipoClienteService
   ) { }
 
   async ngOnInit() {
     try {
-      // Obtener datos del cliente
-      this.username = await this.clienteService.getNombreCliente();
-      const clienteId = await this.clienteService.getClientId();
-      this.mesaActual = await this.clienteService.getNroMesa(clienteId);
+      const isAnonimo = this.tipoClienteService.isAnonimo();
+      const clienteData = this.tipoClienteService.getClienteData();
 
-      console.log('📱 Cliente conectado:', {
-        nombre: this.username,
-        mesa: this.mesaActual
-      });
+      if (isAnonimo) {
+        this.username = clienteData?.nombre || 'Cliente Anónimo';
+        this.mesaId = clienteData?.mesa_asignada || null;
+        
+        // ✅ CAMBIO CRÍTICO: Usar fecha de asignación de mesa como inicio de sesión
+        // Esto persiste entre recargas porque está en la BD
+        const fechaAsignacion = clienteData?.fecha_asignacion;
+        
+        if (fechaAsignacion) {
+          this.sessionStartTime = fechaAsignacion;
+          console.log('🎭 Usando fecha de asignación de mesa:', this.sessionStartTime);
+        } else {
+          // ✅ Fallback: Si no hay fecha_asignacion, usar created_at del cliente
+          this.sessionStartTime = clienteData?.created_at || new Date().toISOString();
+          console.log('🎭 Usando created_at del cliente:', this.sessionStartTime);
+        }
+        
+        console.log('🎭 Cliente anónimo conectado:', {
+          nombre: this.username,
+          mesaId: this.mesaId,
+          sessionStart: this.sessionStartTime
+        });
 
-      // Cargar mensajes iniciales
+        if (!this.mesaId) {
+          console.error('❌ Cliente anónimo sin mesa asignada');
+          return;
+        }
+
+        const { data: mesaData } = await this.clienteService.client
+          .from('mesas')
+          .select('numero')
+          .eq('id', this.mesaId)
+          .single();
+
+        if (mesaData) {
+          this.mesaActual = mesaData.numero;
+          console.log('🪑 Número de mesa:', this.mesaActual);
+        } else {
+          console.error('❌ No se pudo obtener número de mesa');
+          return;
+        }
+      } else {
+        // ✅ CLIENTE REGISTRADO: Usar fecha de asignación de mesa también
+        this.username = await this.clienteService.getNombreCliente();
+        const clienteId = await this.clienteService.getClientId();
+        this.mesaId = await this.clienteService.getMesaID(clienteId);
+        this.mesaActual = await this.clienteService.getNroMesa(clienteId);
+        
+        // ✅ Obtener fecha de asignación de mesa para cliente registrado
+        const { data: clienteDataReg } = await this.clienteService.client
+          .from('clientes')
+          .select('created_at')
+          .eq('id_cliente', clienteId)
+          .single();
+        
+        this.sessionStartTime = clienteDataReg?.created_at || new Date().toISOString();
+        
+        console.log('👤 Cliente registrado conectado:', {
+          nombre: this.username,
+          mesa: this.mesaActual,
+          mesaId: this.mesaId,
+          clienteId: clienteId,
+          sessionStart: this.sessionStartTime
+        });
+      }
+
+      if (!this.mesaActual) {
+        console.error('❌ Cliente sin mesa asignada');
+        return;
+      }
+
       await this.loadMessages();
-
-      // ✅ SUSCRIBIRSE A NUEVOS MENSAJES EN TIEMPO REAL
       this.suscribirseAMensajes();
 
     } catch (error) {
@@ -58,23 +123,19 @@ export class Tab3ConsultaPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    // Desuscribirse al salir
     if (this.subscription) {
       this.subscription.unsubscribe();
       console.log('🔌 Desuscrito del chat');
     }
   }
 
-  /**
-   * 🔄 Suscripción en tiempo real a nuevos mensajes
-   */
   private suscribirseAMensajes() {
     if (!this.mesaActual) {
       console.error('❌ No hay mesa asignada para suscribirse');
       return;
     }
 
-    console.log('🔔 Suscribiéndose a mensajes de la mesa:', this.mesaActual);
+    console.log('📡 Suscribiéndose a mensajes de la mesa:', this.mesaActual);
 
     this.subscription = this.clienteService.client
       .channel(`chat-cliente-mesa-${this.mesaActual}`)
@@ -91,11 +152,14 @@ export class Tab3ConsultaPage implements OnInit, OnDestroy {
           
           const nuevoMensaje = payload.new as Msg;
           
-          // Agregar el nuevo mensaje a la lista
-          this.messages.update(mensajes => [...mensajes, nuevoMensaje]);
-          
-          // Scroll automático al último mensaje
-          setTimeout(() => this.scrollToBottom(), 100);
+          // ✅ CAMBIO: Solo agregar mensajes posteriores a sessionStartTime
+          if (nuevoMensaje.nroMesa === this.mesaActual && 
+              nuevoMensaje.date_sended >= this.sessionStartTime) {
+            this.messages.update(mensajes => [...mensajes, nuevoMensaje]);
+            setTimeout(() => this.scrollToBottom(), 100);
+          } else {
+            console.log('⏭️ Mensaje ignorado (anterior a la sesión):', nuevoMensaje.date_sended);
+          }
         }
       )
       .subscribe((status) => {
@@ -103,9 +167,6 @@ export class Tab3ConsultaPage implements OnInit, OnDestroy {
       });
   }
 
-  /**
-   * 📨 Enviar mensaje
-   */
   async sendMessage() {
     if (!this.newMessage.trim()) return;
 
@@ -114,27 +175,48 @@ export class Tab3ConsultaPage implements OnInit, OnDestroy {
 
     try {
       await this.clienteService.sendMessage(tempContent);
+      console.log('✅ Mensaje enviado correctamente');
     } catch (error) {
-      console.error('❌ Error:', error);
-      
+      console.error('❌ Error enviando mensaje:', error);
+      this.newMessage = tempContent;
     }
-
-    console.log("Nueva lista: ",this.messages());
-    
-    // Notificar al mozo del nuevo mensaje (Aunque tira error y no sé pq)
-    this.notificationService.sendNotificationToPerfil("Mozo", "Nuevo mensaje de la mesa "+this.clienteService.getNroMesa(await this.clienteService.getClientId()), "Tienes un nuevo mensaje de "+this.username+" en el chat.");
   }
 
-  async loadMessages(){
+  async loadMessages() {
+    if (!this.mesaActual) {
+      console.error('❌ No hay mesa asignada');
+      return;
+    }
+
     this.loading.set(true);
     try {
-      const messagesReceived = await this.clienteService.getChatMessages();
+      console.log('📋 Cargando mensajes desde:', this.sessionStartTime);
       
+      // ✅ Solo cargar mensajes posteriores a sessionStartTime (fecha_asignacion de mesa)
+      const { data: messagesReceived, error } = await this.clienteService.client
+        .from('mensajes')
+        .select('*')
+        .eq('nroMesa', this.mesaActual)
+        .gte('date_sended', this.sessionStartTime) // ✅ FILTRO CLAVE
+        .order('date_sended', { ascending: true });
+      
+      if (error) {
+        console.error('❌ Error obteniendo mensajes:', error);
+        this.messages.set([]);
+        return;
+      }
+
       console.log('📋 Mensajes cargados:', messagesReceived?.length || 0);
+      console.log('📢 Mesa actual:', this.mesaActual);
+      console.log('🕐 Filtro desde:', this.sessionStartTime);
+      
+      if (messagesReceived && messagesReceived.length > 0) {
+        console.log('📨 Primer mensaje:', messagesReceived[0]);
+        console.log('📨 Último mensaje:', messagesReceived[messagesReceived.length - 1]);
+      }
       
       this.messages.set(messagesReceived || []);
       
-      // Scroll al final después de cargar
       setTimeout(() => this.scrollToBottom(), 200);
 
     } catch (error) {
@@ -144,9 +226,6 @@ export class Tab3ConsultaPage implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * 📜 Scroll automático al último mensaje
-   */
   private scrollToBottom() {
     try {
       if (this.messagesContainer) {

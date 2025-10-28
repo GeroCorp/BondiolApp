@@ -1,0 +1,32 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Ingreso Anónimo</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-item>
+    <ion-label position="floating">Nombre</ion-label>
+    <ion-input [(ngModel)]="nombre"></ion-input>
+  </ion-item>
+
+  <ion-button expand="block" (click)="tomarFoto()" class="ion-margin-top">
+    <ion-icon name="camera-outline" slot="start"></ion-icon>
+    Tomar Foto
+  </ion-button>
+
+  <div *ngIf="foto" class="foto-preview ion-margin-top">
+    <img [src]="foto" alt="Foto del cliente">
+  </div>
+
+  <ion-button expand="block" (click)="ingresar()" 
+              [disabled]="!nombre || !foto"
+              class="ion-margin-top">
+    Ingresar
+  </ion-button>
+
+  <ion-button expand="block" (click)="accederComoExistente()" color="secondary" class="ion-margin-bottom">
+    <ion-icon name="people-circle-outline" slot="start"></ion-icon>
+    Acceder como Cliente Existente
+  </ion-button>
+</ion-content>
