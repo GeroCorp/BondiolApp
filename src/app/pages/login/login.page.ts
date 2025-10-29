@@ -5,6 +5,7 @@ import { ToastController, LoadingController } from '@ionic/angular';
 import { AuthService } from 'src/app/services/supabase';
 import { Notification } from 'src/app/services/notification';
 import { HapticService } from 'src/app/services/haptic.service';
+import { TipoClienteService } from 'src/app/services/tipo-cliente.service';
 
 @Component({
   selector: 'app-login',
@@ -23,7 +24,8 @@ export class LoginPage {
     private toastController: ToastController,
     private loadingController: LoadingController,
     private authService: AuthService,
-    private v: HapticService
+    private v: HapticService,
+    private tipoClienteService: TipoClienteService
   ) {
     this.loginForm = this.formBuilder.group({
       email: ['', [Validators.required, Validators.email]],
@@ -31,7 +33,6 @@ export class LoginPage {
     });
   }
 
-  // Método para probar la vibración
   async vibrate() {
     console.log('🎯 Botón de vibración presionado');
     try {
@@ -58,6 +59,10 @@ export class LoginPage {
     await loading.present();
 
     try {
+      // ✅ CRÍTICO: Limpiar datos de cliente anónimo antes de login
+      console.log('🧹 Limpiando datos de cliente anónimo previo');
+      this.tipoClienteService.clearClienteData();
+
       const { email, password } = this.loginForm.value;
       const { user, session } = await this.authService.login(email, password);
 
@@ -67,14 +72,15 @@ export class LoginPage {
         return;
       }
 
-      // ✅ La sesión se guarda automáticamente gracias al authListener
-      console.log('✅ Sesión iniciada y guardada automáticamente');
+      console.log('✅ Login exitoso:', user.email);
 
       // Verificar si es empleado
       const empleado = await this.authService.getEmpleadoByUserId(user.id);
       
       if (Array.isArray(empleado) && empleado.length > 0) {
-        // ✅ Es empleado -> establecer tags y redirigir a home de empleados
+        // ✅ EMPLEADO
+        console.log('👔 Usuario es empleado:', empleado[0].perfil);
+        
         this.notificationService.setUserTag(empleado[0].perfil);
         this.notificationService.setExternalUserId(user.id);
         
@@ -94,9 +100,17 @@ export class LoginPage {
       const cliente = await this.authService.getClienteByUserId(user.id);
       
       if (cliente) {
+        console.log('👤 Usuario es cliente:', {
+          estado: cliente.estado,
+          mesa_asignada: cliente.mesa_asignada
+        });
+
+        // ✅ CRÍTICO: Actualizar TipoClienteService con cliente REGISTRADO
+        this.tipoClienteService['tipoClienteSubject'].next('registrado');
+        this.tipoClienteService['clienteData'].next(cliente);
+
         // Verificar estado del cliente
         if (cliente.estado === 'rechazado') {
-          // ❌ Cliente rechazado - no puede acceder
           await loading.dismiss();
           await this.authService.logout();
           this.showToast(
@@ -107,14 +121,12 @@ export class LoginPage {
         }
         
         if (cliente.estado === 'pendiente') {
-          // ⏳ Cliente pendiente - redirigir a pre-sala
           await loading.dismiss();
           this.router.navigate(['/pre-sala'], { replaceUrl: true });
           return;
         }
         
         if (cliente.estado === 'aprobado') {
-          // ✅ Cliente aprobado - establecer tags y redirigir a homeCliente
           this.notificationService.setUserTag('cliente');
           
           await loading.dismiss();
@@ -135,7 +147,6 @@ export class LoginPage {
     }
   }
 
-
   ingresarARegistro() {
     this.router.navigate(['/registro'], {replaceUrl: true });
   }
@@ -153,9 +164,6 @@ export class LoginPage {
   registrar() {
     this.router.navigate(['/register'], { replaceUrl: true });
   }
-
-
-  // Rellena el formulario con los datos predefinidos (Intente hacerlo con auth, pero no existe mejor manera que hardcodear)
 
   fastFill(perfil: string){
     let email = "";
@@ -195,13 +203,33 @@ export class LoginPage {
         email = "juanjo@mail.com"
         password = "123123"
         break;
-    
     }
 
     this.loginForm.setValue({email, password});
   }
 
-  irClienteAnonimo() {
-    this.router.navigate(['/ingreso-anonimo'], { replaceUrl: true });
+  async irClienteAnonimo() {
+    // ✅ CRÍTICO: Cerrar cualquier sesión activa antes de ir a anónimo
+    console.log('🎭 Cambiando a modo anónimo');
+    
+    try {
+      // Verificar si hay sesión activa
+      const { data: { session } } = await this.authService.client.auth.getSession();
+      
+      if (session) {
+        console.log('⚠️ Hay sesión activa, cerrando...');
+        await this.authService.logout();
+      }
+      
+      // Limpiar datos previos
+      this.tipoClienteService.clearClienteData();
+      
+      // Navegar a ingreso anónimo
+      this.router.navigate(['/ingreso-anonimo'], { replaceUrl: true });
+      
+    } catch (error) {
+      console.error('Error preparando ingreso anónimo:', error);
+      this.router.navigate(['/ingreso-anonimo'], { replaceUrl: true });
+    }
   }
 }
