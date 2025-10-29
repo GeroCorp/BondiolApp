@@ -33,7 +33,7 @@ export class HomeClientePage implements OnInit {
   cliente: any = null;
   enEspera: boolean = true;
   mesaAsignada: number | null = null;
-  mesaVerificada: boolean = true;
+  mesaVerificada: boolean = false;
   pedidosHistorial: any[] = [];
   private pedidosSubscription: any = null;
   private mesaSubscription: any = null;
