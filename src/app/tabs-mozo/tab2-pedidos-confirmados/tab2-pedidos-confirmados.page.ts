@@ -1,11 +1,11 @@
 ﻿import { Component, OnInit } from '@angular/core';
 import { ModalController, ToastController, LoadingController } from '@ionic/angular';
-import { Mozo } from 'src/app/services/mozo';
+import { Mozo, ESTADO } from 'src/app/services/mozo';
 import { AuthService } from 'src/app/services/supabase';
 import { DetallePedidoModalComponent } from './detalle-pedido-modal/detalle-pedido-modal.component';
 import { Notification } from 'src/app/services/notification';
-
 import { HapticService } from 'src/app/services/haptic.service';
+import { EmailService } from 'src/app/services/email';
 @Component({
   selector: 'app-tab2-pedidos-confirmados',
   templateUrl: './tab2-pedidos-confirmados.page.html',
@@ -25,7 +25,8 @@ export class Tab2PedidosConfirmadosPage implements OnInit {
     private toastController: ToastController,
     private loadingController: LoadingController,
     private notificationService: Notification,
-    private hapticService: HapticService
+    private hapticService: HapticService,
+    private emailService: EmailService
   ) {}
 
   async ngOnInit() {
@@ -167,139 +168,145 @@ export class Tab2PedidosConfirmadosPage implements OnInit {
   }
 
   async confirmarPago(pedido: any) {
-  if (pedido.estado !== 'pago_pendiente') {
-    this.showToast('El cliente aún no ha realizado el pago', 'warning');
-    return;
-  }
+    if (pedido.estado !== 'pago_pendiente') {
+      this.showToast('El cliente aún no ha realizado el pago', 'warning');
+      return;
+    }
 
-  const loading = await this.loadingController.create({
-    message: 'Confirmando pago y liberando mesa...',
-    spinner: 'crescent',
-  });
-  await loading.present();
-
-  try {
-    const pedidoId = pedido.id || pedido.id_pedido;
-    const mesaId = pedido.mesa?.id || pedido.mesa;
-    const numeroMesa = pedido.mesa?.numero;
-
-    console.log('💳 Confirmando pago:', {
-      pedidoId,
-      mesaId,
-      numeroMesa,
-      id_cliente: pedido.id_cliente
+    const loading = await this.loadingController.create({
+      message: 'Confirmando pago y liberando mesa...',
+      spinner: 'crescent',
     });
+    await loading.present();
 
-    // 1️⃣ Cambiar estado del pedido a 'pagado'
-    const { error: errorPedido } = await this.authService.client
-      .from('pedidos')
-      .update({ estado: 'pagado' })
-      .eq('id', pedidoId);
+    try {
+      const pedidoId = pedido.id || pedido.id_pedido;
+      const mesaId = pedido.mesa?.id || pedido.mesa;
+      const numeroMesa = pedido.mesa?.numero;
+      const cliente = await this.mozoService.getdatosCliente(pedidoId);
 
-    if (errorPedido) {
-      console.error('❌ Error actualizando pedido:', errorPedido);
-      throw errorPedido;
-    }
+      console.log('💳 Confirmando pago:', {
+        pedidoId,
+        mesaId,
+        numeroMesa,
+        id_cliente: pedido.id_cliente
+      });
 
-    console.log('✅ Pedido marcado como pagado');
-
-    // 2️⃣ Liberar la mesa
-    const { error: errorMesa } = await this.authService.client
-      .from('mesas')
-      .update({ 
-        disponible: true, 
-        cliente_asignado: null 
-      })
-      .eq('id', mesaId);
-
-    if (errorMesa) {
-      console.error('❌ Error liberando mesa:', errorMesa);
-      throw errorMesa;
-    }
-
-    console.log('✅ Mesa liberada');
-
-    // 3️⃣ Limpiar datos del cliente
-    if (pedido.id_cliente) {
-      // ✅ CLIENTE REGISTRADO
-      console.log('👤 Limpiando mesa de cliente registrado:', pedido.id_cliente);
-      
-      const { error: errorCliente } = await this.authService.client
-        .from('clientes')
-        .update({ mesa_asignada: null })
-        .eq('id_cliente', pedido.id_cliente);
-
-      if (errorCliente) {
-        console.error('❌ Error actualizando cliente:', errorCliente);
-      } else {
-        console.log('✅ Mesa limpiada de cliente registrado');
+      // 1️⃣ Cambiar estado del pedido a 'pagado'
+      const estadoMesa = await this.mozoService.actualizarEstadoPedido(pedidoId, ESTADO.PAGADO);
+      if (estadoMesa){
+        console.log('✅ Pedido marcado como pagado');
+      }else{
+        throw new Error('No se pudo actualizar el estado del pedido a pagado');
       }
-      
-    } else {
-      // ✅ CLIENTE ANÓNIMO
-      console.log('🎭 Buscando cliente anónimo en mesa:', mesaId);
-      
-      // Obtener cliente_asignado actual de la mesa
-      const { data: mesaData, error: errorMesaData } = await this.authService.client
+
+      // 2️⃣ Liberar la mesa
+      const { error: errorMesa } = await this.authService.client
         .from('mesas')
-        .select('cliente_asignado')
-        .eq('id', mesaId)
-        .single();
+        .update({ 
+          disponible: true, 
+          cliente_asignado: null 
+        })
+        .eq('id', mesaId);
 
-      if (errorMesaData) {
-        console.error('❌ Error obteniendo mesa:', errorMesaData);
-      } else if (mesaData?.cliente_asignado) {
-        console.log('🎭 Limpiando datos de cliente anónimo:', mesaData.cliente_asignado);
-        
-        const { error: errorAnonimo } = await this.authService.client
-          .from('clientes_anonimos')
-          .update({ 
-            mesa_asignada: null,
-            en_espera: false 
-          })
-          .eq('id_clienteanonimo', mesaData.cliente_asignado);
-
-        if (errorAnonimo) {
-          console.error('❌ Error actualizando anónimo:', errorAnonimo);
-        } else {
-          console.log('✅ Cliente anónimo actualizado');
-        }
+      if (errorMesa) {
+        console.error('❌ Error liberando mesa:', errorMesa);
+        throw errorMesa;
       }
-    }
 
-    // 4️⃣ Notificaciones
-    await this.notificationService.sendNotificationToPerfil(
-      'dueño',
-      '💰 Pago confirmado',
-      `Mesa ${numeroMesa} - Pedido #${pedidoId} pagado y liberado. Total: $${pedido.total}`
-    );
+      console.log('✅ Mesa liberada');
 
-    await this.notificationService.sendNotificationToPerfil(
-      'supervisor',
-      '💰 Pago confirmado',
-      `Mesa ${numeroMesa} - Pedido #${pedidoId} pagado y liberado. Total: $${pedido.total}`
-    );
+      // 3️⃣ Limpiar datos del cliente
+      if (pedido.id_cliente) {
+        // ✅ CLIENTE REGISTRADO
+        console.log('👤 Limpiando mesa de cliente registrado:', pedido.id_cliente);
+        
+        const { error: errorCliente } = await this.authService.client
+          .from('clientes')
+          .update({ mesa_asignada: null })
+          .eq('id_cliente', pedido.id_cliente);
 
-    if (pedido.id_cliente) {
-      await this.notificationService.sendNotificationToCliente(
-        '✅ Pago confirmado',
-        'Tu pago fue confirmado. ¡Gracias por visitarnos! Esperamos verte pronto.',
-        '',
-        pedido.id_cliente
+        if (errorCliente) {
+          console.error('❌ Error actualizando cliente:', errorCliente);
+        } else {
+          console.log('✅ Mesa limpiada de cliente registrado');
+        }
+        
+      } else {
+        // ✅ CLIENTE ANÓNIMO
+        console.log('🎭 Buscando cliente anónimo en mesa:', mesaId);
+        
+        // Obtener cliente_asignado actual de la mesa
+        const { data: mesaData, error: errorMesaData } = await this.authService.client
+          .from('mesas')
+          .select('cliente_asignado')
+          .eq('id', mesaId)
+          .single();
+
+        if (errorMesaData) {
+          console.error('❌ Error obteniendo mesa:', errorMesaData);
+        } else if (mesaData?.cliente_asignado) {
+          console.log('🎭 Limpiando datos de cliente anónimo:', mesaData.cliente_asignado);
+          
+          const { error: errorAnonimo } = await this.authService.client
+            .from('clientes_anonimos')
+            .update({ 
+              mesa_asignada: null,
+              en_espera: false 
+            })
+            .eq('id_clienteanonimo', mesaData.cliente_asignado);
+
+          if (errorAnonimo) {
+            console.error('❌ Error actualizando anónimo:', errorAnonimo);
+          } else {
+            console.log('✅ Cliente anónimo actualizado');
+          }
+      }
+      }
+
+      // 4️⃣ Notificaciones
+      await this.notificationService.sendNotificationToPerfil(
+        'dueño',
+        '💰 Pago confirmado',
+        `Mesa ${numeroMesa} - Pedido #${pedidoId} pagado y liberado. Total: $${pedido.total}`
       );
-    }
 
-    await loading.dismiss();
-    this.showToast('Pago confirmado y mesa liberada', 'success');
-    await this.cargarPedidos();
-    
-  } catch (error) {
-    await loading.dismiss();
-    console.error('❌ Error al confirmar pago:', error);
-    await this.hapticService.vibrateError();
-    this.showToast('Error al confirmar pago', 'danger');
+      await this.notificationService.sendNotificationToPerfil(
+        'supervisor',
+        '💰 Pago confirmado',
+        `Mesa ${numeroMesa} - Pedido #${pedidoId} pagado y liberado. Total: $${pedido.total}`
+      );
+
+      const detalles = await this.mozoService.getDetallesPedido(pedidoId);
+
+      const envioFactura = await this.emailService.enviarEmailFactura(pedidoId, pedido.total, cliente, pedido.porcentajePropina, pedido.descuento, detalles);
+
+       if (envioFactura) {
+         console.log('✅ Email de factura enviado al cliente');
+       } else {
+         console.error('❌ Error enviando email de factura al cliente');
+       }
+
+      if (pedido.id_cliente) {
+        await this.notificationService.sendNotificationToCliente(
+          '✅ Pago confirmado',
+          'Tu pago fue confirmado. ¡Gracias por visitarnos! Esperamos verte pronto.',
+          '',
+          pedido.id_cliente
+        );
+      }
+
+      await loading.dismiss();
+      this.showToast('Pago confirmado y mesa liberada', 'success');
+      await this.cargarPedidos();
+      
+    } catch (error) {
+      await loading.dismiss();
+      console.error('❌ Error al confirmar pago:', error);
+      await this.hapticService.vibrateError();
+      this.showToast('Error al confirmar pago', 'danger');
+    }
   }
-}
 
   async showToast(message: string, color: 'success' | 'danger' | 'medium' | 'warning') {
     const toast = await this.toastController.create({
@@ -309,5 +316,18 @@ export class Tab2PedidosConfirmadosPage implements OnInit {
       position: 'bottom',
     });
     await toast.present();
+  }
+
+  async test() {
+    const res = await this.emailService.enviarEmailFactura(
+      1,
+      500,
+      { nombre: 'Germán', apellido: 'García', email: 'geromcorpus@gmail.com', dni: '12345678'},
+      15,
+      10,
+      [{ id: 101, nombre: 'Producto A', cantidad: 2, precio_unitario: 100 },
+       { id: 202, nombre: 'Producto B', cantidad: 1, precio_unitario: 300 }]
+    );
+    console.log('Resultado del envío de email de factura:', res);
   }
 }

@@ -10,8 +10,8 @@ interface Cliente {
   user_id?: string;
   nombre: string;
   apellido: string;
-  dni?: string;
-  email?: string | null;
+  dni: string;
+  email: string;
   foto?: string | null;
   estado?: string;
   created_at?: string;
@@ -128,11 +128,7 @@ export class Tab3AdminClientePage implements OnInit {
       }
 
       // 4. Enviar email de aprobación
-      const emailEnviado = await this.emailService.enviarEmailAprobacion({
-        nombre: cliente.nombre,
-        apellido: cliente.apellido,
-        email: emailDestino
-      });
+      const emailEnviado = await this.emailService.enviarEmailAprobacionConTemplate(cliente)
 
       await loader.dismiss();
 
@@ -210,11 +206,7 @@ export class Tab3AdminClientePage implements OnInit {
       }
 
       // 3. Enviar email de rechazo
-      const emailEnviado = await this.emailService.enviarEmailRechazo({
-        nombre: cliente.nombre,
-        apellido: cliente.apellido,
-        email: emailDestino
-      });
+      const emailEnviado = await this.emailService.enviarEmailRechazoConTemplate(cliente);
 
       await loader.dismiss();
 

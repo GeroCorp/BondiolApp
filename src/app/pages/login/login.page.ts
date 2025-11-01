@@ -4,8 +4,9 @@ import { Router } from '@angular/router';
 import { ToastController, LoadingController } from '@ionic/angular';
 import { AuthService } from 'src/app/services/supabase';
 import { Notification } from 'src/app/services/notification';
-import { HapticService } from 'src/app/services/haptic.service';
 import { TipoClienteService } from 'src/app/services/tipo-cliente.service';
+import { EmailService } from 'src/app/services/email';
+import { aprobadoTemplate } from 'src/assets/email-templates/aprobado';
 
 @Component({
   selector: 'app-login',
@@ -19,12 +20,12 @@ export class LoginPage {
   private notificationService: Notification = inject(Notification);
 
   constructor(
+    private mailService: EmailService,
     private formBuilder: FormBuilder,
     private router: Router,
     private toastController: ToastController,
     private loadingController: LoadingController,
     private authService: AuthService,
-    private v: HapticService,
     private tipoClienteService: TipoClienteService
   ) {
     this.loginForm = this.formBuilder.group({
@@ -33,14 +34,22 @@ export class LoginPage {
     });
   }
 
-  async vibrate() {
-    console.log('🎯 Botón de vibración presionado');
-    try {
-      await this.v.vibrateError();
-      console.log('✅ Vibración ejecutada correctamente');
-    } catch (error) {
-      console.error('❌ Error en vibración:', error);
+  async testGrid() {
+    const htmlTemplate = aprobadoTemplate("geromcorpus@gmail.com", "Geronimo");
+    const datos_mail = {
+      nombre_cliente: "Geronimo",
+      email_cliente: "geromcorpus@gmail.com",
+      subject: "Tu pedido ha sido confirmado!",
+      html: htmlTemplate
     }
+
+    try {
+      const response = await this.mailService.enviarMailSupabase(datos_mail);
+      console.log('Email enviado correctamente via Supabase:', response);
+    } catch (error) {
+      console.error('Error enviando email via Supabase:', error);
+    }
+
   }
 
   cambiarVisibilidadPassword() {

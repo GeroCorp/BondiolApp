@@ -65,13 +65,13 @@ const routes: Routes = [
     loadChildren: () => import('./pages/generador-qr-mesas/generador-qr-mesas.module').then(m => m.GeneradorQrMesasPageModule)
   },
   {
+    path: 'ingreso-anonimo',
+    loadChildren: () => import('./pages/ingreso-anonimo/ingreso-anonimo.module').then( m => m.IngresoAnonimoPageModule)
+  },
+  {
     path: '**',
     redirectTo: 'splash',
     pathMatch: 'full'
-  },
-  {
-    path: 'ingreso-anonimo',
-    loadChildren: () => import('./pages/ingreso-anonimo/ingreso-anonimo.module').then( m => m.IngresoAnonimoPageModule)
   },
 
 

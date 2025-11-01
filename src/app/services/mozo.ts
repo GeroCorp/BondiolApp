@@ -8,7 +8,8 @@ export enum ESTADO {
   CONFIRMADO = 'confirmado',
   EN_PREPARACION = 'en_preparación',
   ENTREGADO = 'entregado',
-  RECHAZADO = 'rechazado'
+  RECHAZADO = 'rechazado',
+  PAGADO = 'pagado',
 }
 
 @Injectable({
@@ -63,7 +64,7 @@ export class Mozo {
 
     // Enviar notificación al cliente de esa mesa
     try {
-      const clienteId = await this.getClienteByMesa(id_mesa);
+      const clienteId = await this.getdatosCliente(id_mesa).then(cliente => cliente ? cliente.cliente_id : null);
       if (clienteId) {
         await this.notificationService.sendNotificationToCliente(
           '💬 Nuevo mensaje del mozo',
@@ -273,7 +274,9 @@ export class Mozo {
     if (nuevoEstado !== ESTADO.PENDIENTE &&
         nuevoEstado !== ESTADO.CONFIRMADO &&
         nuevoEstado !== ESTADO.EN_PREPARACION &&
-        nuevoEstado !== ESTADO.ENTREGADO) {
+        nuevoEstado !== ESTADO.ENTREGADO &&
+        nuevoEstado !== ESTADO.RECHAZADO &&
+        nuevoEstado !== ESTADO.PAGADO) {
       throw new Error('Estado inválido: ' + nuevoEstado);
     }
 
@@ -341,6 +344,22 @@ export class Mozo {
     console.log(data);
 
     return data || [];
+  }
+
+  async getdatosCliente(mesaId: number) {
+    try {
+      const { data, error } = await this.supabase
+        .from('clientes')
+        .select(`*`)
+        .eq('mesa_asignada', mesaId);
+
+      if (error) throw new Error('Error obteniendo datos del cliente: ' + error.message);
+
+      return data[0] || null;
+    } catch (error) {
+      console.error('❌ Error al obtener datos del cliente:', error);
+      throw error;
+    }
   }
 
 }
