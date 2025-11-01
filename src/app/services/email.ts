@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import emailjs from '@emailjs/browser';
 import { environment } from 'src/environments/environment';
 import { supabase } from './supabase';
 import EmailTemplates from '../../assets/email-templates/index';
@@ -27,17 +26,14 @@ export class EmailService {
 
   constructor(
   ) {
-    // Inicializar EmailJS con tu Public Key
-    emailjs.init(environment.emailjs.publicKey);
-    console.log('✅ EmailJS inicializado con Public Key:', environment.emailjs.publicKey);
   }
 
   async enviarMailSupabase(datos: any){
     const bodyData = JSON.stringify(datos);
     console.log("Datos pasados al body: ", datos);
-    const {data: response, error} = await this.supabaseClient.functions.invoke('mailSender', {
+    const {data: response, error} = await this.supabaseClient.functions.invoke('testeoperreo', {
       method: 'POST',
-      body: bodyData, // Contiene nombre_cliente, email_cliente, numero_pedido, monto_total, html (template)
+      body: bodyData, // Contiene nombre_cliente, email_cliente, html (template) y subject
       headers: {
       }
     })
@@ -128,22 +124,22 @@ export class EmailService {
 
       if (error) throw new Error(`Error generando PDF de factura: ${error.message}`);
 
-      const pdfData = response as { downloadLink: string };
-      console.log(pdfData);
+      const pdfData = response;
+      const parsedData = typeof pdfData === 'string' ? JSON.parse(pdfData) : pdfData;
+      console.log("downloadLink:", parsedData?.downloadLink);
 
-      const htmlTemplate = EmailTemplates.mailFactura(cliente.nombre, montoTotal, pedidoId, pdfData.downloadLink, Date.now().toLocaleString());
+      const htmlTemplate = EmailTemplates.mailFactura(cliente.nombre, montoTotal, pedidoId, parsedData?.downloadLink, Date.now().toLocaleString());
+
+      const datos = {
+        email_cliente: cliente.email,
+        html: htmlTemplate,
+        subject: `Factura de su pedido #${pedidoId}`
+      };
+
+      const mailEnviado = await this.enviarMailSupabase(datos);
+      console.log('✅ Email de factura enviado: ', mailEnviado);
 
       return true;
-
-       const datos = {
-         nombre_cliente: cliente.nombre,
-         email_cliente: cliente.email,
-         html: htmlTemplate
-       };
-
-       await this.enviarMailSupabase(datos);
-       console.log('✅ Email de factura enviado');
-       return true;
        
      }catch(err){
        console.error('❌ Error al enviar email de factura con template:', err);

@@ -346,14 +346,16 @@ export class Mozo {
     return data || [];
   }
 
-  async getdatosCliente(mesaId: number) {
+  async getdatosCliente(cliente_id: number) {
     try {
       const { data, error } = await this.supabase
         .from('clientes')
         .select(`*`)
-        .eq('mesa_asignada', mesaId);
+        .eq('id_cliente', cliente_id);
 
       if (error) throw new Error('Error obteniendo datos del cliente: ' + error.message);
+
+      console.log("CLIENTE OBTENIDO ",  data[0]);
 
       return data[0] || null;
     } catch (error) {

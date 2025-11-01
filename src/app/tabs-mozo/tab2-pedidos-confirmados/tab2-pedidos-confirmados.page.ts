@@ -183,7 +183,7 @@ export class Tab2PedidosConfirmadosPage implements OnInit {
       const pedidoId = pedido.id || pedido.id_pedido;
       const mesaId = pedido.mesa?.id || pedido.mesa;
       const numeroMesa = pedido.mesa?.numero;
-      const cliente = await this.mozoService.getdatosCliente(pedidoId);
+      const cliente = await this.mozoService.getdatosCliente(pedido.id_cliente);
 
       console.log('💳 Confirmando pago:', {
         pedidoId,

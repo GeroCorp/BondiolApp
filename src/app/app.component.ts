@@ -29,7 +29,6 @@ export class AppComponent {
     this.platform.ready().then(async () => {
       this.configureStatusBar();
       this.notificationService.init();
-      
       // Solo navegar al splash - el splash se encargará de la verificación de sesión
       console.log('🚀 App inicializada - navegando a splash');
       this.router.navigateByUrl('/splash', { replaceUrl: true });
