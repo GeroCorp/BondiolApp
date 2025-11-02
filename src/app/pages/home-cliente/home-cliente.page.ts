@@ -10,19 +10,6 @@ import { HapticService } from 'src/app/services/haptic.service';
 import { TipoClienteService } from 'src/app/services/tipo-cliente.service';
 import { supabase } from '../../services/supabase';
 
-
-
-interface Cliente {
-  id_cliente?: number;
-  nombre: string;
-  apellido: string;
-  dni?: string;
-  email?: string | null;
-  foto?: string | null;
-  estado?: string;
-  created_at?: string;
-}
-
 @Component({
   selector: 'app-home-cliente',
   templateUrl: './home-cliente.page.html',
@@ -184,11 +171,37 @@ export class HomeClientePage implements OnInit {
 
  
 
+  
   async ngOnInit() {
-    // ✅ CARGAR DATOS SEGÚN TIPO DE CLIENTE
+  console.log('🏠 [HOME-CLIENTE] ngOnInit iniciado');
+  
+  try {
+    // ✅ Verificar si hay sesión activa
+    const { data: { session }, error } = await this.authService.client.auth.getSession();
+    
+    if (error || !session) {
+      console.error('❌ [HOME-CLIENTE] No hay sesión activa');
+      await this.router.navigate(['/login'], { replaceUrl: true });
+      return;
+    }
+
+    console.log('✅ [HOME-CLIENTE] Sesión activa:', session.user.email);
+
+    // ✅ Verificar tipo de cliente (registrado vs anónimo)
     if (this.tipoClienteService.isRegistrado()) {
+      console.log('👤 [HOME-CLIENTE] Cargando datos de cliente registrado...');
       await this.cargarDatosCliente();
       await this.verificarMesaAsignada();
+    } else if (this.tipoClienteService.isAnonimo()) {
+      console.log('🎭 [HOME-CLIENTE] Cliente anónimo detectado');
+      // Los datos ya están en TipoClienteService
+      const clienteData = this.tipoClienteService.getClienteData();
+      if (clienteData) {
+        this.cliente = clienteData;
+        this.mesaAsignada = clienteData.mesa_asignada || null;
+        this.enEspera = clienteData.en_espera !== false;
+        this.mesaVerificada = false;
+      }
     }
 
     // Polling de respaldo
@@ -197,7 +210,12 @@ export class HomeClientePage implements OnInit {
         await this.tipoClienteService.refreshClienteData().catch(() => {});
       }
     }, 10000);
+
+  } catch (error) {
+    console.error('❌ [HOME-CLIENTE] Error en ngOnInit:', error);
+    this.showToast('Error al cargar la página', 'danger');
   }
+}
 
   ngOnDestroy() {
     if (this.checkInterval) clearInterval(this.checkInterval);
@@ -208,16 +226,13 @@ export class HomeClientePage implements OnInit {
   }
 
   shouldShowListaEspera(): boolean {
-    const show = this.tipoClienteService.isAnonimo() && 
-                  this.enEspera && 
-                  !this.mesaAsignada && 
-                  !this.mesaVerificada;
+    // ✅ Más estricto: mostrar solo si definitivamente NO hay mesa
+    const show = (this.mesaAsignada === null || this.mesaAsignada === undefined) && !this.mesaVerificada;
     
     console.log('shouldShowListaEspera:', {
-      isAnonimo: this.tipoClienteService.isAnonimo(),
-      enEspera: this.enEspera,
       mesaAsignada: this.mesaAsignada,
       mesaVerificada: this.mesaVerificada,
+      isRegistrado: this.isRegistrado,
       resultado: show
     });
     
@@ -405,31 +420,79 @@ private async procesarIngresoAnonimo(nombre: string) {
   }
 
   async cargarDatosCliente() {
-    try {
-      const user = await this.authService.getCurrentUser();
-      
-      if (user) {
-        this.cliente = await this.authService.getClienteByUserId(user.id);
-        
-        if (this.cliente) {
-          console.log('✅ Cliente registrado cargado:', this.cliente);
-          
-          // ✅ Actualizar TipoClienteService con datos del cliente registrado
-          this.tipoClienteService['clienteData'].next(this.cliente);
-          
-          this.notificationsInit();
-          
-          if (!this.cliente.email) {
-            this.cliente.email = user.email;
-          }
-        }
-      }
-    } catch (error) {
-      console.error('❌ Error al cargar datos del cliente:', error);
-      await this.hapticService.vibrateError();
-      this.showToast('Error al cargar tus datos', 'danger');
+  try {
+    const { data: { session } } = await this.authService.client.auth.getSession();
+    
+    if (!session) {
+      await this.router.navigate(['/login'], { replaceUrl: true });
+      return;
     }
+
+    // Buscar cliente con reintentos
+    let cliente = null;
+    for (let i = 0; i < 3; i++) {
+      const { data } = await this.authService.client
+        .from('clientes')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .maybeSingle();
+
+      if (data) {
+        cliente = data;
+        break;
+      }
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+
+    if (!cliente) {
+      this.showToast('No se pudo cargar tu perfil', 'warning');
+      setTimeout(async () => {
+        await this.authService.logout();
+        await this.router.navigate(['/login'], { replaceUrl: true });
+      }, 2000);
+      return;
+    }
+
+    if (cliente.estado === 'rechazado') {
+      this.showToast('Tu cuenta ha sido rechazada', 'danger');
+      await this.authService.logout();
+      await this.router.navigate(['/login'], { replaceUrl: true });
+      return;
+    }
+
+    if (cliente.estado === 'pendiente') {
+      await this.router.navigate(['/pre-sala'], { replaceUrl: true });
+      return;
+    }
+
+    this.cliente = cliente;
+    this.tipoClienteService['tipoClienteSubject'].next('registrado');
+    this.tipoClienteService['clienteData'].next(cliente);
+    this.notificationsInit();
+
+    if (!this.cliente.email && session.user.email) {
+      this.cliente.email = session.user.email;
+    }
+
+    if (cliente.mesa_asignada) {
+      this.mesaAsignada = cliente.mesa_asignada;
+      this.enEspera = false;
+    } else {
+      this.mesaAsignada = null;
+      this.enEspera = true;
+    }
+
+    this.cd.detectChanges();
+    
+  } catch (error) {
+    console.error('❌ Error:', error);
+    this.showToast('Error al cargar datos', 'danger');
+    setTimeout(async () => {
+      await this.authService.logout();
+      await this.router.navigate(['/login'], { replaceUrl: true });
+    }, 2000);
   }
+}
 
   async notificationsInit(){
     this.notificationService.setExternalUserId(this.cliente?.id_cliente?.toString() || '');
