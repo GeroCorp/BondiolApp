@@ -34,24 +34,6 @@ export class LoginPage {
     });
   }
 
-  async testGrid() {
-    const htmlTemplate = aprobadoTemplate("geromcorpus@gmail.com", "Geronimo");
-    const datos_mail = {
-      nombre_cliente: "Geronimo",
-      email_cliente: "geromcorpus@gmail.com",
-      subject: "Tu pedido ha sido confirmado!",
-      html: htmlTemplate
-    }
-
-    try {
-      const response = await this.mailService.enviarMailSupabase(datos_mail);
-      console.log('Email enviado correctamente via Supabase:', response);
-    } catch (error) {
-      console.error('Error enviando email via Supabase:', error);
-    }
-
-  }
-
   cambiarVisibilidadPassword() {
     this.passwordVisible = !this.passwordVisible;
   }

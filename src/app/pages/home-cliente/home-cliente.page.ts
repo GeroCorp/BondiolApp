@@ -123,7 +123,9 @@ export class HomeClientePage implements OnInit {
   }
 
   
-
+  testMesa(){
+    this.mesaVerificada = true;
+  }
   
 
   private async setupMesaSubscription() {
@@ -208,13 +210,13 @@ export class HomeClientePage implements OnInit {
   }
 
   shouldShowListaEspera(): boolean {
-    const show = this.tipoClienteService.isAnonimo() && 
+    const show = 
                   this.enEspera && 
                   !this.mesaAsignada && 
                   !this.mesaVerificada;
     
     console.log('shouldShowListaEspera:', {
-      isAnonimo: this.tipoClienteService.isAnonimo(),
+
       enEspera: this.enEspera,
       mesaAsignada: this.mesaAsignada,
       mesaVerificada: this.mesaVerificada,
@@ -452,16 +454,55 @@ private async procesarIngresoAnonimo(nombre: string) {
     }
   }
 
+  /**
+   * Verificar y solicitar permisos de cámara
+   */
+  async checkPermissions(): Promise<boolean> {
+    try {
+      console.log('📷 Verificando permisos de cámara...');
+      
+      // Verificar permisos actuales
+      const currentPermissions = await BarcodeScanner.checkPermissions();
+      console.log('Permisos actuales:', currentPermissions);
+      
+      if (currentPermissions.camera === 'granted') {
+        console.log('✅ Permisos de cámara ya concedidos');
+        return true;
+      }
+      
+      if (currentPermissions.camera === 'denied') {
+        this.showToast('Los permisos de cámara fueron denegados. Ve a configuración de la app para habilitarlos.', 'danger');
+        return false;
+      }
+      
+      // Solicitar permisos
+      console.log('📱 Solicitando permisos de cámara...');
+      const requestedPermissions = await BarcodeScanner.requestPermissions();
+      console.log('Permisos solicitados:', requestedPermissions);
+      
+      if (requestedPermissions.camera === 'granted') {
+        console.log('✅ Permisos de cámara concedidos');
+        this.showToast('Permisos de cámara concedidos', 'success');
+        return true;
+      } else {
+        console.log('❌ Permisos de cámara denegados');
+        this.showToast('Se necesitan permisos de cámara para escanear códigos QR', 'danger');
+        return false;
+      }
+      
+    } catch (error) {
+      console.error('Error verificando permisos:', error);
+      this.showToast('Error al verificar permisos de cámara', 'danger');
+      return false;
+    }
+  }
+
   async escanearQRMesa() {
     try {
-      const granted = await BarcodeScanner.checkPermissions();
-      if (granted.camera !== 'granted') {
-        const permission = await BarcodeScanner.requestPermissions();
-        if (permission.camera !== 'granted') {
-          await this.hapticService.vibrateError();
-          this.showToast('Se necesitan permisos de cámara', 'danger');
-          return;
-        }
+      // Usar la función checkPermissions mejorada
+      const hasPermissions = await this.checkPermissions();
+      if (!hasPermissions) {
+        return;
       }
 
       const result = await BarcodeScanner.scan();
@@ -483,14 +524,10 @@ private async procesarIngresoAnonimo(nombre: string) {
 
   async escanearQRListaEspera() {
     try {
-      const granted = await BarcodeScanner.checkPermissions();
-      if (granted.camera !== 'granted') {
-        const permission = await BarcodeScanner.requestPermissions();
-        if (permission.camera !== 'granted') {
-      await this.hapticService.vibrateError();
-          this.showToast('Se necesitan permisos de cámara', 'danger');
-          return;
-        }
+      // Usar la función checkPermissions mejorada
+      const hasPermissions = await this.checkPermissions();
+      if (!hasPermissions) {
+        return;
       }
 
       const result = await BarcodeScanner.scan();
@@ -499,7 +536,7 @@ private async procesarIngresoAnonimo(nombre: string) {
         const qrData = result.barcodes[0].displayValue;
         this.router.navigate([qrData]);
       } else {
-      await this.hapticService.vibrateError();
+        await this.hapticService.vibrateError();
         this.showToast('No se detectó ningún QR', 'danger');
       }
     } catch (err: any) {
@@ -998,6 +1035,12 @@ private setupPedidosSubscription() {
         setTimeout(() => {
           this.mostrarInfoListaEspera(resultado.data?.id);
         }, 3500);
+
+        this.notificationService.sendNotificationToPerfil(
+          "maitre",
+          "Nuevo cliente en lista de espera",
+          `Cliente ${this.cliente?.nombre} se ha unido a la lista de espera.`
+        )
 
       } else {
         await this.hapticService.vibrateError();
