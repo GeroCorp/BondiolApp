@@ -68,7 +68,7 @@ export class Notification {
   }
 
   /**
-   * Establece el External User ID (user_id de Supabase)
+   * Establece el External User ID (user_id de Supabase o id_clienteanonimo en caso de ser anonimo)
    * @param userId - ID del usuario en Supabase
    */
   setExternalUserId(userId: string) {
@@ -101,35 +101,6 @@ export class Notification {
     } catch (error) {
       console.error('❌ Error al remover tags:', error);
     }
-  }
-
-  /**
-   * Envía notificación genérica con segmentos
-   */
-  sendNotification(notification: INotification) {
-    const userTimezone = moment.tz.guess();
-    return CapacitorHttp.post({
-      url: 'https://onesignal.com/api/v1/notifications',
-      params: {},
-      data: {
-        app_id: environment.oneSignalID,
-        included_segments: ['Active Subscriptions'],
-        headings: { "en": notification.title },
-        contents: { "en": notification.body },
-        data: { url: notification.url },
-        send_after: moment(notification.date).tz(userTimezone).format('YYYY-MM-DD HH:mm:ss [GMT]Z')
-      },
-      headers: {
-        'Content-type': 'application/json',
-        'Authorization': `Basic ${environment.oneSignalRestApi}`
-      }
-    }).then((response: HttpResponse) => {
-      console.log('Notificación enviada:', response);
-      return response.status === 200;
-    }).catch(err => {
-      console.error('Error enviando notificación:', err);
-      return false;
-    })
   }
 
   /**
@@ -215,9 +186,10 @@ export class Notification {
   * @param url - URL opcional
   * @param cliente_id - ID del cliente (si no se provee, se obtiene del servicio)
   */
-  async sendNotificationToCliente(title: string, body: string, url: string = '', cliente_id: number | null = null) {
+  async sendNotificationToCliente(title: string, body: string, url?: string, cliente_id: number | null = null) {
     // En caso que no se pase id por parametros obtiene la del cliente actual (sesión)
     if (!cliente_id) cliente_id = await this.clienteService.getClientId();
+    if (!url) url = '';
 
     return CapacitorHttp.post({
       url: 'https://onesignal.com/api/v1/notifications',
@@ -225,12 +197,9 @@ export class Notification {
       data: {
         app_id: environment.oneSignalID,
         include_external_user_ids: [cliente_id?.toString() || ''],
-        filters: [
-          {"field": "tag", "key": "perfil", "relation": "=", "value": "cliente"}
-        ],
         headings: { "en": title },
         contents: { "en": body },
-        data: { url: url }
+        url: url,
       },
       headers: {
         'Content-type': 'application/json',

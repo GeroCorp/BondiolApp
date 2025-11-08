@@ -141,4 +141,13 @@ Fecha estimada de finalización: 3/10
 ## Corpus Gerónimo
 - Arreglo de UI (Fondos oscuros y fuente mas grande)
 - Arreglo funcionalidad 13°
-- Modificación funcionalidad 22° (Descarga de factura)
+- Modificación funcionalidad 22° (Envío de factura)
+
+# Septima semana
+
+## Pagés Valentino
+- Funcionalidades 23 -> 26 
+
+## Corpus Gerónimo
+- Arreglos varios
+- Funcionalidades 27 -> 30

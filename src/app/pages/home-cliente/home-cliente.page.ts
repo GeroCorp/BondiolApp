@@ -59,13 +59,13 @@ export class HomeClientePage implements OnInit {
     effect(() => {
       if (!this.tipoClienteService.isAnonimo()) {
         this.enEspera = this.clienteService.clienteEnEspera();
-        console.log('📊 Estado del cliente en espera (registrado):', this.enEspera);
+        // console.log('📊 Estado del cliente en espera (registrado):', this.enEspera); // ⚠️ LOG DESHABILITADO
       }
     });
 
     // ✅ SUSCRIPCIÓN: Actualizar datos del cliente
     this.tipoClienteService.clienteData$.subscribe(async data => {
-      console.log('📥 clienteData$ actualizado:', data);
+      // console.log('📥 clienteData$ actualizado:', data); // ⚠️ LOG DESHABILITADO
       
       this.cliente = data;
 
@@ -75,37 +75,39 @@ export class HomeClientePage implements OnInit {
           this.enEspera = false;
           // ✅ NO cambiar mesaVerificada aquí - solo con QR
           
-          console.log('✅ Cliente con mesa asignada:', {
-            mesa: this.mesaAsignada,
-            enEspera: this.enEspera,
-            verificada: this.mesaVerificada
-          });
+          // console.log('✅ Cliente con mesa asignada:', { // ⚠️ LOG DESHABILITADO
+          //   mesa: this.mesaAsignada,
+          //   enEspera: this.enEspera,
+          //   verificada: this.mesaVerificada
+          // });
         } else {
           this.mesaAsignada = null;
           this.enEspera = data.en_espera === undefined ? true : !!data.en_espera;
           this.mesaVerificada = false;
           
-          console.log('⏳ Cliente sin mesa (en espera):', {
-            enEspera: this.enEspera,
-            mesaAsignada: this.mesaAsignada
-          });
+          // console.log('⏳ Cliente sin mesa (en espera):', { // ⚠️ LOG DESHABILITADO
+          //   enEspera: this.enEspera,
+          //   mesaAsignada: this.mesaAsignada
+          // });
         }
 
-        try {
-          (this.tipoClienteService as any).startRealtimeForCliente?.(data);
-        } catch (e) {
-          console.warn('⚠️ No se pudo iniciar realtime:', e);
-        }
+        // ⚠️ TEMPORALMENTE DESHABILITADO - CAUSABA SPAM DE LOGS
+        // try {
+        //   (this.tipoClienteService as any).startRealtimeForCliente?.(data);
+        // } catch (e) {
+        //   console.warn('⚠️ No se pudo iniciar realtime:', e);
+        // }
 
-        if (!this.mesaAsignada && !this.enEspera) {
-          await this.tipoClienteService.refreshClienteData().catch(() => {});
-          const updated = this.tipoClienteService.getClienteData();
-          if (updated?.mesa_asignada) {
-            this.mesaAsignada = updated.mesa_asignada;
-            this.enEspera = false;
-            console.log('🔄 Mesa asignada detectada después de refresh:', this.mesaAsignada);
-          }
-        }
+        // ⚠️ TEMPORALMENTE DESHABILITADO - CAUSABA LLAMADAS EXCESIVAS
+        // if (!this.mesaAsignada && !this.enEspera) {
+        //   await this.tipoClienteService.refreshClienteData().catch(() => {});
+        //   const updated = this.tipoClienteService.getClienteData();
+        //   if (updated?.mesa_asignada) {
+        //     this.mesaAsignada = updated.mesa_asignada;
+        //     this.enEspera = false;
+        //     console.log('🔄 Mesa asignada detectada después de refresh:', this.mesaAsignada);
+        //   }
+        // }
       } else {
         this.enEspera = false;
         this.mesaAsignada = null;
@@ -129,12 +131,23 @@ export class HomeClientePage implements OnInit {
   
 
   private async setupMesaSubscription() {
+    // ⚠️ TEMPORALMENTE DESHABILITADO - CAUSABA SPAM DE LOGS
+    console.log('⚠️ setupMesaSubscription DESHABILITADO temporalmente');
+    return;
+    
     // Limpiar suscripción anterior
     if (this.mesaSubscription) {
+      console.log('🧹 Limpiando suscripción de mesa anterior...');
       this.mesaSubscription.unsubscribe?.();
+      this.mesaSubscription = null;
     }
 
-    if (!this.cliente) return;
+    if (!this.cliente) {
+      console.log('⚠️ No hay cliente, saltando setupMesaSubscription');
+      return;
+    }
+
+    console.log('🔄 Configurando nueva suscripción de mesa para:', this.cliente.nombre);
 
     // Suscribirse a cambios en la fila de clientes_anonimos (importante: el maitre debe actualizar esta tabla)
     const idAnon = this.cliente.id_clienteanonimo ?? this.cliente.id_cliente;
@@ -192,20 +205,79 @@ export class HomeClientePage implements OnInit {
       await this.cargarDatosCliente();
       await this.verificarMesaAsignada();
     }
+    this.notificationsInit();
 
-    // Polling de respaldo
-    this.checkInterval = setInterval(async () => {
-      if (this.cliente) {
-        await this.tipoClienteService.refreshClienteData().catch(() => {});
-      }
-    }, 10000);
+    // ⚠️ POLLING TEMPORALMENTE DESHABILITADO - CAUSABA SPAM DE LOGS
+    // this.checkInterval = setInterval(async () => {
+    //   if (this.cliente) {
+    //     console.log('🔄 Polling de respaldo - refreshClienteData');
+    //     await this.tipoClienteService.refreshClienteData().catch((err) => {
+    //       console.error('❌ Error en polling de respaldo:', err);
+    //     });
+    //   }
+    // }, 30000); // Cambiado de 10s a 30s
   }
 
   ngOnDestroy() {
-    if (this.checkInterval) clearInterval(this.checkInterval);
-    this.tipoClienteService.stopRealtime();
+    // Limpiar interval
+    if (this.checkInterval) {
+      clearInterval(this.checkInterval);
+      this.checkInterval = null;
+    }
+    
+    // Limpiar todas las suscripciones
+    this.cleanupAllSubscriptions();
+  }
+
+  /**
+   * Limpia todas las suscripciones realtime activas
+   */
+  private cleanupAllSubscriptions() {
+    console.log('🧹 Limpiando todas las suscripciones realtime...');
+    
+    // Limpiar suscripción de mesa
+    if (this.mesaSubscription) {
+      this.mesaSubscription.unsubscribe?.();
+      this.mesaSubscription = null;
+      console.log('✅ Mesa subscription limpiada');
+    }
+    
+    // Limpiar suscripción de pedidos
     if (this.pedidosSubscription) {
-      this.pedidosSubscription.unsubscribe();
+      this.pedidosSubscription.unsubscribe?.();
+      this.pedidosSubscription = null;
+      console.log('✅ Pedidos subscription limpiada');
+    }
+    
+    // Limpiar realtime del tipoClienteService
+    this.tipoClienteService.stopRealtime();
+    console.log('✅ TipoClienteService realtime detenido');
+  }
+
+  /**
+   * 🛠️ [DESARROLLO] Reactivar funcionalidades cuando sea necesario
+   */
+  reactivarRealtime() {
+    console.log('🔄 Reactivando realtime funcionalidades...');
+    
+    // Reactivar solo si es necesario
+    if (this.cliente && this.mesaAsignada) {
+      this.setupMesaSubscription();
+      this.setupPedidosSubscription();
+    }
+  }
+
+  /**
+   * 🛠️ [DESARROLLO] Actualizar datos manualmente (sin polling automático)
+   */
+  async actualizarDatosManual() {
+    console.log('🔄 Actualizando datos manualmente...');
+    try {
+      await this.tipoClienteService.refreshClienteData();
+      this.showToast('Datos actualizados', 'success');
+    } catch (error) {
+      console.error('❌ Error actualizando datos:', error);
+      this.showToast('Error actualizando datos', 'danger');
     }
   }
 
@@ -215,25 +287,12 @@ export class HomeClientePage implements OnInit {
                   !this.mesaAsignada && 
                   !this.mesaVerificada;
     
-    console.log('shouldShowListaEspera:', {
-
-      enEspera: this.enEspera,
-      mesaAsignada: this.mesaAsignada,
-      mesaVerificada: this.mesaVerificada,
-      resultado: show
-    });
     
     return show;
   }
 
   shouldShowVerificarMesa(): boolean {
     const show = !!this.mesaAsignada && !this.mesaVerificada;
-    
-    console.log('shouldShowVerificarMesa:', {
-      mesaAsignada: this.mesaAsignada,
-      mesaVerificada: this.mesaVerificada,
-      resultado: show
-    });
     
     return show;
   }
@@ -409,17 +468,14 @@ private async procesarIngresoAnonimo(nombre: string) {
   async cargarDatosCliente() {
     try {
       const user = await this.authService.getCurrentUser();
-      
       if (user) {
         this.cliente = await this.authService.getClienteByUserId(user.id);
-        
         if (this.cliente) {
           console.log('✅ Cliente registrado cargado:', this.cliente);
           
           // ✅ Actualizar TipoClienteService con datos del cliente registrado
           this.tipoClienteService['clienteData'].next(this.cliente);
           
-          this.notificationsInit();
           
           if (!this.cliente.email) {
             this.cliente.email = user.email;
@@ -434,7 +490,14 @@ private async procesarIngresoAnonimo(nombre: string) {
   }
 
   async notificationsInit(){
-    this.notificationService.setExternalUserId(this.cliente?.id_cliente?.toString() || '');
+    let id; 
+    if (!this.cliente.id_cliente){
+      // Si no hay id_cliente, intentar con anon id
+      id = this.cliente.id_clienteanonimo.toString();
+    }else{
+      id = this.cliente.id_cliente.toString();
+    };
+    this.notificationService.setExternalUserId( id || '');
     this.clienteService.subscribeToHistorialPedidos();
   }
 
@@ -859,11 +922,19 @@ private async procesarIngresoAnonimo(nombre: string) {
 
 private setupPedidosSubscription() {
     try {
+      // Limpiar suscripción anterior
       if (this.pedidosSubscription) {
+        console.log('🧹 Limpiando suscripción de pedidos anterior...');
         this.pedidosSubscription.unsubscribe();
+        this.pedidosSubscription = null;
       }
 
-      if (!this.mesaAsignada) return;
+      if (!this.mesaAsignada) {
+        console.log('⚠️ No hay mesa asignada, saltando setupPedidosSubscription');
+        return;
+      }
+
+      console.log('🔄 Configurando nueva suscripción de pedidos para mesa:', this.mesaAsignada);
 
       this.pedidosSubscription = supabase
         .channel(`pedidos-mesa-${this.mesaAsignada}`)
