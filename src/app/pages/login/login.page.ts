@@ -4,9 +4,10 @@ import { Router } from '@angular/router';
 import { ToastController, LoadingController } from '@ionic/angular';
 import { AuthService } from 'src/app/services/supabase';
 import { Notification } from 'src/app/services/notification';
-import { HapticService } from 'src/app/services/haptic.service';
 import { TipoClienteService } from 'src/app/services/tipo-cliente.service';
 import { SocialAuthService } from 'src/app/services/social-auth.service';
+import { HapticService } from 'src/app/services/haptic.service';
+import { EmailService } from 'src/app/services/email';
 
 @Component({
   selector: 'app-login',
@@ -20,6 +21,7 @@ export class LoginPage {
   private notificationService: Notification = inject(Notification);
 
   constructor(
+    private mailService: EmailService,
     private formBuilder: FormBuilder,
     private router: Router,
     private toastController: ToastController,
@@ -33,16 +35,6 @@ export class LoginPage {
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]]
     });
-  }
-
-  async vibrate() {
-    console.log('🎯 Botón de vibración presionado');
-    try {
-      await this.v.vibrateError();
-      console.log('✅ Vibración ejecutada correctamente');
-    } catch (error) {
-      console.error('❌ Error en vibración:', error);
-    }
   }
 
   cambiarVisibilidadPassword() {

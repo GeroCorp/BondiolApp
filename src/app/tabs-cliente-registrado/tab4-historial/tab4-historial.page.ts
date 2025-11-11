@@ -90,23 +90,9 @@ export class Tab4HistorialPage implements OnInit, OnDestroy {
       return;
     }
 
-    console.log('🏠 Cargando pedidos de la mesa:', this.mesaActual);
+    console.log('🏠 Cargando pedidos del cliente:', clienteId);
 
-    const { data: pedidos, error } = await this.authService.client
-      .from('pedidos')
-      .select(`
-        *,
-        detalles_pedido(*),
-        propinas(*)
-      `)
-      .eq('mesa', this.mesaActual)
-      .is('id_cliente', isAnonimo ? null : undefined)  // ✅ Filtro correcto
-      .order('fecha', { ascending: false });
-
-    if (error) {
-      console.error('❌ Error obteniendo pedidos:', error);
-      throw error;
-    }
+    const pedidos = await this.clienteService.getHistorialPedidos();
 
     console.log('✅ Pedidos obtenidos:', pedidos?.length || 0);
     console.log('📦 Pedidos completos:', pedidos);

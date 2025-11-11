@@ -419,7 +419,7 @@ export class ReservasService {
     });
 
     // Email
-    const emailEnviado = await this.emailService.enviarEmailAprobacionReserva(
+    const emailEnviado = await this.emailService.enviarEmailReservaAprobada(
       {
         nombre: reservaData.cliente.nombre,
         apellido: reservaData.cliente.apellido,
@@ -477,7 +477,7 @@ export class ReservasService {
       if (error) throw error;
 
       try {
-        await this.emailService.enviarEmailRechazoReserva(
+        await this.emailService.enviarEmailReservaRechazada(
           {
             nombre: reservaData.cliente.nombre,
             apellido: reservaData.cliente.apellido,

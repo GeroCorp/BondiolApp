@@ -1,11 +1,26 @@
 import { Injectable } from '@angular/core';
-import emailjs from '@emailjs/browser';
 import { environment } from 'src/environments/environment';
+import { supabase } from './supabase';
+import EmailTemplates from '../../assets/email-templates/index';
+import { 
+  reservaAprobadaTemplate, 
+  reservaRechazadaTemplate, 
+  ReservaAprobadaData, 
+  ReservaRechazadaData 
+} from '../../assets/email-templates/reservas';
 
 interface Cliente {
   nombre: string;
   apellido: string;
   email: string;
+  dni?: number | string;
+}
+
+interface DetallesPedido {
+  id: number;
+  nombre: string;
+  cantidad: number;
+  precio_unitario: number;
 }
 
 @Injectable({
@@ -13,193 +28,217 @@ interface Cliente {
 })
 export class EmailService {
 
-  constructor() {
-    // Inicializar EmailJS con tu Public Key
-    emailjs.init(environment.emailjs.publicKey);
-    console.log('✅ EmailJS inicializado con Public Key:', environment.emailjs.publicKey);
+  supabaseClient = supabase;
+
+  constructor(
+  ) {
+  }
+
+  async enviarMailSupabase(datos: any){
+    const bodyData = JSON.stringify(datos);
+    console.log("Datos pasados al body: ", datos);
+    const {data: response, error} = await this.supabaseClient.functions.invoke('testeoperreo', {
+      method: 'POST',
+      body: bodyData, // Contiene nombre_cliente, email_cliente, html (template) y subject
+      headers: {
+      }
+    })
+    if (error) throw new Error(`Error enviando email via Supabase: ${error.message}`);
+
+    console.log("Respuesta del envío: ", response);
+
+    return response;
   }
 
   /**
-   * Envía email de aprobación al cliente
+   * Envía email de aprobación al cliente usando Supabase con template HTML
    */
-  async enviarEmailAprobacion(cliente: Cliente): Promise<boolean> {
+  async enviarEmailAprobacionConTemplate(cliente: Cliente): Promise<boolean> {
     try {
-      console.log('📧 Intentando enviar email de aprobación a:', cliente.email);
+      console.log('📧 Enviando email de aprobación con template HTML a:', cliente.email);
       
-      const templateParams = {
-        nombre: cliente.nombre,
-        email: cliente.email,
-        to_email: cliente.email
+      const htmlTemplate = EmailTemplates.aprobado(cliente.email, cliente.nombre);
+      
+      const datos = {
+        nombre_cliente: cliente.nombre,
+        email_cliente: cliente.email,
+        html: htmlTemplate,
+        subject: '¡Tu cuenta ha sido aprobada!'
       };
 
-      console.log('📧 Template params:', templateParams);
-
-      const response = await emailjs.send(
-        environment.emailjs.serviceId,
-        environment.emailjs.templates.aprobado,
-        templateParams
-      );
-
-      console.log('✅ Email de aprobación enviado:', response);
-      return response.status === 200;
+      await this.enviarMailSupabase(datos);
+      console.log('✅ Email de aprobación con template enviado');
+      return true;
     } catch (error: any) {
-      console.error('❌ Error al enviar email de aprobación:', error);
-      console.error('❌ Detalles del error:', {
-        text: error.text,
-        status: error.status,
-        message: error.message
-      });
+      console.error('❌ Error al enviar email de aprobación con template:', error);
       return false;
     }
   }
 
   /**
-   * Envía email de rechazo al cliente
+   * Envía email de rechazo al cliente usando Supabase con template HTML
    */
-  async enviarEmailRechazo(cliente: Cliente): Promise<boolean> {
+  async enviarEmailRechazoConTemplate(cliente: Cliente): Promise<boolean> {
     try {
-      console.log('📧 Intentando enviar email de rechazo a:', cliente.email);
+      console.log('📧 Enviando email de rechazo con template HTML a:', cliente.email);
       
-      const templateParams = {
-        nombre: cliente.nombre,
-        email: cliente.email,
-        to_email: cliente.email
+      const htmlTemplate = EmailTemplates.rechazado(cliente.nombre);
+      
+      const datos = {
+        nombre_cliente: cliente.nombre + " " + cliente.apellido,
+        email_cliente: cliente.email,
+        html: htmlTemplate,
+        subject: 'Notificación sobre su cuenta'
       };
 
-      console.log('📧 Template params:', templateParams);
-
-      const response = await emailjs.send(
-        environment.emailjs.serviceId,
-        environment.emailjs.templates.rechazado,
-        templateParams
-      );
-
-      console.log('✅ Email de rechazo enviado:', response);
-      return response.status === 200;
+      await this.enviarMailSupabase(datos);
+      console.log('✅ Email de rechazo con template enviado');
+      return true;
     } catch (error: any) {
-      console.error('❌ Error al enviar email de rechazo:', error);
-      console.error('❌ Detalles del error:', {
-        text: error.text,
-        status: error.status,
-        message: error.message
-      });
+      console.error('❌ Error al enviar email de rechazo con template:', error);
       return false;
     }
   }
 
-  /**
-   * 📧 NUEVO: Enviar email de aprobación de reserva
-   */
-  async enviarEmailAprobacionReserva(
+  async enviarEmailFactura(
+    pedidoId: number, 
+    montoTotal: number, 
     cliente: Cliente,
-    reserva: {
-      fecha: string;
-      hora: string;
-      mesa: number;
-      personas: number;
-    }
+    porcentajePropina: number,
+    descuentoAplicado: number,
+    pedidoDetalles: DetallesPedido[]
   ): Promise<boolean> {
     try {
-      console.log('📧 Enviando email de aprobación de reserva a:', cliente.email);
-      
-      // Formatear fecha
-      const fechaFormateada = this.formatearFecha(reserva.fecha);
-      
-      const templateParams = {
-        to_email: cliente.email,
-        nombre: cliente.nombre,
-        apellido: cliente.apellido,
-        email: cliente.email,
-        fecha_reserva: fechaFormateada,
-        hora_reserva: reserva.hora,
-        numero_mesa: reserva.mesa,
-        cantidad_personas: reserva.personas,
-        tiempo_tolerancia: '45 minutos'
+
+      const { data: response, error } = await this.supabaseClient.functions.invoke('pdfConverter', {
+        method: 'POST',
+        body: JSON.stringify({
+          pedidoId: pedidoId,
+          IMPORTE_TOTAL: montoTotal,
+          cliente_nombre: cliente.nombre,
+          cliente_dni: cliente.dni,
+          items_facturados: pedidoDetalles,
+          DESCUENTO_APLICADO: descuentoAplicado,
+          PORCENTAJE_PROPINA: porcentajePropina,
+          IMPORTE_PROPINA: montoTotal * (porcentajePropina / 100)
+        }),
+        headers: {
+
+        }
+        
+      })
+
+      if (error) throw new Error(`Error generando PDF de factura: ${error.message}`);
+
+      const pdfData = response;
+      const parsedData = typeof pdfData === 'string' ? JSON.parse(pdfData) : pdfData;
+      console.log("downloadLink:", parsedData?.downloadLink);
+
+      const htmlTemplate = EmailTemplates.mailFactura(cliente.nombre, montoTotal, pedidoId, parsedData?.downloadLink, Date.now().toLocaleString());
+
+      const datos = {
+        email_cliente: cliente.email,
+        html: htmlTemplate,
+        subject: `Factura de su pedido #${pedidoId}`
       };
 
-      console.log('📧 Template params reserva aprobada:', templateParams);
+      const mailEnviado = await this.enviarMailSupabase(datos);
+      console.log('✅ Email de factura enviado: ', mailEnviado);
 
-      const response = await emailjs.send(
-        environment.emailjs.serviceId,
-        'template_reserva_aprobada', // ⚠️ Debe existir en EmailJS
-        templateParams
-      );
+      return true;
+       
+     }catch(err){
+       console.error('❌ Error al enviar email de factura con template:', err);
+       return false;
+     }
+   }
 
-      console.log('✅ Email de aprobación de reserva enviado:', response);
-      return response.status === 200;
-    } catch (error: any) {
-      console.error('❌ Error al enviar email de aprobación de reserva:', error);
-      console.error('❌ Detalles del error:', {
-        text: error.text,
-        status: error.status,
-        message: error.message
-      });
-      return false;
-    }
-  }
-
-  /**
-   * 📧 NUEVO: Enviar email de rechazo de reserva
-   */
-  async enviarEmailRechazoReserva(
-    cliente: Cliente,
-    reserva: {
-      fecha: string;
-      hora: string;
-      mesa: number;
-      personas: number;
-    },
-    motivo: string
+   async enviarEmailReservaAprobada(
+    cliente: { nombre: string; apellido: string; email: string },
+    datosReserva: { fecha: string; hora: string; mesa: number; personas: number },
+    tiempoTolerancia: string = '45 minutos'
   ): Promise<boolean> {
     try {
-      console.log('📧 Enviando email de rechazo de reserva a:', cliente.email);
+      console.log('📧 Enviando email de reserva aprobada a:', cliente.email);
       
-      // Formatear fecha
-      const fechaFormateada = this.formatearFecha(reserva.fecha);
+      // Formatear fecha de YYYY-MM-DD a DD/MM/YYYY
+      const [year, month, day] = datosReserva.fecha.split('-');
+      const fechaFormateada = `${day}/${month}/${year}`;
       
-      const templateParams = {
-        to_email: cliente.email,
-        nombre: cliente.nombre,
-        apellido: cliente.apellido,
-        email: cliente.email,
+      // Formatear hora de HH:MM:SS a HH:MM
+      const horaFormateada = datosReserva.hora.substring(0, 5);
+      
+      const datosTemplate: ReservaAprobadaData = {
+        nombre: `${cliente.nombre} ${cliente.apellido}`,
         fecha_reserva: fechaFormateada,
-        hora_reserva: reserva.hora,
-        numero_mesa: reserva.mesa,
-        cantidad_personas: reserva.personas,
-        motivo_rechazo: motivo
+        hora_reserva: horaFormateada,
+        numero_mesa: datosReserva.mesa,
+        cantidad_personas: datosReserva.personas,
+        tiempo_tolerancia: tiempoTolerancia
+      };
+      
+      const htmlTemplate = reservaAprobadaTemplate(datosTemplate);
+      
+      const datos = {
+        nombre_cliente: `${cliente.nombre} ${cliente.apellido}`,
+        email_cliente: cliente.email,
+        html: htmlTemplate,
+        subject: '✅ Reserva Confirmada - RestoApp'
       };
 
-      console.log('📧 Template params reserva rechazada:', templateParams);
-
-      const response = await emailjs.send(
-        environment.emailjs.serviceId,
-        'template_reserva_rechazada', // ⚠️ Debe existir en EmailJS
-        templateParams
-      );
-
-      console.log('✅ Email de rechazo de reserva enviado:', response);
-      return response.status === 200;
+      await this.enviarMailSupabase(datos);
+      console.log('✅ Email de reserva aprobada enviado');
+      return true;
     } catch (error: any) {
-      console.error('❌ Error al enviar email de rechazo de reserva:', error);
-      console.error('❌ Detalles del error:', {
-        text: error.text,
-        status: error.status,
-        message: error.message
-      });
+      console.error('❌ Error al enviar email de reserva aprobada:', error);
       return false;
     }
   }
 
   /**
-   * Formatear fecha para email
+   * Envía email de reserva rechazada al cliente
+   * @param cliente - Datos del cliente (nombre, apellido, email)
+   * @param datosReserva - Información de la reserva (fecha, hora, mesa, personas)
+   * @param motivoRechazo - Razón del rechazo de la reserva
    */
-  private formatearFecha(fecha: string): string {
-    const date = new Date(fecha + 'T00:00:00');
-    return date.toLocaleDateString('es-AR', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+  async enviarEmailReservaRechazada(
+    cliente: { nombre: string; apellido: string; email: string },
+    datosReserva: { fecha: string; hora: string; mesa: number; personas: number },
+    motivoRechazo: string
+  ): Promise<boolean> {
+    try {
+      console.log('📧 Enviando email de reserva rechazada a:', cliente.email);
+      
+      // Formatear fecha de YYYY-MM-DD a DD/MM/YYYY
+      const [year, month, day] = datosReserva.fecha.split('-');
+      const fechaFormateada = `${day}/${month}/${year}`;
+      
+      // Formatear hora de HH:MM:SS a HH:MM
+      const horaFormateada = datosReserva.hora.substring(0, 5);
+      
+      const datosTemplate: ReservaRechazadaData = {
+        nombre: `${cliente.nombre} ${cliente.apellido}`,
+        fecha_reserva: fechaFormateada,
+        hora_reserva: horaFormateada,
+        numero_mesa: datosReserva.mesa,
+        motivo_rechazo: motivoRechazo
+      };
+      
+      const htmlTemplate = reservaRechazadaTemplate(datosTemplate);
+      
+      const datos = {
+        nombre_cliente: `${cliente.nombre} ${cliente.apellido}`,
+        email_cliente: cliente.email,
+        html: htmlTemplate,
+        subject: '❌ Reserva No Aprobada - RestoApp'
+      };
+
+      await this.enviarMailSupabase(datos);
+      console.log('✅ Email de reserva rechazada enviado');
+      return true;
+    } catch (error: any) {
+      console.error('❌ Error al enviar email de reserva rechazada:', error);
+      return false;
+    }
   }
 }

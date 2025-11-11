@@ -83,6 +83,10 @@
           <ion-icon slot="start" name="qr-code"></ion-icon>
           Verificar Mesa {{ mesaAsignada }}
         </ion-button>
+        <ion-button expand="block" size="large" (click)="testMesa()">
+          <ion-icon slot="start" name="qr-code"></ion-icon>
+          Verificar Mesa debug {{ mesaAsignada }}
+        </ion-button>
       </ion-card-content>
     </ion-card>
     } @else if (shouldShowListaEspera()) {
