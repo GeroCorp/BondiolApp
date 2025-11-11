@@ -15,6 +15,11 @@ const config: CapacitorConfig = {
     overrideUserAgent: 'Mozilla/5.0 (Linux; Android 10; Mobile) AppleWebKit/537.36 RestoApp/1.0'
   },
   plugins: {
+    SocialLogin: {
+      google: {
+        webClientId: '143351493481-fba5rkk25jstfus8okff8ndud3djh5kf.apps.googleusercontent.com', 
+      }
+    },
     StatusBar: {
       overlaysWebView: false,
       style: 'WHITE',

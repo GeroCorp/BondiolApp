@@ -129,6 +129,10 @@ async logout() {
     this.router.navigate(['/tabs-admin/tab4-admin-mesa'], {replaceUrl: true}); // Redirigir a tabs mesa
   }
 
+  verReservasAdmin() {
+    this.router.navigate(['/gestion-reservas'], {replaceUrl: true});
+  }
+
 
   // Seccion de cocinero y bartender
   agregarProducto() {

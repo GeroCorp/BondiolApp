@@ -1,6 +1,6 @@
 <ion-header [translucent]="true">
   <ion-toolbar class="ion-text-center custom-header">
-    <img src="assets/icon/icon-only.png" alt="Logo" width="85">
+    <img src="assets/icon/icon-only.png" alt="Logo" width="85" />
   </ion-toolbar>
 </ion-header>
 
@@ -11,38 +11,92 @@
         <ion-card-title class="ion-text-center">Iniciar Sesión</ion-card-title>
       </ion-card-header>
       <ion-card-content class="ion-padding">
-
         <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
-          
-            <ion-input type="email" formControlName="email" label="Correo Electrónico" fill="outline" labelPlacement="floating" class="ion-margin-top"/>
-          
-            <div class="password-container">
-              <ion-input [type]="passwordVisible ? 'text' : 'password'" formControlName="password" label="Contraseña" fill="outline" labelPlacement="floating" class="ion-margin-top password-input"></ion-input>
-              <ion-button fill="clear" (click)="cambiarVisibilidadPassword()" class="password-toggle">
-                <ion-icon [name]="passwordVisible ? 'eye' : 'eye-off'"></ion-icon>
-              </ion-button>
-            </div>
-            
-          <ion-button expand="block" type="submit" class="btn-primary ion-margin-top">
-            Iniciar sesión <ion-icon name="log-in-outline" slot="end"></ion-icon>
+          <ion-input
+            type="email"
+            formControlName="email"
+            label="Correo Electrónico"
+            fill="outline"
+            labelPlacement="floating"
+            class="ion-margin-top"
+          />
+
+          <div class="password-container">
+            <ion-input
+              [type]="passwordVisible ? 'text' : 'password'"
+              formControlName="password"
+              label="Contraseña"
+              fill="outline"
+              labelPlacement="floating"
+              class="ion-margin-top password-input"
+            ></ion-input>
+            <ion-button
+              fill="clear"
+              (click)="cambiarVisibilidadPassword()"
+              class="password-toggle"
+            >
+              <ion-icon [name]="passwordVisible ? 'eye' : 'eye-off'"></ion-icon>
+            </ion-button>
+          </div>
+
+          <ion-button
+            expand="block"
+            type="submit"
+            class="btn-primary ion-margin-top"
+          >
+            Iniciar sesión
+            <ion-icon name="log-in-outline" slot="end"></ion-icon>
           </ion-button>
         </form>
-        <ion-button expand="block" class="ion-margin-top" color="danger" class="ion-margin-top" (click)="registrar()">
-          Registrarse<ion-icon name="person-circle-outline" slot="end"></ion-icon>
+        <ion-button
+          expand="block"
+          class="ion-margin-top"
+          color="danger"
+          class="ion-margin-top"
+          (click)="registrar()"
+        >
+          Registrarse<ion-icon
+            name="person-circle-outline"
+            slot="end"
+          ></ion-icon>
         </ion-button>
 
-
-         <ion-button 
-          expand="block" 
-          fill="outline" 
-          color="secondary" 
-          (click)="irClienteAnonimo()">
+        <ion-button
+          expand="block"
+          fill="outline"
+          color="secondary"
+          (click)="irClienteAnonimo()"
+        >
           Ingresar como Anónimo
         </ion-button>
 
-        <ion-button (click)="vibrate()" expand="block" fill="clear" shape="round" id="testBtn">
+        <ion-button
+          (click)="vibrate()"
+          expand="block"
+          fill="clear"
+          shape="round"
+          id="testBtn"
+        >
           Test Vibración
           <ion-icon slot="start" name="hardware-chip-outline"></ion-icon>
+        </ion-button>
+
+        <div class="ion-text-center ion-margin-vertical">
+          <ion-text color="medium">
+            <p>Inicia sesión con:</p>
+          </ion-text>
+        </div>
+
+        <!-- Botón de facebook OAuth -->
+        <ion-button
+          expand="block"
+          fill="outline"
+          color="danger"
+          (click)="loginConGoogle()"
+          class="ion-margin-top"
+        >
+          <ion-icon name="logo-google" slot="start"></ion-icon>
+          Continuar con Google
         </ion-button>
       </ion-card-content>
 
@@ -52,14 +106,16 @@
         </ion-card-header>
         <ion-card-content>
           <ion-item lines="none">
-            <ion-select 
-              id="select-id" 
-              placeholder="Selecciona usuario" 
-              interface="action-sheet" 
+            <ion-select
+              id="select-id"
+              placeholder="Selecciona usuario"
+              interface="action-sheet"
               (ionChange)="fastFill($event.detail.value)"
             >
               <ion-select-option value="dueño">Dueño</ion-select-option>
-              <ion-select-option value="supervisor">Supervisor</ion-select-option>
+              <ion-select-option value="supervisor"
+                >Supervisor</ion-select-option
+              >
               <ion-select-option value="maitre">Maitre</ion-select-option>
               <ion-select-option value="mozo">Mozo</ion-select-option>
               <ion-select-option value="cocinero">Cocinero</ion-select-option>
@@ -69,7 +125,6 @@
           </ion-item>
         </ion-card-content>
       </ion-card>
-
     </ion-card>
   </div>
 </ion-content>

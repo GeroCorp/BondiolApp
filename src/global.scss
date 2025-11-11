@@ -60,3 +60,21 @@ ion-content {
 //     --overflow: hidden auto; /* solo scroll si hace falta */
 // }
 
+.custom-html-alert {
+  .alert-message {
+    text-align: left !important;
+    
+    strong {
+      font-weight: 600;
+      color: #000;
+    }
+    
+    small {
+      font-size: 0.85em;
+    }
+  }
+}
+
+.custom-html-alert .alert-message {
+  white-space: pre-line;
+}

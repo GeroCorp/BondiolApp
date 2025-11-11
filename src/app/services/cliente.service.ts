@@ -590,90 +590,49 @@ getSubtotal(): number {
   }
 }
 
-async sendMessage(content: string) {
+async sendMessage(contenido: string): Promise<void> {
   try {
     const isAnonimo = this.tipoClienteService.isAnonimo();
     const clienteData = this.tipoClienteService.getClienteData();
-    
+
+    let nombreUsuario = '';
     let nroMesa: number | null = null;
-    let nombre: string;
 
     if (isAnonimo) {
-      const mesaId = clienteData?.mesa_asignada || null;
-      
-      if (!mesaId) {
-        throw new Error('No tienes una mesa asignada');
-      }
-
-      const { data: mesaData, error: mesaError } = await this.supabase
-        .from('mesas')
-        .select('numero')
-        .eq('id', mesaId)
-        .single();
-
-      if (mesaError || !mesaData) {
-        console.error('❌ Error obteniendo número de mesa:', mesaError);
-        throw new Error('Error al obtener número de mesa');
-      }
-
-      nroMesa = mesaData.numero;
-      nombre = clienteData?.nombre || 'Cliente Anónimo';
-      
-      console.log('🎭 Enviando mensaje de anónimo:', {
-        nombre,
-        mesaId,
-        nroMesa
-      });
+      nombreUsuario = clienteData?.nombre || 'Cliente Anónimo';
+      nroMesa = clienteData?.mesa_asignada || null;
     } else {
-      const idCliente = await this.getClientId();
-      nroMesa = await this.getNroMesa(idCliente);
-      nombre = await this.getNombreCliente();
-      
-      console.log('👤 Enviando mensaje de registrado:', {
-        nombre,
-        nroMesa
-      });
+      nombreUsuario = await this.getNombreCliente();
+      const clienteId = await this.getClientId();
+      nroMesa = await this.getNroMesa(clienteId);
     }
 
     if (!nroMesa) {
-      throw new Error('No se pudo obtener el número de mesa');
+      console.error('❌ No se puede enviar mensaje: el cliente no tiene mesa asignada');
+      return;
     }
 
-    const { data, error } = await this.supabase
+    const { error } = await this.client
       .from('mensajes')
-      .insert([
-        {
-          contenido: content,
-          nombre_usuario: nombre,
-          date_sended: new Date().toISOString(),
-          nroMesa
-        }
-      ])
-      .select();
+      .insert({
+        contenido,
+        nombre_usuario: nombreUsuario,
+        nroMesa,
+        date_sended: new Date().toISOString()
+      });
 
     if (error) {
-      console.error('❌ Error enviando mensaje:', error);
-      throw new Error('Error enviando mensaje: ' + error.message);
+      console.error('❌ Error insertando mensaje:', error);
+      throw error;
     }
 
-    if (data) {
-      console.log('✅ Mensaje enviado correctamente a mesa', nroMesa);
-      
-      try {
-        await this.notificationService.sendNotificationToPerfil(
-          'mozo',
-          `Nueva consulta de la mesa ${nroMesa}`,
-          `${nombre}: ${content}`
-        );
-      } catch (notifError) {
-        console.error('⚠️ Error enviando notificación:', notifError);
-      }
-    }
-  } catch (error) {
-    console.error('❌ Error en sendMessage:', error);
-    throw error;
+    console.log(`✅ Mensaje enviado correctamente por ${isAnonimo ? 'cliente anónimo' : 'cliente registrado'} a mesa ${nroMesa}`);
+  } catch (err) {
+    console.error('❌ Error en sendMessage():', err);
+    throw err;
   }
 }
+
 
 async subscribeToNewMessages(signal: any) {
   try {

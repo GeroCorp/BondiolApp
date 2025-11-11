@@ -58,23 +58,110 @@ export class Tab3AdminClientePage implements OnInit {
   }
 
   async cargarClientes() {
-    const loader = await this.loadingCtrl.create({ 
-      message: 'Cargando clientes pendientes...' 
-    });
-    await loader.present();
+  const loader = await this.loadingCtrl.create({ 
+    message: 'Cargando clientes pendientes...' 
+  });
+  await loader.present();
+  
+  try {
+    console.log('📋 [ADMIN] Cargando clientes pendientes...');
     
-    try {
-      this.clientes = await this.authService.getClientesPendientes();
-    } catch (err: any) {
-      console.error('Error cargando clientes:', err);
-      await this.presentToast(
-        'Error cargando clientes: ' + (err.message ?? err), 
-        'danger'
-      );
-    } finally {
-      await loader.dismiss();
+    this.clientes = await this.authService.getClientesPendientes();
+    
+    console.log('✅ [ADMIN] Clientes pendientes obtenidos:', {
+      cantidad: this.clientes.length,
+      clientes: this.clientes.map(c => ({
+        id: c.id_cliente,
+        nombre: `${c.nombre} ${c.apellido}`,
+        email: c.email,
+        estado: c.estado,
+        dni: c.dni
+      }))
+    });
+    
+    // 🔍 DIAGNÓSTICO: Verificar si hay clientes OAuth
+    const clientesOAuth = this.clientes.filter(c => c.dni?.startsWith('OAUTH-'));
+    if (clientesOAuth.length > 0) {
+      console.log('🔍 [ADMIN] Clientes OAuth encontrados:', clientesOAuth.length);
     }
+    
+  } catch (err: any) {
+    console.error('❌ [ADMIN] Error cargando clientes:', err);
+    await this.presentToast(
+      'Error cargando clientes: ' + (err.message ?? err), 
+      'danger'
+    );
+  } finally {
+    await loader.dismiss();
   }
+}
+
+async diagnosticarClientesPendientes() {
+  try {
+    console.log('🔍 [DIAGNÓSTICO] Iniciando verificación de clientes pendientes...');
+    
+    // Verificar directamente en la tabla clientes
+    const { data: todosClientes, error } = await this.authService.client
+      .from('clientes')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('❌ Error obteniendo todos los clientes:', error);
+      return;
+    }
+    
+    console.log('📊 [DIAGNÓSTICO] Total de clientes en BD:', todosClientes?.length || 0);
+    
+    // Filtrar por estado
+    const pendientes = todosClientes?.filter(c => c.estado === 'pendiente') || [];
+    const aprobados = todosClientes?.filter(c => c.estado === 'aprobado') || [];
+    const rechazados = todosClientes?.filter(c => c.estado === 'rechazado') || [];
+    
+    console.log('📊 [DIAGNÓSTICO] Resumen por estado:', {
+      pendientes: pendientes.length,
+      aprobados: aprobados.length,
+      rechazados: rechazados.length
+    });
+    
+    // Mostrar detalles de pendientes
+    if (pendientes.length > 0) {
+      console.log('📋 [DIAGNÓSTICO] Clientes pendientes:');
+      pendientes.forEach((cliente, index) => {
+        console.log(`  ${index + 1}. ${cliente.nombre} ${cliente.apellido}`, {
+          id: cliente.id_cliente,
+          email: cliente.email,
+          dni: cliente.dni,
+          user_id: cliente.user_id,
+          created_at: cliente.created_at
+        });
+      });
+    } else {
+      console.log('⚠️ [DIAGNÓSTICO] No hay clientes pendientes en la BD');
+    }
+    
+    // Verificar clientes OAuth
+    const clientesOAuth = todosClientes?.filter(c => c.dni?.startsWith('OAUTH-')) || [];
+    if (clientesOAuth.length > 0) {
+      console.log('🔍 [DIAGNÓSTICO] Clientes OAuth encontrados:', clientesOAuth.length);
+      clientesOAuth.forEach((cliente, index) => {
+        console.log(`  ${index + 1}. ${cliente.nombre} ${cliente.apellido}`, {
+          estado: cliente.estado,
+          email: cliente.email,
+          created_at: cliente.created_at
+        });
+      });
+    }
+    
+    await this.presentToast(
+      `Diagnóstico completo. Ver consola (F12) para detalles.`,
+      'medium'
+    );
+    
+  } catch (error) {
+    console.error('❌ [DIAGNÓSTICO] Error:', error);
+  }
+}
 
   async aprobarCliente(cliente: Cliente) {
     // Confirmación antes de aprobar

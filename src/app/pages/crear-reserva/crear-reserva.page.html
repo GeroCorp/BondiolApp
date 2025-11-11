@@ -1,0 +1,263 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home-cliente"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Nueva Reserva</ion-title>
+    <!-- ✅ BADGE DE TESTING -->
+    <ion-badge *ngIf="modoTesting" slot="end" color="warning">
+      TESTING
+    </ion-badge>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="reserva-container">
+    
+    <!-- ✅ ALERTA DE MODO TESTING -->
+    <ion-card *ngIf="modoTesting" color="warning">
+      <ion-card-content>
+        <h3 style="margin: 0 0 10px 0;">⚠️ MODO DE PRUEBA ACTIVO</h3>
+        <p style="margin: 0; font-size: 14px;">
+          • Anticipación mínima: <strong>{{anticipacionMinima}} min</strong><br>
+          • Tolerancia llegada: <strong>{{tiempoTolerancia}} min</strong><br>
+          • Tiempo expiración: <strong>{{tiempoExpiracion}} min</strong><br>
+          • Las reservas expirarán rápidamente para testing
+        </p>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card color="primary">
+      <ion-card-content>
+        <h2>📅 Reserva tu Mesa</h2>
+        <p style="margin: 0;">Completa el formulario para solicitar tu reserva</p>
+      </ion-card-content>
+    </ion-card>
+
+    <form [formGroup]="reservaForm" (ngSubmit)="crearReserva()">
+      
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>📅 Fecha y Hora</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          
+          <!-- FECHA CON MODAL SEPARADO -->
+          <ion-item>
+            <ion-label position="stacked">Fecha de la Reserva</ion-label>
+            <ion-input 
+              [value]="fechaSeleccionadaTexto" 
+              readonly 
+              (click)="abrirModalFecha()"
+              placeholder="Selecciona una fecha"
+            ></ion-input>
+            <ion-button fill="clear" slot="end" (click)="abrirModalFecha()">
+              <ion-icon name="calendar-outline"></ion-icon>
+            </ion-button>
+          </ion-item>
+
+          <!-- ✅ HORA CON MODAL MEJORADO (INCLUYE MINUTOS) -->
+          <ion-item>
+            <ion-label position="stacked">Hora de la Reserva</ion-label>
+            <ion-input 
+              [value]="horaSeleccionadaTexto" 
+              readonly 
+              (click)="abrirModalHora()"
+              placeholder="Selecciona una hora"
+            ></ion-input>
+            <ion-button fill="clear" slot="end" (click)="abrirModalHora()">
+              <ion-icon name="time-outline"></ion-icon>
+            </ion-button>
+          </ion-item>
+
+        </ion-card-content>
+      </ion-card>
+
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>👥 Comensales</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          
+          <ion-item>
+            <ion-label position="stacked">Cantidad de Personas</ion-label>
+            <ion-select 
+              formControlName="cantidadPersonas"
+              placeholder="Selecciona cantidad"
+              interface="action-sheet"
+            >
+              <ion-select-option [value]="1">1 persona</ion-select-option>
+              <ion-select-option [value]="2">2 personas</ion-select-option>
+              <ion-select-option [value]="3">3 personas</ion-select-option>
+              <ion-select-option [value]="4">4 personas</ion-select-option>
+              <ion-select-option [value]="5">5 personas</ion-select-option>
+              <ion-select-option [value]="6">6 personas</ion-select-option>
+              <ion-select-option [value]="7">7 personas</ion-select-option>
+              <ion-select-option [value]="8">8 personas</ion-select-option>
+              <ion-select-option [value]="9">9 personas</ion-select-option>
+              <ion-select-option [value]="10">10 personas</ion-select-option>
+              <ion-select-option [value]="11">11 personas</ion-select-option>
+              <ion-select-option [value]="12">12 personas</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+        </ion-card-content>
+      </ion-card>
+
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>🪑 Selección de Mesa</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          
+          <ion-button 
+            expand="block" 
+            fill="outline"
+            (click)="cargarMesasDisponibles()"
+            [disabled]="!reservaForm.get('fecha')?.value || !reservaForm.get('hora')?.value"
+          >
+            <ion-icon name="search" slot="start"></ion-icon>
+            Buscar Mesas Disponibles
+          </ion-button>
+
+          <!-- LISTA DE MESAS -->
+          <div *ngIf="mesasDisponibles.length > 0" class="mesas-list" style="margin-top: 15px;">
+            <ion-radio-group formControlName="mesaId">
+              <ion-item *ngFor="let mesa of mesasDisponibles" lines="full">
+                <ion-radio [value]="mesa.id" slot="start"></ion-radio>
+                <ion-label>
+                  <h3 style="font-weight: bold; margin: 5px 0;">Mesa {{ mesa.numero }}</h3>
+                  <p style="margin: 5px 0;">
+                    <ion-badge color="secondary">{{ mesa.tipo }}</ion-badge>
+                    <ion-badge color="primary" style="margin-left: 5px;">
+                      Capacidad: {{ mesa.cantidad }} personas
+                    </ion-badge>
+                  </p>
+                </ion-label>
+              </ion-item>
+            </ion-radio-group>
+          </div>
+
+          <ion-note *ngIf="mesasDisponibles.length === 0 && mesasBuscadas" color="warning">
+            No hay mesas disponibles para la fecha y hora seleccionadas
+          </ion-note>
+
+        </ion-card-content>
+      </ion-card>
+
+      <ion-card color="warning">
+        <ion-card-content>
+          <h3>⚠️ Información Importante</h3>
+          <ul style="margin: 10px 0; padding-left: 20px;">
+            <li>La reserva debe ser aprobada por el personal</li>
+            <li>Las reservas son solo para clientes registrados</li>
+            <li>Debes hacer 2 reservas en diferentes días y horarios</li>
+            <li *ngIf="!modoTesting">La reserva debe ser en tiempo futuro (mínimo 1 hora)</li>
+            <li *ngIf="modoTesting" style="color: orange;">
+              <strong>TESTING:</strong> Mínimo 10 minutos de anticipación
+            </li>
+            <li *ngIf="modoTesting" style="color: orange;">
+              <strong>TESTING:</strong> Tolerancia de {{tiempoTolerancia}} minutos
+            </li>
+          </ul>
+        </ion-card-content>
+      </ion-card>
+
+      <ion-button
+        expand="block"
+        type="submit"
+        color="success"
+        size="large"
+        [disabled]="reservaForm.invalid || cargando"
+      >
+        <ion-spinner *ngIf="cargando" name="crescent"></ion-spinner>
+        <span *ngIf="!cargando">
+          <ion-icon name="checkmark-circle" slot="start"></ion-icon>
+          Solicitar Reserva
+        </span>
+      </ion-button>
+
+      <ion-button
+        expand="block"
+        fill="clear"
+        (click)="cancelar()"
+        [disabled]="cargando"
+      >
+        Cancelar
+      </ion-button>
+
+    </form>
+
+  </div>
+</ion-content>
+
+<!-- MODAL PARA FECHA -->
+<ion-modal #modalFecha [isOpen]="mostrarModalFecha" (didDismiss)="cerrarModalFecha()">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Seleccionar Fecha</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="cerrarModalFecha()">Cerrar</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content>
+      <ion-datetime
+        #datetimeFecha
+        presentation="date"
+        [min]="fechaMinima"
+        [max]="fechaMaxima"
+        locale="es-AR"
+        [firstDayOfWeek]="1"
+        (ionChange)="onFechaChange($event)"
+      ></ion-datetime>
+      <ion-button expand="block" (click)="confirmarFecha()" style="margin: 20px;">
+        Confirmar Fecha
+      </ion-button>
+    </ion-content>
+  </ng-template>
+</ion-modal>
+
+<!-- ✅ MODAL MEJORADO PARA HORA CON MINUTOS -->
+<ion-modal #modalHora [isOpen]="mostrarModalHora" (didDismiss)="cerrarModalHora()">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Seleccionar Hora</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="cerrarModalHora()">Cerrar</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="ion-padding">
+      <ion-list>
+        <ion-radio-group [(ngModel)]="horaSeleccionada">
+          <ion-item *ngFor="let horario of horariosDisponibles">
+            <ion-label>
+              <!-- ✅ MOSTRAR HORA:MINUTOS -->
+              <h3 style="font-weight: 600; font-size: 18px;">
+                {{ formatearHoraDisplay(horario) }}
+              </h3>
+              <p style="font-size: 14px; color: #666;">
+                {{ horario.hora >= 12 && horario.hora < 15 ? 'Almuerzo' : 
+                   horario.hora >= 19 ? 'Cena' : 'Merienda' }}
+              </p>
+            </ion-label>
+            <ion-radio slot="start" [value]="horario"></ion-radio>
+          </ion-item>
+        </ion-radio-group>
+      </ion-list>
+      
+      <ion-button 
+        expand="block" 
+        (click)="confirmarHora()" 
+        [disabled]="horaSeleccionada === null"
+        style="margin-top: 20px;"
+      >
+        <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
+        Confirmar Hora
+      </ion-button>
+    </ion-content>
+  </ng-template>
+</ion-modal>

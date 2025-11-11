@@ -1,0 +1,21 @@
+.reserva-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.mesas-list {
+  margin-top: 20px;
+
+  ion-item {
+    --padding-start: 10px;
+    margin-bottom: 10px;
+  }
+
+  ion-badge {
+    margin-right: 8px;
+  }
+}
+
+ion-card {
+  margin-bottom: 20px;
+}

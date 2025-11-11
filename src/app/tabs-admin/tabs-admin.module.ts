@@ -8,6 +8,7 @@ import { IonicModule } from '@ionic/angular';
 import { TabsAdminPageRoutingModule } from './tabs-admin-routing.module';
 
 import { TabsAdminPage } from './tabs-admin.page';
+import { GestionReservasPageRoutingModule } from '../pages/gestion-reservas/gestion-reservas-routing.module';
 
 @NgModule({
   imports: [
@@ -15,6 +16,7 @@ import { TabsAdminPage } from './tabs-admin.page';
     FormsModule,
     IonicModule,
     TabsAdminPageRoutingModule,
+    GestionReservasPageRoutingModule
     // RouterModule.forChild([{path: '', component: TabsAdminPage}])
   ],
   declarations: [TabsAdminPage]
