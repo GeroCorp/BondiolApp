@@ -1,0 +1,480 @@
+// TEMA OSCURO - Gestión de Reservas
+:host {
+  --background-dark: #1a1a1a;
+  --surface-dark: #2d2d2d;
+  --surface-variant: #3a3a3a;
+  --text-primary: #ffffff;
+  --text-secondary: #b3b3b3;
+  --primary-color: #bb86fc;
+  --secondary-color: #03dac6;
+  --success-color: #4caf50;
+  --warning-color: #ffc409;
+  --danger-color: #cf6679;
+  --medium-color: #92949c;
+  --border-color: #404040;
+  --shadow-dark: 0 8px 24px rgba(0, 0, 0, 0.6);
+}
+
+ion-content {
+  --background: linear-gradient(180deg, var(--background-dark) 0%, var(--surface-dark) 50%, #1a3a5a 100%);
+  --color: var(--text-primary);
+}
+
+// 🔥 Toolbar principal - SIN TRANSPARENCIAS
+ion-header {
+  ion-toolbar {
+    &[color="primary"] {
+      --background: var(--primary-color);
+      --color: var(--background-dark);
+      --border-color: transparent;
+      box-shadow: none;
+    }
+
+    // Eliminar cualquier borde o línea blanca
+    &::after {
+      display: none;
+    }
+  }
+}
+
+// 🔥 SEGMENTOS TOTALMENTE SÓLIDOS - SIN BORDES NI TRANSPARENCIAS
+ion-toolbar ion-segment {
+  --background: var(--surface-dark);
+  background: var(--surface-dark) !important;
+  border-radius: 0;
+  padding: 0;
+  margin: 0;
+  border: none;
+  box-shadow: none;
+  height: 48px;
+
+  ion-segment-button {
+    --color: var(--text-secondary);
+    --color-checked: var(--text-primary);
+    --indicator-color: var(--primary-color);
+    --indicator-box-shadow: none;
+    --border-width: 0;
+    --border-color: transparent;
+    --background: var(--surface-dark);
+    --background-checked: var(--surface-dark);
+    min-height: 48px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 0;
+    margin: 0;
+    transition: all 0.3s ease;
+    position: relative;
+    border: none;
+    border-bottom: 3px solid transparent;
+
+    // Eliminar cualquier parte visual
+    &::part(native) {
+      border: none;
+      box-shadow: none;
+      background: transparent;
+    }
+
+    &::part(indicator) {
+      display: none;
+    }
+
+    &::part(indicator-background) {
+      display: none;
+    }
+
+    // Texto del botón
+    ion-label {
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      line-height: 1;
+    }
+
+    // 🔥 Badge contador PERFECTAMENTE CENTRADO
+    ion-badge {
+      font-size: 10px;
+      padding: 2px 6px;
+      min-width: 18px;
+      height: 18px;
+      border-radius: 9px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      margin: 0;
+      position: relative;
+      top: -1px;
+    }
+
+    // Estado normal
+    &:not(.segment-button-checked) {
+      color: var(--text-secondary);
+      border-bottom-color: transparent;
+
+      &:hover {
+        color: var(--text-primary);
+        background: rgba(187, 134, 252, 0.05);
+      }
+
+      ion-badge {
+        background: rgba(255, 196, 9, 0.2);
+        color: var(--warning-color);
+        border: 1px solid rgba(255, 196, 9, 0.4);
+      }
+    }
+
+    // Estado seleccionado
+    &.segment-button-checked {
+      color: var(--text-primary) !important;
+      border-bottom-color: var(--primary-color);
+      background: transparent;
+
+      ion-label {
+        color: var(--text-primary) !important;
+        font-weight: 700;
+      }
+
+      ion-badge {
+        background: var(--primary-color) !important;
+        color: var(--background-dark) !important;
+        border: none;
+      }
+    }
+  }
+}
+
+// Botón del toolbar (verificar expiradas)
+ion-header ion-toolbar ion-button[slot="end"] {
+  --color: var(--background-dark);
+  
+  ion-icon {
+    font-size: 24px;
+  }
+
+  &:hover {
+    --color: var(--background-dark);
+    opacity: 0.8;
+  }
+}
+
+// Cards de reservas
+ion-card {
+  --background: var(--surface-dark);
+  --color: var(--text-primary);
+  border-radius: 15px;
+  margin: 15px;
+  box-shadow: var(--shadow-dark);
+  background: var(--surface-dark) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 12px 30px rgba(187, 134, 252, 0.2);
+    transform: translateY(-2px);
+    border-color: var(--primary-color);
+  }
+
+  // Cards de estado vacío
+  &[color="warning"], &[color="medium"] {
+    border: 1px solid var(--border-color);
+    
+    ion-card-content {
+      text-align: center;
+      padding: 40px 20px;
+
+      ion-icon {
+        color: var(--text-secondary);
+        opacity: 0.5;
+        margin-bottom: 15px;
+      }
+
+      h3 {
+        color: var(--text-primary);
+        margin-bottom: 10px;
+        font-weight: 600;
+      }
+
+      p {
+        color: var(--text-secondary);
+        margin: 0;
+      }
+    }
+  }
+}
+
+// Headers de los cards
+ion-card-header {
+  background: transparent !important;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 12px;
+
+  ion-card-subtitle {
+    color: var(--text-secondary) !important;
+    font-size: 13px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    ion-icon {
+      font-size: 16px;
+      color: var(--primary-color);
+    }
+
+    ion-badge {
+      margin-left: 8px;
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-weight: 600;
+    }
+  }
+
+  ion-card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary) !important;
+  }
+}
+
+ion-card-content {
+  background: transparent !important;
+  color: var(--text-primary) !important;
+  padding-top: 15px;
+}
+
+// Lista de detalles de la reserva
+ion-list {
+  background: transparent;
+  padding: 0;
+  margin-bottom: 15px;
+
+  &[lines="none"] ion-item {
+    --padding-start: 0;
+    --inner-padding-end: 0;
+    --background: transparent;
+    --border-color: transparent;
+    margin-bottom: 12px;
+
+    ion-icon {
+      font-size: 20px;
+      margin-right: 12px;
+    }
+
+    ion-label {
+      margin: 0;
+
+      p {
+        color: var(--text-secondary);
+        font-size: 12px;
+        margin: 0 0 4px 0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      h3 {
+        color: var(--text-primary);
+        font-size: 16px;
+        font-weight: 600;
+        margin: 0;
+      }
+    }
+  }
+}
+
+// Grid de información
+ion-grid {
+  padding: 0;
+
+  ion-row {
+    margin-bottom: 8px;
+  }
+
+  ion-col {
+    padding: 8px;
+
+    p {
+      margin: 0;
+      
+      &:first-child {
+        color: var(--text-secondary);
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      &:last-child {
+        color: var(--text-primary);
+        font-size: 16px;
+        font-weight: 600;
+        margin-top: 4px;
+      }
+    }
+  }
+}
+
+// Botones de acción
+ion-button {
+  --border-radius: 10px;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0.5px;
+  margin-top: 8px;
+
+  &[expand="block"] {
+    margin-bottom: 8px;
+  }
+
+  // Botón aprobar (success)
+  &[color="success"] {
+    --background: var(--success-color);
+    --color: var(--background-dark);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+
+    &:hover {
+      --background: color-mix(in srgb, var(--success-color) 85%, white);
+      box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
+    }
+  }
+
+  // Botón rechazar (danger)
+  &[color="danger"] {
+    --background: var(--danger-color);
+    --color: var(--background-dark);
+    box-shadow: 0 4px 12px rgba(207, 102, 121, 0.3);
+
+    &:hover {
+      --background: color-mix(in srgb, var(--danger-color) 85%, white);
+      box-shadow: 0 6px 16px rgba(207, 102, 121, 0.4);
+    }
+  }
+
+  // Botón outline
+  &[fill="outline"] {
+    --border-color: var(--primary-color);
+    --color: var(--primary-color);
+    --background: transparent;
+
+    &:hover {
+      --background: rgba(187, 134, 252, 0.1);
+    }
+  }
+
+  // Botón clear
+  &[fill="clear"] {
+    --color: var(--text-secondary);
+    font-size: 14px;
+
+    &:hover {
+      --color: var(--primary-color);
+    }
+  }
+
+  &[size="small"] {
+    font-size: 13px;
+    --padding-top: 8px;
+    --padding-bottom: 8px;
+  }
+
+  ion-icon {
+    font-size: 20px;
+  }
+}
+
+// Botón en dos columnas
+div[style*="display: flex"] {
+  ion-button {
+    height: 44px;
+  }
+}
+
+// Badges de estado
+ion-badge {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.3px;
+
+  &[color="warning"] {
+    background: rgba(255, 196, 9, 0.2);
+    color: var(--warning-color);
+    border: 1px solid rgba(255, 196, 9, 0.4);
+  }
+
+  &[color="success"] {
+    background: rgba(76, 175, 80, 0.2);
+    color: var(--success-color);
+    border: 1px solid rgba(76, 175, 80, 0.4);
+  }
+
+  &[color="danger"] {
+    background: rgba(207, 102, 121, 0.2);
+    color: var(--danger-color);
+    border: 1px solid rgba(207, 102, 121, 0.4);
+  }
+
+  &[color="primary"] {
+    background: rgba(187, 134, 252, 0.2);
+    color: var(--primary-color);
+    border: 1px solid rgba(187, 134, 252, 0.4);
+  }
+
+  &[color="medium"] {
+    background: rgba(146, 148, 156, 0.2);
+    color: var(--medium-color);
+    border: 1px solid rgba(146, 148, 156, 0.4);
+  }
+
+  ion-icon {
+    font-size: 14px;
+    margin-right: 4px;
+    vertical-align: middle;
+  }
+}
+
+// FAB (botón flotante)
+ion-fab {
+  ion-fab-button {
+    --background: var(--warning-color);
+    --color: var(--background-dark);
+    --box-shadow: 0 8px 20px rgba(255, 196, 9, 0.4);
+
+    &:hover {
+      --background: color-mix(in srgb, var(--warning-color) 85%, white);
+    }
+
+    ion-icon {
+      font-size: 28px;
+    }
+  }
+}
+
+// Spinner de carga
+div[style*="text-align: center"] {
+  padding: 60px 20px;
+
+  ion-spinner {
+    --color: var(--primary-color);
+    width: 48px;
+    height: 48px;
+    margin-bottom: 20px;
+  }
+
+  p {
+    color: var(--text-secondary);
+    font-size: 16px;
+    margin: 0;
+  }
+}
+
+// Refresher
+ion-refresher {
+  ion-refresher-content {
+    --color: var(--primary-color);
+  }
+}

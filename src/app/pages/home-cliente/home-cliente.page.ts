@@ -1290,7 +1290,6 @@ private setupPedidosSubscription() {
         id: reserva.id,
         fecha: reserva.fecha_reserva,
         hora: reserva.hora_reserva,
-        mesa_id: reserva.mesa_id,
         mesa_numero: numeroMesa
       });
       
@@ -1300,20 +1299,17 @@ private setupPedidosSubscription() {
         const fechaExpiracion = new Date(reserva.fecha_expiracion);
         
         const tiempoRestanteMs = fechaExpiracion.getTime() - ahora.getTime();
-        const tiempoRestanteSeg = Math.round(tiempoRestanteMs / 1000);
         
-        console.log('⏰ Validación de expiración LOCAL:', {
+        console.log('⏰ Validación de expiración:', {
           ahora: ahora.toLocaleString('es-AR'),
           fechaExpiracion: fechaExpiracion.toLocaleString('es-AR'),
-          tiempoRestanteMs: tiempoRestanteMs,
-          tiempoRestanteSeg: tiempoRestanteSeg,
-          tiempoRestanteMin: Math.round(tiempoRestanteSeg / 60),
+          tiempoRestanteMin: Math.round(tiempoRestanteMs / 60000),
           expirada: tiempoRestanteMs <= 0
         });
         
         // 🔥 SI EXPIRÓ: Ocultar card y marcar como expirada
         if (tiempoRestanteMs <= 0) {
-          console.log('⏰ RESERVA EXPIRADA - Ocultando card y marcando BD');
+          console.log('⏰ RESERVA EXPIRADA - Ocultando card');
           
           await this.reservasService.expirarReserva(reserva.id!);
           
@@ -1327,13 +1323,11 @@ private setupPedidosSubscription() {
           
           return;
         }
-        
-        console.log(`✅ Reserva válida - ${Math.round(tiempoRestanteSeg / 60)} minuto(s) restantes`);
       }
       
       // 🔥 VERIFICAR SI YA TIENE MESA ASIGNADA Y VERIFICADA
       if (this.mesaAsignada && this.mesaVerificada && this.mesaAsignada === reserva.mesa_id) {
-        console.log('✅ Mesa ya asignada y verificada, ocultando card');
+        console.log('✅ Mesa ya verificada, ocultando card');
         this.reservaActivaHoy = null;
         this.cd.detectChanges();
         return;
@@ -1347,13 +1341,10 @@ private setupPedidosSubscription() {
         return;
       }
 
-      // 🔒 PRODUCCIÓN: Validar que sea la hora de la reserva
-      console.log('🔒 Modo producción - validando si es hora de la reserva');
-      
+      // 🔒 PRODUCCIÓN: Validar ventana de activación (1 hora antes)
       const ahora = new Date();
       const [fecha, hora] = [reserva.fecha_reserva, reserva.hora_reserva];
       
-      // Parsear fecha y hora de la reserva
       const [year, month, day] = fecha.split('-').map(Number);
       const horaParts = hora.split(':');
       const hours = parseInt(horaParts[0], 10);
@@ -1362,32 +1353,36 @@ private setupPedidosSubscription() {
       // 🔥 HORA DE LA RESERVA
       const horaReserva = new Date(year, month - 1, day, hours, minutes, 0);
       
-      // 🔥 HORA MÁXIMA: hora_reserva + 45 min
-      const horaMaxima = new Date(horaReserva.getTime() + (this.reservasService['TOLERANCIA_MINUTOS'] || 45) * 60 * 1000);
+      // 🔥 VENTANA DE ACTIVACIÓN: 1 hora antes de la reserva
+      const ventanaActivacion = this.reservasService['VENTANA_ACTIVACION_HORAS'] || 1;
+      const horaInicio = new Date(horaReserva.getTime() - (ventanaActivacion * 60 * 60 * 1000));
       
-      console.log('⏰ Validación de horario:', {
+      // 🔥 HORA MÁXIMA: hora_reserva + tolerancia
+      const tolerancia = this.reservasService['TOLERANCIA_MINUTOS'] || 45;
+      const horaMaxima = new Date(horaReserva.getTime() + (tolerancia * 60 * 1000));
+      
+      console.log('⏰ Validación de horario (PRODUCCIÓN):', {
+        horaInicio: horaInicio.toLocaleString('es-AR'),
         horaReserva: horaReserva.toLocaleString('es-AR'),
         horaMaxima: horaMaxima.toLocaleString('es-AR'),
         ahora: ahora.toLocaleString('es-AR'),
-        yaEsHora: ahora >= horaReserva,
-        dentroDelTiempo: ahora <= horaMaxima,
-        mostrarCard: ahora >= horaReserva && ahora <= horaMaxima
+        dentroVentana: ahora >= horaInicio && ahora <= horaMaxima
       });
       
-      // 🔥 MOSTRAR CARD: Desde hora_reserva hasta hora_reserva + 45 min
-      if (ahora >= horaReserva && ahora <= horaMaxima) {
-        console.log('🎯 ✅ ES LA HORA DE LA RESERVA - Mostrando card');
+      // 🔥 MOSTRAR CARD: Desde 1 hora antes hasta hora_reserva + tolerancia
+      if (ahora >= horaInicio && ahora <= horaMaxima) {
+        console.log('🎯 ✅ DENTRO DE VENTANA - Mostrando card');
         this.reservaActivaHoy = reserva;
       } else if (ahora > horaMaxima) {
-        console.log('⏰ Fuera de tiempo (pasó hora máxima) - Expirando');
+        console.log('⏰ Fuera de ventana (expiró) - Ocultando');
         await this.reservasService.expirarReserva(reserva.id!);
         this.reservaActivaHoy = null;
       } else {
-        console.log('⏰ Aún no es la hora de la reserva - Card oculto');
+        console.log('⏰ Aún no abre la ventana - Card oculto');
         this.reservaActivaHoy = null;
       }
     } else {
-      console.log('❌ No hay reserva aprobada');
+      console.log('❌ No hay reserva aprobada hoy');
       this.reservaActivaHoy = null;
     }
     

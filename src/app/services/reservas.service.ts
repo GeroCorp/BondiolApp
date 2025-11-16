@@ -352,7 +352,7 @@ export class ReservasService {
     const ahora = new Date();
     let fechaExpiracion: Date;
 
-    console.log('🔍 CALCULANDO EXPIRACIÓN:', {
+    console.log('📅 CALCULANDO EXPIRACIÓN:', {
       TESTING_MODE: this.TESTING_MODE,
       fecha_reserva: reservaData.fecha_reserva,
       hora_reserva: reservaData.hora_reserva,
@@ -361,7 +361,7 @@ export class ReservasService {
 
     if (this.TESTING_MODE) {
       // 🔥 TESTING: expira 1-2 minutos desde AHORA
-      const minutos = this.EXPIRACION_TESTING_MINUTOS || 2;
+      const minutos = this.EXPIRACION_TESTING_MINUTOS || 1;
       fechaExpiracion = new Date(ahora.getTime() + minutos * 60 * 1000);
 
       console.log('🔥 TESTING MODE: Expira desde AHORA', {
@@ -371,13 +371,10 @@ export class ReservasService {
         expiraISO: fechaExpiracion.toISOString()
       });
     } else {
-      // 🔒 PRODUCCIÓN: expira desde HORA DE RESERVA + 45 min
+      // 🔒 PRODUCCIÓN: expira desde HORA DE RESERVA + tolerancia
       const [fecha, hora] = [reservaData.fecha_reserva, reservaData.hora_reserva];
       
-      // Parsear fecha YYYY-MM-DD
       const [year, month, day] = fecha.split('-').map(Number);
-      
-      // Parsear hora HH:MM:SS
       const horaParts = hora.split(':');
       const hours = parseInt(horaParts[0], 10);
       const minutes = parseInt(horaParts[1], 10);
@@ -385,10 +382,10 @@ export class ReservasService {
       // 🔥 CREAR FECHA/HORA DE RESERVA EN ZONA LOCAL
       const fechaHoraReserva = new Date(year, month - 1, day, hours, minutes, 0);
       
-      // 🔥 CALCULAR EXPIRACIÓN: hora_reserva + 45 minutos
+      // 🔥 CALCULAR EXPIRACIÓN: hora_reserva + tolerancia
       fechaExpiracion = new Date(fechaHoraReserva.getTime() + this.TOLERANCIA_MINUTOS * 60 * 1000);
 
-      console.log('🔒 PRODUCCIÓN: Expira desde HORA RESERVA + 45 min', {
+      console.log('🔒 PRODUCCIÓN: Expira desde HORA RESERVA + tolerancia', {
         fechaISO: fecha,
         horaISO: hora,
         fechaHoraReservaLocal: fechaHoraReserva.toLocaleString('es-AR'),
@@ -413,10 +410,6 @@ export class ReservasService {
     if (error) throw error;
 
     console.log('✅ Reserva aprobada:', reservaId);
-    console.log('📅 Guardado en BD:', {
-      fecha_aprobacion: ahora.toISOString(),
-      fecha_expiracion: fechaExpiracion.toISOString()
-    });
 
     // Email
     const emailEnviado = await this.emailService.enviarEmailReservaAprobada(
@@ -514,84 +507,77 @@ export class ReservasService {
    * 🎯 Obtener reserva activa - CORREGIDO ZONA HORARIA
    */
   async getReservaActivaHoy(clienteId: number): Promise<Reserva | null> {
-    try {
-      const ahora = new Date();
-      const year = ahora.getFullYear();
-      const month = String(ahora.getMonth() + 1).padStart(2, '0');
-      const day = String(ahora.getDate()).padStart(2, '0');
-      const hoy = `${year}-${month}-${day}`;
-      
-      console.log('🔍 Buscando reserva activa:', {
-        clienteId,
-        fechaCalculada: hoy,
-        fechaHoraCompleta: ahora.toLocaleString('es-AR'),
-        modo: this.TESTING_MODE ? 'TESTING' : 'PRODUCCIÓN'
-      });
+  try {
+    const ahora = new Date();
+    const year = ahora.getFullYear();
+    const month = String(ahora.getMonth() + 1).padStart(2, '0');
+    const day = String(ahora.getDate()).padStart(2, '0');
+    const hoy = `${year}-${month}-${day}`;
+    
+    console.log('🔍 Buscando reserva activa:', {
+      clienteId,
+      fechaCalculada: hoy,
+      modo: this.TESTING_MODE ? 'TESTING' : 'PRODUCCIÓN'
+    });
 
-      let query = supabase
-        .from('reservas')
-        .select(`*, mesa:mesas(numero, tipo, cantidad, id)`)
-        .eq('cliente_id', clienteId)
-        .eq('estado', 'aprobada')
-        .order('fecha_aprobacion', { ascending: false });
-      
-      if (!this.TESTING_MODE) {
-        query = query.eq('fecha_reserva', hoy);
-        console.log('🔒 PRODUCCIÓN: Filtrando reservas de hoy:', hoy);
-      } else {
-        console.log('🔥 TESTING: Buscando reservas de cualquier día');
-      }
-      
-      const { data, error } = await query.limit(1).maybeSingle();
+    let query = supabase
+      .from('reservas')
+      .select(`*, mesa:mesas(numero, tipo, cantidad, id)`)
+      .eq('cliente_id', clienteId)
+      .eq('estado', 'aprobada')
+      .order('fecha_aprobacion', { ascending: false });
+    
+    if (!this.TESTING_MODE) {
+      query = query.eq('fecha_reserva', hoy);
+      console.log('🔒 PRODUCCIÓN: Filtrando reservas de hoy:', hoy);
+    } else {
+      console.log('🔥 TESTING: Buscando cualquier reserva aprobada (sin filtrar por fecha)');
+    }
+    
+    const { data, error } = await query.limit(1).maybeSingle();
 
-      if (error) {
-        console.error('❌ Error buscando reserva activa:', error);
-        return null;
-      }
-
-      if (!data) {
-        console.log('❌ No hay reserva activa para la fecha:', hoy);
-        return null;
-      }
-
-      const numeroMesa = data.mesa?.numero || data.mesa_id || 'N/A';
-      
-      console.log('✅ Reserva encontrada:', {
-        id: data.id,
-        fecha_reserva: data.fecha_reserva,
-        hora_reserva: data.hora_reserva,
-        mesa_id: data.mesa_id,
-        mesa_numero: numeroMesa
-      });
-
-      if (data.fecha_expiracion) {
-        const fechaExpiracion = new Date(data.fecha_expiracion);
-        const tiempoRestanteMs = fechaExpiracion.getTime() - ahora.getTime();
-        const tiempoRestanteSeg = Math.round(tiempoRestanteMs / 1000);
-        
-        console.log('⏰ Validando expiración:', {
-          ahora: ahora.toLocaleString('es-AR'),
-          fechaExpiracion: fechaExpiracion.toLocaleString('es-AR'),
-          tiempoRestanteSegundos: tiempoRestanteSeg,
-          tiempoRestanteMinutos: Math.round(tiempoRestanteSeg / 60),
-          expirada: tiempoRestanteMs <= 0
-        });
-        
-        if (tiempoRestanteMs <= 0) {
-          console.log('⏰ Reserva expirada, auto-expirando...');
-          await this.expirarReserva(data.id);
-          return null;
-        }
-        
-        console.log(`✅ Reserva válida - ${Math.round(tiempoRestanteSeg / 60)} minuto(s) restantes`);
-      }
-
-      return data;
-    } catch (error) {
-      console.error('❌ Error en getReservaActivaHoy:', error);
+    if (error) {
+      console.error('❌ Error buscando reserva activa:', error);
       return null;
     }
+
+    if (!data) {
+      console.log('❌ No hay reserva activa');
+      return null;
+    }
+
+    console.log('✅ Reserva encontrada:', {
+      id: data.id,
+      fecha_reserva: data.fecha_reserva,
+      hora_reserva: data.hora_reserva,
+      mesa_numero: data.mesa?.numero
+    });
+
+    // Validar expiración
+    if (data.fecha_expiracion) {
+      const fechaExpiracion = new Date(data.fecha_expiracion);
+      const tiempoRestanteMs = fechaExpiracion.getTime() - ahora.getTime();
+      
+      console.log('⏰ Validando expiración:', {
+        ahora: ahora.toLocaleString('es-AR'),
+        fechaExpiracion: fechaExpiracion.toLocaleString('es-AR'),
+        tiempoRestanteMin: Math.round(tiempoRestanteMs / 60000),
+        expirada: tiempoRestanteMs <= 0
+      });
+      
+      if (tiempoRestanteMs <= 0) {
+        console.log('⏰ Reserva expirada, auto-expirando...');
+        await this.expirarReserva(data.id);
+        return null;
+      }
+    }
+
+    return data;
+  } catch (error) {
+    console.error('❌ Error en getReservaActivaHoy:', error);
+    return null;
   }
+}
 
   /**
    * 🔔 Activar reserva y asignar mesa
