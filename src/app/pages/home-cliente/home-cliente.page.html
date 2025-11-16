@@ -24,6 +24,47 @@
       <p class="email">{{ cliente?.email }}</p>
     </div>
 
+    @if (isRegistrado && reservaActivaHoy && !mesaVerificada) {
+<ion-card color="success">
+  <ion-card-header>
+    <ion-card-title>
+      <ion-icon name="calendar-outline"></ion-icon>
+      ¡Tienes una Reserva para Hoy!
+    </ion-card-title>
+  </ion-card-header>
+  <ion-card-content>
+    <div style="text-align: center;">
+      <h2 style="margin: 0;">Mesa {{ reservaActivaHoy.mesa.numero }}</h2>
+      <p style="margin: 5px 0;">
+        <ion-icon name="time-outline"></ion-icon>
+        Hora: <strong>{{ reservaActivaHoy.hora_reserva }}</strong>
+      </p>
+      <p style="margin: 5px 0;">
+        <ion-icon name="people-outline"></ion-icon>
+        {{ reservaActivaHoy.cantidad_personas }} personas
+      </p>
+      <p style="margin: 10px 0; font-size: 0.9em; opacity: 0.8;">
+        Tu reserva está aprobada. Cuando llegues al restaurante, presiona el botón para activar tu mesa.
+      </p>
+    </div>
+
+    <ion-button
+      expand="block"
+      size="large"
+      (click)="activarReserva()"
+      [disabled]="cargandoReserva"
+      color="light"
+    >
+      <ion-spinner *ngIf="cargandoReserva" name="crescent"></ion-spinner>
+      <span *ngIf="!cargandoReserva">
+        <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
+        Confirmar Llegada y Activar Mesa
+      </span>
+    </ion-button>
+  </ion-card-content>
+</ion-card>
+}
+
     <!-- Botón de escaneo QR prominente -->
     @if (!mesaVerificada && mesaAsignada) {
     <ion-card color="warning">
@@ -204,6 +245,25 @@
           <ion-icon name="lock-closed" slot="end"></ion-icon>
           }
         </ion-button>
+
+        <ion-button
+      expand="block"
+      color="secondary"
+      (click)="verReservas()"
+    >
+      <ion-icon name="calendar-outline" slot="start"></ion-icon>
+      Hacer Reserva
+    </ion-button>
+
+    <ion-button
+      expand="block"
+      color="secondary"
+      fill="outline"
+      (click)="verMisReservas()"
+    >
+      <ion-icon name="list-outline" slot="start"></ion-icon>
+      Mis Reservas
+    </ion-button>
       </ion-card-content>
     </ion-card>
 

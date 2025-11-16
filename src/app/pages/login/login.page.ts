@@ -5,8 +5,9 @@ import { ToastController, LoadingController } from '@ionic/angular';
 import { AuthService } from 'src/app/services/supabase';
 import { Notification } from 'src/app/services/notification';
 import { TipoClienteService } from 'src/app/services/tipo-cliente.service';
+import { SocialAuthService } from 'src/app/services/social-auth.service';
+import { HapticService } from 'src/app/services/haptic.service';
 import { EmailService } from 'src/app/services/email';
-import { aprobadoTemplate } from 'src/assets/email-templates/aprobado';
 
 @Component({
   selector: 'app-login',
@@ -26,7 +27,9 @@ export class LoginPage {
     private toastController: ToastController,
     private loadingController: LoadingController,
     private authService: AuthService,
-    private tipoClienteService: TipoClienteService
+    private v: HapticService,
+    private tipoClienteService: TipoClienteService,
+    private socialAuthService: SocialAuthService 
   ) {
     this.loginForm = this.formBuilder.group({
       email: ['', [Validators.required, Validators.email]],
@@ -39,110 +42,128 @@ export class LoginPage {
   }
 
   async onLogin() {
-    if (this.loginForm.invalid) {
-      this.showToast('Por favor, complete todos los campos correctamente.', 'danger');
+  if (this.loginForm.invalid) {
+    this.showToast('Por favor, complete todos los campos correctamente.', 'danger');
+    return;
+  }
+
+  const loading = await this.loadingController.create({
+    message: 'Iniciando sesión...'
+  });
+  await loading.present();
+
+  try {
+    // ✅ CRÍTICO: Limpiar datos de cliente anónimo antes de login
+    console.log('🧹 Limpiando datos de cliente anónimo previo');
+    this.tipoClienteService.clearClienteData();
+
+    const { email, password } = this.loginForm.value;
+    
+    // 🔍 Primero verificar si el email tiene cuenta OAuth vinculada
+    const { data: clienteCheck } = await this.authService.client
+      .from('clientes')
+      .select('user_id, nombre')
+      .eq('email', email)
+      .maybeSingle();
+
+    if (clienteCheck && !clienteCheck.user_id) {
+      // Email existe pero no tiene user_id (nunca se registró con contraseña)
+      await loading.dismiss();
+      this.showToast(
+        'Este email está registrado. Por favor usa "Continuar con Google" para iniciar sesión.',
+        'warning'
+      );
       return;
     }
 
-    const loading = await this.loadingController.create({
-      message: 'Iniciando sesión...'
-    });
-    await loading.present();
+    const { user, session } = await this.authService.login(email, password);
 
-    try {
-      // ✅ CRÍTICO: Limpiar datos de cliente anónimo antes de login
-      console.log('🧹 Limpiando datos de cliente anónimo previo');
-      this.tipoClienteService.clearClienteData();
-
-      const { email, password } = this.loginForm.value;
-      const { user, session } = await this.authService.login(email, password);
-
-      if (!user) {
-        await loading.dismiss();
-        this.showToast('Error al obtener usuario.', 'danger');
-        return;
-      }
-
-      console.log('✅ Login exitoso:', user.email);
-
-      // Verificar si es empleado
-      const empleado = await this.authService.getEmpleadoByUserId(user.id);
-      
-      if (Array.isArray(empleado) && empleado.length > 0) {
-        // ✅ EMPLEADO
-        console.log('👔 Usuario es empleado:', empleado[0].perfil);
-        
-        this.notificationService.setUserTag(empleado[0].perfil);
-        this.notificationService.setExternalUserId(user.id);
-        
-        await loading.dismiss();
-        this.router.navigate(['/home'], {
-          replaceUrl: true,
-          state: {
-            email: user.email,
-            perfil: empleado[0].perfil
-          }
-        });
-        this.showToast(`Bienvenido ${empleado[0].nombre}`, 'success');
-        return;
-      }
-
-      // Verificar si es cliente
-      const cliente = await this.authService.getClienteByUserId(user.id);
-      
-      if (cliente) {
-        console.log('👤 Usuario es cliente:', {
-          estado: cliente.estado,
-          mesa_asignada: cliente.mesa_asignada
-        });
-
-        // ✅ CRÍTICO: Actualizar TipoClienteService con cliente REGISTRADO
-        this.tipoClienteService['tipoClienteSubject'].next('registrado');
-        this.tipoClienteService['clienteData'].next(cliente);
-
-        // Verificar estado del cliente
-        if (cliente.estado === 'rechazado') {
-          await loading.dismiss();
-          await this.authService.logout();
-          this.showToast(
-            'Tu cuenta fue rechazada. Contacta al administrador para más información.',
-            'danger'
-          );
-          return;
-        }
-        
-        if (cliente.estado === 'pendiente') {
-          await loading.dismiss();
-          this.router.navigate(['/pre-sala'], { replaceUrl: true });
-          return;
-        }
-        
-        if (cliente.estado === 'aprobado') {
-          this.notificationService.setUserTag('cliente');
-          
-          await loading.dismiss();
-          this.router.navigate(['/home-cliente'], { replaceUrl: true });
-          this.showToast(`¡Bienvenido/a ${cliente.nombre}!`, 'success');
-          return;
-        }
-      }
-
-      // Si no es ni empleado ni cliente
+    if (!user) {
       await loading.dismiss();
-      this.showToast('Usuario no registrado correctamente.', 'danger');
-      
-    } catch (error: any) {
-      await loading.dismiss();
-      console.error('Error en login:', error);
-      this.showToast('Error al iniciar sesión: ' + (error.message || error), 'danger');
+      this.showToast('Error al obtener usuario.', 'danger');
+      return;
     }
+
+    console.log('✅ Login exitoso:', user.email);
+
+    // Verificar si es empleado
+    const empleado = await this.authService.getEmpleadoByUserId(user.id);
+    
+    if (Array.isArray(empleado) && empleado.length > 0) {
+      // ✅ EMPLEADO
+      console.log('👔 Usuario es empleado:', empleado[0].perfil);
+      
+      this.notificationService.setUserTag(empleado[0].perfil);
+      this.notificationService.setExternalUserId(user.id);
+      
+      await loading.dismiss();
+      this.router.navigate(['/home'], {
+        replaceUrl: true,
+        state: {
+          email: user.email,
+          perfil: empleado[0].perfil
+        }
+      });
+      this.showToast(`Bienvenido ${empleado[0].nombre}`, 'success');
+      return;
+    }
+
+    // Verificar si es cliente
+    const cliente = await this.authService.getClienteByUserId(user.id);
+    
+    if (cliente) {
+      console.log('👤 Usuario es cliente:', {
+        estado: cliente.estado,
+        mesa_asignada: cliente.mesa_asignada
+      });
+
+      // ✅ CRÍTICO: Actualizar TipoClienteService con cliente REGISTRADO
+      this.tipoClienteService['tipoClienteSubject'].next('registrado');
+      this.tipoClienteService['clienteData'].next(cliente);
+
+      // Verificar estado del cliente
+      if (cliente.estado === 'rechazado') {
+        await loading.dismiss();
+        await this.authService.logout();
+        this.showToast(
+          'Tu cuenta fue rechazada. Contacta al administrador para más información.',
+          'danger'
+        );
+        return;
+      }
+      
+      if (cliente.estado === 'pendiente') {
+        await loading.dismiss();
+        this.router.navigate(['/pre-sala'], { replaceUrl: true });
+        return;
+      }
+      
+      if (cliente.estado === 'aprobado') {
+        this.notificationService.setUserTag('cliente');
+        
+        await loading.dismiss();
+        this.router.navigate(['/home-cliente'], { replaceUrl: true });
+        this.showToast(`¡Bienvenido/a ${cliente.nombre}!`, 'success');
+        return;
+      }
+    }
+
+    // Si no es ni empleado ni cliente
+    await loading.dismiss();
+    this.showToast('Usuario no registrado correctamente.', 'danger');
+    
+  } catch (error: any) {
+    await loading.dismiss();
+    console.error('Error en login:', error);
+    this.showToast('Error al iniciar sesión: ' + (error.message || error), 'danger');
   }
+}
 
   ingresarARegistro() {
     this.router.navigate(['/registro'], {replaceUrl: true });
   }
 
-  async showToast(message: string, color: 'success' | 'danger' | 'medium') {
+  async showToast(message: string, color: 'success' | 'danger' | 'medium' | 'warning') {
     const toast = await this.toastController.create({
       message,
       duration: 2500,
@@ -223,4 +244,14 @@ export class LoginPage {
       this.router.navigate(['/ingreso-anonimo'], { replaceUrl: true });
     }
   }
+
+  async loginConGoogle() {
+  try {
+    await this.socialAuthService.loginWithGoogle();
+  } catch (error) {
+    console.error('Error:', error);
+    this.showToast('Error al iniciar sesión', 'danger');
+  }
+}
+
 }

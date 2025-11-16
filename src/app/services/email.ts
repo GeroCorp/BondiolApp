@@ -2,6 +2,12 @@ import { Injectable } from '@angular/core';
 import { environment } from 'src/environments/environment';
 import { supabase } from './supabase';
 import EmailTemplates from '../../assets/email-templates/index';
+import { 
+  reservaAprobadaTemplate, 
+  reservaRechazadaTemplate, 
+  ReservaAprobadaData, 
+  ReservaRechazadaData 
+} from '../../assets/email-templates/reservas';
 
 interface Cliente {
   nombre: string;
@@ -147,4 +153,92 @@ export class EmailService {
      }
    }
 
+   async enviarEmailReservaAprobada(
+    cliente: { nombre: string; apellido: string; email: string },
+    datosReserva: { fecha: string; hora: string; mesa: number; personas: number },
+    tiempoTolerancia: string = '45 minutos'
+  ): Promise<boolean> {
+    try {
+      console.log('📧 Enviando email de reserva aprobada a:', cliente.email);
+      
+      // Formatear fecha de YYYY-MM-DD a DD/MM/YYYY
+      const [year, month, day] = datosReserva.fecha.split('-');
+      const fechaFormateada = `${day}/${month}/${year}`;
+      
+      // Formatear hora de HH:MM:SS a HH:MM
+      const horaFormateada = datosReserva.hora.substring(0, 5);
+      
+      const datosTemplate: ReservaAprobadaData = {
+        nombre: `${cliente.nombre} ${cliente.apellido}`,
+        fecha_reserva: fechaFormateada,
+        hora_reserva: horaFormateada,
+        numero_mesa: datosReserva.mesa,
+        cantidad_personas: datosReserva.personas,
+        tiempo_tolerancia: tiempoTolerancia
+      };
+      
+      const htmlTemplate = reservaAprobadaTemplate(datosTemplate);
+      
+      const datos = {
+        nombre_cliente: `${cliente.nombre} ${cliente.apellido}`,
+        email_cliente: cliente.email,
+        html: htmlTemplate,
+        subject: '✅ Reserva Confirmada - RestoApp'
+      };
+
+      await this.enviarMailSupabase(datos);
+      console.log('✅ Email de reserva aprobada enviado');
+      return true;
+    } catch (error: any) {
+      console.error('❌ Error al enviar email de reserva aprobada:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Envía email de reserva rechazada al cliente
+   * @param cliente - Datos del cliente (nombre, apellido, email)
+   * @param datosReserva - Información de la reserva (fecha, hora, mesa, personas)
+   * @param motivoRechazo - Razón del rechazo de la reserva
+   */
+  async enviarEmailReservaRechazada(
+    cliente: { nombre: string; apellido: string; email: string },
+    datosReserva: { fecha: string; hora: string; mesa: number; personas: number },
+    motivoRechazo: string
+  ): Promise<boolean> {
+    try {
+      console.log('📧 Enviando email de reserva rechazada a:', cliente.email);
+      
+      // Formatear fecha de YYYY-MM-DD a DD/MM/YYYY
+      const [year, month, day] = datosReserva.fecha.split('-');
+      const fechaFormateada = `${day}/${month}/${year}`;
+      
+      // Formatear hora de HH:MM:SS a HH:MM
+      const horaFormateada = datosReserva.hora.substring(0, 5);
+      
+      const datosTemplate: ReservaRechazadaData = {
+        nombre: `${cliente.nombre} ${cliente.apellido}`,
+        fecha_reserva: fechaFormateada,
+        hora_reserva: horaFormateada,
+        numero_mesa: datosReserva.mesa,
+        motivo_rechazo: motivoRechazo
+      };
+      
+      const htmlTemplate = reservaRechazadaTemplate(datosTemplate);
+      
+      const datos = {
+        nombre_cliente: `${cliente.nombre} ${cliente.apellido}`,
+        email_cliente: cliente.email,
+        html: htmlTemplate,
+        subject: '❌ Reserva No Aprobada - RestoApp'
+      };
+
+      await this.enviarMailSupabase(datos);
+      console.log('✅ Email de reserva rechazada enviado');
+      return true;
+    } catch (error: any) {
+      console.error('❌ Error al enviar email de reserva rechazada:', error);
+      return false;
+    }
+  }
 }

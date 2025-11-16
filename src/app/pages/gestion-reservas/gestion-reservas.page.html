@@ -1,0 +1,254 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Gestión de Reservas</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="verificarReservasExpiradas()">
+        <ion-icon name="alarm-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  
+  <ion-toolbar>
+    <ion-segment [(ngModel)]="segmentoActual" (ionChange)="segmentChanged($event)">
+      <ion-segment-button value="pendientes">
+        <ion-label>Pendientes</ion-label>
+        <ion-badge *ngIf="reservasPendientes.length > 0" color="warning">
+          {{ reservasPendientes.length }}
+        </ion-badge>
+      </ion-segment-button>
+      
+      <ion-segment-button value="aprobadas">
+        <ion-label>Aprobadas</ion-label>
+      </ion-segment-button>
+      
+      <ion-segment-button value="todas">
+        <ion-label>Todas</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  
+  <ion-refresher slot="fixed" (ionRefresh)="refrescar($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Loading -->
+  <div *ngIf="cargando" style="text-align: center; padding: 40px;">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Cargando reservas...</p>
+  </div>
+
+  <!-- SEGMENTO: PENDIENTES -->
+  <div *ngIf="segmentoActual === 'pendientes' && !cargando">
+    
+    <ion-card *ngIf="reservasPendientes.length === 0" color="warning">
+      <ion-card-content>
+        <div style="text-align: center; padding: 20px;">
+          <ion-icon name="calendar-outline" style="font-size: 64px;"></ion-icon>
+          <h3>No hay reservas pendientes</h3>
+          <p>Las nuevas solicitudes aparecerán aquí</p>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card *ngFor="let reserva of reservasPendientes">
+      <ion-card-header>
+        <ion-card-subtitle>
+          <ion-icon name="person-outline"></ion-icon>
+          {{ reserva.cliente.nombre }} {{ reserva.cliente.apellido }}
+        </ion-card-subtitle>
+        <ion-card-title>
+          Mesa {{ reserva.mesa.numero }} - {{ reserva.mesa.tipo }}
+        </ion-card-title>
+      </ion-card-header>
+      
+      <ion-card-content>
+        <ion-list lines="none">
+          <ion-item>
+            <ion-icon name="calendar-outline" slot="start" color="primary"></ion-icon>
+            <ion-label>
+              <p>Fecha</p>
+              <h3>{{ formatearFecha(reserva.fecha_reserva) }}</h3>
+            </ion-label>
+          </ion-item>
+          
+          <ion-item>
+            <ion-icon name="time-outline" slot="start" color="primary"></ion-icon>
+            <ion-label>
+              <p>Hora</p>
+              <h3>{{ reserva.hora_reserva }}</h3>
+            </ion-label>
+          </ion-item>
+          
+          <ion-item>
+            <ion-icon name="people-outline" slot="start" color="primary"></ion-icon>
+            <ion-label>
+              <p>Personas</p>
+              <h3>{{ reserva.cantidad_personas }}</h3>
+            </ion-label>
+          </ion-item>
+
+          <ion-item>
+            <ion-icon name="mail-outline" slot="start" color="primary"></ion-icon>
+            <ion-label>
+              <p>Email</p>
+              <h3>{{ reserva.cliente.email }}</h3>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+
+        <div style="display: flex; gap: 10px; margin-top: 16px;">
+          <ion-button 
+            expand="block" 
+            color="success"
+            (click)="aprobarReserva(reserva)"
+            style="flex: 1;"
+          >
+            <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
+            Aprobar
+          </ion-button>
+
+          <ion-button 
+            expand="block" 
+            color="danger"
+            (click)="rechazarReserva(reserva)"
+            style="flex: 1;"
+          >
+            <ion-icon name="close-circle-outline" slot="start"></ion-icon>
+            Rechazar
+          </ion-button>
+        </div>
+
+        <ion-button 
+          expand="block" 
+          fill="clear" 
+          size="small"
+          (click)="verDetalles(reserva)"
+        >
+          Ver más detalles
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- SEGMENTO: APROBADAS -->
+  <div *ngIf="segmentoActual === 'aprobadas' && !cargando">
+    
+    <ion-card *ngIf="reservasAprobadas.length === 0" color="medium">
+      <ion-card-content>
+        <div style="text-align: center; padding: 20px;">
+          <ion-icon name="checkmark-circle-outline" style="font-size: 64px;"></ion-icon>
+          <h3>No hay reservas aprobadas</h3>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card *ngFor="let reserva of reservasAprobadas">
+      <ion-card-header>
+        <ion-card-subtitle>
+          <ion-badge [color]="getColorEstado(reserva.estado)">
+            {{ getTextoEstado(reserva.estado) }}
+          </ion-badge>
+        </ion-card-subtitle>
+        <ion-card-title>
+          {{ reserva.cliente.nombre }} {{ reserva.cliente.apellido }}
+        </ion-card-title>
+      </ion-card-header>
+      
+      <ion-card-content>
+        <p>
+          <ion-icon name="calendar-outline"></ion-icon>
+          {{ formatearFecha(reserva.fecha_reserva) }} - {{ reserva.hora_reserva }}
+        </p>
+        <p>
+          <ion-icon name="restaurant-outline"></ion-icon>
+          Mesa {{ reserva.mesa.numero }} • {{ reserva.cantidad_personas }} personas
+        </p>
+
+        <ion-button 
+          expand="block" 
+          fill="outline" 
+          size="small"
+          (click)="verDetalles(reserva)"
+        >
+          <ion-icon name="information-circle-outline" slot="start"></ion-icon>
+          Ver Detalles
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- SEGMENTO: TODAS -->
+  <div *ngIf="segmentoActual === 'todas' && !cargando">
+    
+    <ion-card *ngIf="todasReservas.length === 0" color="medium">
+      <ion-card-content>
+        <div style="text-align: center; padding: 20px;">
+          <ion-icon name="file-tray-outline" style="font-size: 64px;"></ion-icon>
+          <h3>No hay reservas registradas</h3>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card *ngFor="let reserva of todasReservas">
+      <ion-card-header>
+        <ion-card-subtitle>
+          <ion-badge [color]="getColorEstado(reserva.estado)">
+            <ion-icon [name]="getIconoEstado(reserva.estado)" style="margin-right: 4px;"></ion-icon>
+            {{ getTextoEstado(reserva.estado) }}
+          </ion-badge>
+        </ion-card-subtitle>
+        <ion-card-title>
+          {{ reserva.cliente.nombre }} {{ reserva.cliente.apellido }}
+        </ion-card-title>
+      </ion-card-header>
+      
+      <ion-card-content>
+        <ion-grid>
+          <ion-row>
+            <ion-col size="6">
+              <p style="margin: 0; color: #666;">Fecha</p>
+              <p style="margin: 0; font-weight: 600;">{{ formatearFecha(reserva.fecha_reserva) }}</p>
+            </ion-col>
+            <ion-col size="6">
+              <p style="margin: 0; color: #666;">Hora</p>
+              <p style="margin: 0; font-weight: 600;">{{ reserva.hora_reserva }}</p>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col size="6">
+              <p style="margin: 0; color: #666;">Mesa</p>
+              <p style="margin: 0; font-weight: 600;">{{ reserva.mesa.numero }}</p>
+            </ion-col>
+            <ion-col size="6">
+              <p style="margin: 0; color: #666;">Personas</p>
+              <p style="margin: 0; font-weight: 600;">{{ reserva.cantidad_personas }}</p>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+
+        <ion-button 
+          expand="block" 
+          fill="clear" 
+          size="small"
+          (click)="verDetalles(reserva)"
+        >
+          Ver Detalles Completos
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Botón flotante para verificar expiradas -->
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button color="warning" (click)="verificarReservasExpiradas()">
+      <ion-icon name="alarm-outline"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
+</ion-content>

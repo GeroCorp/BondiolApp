@@ -1,0 +1,518 @@
+// TEMA OSCURO - Crear Reserva
+:host {
+  --background-dark: #1a1a1a;
+  --surface-dark: #2d2d2d;
+  --surface-variant: #3a3a3a;
+  --text-primary: #ffffff;
+  --text-secondary: #b3b3b3;
+  --primary-color: #bb86fc;
+  --secondary-color: #03dac6;
+  --accent-color: #ff6b47;
+  --warning-color: #ffc409;
+  --success-color: #4caf50;
+  --border-color: #404040;
+  --shadow-dark: 0 8px 24px rgba(0, 0, 0, 0.6);
+}
+
+ion-content {
+  --background: linear-gradient(180deg, var(--background-dark) 0%, var(--surface-dark) 50%, #1a3a5a 100%);
+  --color: var(--text-primary);
+}
+
+.reserva-container {
+  padding: 20px;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+// Cards principales
+ion-card {
+  --background: var(--surface-dark);
+  --color: var(--text-primary);
+  border-radius: 15px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-dark);
+  background: var(--surface-dark) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 12px 30px rgba(187, 134, 252, 0.2);
+    transform: translateY(-2px);
+    border-color: var(--primary-color);
+  }
+
+  // Card de warning (info importante)
+  &[color="warning"] {
+    --background: rgba(255, 196, 9, 0.15);
+    border: 1px solid rgba(255, 196, 9, 0.4);
+    
+    ion-card-content {
+      color: var(--text-primary) !important;
+      
+      h3 {
+        color: var(--warning-color);
+        margin-bottom: 10px;
+        font-weight: 600;
+      }
+
+      ul {
+        color: var(--text-secondary);
+        
+        li {
+          margin-bottom: 8px;
+          line-height: 1.5;
+
+          strong {
+            color: var(--warning-color);
+          }
+        }
+      }
+    }
+  }
+
+  // Card primario (header)
+  &[color="primary"] {
+    --background: rgba(187, 134, 252, 0.2);
+    border: 1px solid rgba(187, 134, 252, 0.4);
+
+    ion-card-content {
+      text-align: center;
+      
+      h2 {
+        color: var(--primary-color);
+        margin: 0 0 10px 0;
+        font-weight: 600;
+        font-size: 24px;
+      }
+
+      p {
+        color: var(--text-secondary);
+        margin: 0;
+      }
+    }
+  }
+}
+
+// Headers de los cards
+ion-card-header {
+  background: transparent !important;
+  
+  ion-card-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary) !important;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    
+    ion-icon {
+      font-size: 24px;
+      color: var(--primary-color);
+    }
+  }
+}
+
+ion-card-content {
+  background: transparent !important;
+  color: var(--text-primary) !important;
+}
+
+// Items del formulario
+ion-item {
+  --background: var(--surface-variant);
+  --color: var(--text-primary);
+  --border-color: var(--border-color);
+  background: var(--surface-variant) !important;
+  border-radius: 10px;
+  margin-bottom: 15px;
+  transition: all 0.3s ease;
+  border: 1px solid var(--border-color);
+
+  &:hover {
+    --background: color-mix(in srgb, var(--surface-variant) 90%, var(--primary-color));
+    background: color-mix(in srgb, var(--surface-variant) 90%, var(--primary-color)) !important;
+    border-color: var(--primary-color);
+  }
+
+  ion-label {
+    color: var(--text-primary) !important;
+    
+    &[position="stacked"] {
+      color: var(--text-secondary) !important;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+  }
+
+  ion-input {
+    --color: var(--text-primary);
+    --placeholder-color: var(--text-secondary);
+    --placeholder-opacity: 0.7;
+    --background: transparent;
+    background: transparent !important;
+  }
+
+  ion-select {
+    --color: var(--text-primary);
+    --placeholder-color: var(--text-secondary);
+    --placeholder-opacity: 0.7;
+  }
+
+  ion-button[fill="clear"] {
+    --color: var(--primary-color);
+  }
+
+  ion-icon {
+    color: var(--primary-color);
+  }
+}
+
+// Lista de mesas disponibles
+.mesas-list {
+  ion-item {
+    margin-bottom: 10px;
+    
+    ion-label {
+      h3 {
+        color: var(--text-primary);
+        font-weight: 600;
+        margin: 5px 0;
+      }
+
+      p {
+        color: var(--text-secondary);
+        margin: 5px 0;
+      }
+    }
+
+    ion-badge {
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+
+    ion-radio {
+      --color: var(--primary-color);
+      --color-checked: var(--primary-color);
+    }
+  }
+}
+
+// Botones
+ion-button {
+  --border-radius: 12px;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0.5px;
+  margin-top: 10px;
+
+  &[expand="block"] {
+    margin-bottom: 10px;
+  }
+
+  // Botón principal (success)
+  &[color="success"] {
+    --background: var(--success-color);
+    --color: var(--background-dark);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+
+    &:hover {
+      --background: color-mix(in srgb, var(--success-color) 85%, white);
+      box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
+    }
+
+    &[disabled] {
+      opacity: 0.5;
+      --background: var(--surface-variant);
+      --color: var(--text-secondary);
+      box-shadow: none;
+    }
+  }
+
+  // Botón outline
+  &[fill="outline"] {
+    --border-color: var(--primary-color);
+    --color: var(--primary-color);
+    --background: transparent;
+
+    &:hover {
+      --background: rgba(187, 134, 252, 0.1);
+    }
+  }
+
+  // Botón clear (cancelar)
+  &[fill="clear"] {
+    --color: var(--text-secondary);
+
+    &:hover {
+      --color: var(--text-primary);
+    }
+  }
+
+  ion-icon {
+    font-size: 20px;
+  }
+
+  ion-spinner {
+    --color: var(--background-dark);
+  }
+}
+
+// Notas informativas
+ion-note {
+  display: block;
+  padding: 12px;
+  border-radius: 8px;
+  margin-top: 10px;
+  text-align: center;
+  font-size: 14px;
+
+  &[color="warning"] {
+    background: rgba(255, 196, 9, 0.15);
+    color: var(--warning-color);
+    border: 1px solid rgba(255, 196, 9, 0.3);
+  }
+}
+
+// 🔥 MODAL NEGRO CON LETRAS BLANCAS - BOTONES ROJOS
+ion-modal {
+  --background: #000000;
+  --border-radius: 15px;
+  backdrop-filter: none;
+
+  ion-header {
+    ion-toolbar {
+      --background: #1a1a1a;
+      --color: #ffffff;
+      background: #1a1a1a !important;
+      border-bottom: 1px solid #333333;
+      
+      ion-title {
+        color: #ffffff !important;
+        font-weight: 600;
+      }
+
+      ion-button {
+        --color: #ff6b47;
+        color: #ff6b47 !important;
+        font-weight: 600;
+
+        &:hover {
+          --color: #ff8566;
+          color: #ff8566 !important;
+        }
+      }
+    }
+  }
+
+  ion-content {
+    --background: #000000;
+    --color: #ffffff;
+    background: #000000 !important;
+  }
+
+  // 🔥 DATETIME NEGRO SÓLIDO CON LETRAS BLANCAS
+  ion-datetime {
+    --background: #000000;
+    background: #000000 !important;
+    color: #ffffff !important;
+    padding: 20px;
+
+    ::ng-deep {
+      // Días del calendario
+      .calendar-day {
+        color: #ffffff !important;
+        background: #2d2d2d !important;
+        border-radius: 8px;
+        font-weight: 500;
+
+        &:hover {
+          background: #3a3a3a !important;
+        }
+      }
+
+      // Día seleccionado
+      .calendar-day-active,
+      .calendar-day[aria-selected="true"] {
+        background: var(--primary-color) !important;
+        color: #000000 !important;
+        font-weight: 700;
+        box-shadow: 0 4px 12px rgba(187, 134, 252, 0.6);
+      }
+
+      // Día actual
+      .calendar-day-today {
+        border: 2px solid var(--primary-color) !important;
+        font-weight: 600;
+      }
+
+      // Header del mes y año
+      .calendar-month-year {
+        color: #ffffff !important;
+        font-weight: 600;
+        font-size: 18px;
+        background: #2d2d2d !important;
+        padding: 12px;
+        border-radius: 10px;
+      }
+
+      // Botones de navegación
+      .calendar-month-year-toggle,
+      button[aria-label*="previous"],
+      button[aria-label*="next"] {
+        color: var(--primary-color) !important;
+        background: #2d2d2d !important;
+        border-radius: 8px;
+        padding: 8px;
+
+        &:hover {
+          background: #3a3a3a !important;
+        }
+      }
+
+      // Días de la semana
+      .calendar-day-of-week {
+        color: #b3b3b3 !important;
+        font-weight: 600;
+        font-size: 12px;
+        text-transform: uppercase;
+      }
+
+      // Días deshabilitados
+      .calendar-day-disabled {
+        color: #666666 !important;
+        opacity: 0.5;
+      }
+
+      // Contenedores
+      .calendar-body,
+      .calendar-month-grid,
+      .calendar-header,
+      .calendar-row {
+        background: #000000 !important;
+      }
+    }
+  }
+
+  // 🔥 LISTA DE HORARIOS NEGRA CON RADIO BUTTONS ROJOS
+  ion-list {
+    background: #000000 !important;
+    padding: 15px;
+
+    ion-item {
+      --background: #2d2d2d;
+      background: #2d2d2d !important;
+      margin-bottom: 10px;
+      border-radius: 10px;
+      border: 2px solid #333333;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: #3a3a3a !important;
+        border-color: #ff6b47;
+        transform: translateX(4px);
+      }
+
+      // Item seleccionado con fondo rojo
+      &.item-radio-checked {
+        background: rgba(255, 107, 71, 0.2) !important;
+        border-color: #ff6b47;
+        box-shadow: 0 4px 12px rgba(255, 107, 71, 0.4);
+
+        ion-label {
+          h3 {
+            color: #ffffff !important;
+          }
+          p {
+            color: #ffccbb !important;
+          }
+        }
+      }
+
+      ion-label {
+        h3 {
+          color: #ffffff !important;
+          font-weight: 600;
+          font-size: 18px;
+          margin: 8px 0;
+        }
+
+        p {
+          color: #b3b3b3 !important;
+          font-size: 14px;
+          margin: 4px 0;
+        }
+      }
+
+      // 🔥 RADIO BUTTON ROJO
+      ion-radio {
+        --color: #666666;
+        --color-checked: #ff6b47;
+        margin-right: 15px;
+        width: 24px;
+        height: 24px;
+
+        &::part(container) {
+          border-width: 2px;
+          border-color: #666666;
+          background: transparent;
+        }
+
+        &.radio-checked::part(container) {
+          border-color: #ff6b47;
+          background: #ff6b47;
+        }
+
+        &::part(mark) {
+          background: #ffffff;
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+        }
+      }
+    }
+  }
+
+  // 🔥 BOTÓN DE CONFIRMACIÓN ROJO
+  ion-button[expand="block"] {
+    margin: 20px;
+    --background: #ff6b47;
+    --color: #ffffff;
+    background: #ff6b47 !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(255, 107, 71, 0.4);
+    font-weight: 600;
+    height: 48px;
+    border-radius: 12px;
+
+    &:hover {
+      --background: #ff8566;
+      background: #ff8566 !important;
+      box-shadow: 0 6px 16px rgba(255, 107, 71, 0.5);
+    }
+
+    &[disabled] {
+      opacity: 0.5;
+      --background: #2d2d2d;
+      --color: #666666;
+      background: #2d2d2d !important;
+      color: #666666 !important;
+      box-shadow: none;
+    }
+
+    ion-icon {
+      color: #ffffff !important;
+    }
+  }
+}
+
+// Badge de testing
+ion-toolbar ion-badge[color="warning"] {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+}
