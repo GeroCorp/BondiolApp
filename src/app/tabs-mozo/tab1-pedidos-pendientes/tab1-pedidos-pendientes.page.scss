@@ -4,12 +4,11 @@
   --padding-bottom: 0;
   --padding-start: 16px;
   --padding-end: 16px;
-
-  &[fullscreen="true"] {
-    --offset-top: 60px;
-  }
 }
 
+.wrap {
+  padding-bottom: 90px;
+}
 ion-header {
   ion-toolbar {
     --background: linear-gradient(135deg, #8b0000, #a52a2a, #b22222);

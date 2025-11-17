@@ -89,19 +89,15 @@
         </ion-button>
       </ion-card-content>
     </ion-card>
-    } @else if (shouldShowListaEspera()) {
+    } @else if (shouldShowListaEspera() && !isDelivery()) {
 <ion-card color="danger">
   <ion-card-header>
     <ion-card-title>
       <ion-icon name="alert-circle-outline"></ion-icon>
-      Sin Mesa Asignada
+      ¿Qué desea hacer?
     </ion-card-title>
   </ion-card-header>
   <ion-card-content>
-    <p>
-      No tienes una mesa asignada. Debes solicitar al personal del
-      restaurante que te asigne una mesa o unirte a la lista de espera.
-    </p>
     <ion-button
       expand="block"
       size="large"
@@ -110,6 +106,15 @@
     >
       <ion-icon slot="start" name="time-outline"></ion-icon>
       Unirse a Lista de Espera
+    </ion-button>
+    <ion-button
+      expand="block"
+      size="large"
+      fill="outline"
+      (click)="pedirDelivery()"
+    >
+      <ion-icon slot="start" name="bike"></ion-icon>
+      Pedir delivery
     </ion-button>
 
     <ion-button
@@ -128,19 +133,20 @@
     }
 
     <!-- Estado de mesa verificada -->
-    @if (mesaVerificada && mesaAsignada) {
+    @if (mesaVerificada && mesaAsignada || isDelivery()) {
     <ion-card color="success">
       <ion-card-content>
         <div style="text-align: center">
           <ion-icon name="checkmark-circle" style="font-size: 48px"></ion-icon>
-          <h3>Mesa {{ mesaAsignada }} Asignada</h3>
+          <h3 *ngIf="!isDelivery()">Mesa {{ mesaAsignada }} Asignada</h3>
           <p>Ya puedes acceder a todas las funcionalidades</p>
           <!-- Botón de cambiar mesa eliminado -->
         </div>
       </ion-card-content>
     </ion-card>
     }
-
+    <div class="mapa" [hidden]="hideMap()" id="mapContainer"> 
+    </div> 
     <!-- Tarjetas de funcionalidades -->
     <ion-card>
       <ion-card-header>
@@ -151,7 +157,7 @@
           expand="block"
           color="secondary"
           (click)="verMenu()"
-          [disabled]="!mesaVerificada"
+          [disabled]="!mesaVerificada && !isDelivery()"
         >
           <ion-icon name="book-outline" slot="start"></ion-icon>
           Ver Menú @if (!mesaVerificada) {
@@ -163,7 +169,7 @@
           expand="block"
           color="secondary"
           (click)="hacerPedido()"
-          [disabled]="!mesaVerificada"
+          [disabled]="!mesaVerificada && !isDelivery()"
         >
           <ion-icon name="cart-outline" slot="start"></ion-icon>
           Hacer Pedido @if (!mesaVerificada) {
@@ -175,12 +181,12 @@
           expand="block"
           color="tertiary"
           (click)="verHistorial()"
-          [disabled]="!mesaVerificada"
+          [disabled]="!mesaVerificada && !isDelivery()"
         >
           <ion-icon name="receipt-outline" slot="start"></ion-icon>
           Historial de Pedidos
           <ion-icon
-            *ngIf="!mesaVerificada"
+            *ngIf="!mesaVerificada && !isDelivery()"
             name="lock-closed"
             slot="end"
           ></ion-icon>
@@ -190,7 +196,7 @@
           expand="block"
           color="secondary"
           (click)="hacerConsulta()"
-          [disabled]="!mesaVerificada"
+          [disabled]="!mesaVerificada && !isDelivery()"
         >
           <ion-icon name="chatbubble-outline" slot="start"></ion-icon>
           Consulta Mozos @if (!mesaVerificada) {
@@ -202,7 +208,7 @@
           expand="block"
           color="tertiary"
           (click)="verJuegos()"
-          [disabled]="!mesaVerificada || !isRegistrado"
+          [disabled]="!mesaVerificada || !isRegistrado "
         >
           <ion-icon name="game-controller-outline" slot="start"></ion-icon>
           Juegos y Descuentos @if (!mesaVerificada) {
@@ -214,7 +220,7 @@
           expand="block"
           color="success"
           (click)="solicitarCuenta()"
-          [disabled]="!mesaVerificada"
+          [disabled]="!mesaVerificada && !isDelivery()"
         >
           <ion-icon name="card-outline" slot="start"></ion-icon>
           Pedir la Cuenta @if (!mesaVerificada) {
@@ -238,7 +244,7 @@
           expand="block"
           color="secondary"
           (click)="verResultados()"
-          [disabled]="!mesaVerificada"
+          [disabled]="!mesaVerificada || !isDelivery()"
         >
           <ion-icon name="clipboard-outline" slot="start"></ion-icon>
           resultados encuestas @if (!mesaVerificada) {

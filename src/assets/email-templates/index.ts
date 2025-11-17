@@ -4,11 +4,12 @@
  */
 export interface FacturaData {
     cliente_nombre: string, 
+    cliente_apellido: string, 
     cliente_dni: number,
     fecha: string, 
     NUMERO_FACTURA: number, 
     pedidoId: number, 
-    IMPORTE_TOTAL: number,
+    SUBTOTAL: number,
     DESCUENTO_APLICADO: number,
     PORCENTAJE_PROPINA: number,
     items_facturados: Array<{ id: number; nombre: string; cantidad: number; precio_unitario: number;}>,
@@ -89,101 +90,64 @@ export const EmailTemplates = {
    * Template para email de rechazo de registro
    */
   rechazado: (nombre: string) => `
-    <head>
-        <style>
-            body {
-                margin: 0;
+    <body style="margin: 0;
                 padding: 0;
                 font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                background-color: #f4f4f4;
-            }
-            .container {
-                max-width: 600px;
+                background-color: #f4f4f4;">
+        <div class="container" style="max-width: 600px;
                 margin: 40px auto;
                 background-color: #ffffff;
                 border-radius: 10px;
                 overflow: hidden;
-                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            }
-            .header {
-                background: linear-gradient(135deg, #ff2525 0%, #ff5555 100%);
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <div class="header" style="background: linear-gradient(135deg, #ff2525 0%, #ff5555 100%);
                 padding: 40px 20px;
-                text-align: center;
-            }
-            .logo {
-                width: 120px;
-                height: 120px;
-                background-color: rgb(255,20,50);
-                border-radius: 50%;
-                margin: 0 auto 20px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            }
-            .logo img {
-                width: 80px;
-                height: 80px;
-            }
-            .header h1 {
-                color: white;
-                margin: 0;
-                font-size: 28px;
-                font-weight: 600;
-            }
-            .content {
-                padding: 40px 30px;
-            }
-            .content h2 {
-                color: #333;
-                font-size: 24px;
-                margin-bottom: 20px;
-            }
-            .content p {
-                color: #666;
-                font-size: 16px;
-                line-height: 1.6;
-                margin-bottom: 15px;
-            }
-            .badge {
-                display: inline-block;
-                background-color: #f44336;
-                color: white;
-                padding: 10px 20px;
-                border-radius: 25px;
-                font-weight: bold;
-                margin: 20px 0;
-            }
-            .footer {
-                background-color: #f9f9f9;
+                text-align: center;">
+                <div class="logo" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+                      padding: 20px;
+                      width: fit-content;
+                      background-color: rgb(255,20,50);
+                      border-radius: 50%;
+                      margin: 0 auto 20px;">
+                    <img src="http://cdn.mcauto-images-production.sendgrid.net/7ffb83c7fa07769b/86a3281b-558f-4c20-a09d-6ca185860aad/1024x1024.png" 
+                         alt="RestoApp Logo" 
+                         height="80px" 
+                         width="80px">
+                </div>
+                <h1 style="color: white;
+                    margin: 0;
+                    font-size: 28px;
+                    font-weight: 600;">RestoApp</h1>
+            </div>
+            <div style="padding: 40px 30px;">
+                <h2 style="color: #333; font-size: 24px; margin-bottom: 20px;">¡Hola ${nombre}!</h2>
+                <div class="badge" style="display: inline-block;
+                        background-color: #9e0202ff;
+                        color: white;
+                        padding: 10px 20px;
+                        border-radius: 25px;
+                        font-weight: bold;
+                        margin: 20px 0;">❌ REGISTRO NO APROBADO</div>
+                <div style="color: #666;
+                    font-size: 16px;
+                    line-height: 1.6;
+                    margin-bottom: 15px;">
+                    <p>Lamentamos informarte que tu solicitud de registro en <strong>RestoApp</strong> no ha sido aprobada en este momento.</p>
+                    <p>Motivos posibles:</strong></p>
+                    <p><strong>¿Qué puedes hacer ahora?</strong></p>
+                    <ul style="color: #666; line-height: 1.8;">
+                        <li>Información incompleta o incorrecta</li>
+                        <li>Foto de perfil no válida</li>
+                        <li>DNI no coincidente</li>
+                    </ul>
+                    <p> Si crees que esto es un error o deseas más información, por favor contacta al administrador del restaurante </p>
+                </div>
+            </div>
+            <div class="footer" style="background-color: #f9f9f9;
                 padding: 20px;
                 text-align: center;
                 color: #999;
-                font-size: 14px;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <div class="header">
-                <div class="logo">
-                    <img src="http://cdn.mcauto-images-production.sendgrid.net/7ffb83c7fa07769b/86a3281b-558f-4c20-a09d-6ca185860aad/1024x1024.png" alt="RestoApp Logo">
-                </div>
-                <h1>RestoApp</h1>
-            </div>
-            <div class="content">
-                <h2>Hola ${nombre},</h2>
-                <div class="badge">❌ REGISTRO NO APROBADO</div>
-                <p>Lamentamos informarte que tu solicitud de registro en <strong>RestoApp</strong> no ha sido aprobada en este momento.</p>
-                <p><strong>Motivos posibles:</strong></p>
-                <ul style="color: #666; line-height: 1.8;">
-                    <li>Información incompleta o incorrecta</li>
-                    <li>Foto de perfil no válida</li>
-                    <li>DNI no coincidente</li>
-                </ul>
-                <p>Si crees que esto es un error o deseas más información, por favor contacta al administrador del restaurante.</p>
-            </div>
-            <div class="footer">
+                font-size: 14px;">
                 <p>Este es un correo automático, por favor no respondas.</p>
                 <p>&copy; 2025 RestoApp. Todos los derechos reservados.</p>
             </div>
@@ -445,91 +409,86 @@ export const EmailTemplates = {
 </style>
 
 <body>
-    <div class="wrapper text-center bold text-20" style="width:100%;border-bottom: 0;">
-        ORIGINAL
-    </div>
-
-    <div class="flex relative">
-        <div class="wrapper inline-block w50 flex" style="border-right: 0">
-            <img src="https://zomglcsymkilqvdqcnvr.supabase.co/storage/v1/object/public/logo/black-icon.png" alt="RestoApp Logo" class="header-logo">
-            <h3 class="text-center" style="font-size:24px;margin-bottom: 3px;width: 100%;">RestoApp</h3>
-            <p style="font-size: 13px;line-height: 1.5;margin-bottom: 0;align-self: flex-end;">
-                <b>Razón Social:</b> RestoApp S.A.
-                <br><b>Domicilio Comercial:</b> Av. Mitre 750
-                <br><b>Condición frente al IVA:</b> Responsable Monotributo
-            </p>
+    <!-- HEADER CON LOGO Y DATOS COMERCIO -->
+    <div class="header-comercio" style="background: #8b0000; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center;">
+        <div class="logo-section">
+            <img src="https://zomglcsymkilqvdqcnvr.supabase.co/storage/v1/object/public/logo/icon-only.png" alt="" style="max-width: 120px;">
         </div>
-        <div class="wrapper inline-block w50">
-            <h3 class="text-center" style="font-size:24px;margin-bottom: 3px;">FACTURA</h3>
-            <p style="font-size: 13px;line-height: 1.5;margin-bottom: 0;">
-                <b>Punto de Venta:</b> 00001 <b>Comp. Nro:</b> ${datos.NUMERO_FACTURA}
-                <br><b>Fecha de Emisión:</b> ${datos.fecha}
-                <br><b>CUIT:</b> 11234567899
-                <br><b>Ingresos Brutos:</b> exento
-                <br><b>Fecha de Inicio de Actividades:</b> 01/01/2025
-            </p>
-        </div>
-        <div class="wrapper floating-mid">
-            <h3 class="no-margin text-center" style="font-size: 36px;">C</h3>
-            <h5 class="no-margin text-center">COD. 007</h5>
+        <div class="datos-comercio" style="text-align: right; font-size: 14px;">
+            <ul style="list-style-type: none;">
+                <li style="margin: 3px 0;"><b>Domicilio Comercial:</b> Av. Mitre 750</li>
+                <li style="margin: 3px 0;"><b>Email:</b> resto.app.official@gmail.com</li>
+                <li style="margin: 3px 0;"><b>Tel:</b> +54 11 1234-4321</li>
+                <li style="margin: 3px 0;"><b>CUIT:</b> 20-123456789-9</li>
+            </ul>
         </div>
     </div>
 
-    <div class="wrapper flex space-around" style="margin-top: 1px;">
-        <span><b>Número de Pedido:</b> ${datos.pedidoId}</span> <span><b>Fecha de Vto. para el pago:</b> ${datos.fecha}</span>
-    </div>
-
-    <div class="wrapper" style="margin-top: 2px;font-size: 12px;">
-        <div class="flex" style="margin-bottom: 15px;">
-            <span style="width:30%"><b>DNI:</b> ${datos.cliente_dni}</span>
-            <span><b>Apellido y Nombre / Razón Social:</b> ${datos.cliente_nombre}</span>
-        </div>
-        <div class="flex" style="flex-wrap: nowrap;margin-bottom: 5px;">
-            <span style="width:70%"><b>Condición frente al IVA:</b> Consumidor Final</span>
-        </div>
-        <div class="flex">
-            <span><b>Condición de venta:</b> Online - Tarjeta de Crédito</span>
-        </div>
-    </div>
-
-    <table style="margin-top: 5px;" class="detalle-tabla">
-        <thead>
-            <th class="text-left">Cód.</th>
-            <th class="text-left">Producto / Servicio</th>
-            <th class="text-right">Cantidad</th>
-            <th class="text-right">Precio Unit.</th>
-            <th class="text-right">Subtotal</th>
-        </thead>
-        <tbody>
-            ${datos.items_facturados.map(item => `
-                <tr>
-                    <td class="text-left">${item.id}</td>
-                    <td class="text-left">${item.nombre}</td>
-                    <td class="text-right">${item.cantidad}</td>
-                    <td class="text-right">$${item.precio_unitario.toFixed(2)}</td>
-                    <td class="text-right">$${(item.cantidad * item.precio_unitario).toFixed(2)}</td>
-                </tr>
-            `).join('')}
-            <tr>
-                <td colspan="4" class="text-right bold">DESCUENTO:</td>
-                <td class="text-right bold text-red">-$${datos.DESCUENTO_APLICADO.toFixed(2)}</td>
-            </tr>
-            <tr>
-                <td colspan="4" class="text-right bold">PROPINA (${datos.PORCENTAJE_PROPINA}%):</td>
-                <td class="text-right bold">$${datos.IMPORTE_PROPINA.toFixed(2)}</td>
-            </tr>
-        </tbody>
-    </table>
-
-    <div class="footer" style="margin-top: 10px;">
-        <div class="flex wrapper space-between">
-            <div style="width:55%">
-                </div>
-            
-            <div style="width:40%;" class="flex wrapper total-display">
-                <span class="text-right" style="width:60%; font-size: 18px;"><b>TOTAL A PAGAR:</b></span>
-                <span class="text-right total-amount" style="width:40%;"><b>$${datos.IMPORTE_TOTAL.toFixed(2)}</b></span>
+    <!-- SECCION FACTURA -->
+    <div class="wrapper" style="border: 3px solid black; margin: 10px 0;">
+        <div class="flex" style="border-bottom: 2px solid black;">
+            <!-- FACTURA C -->
+            <div style="width: 40%; padding: 20px; border-right: 2px solid black;">
+                <h2 style="margin: 0; font-size: 32px; font-weight: bold; text-align: center;">FACTURA</h2>
+                <div style="text-align: center; font-size: 72px; font-weight: bold; margin: 20px 0;">C</div>
+                <p style="text-align: center; margin: 0; font-size: 14px;">Cliente final</p>
             </div>
+            <!-- DATOS FACTURA -->
+            <div style="width: 60%; padding: 20px; margin:34px 0px">
+                <p style="margin: 5px 0; font-size: 16px;"><b>Número de Factura:</b> ${datos.NUMERO_FACTURA || datos.pedidoId}</p>
+                <p style="margin: 5px 0; font-size: 16px;"><b>Número del Pedido:</b> ${datos.pedidoId}</p>
+                <p style="margin: 5px 0; font-size: 16px;"><b>Fecha:</b> ${datos.fecha}</p>
+                <br>
+            </div>
+        </div>
+
+        <!-- DATOS DEL CLIENTE -->
+        <div style="background: #ebebeb; padding: 15px; border-bottom: 2px solid black;">
+            <h2 style="margin: 0 0 10px 0;">Datos del Cliente</h2>
+            <p style="margin: 5px 0;"><b>DNI:</b> ${datos.cliente_dni || 0}</p>
+            <p style="margin: 5px 0;"><b>Apellido y Nombre:</b> ${datos.cliente_nombre || 'Sin Nombre'} ${datos.cliente_apellido || ''}</p>
+            <p style="margin: 5px 0;"><b>Condición frente al IVA:</b> Consumidor Final</p>
+        </div>
+
+        <!-- DETALLES LABEL -->
+        <div style="padding: 15px; border-bottom: 1px solid #ccc;">
+            <h2 style="margin: 0;">Detalles</h2>
+        </div>
+
+
+        <!-- TABLA DE PRODUCTOS -->
+        <div style="padding: 0;">
+            <!-- HEADER ROJO DE LA TABLA CON COLUMNAS -->
+            <div style="background: #a53232; padding: 8px; border-bottom: 2px solid black; display: flex; color: white; font-weight: bold;">
+                <div style="width: 10%; text-align: left;">Cód.</div>
+                <div style="width: 40%; text-align: left;">Producto / Servicio</div>
+                <div style="width: 15%; text-align: right;">Cantidad</div>
+                <div style="width: 15%; text-align: right;">Precio Unit.</div>
+                <div style="width: 20%; text-align: right;">Subtotal</div>
+            </div>
+            
+            <!-- CONTENIDO DE LA TABLA -->
+            <table style="width: 100%; border-collapse: collapse;">
+                <tbody>
+                    ${datos.items_facturados.map(item => `
+                        <tr>
+                            <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 10%;">${item.id}</td>
+                            <td style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 40%;">${item.nombre}</td>
+                            <td style="border: 1px solid #ddd; padding: 8px; text-align: right; width: 15%;">${item.cantidad}</td>
+                            <td style="border: 1px solid #ddd; padding: 8px; text-align: right; width: 15%;">$${item.precio_unitario.toFixed(2)}</td>
+                            <td style="border: 1px solid #ddd; padding: 8px; text-align: right; width: 20%;">$${(item.cantidad * item.precio_unitario).toFixed(2)}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- TOTALES -->
+        <div style="padding: 20px; text-align: right;">
+            <p style="margin: 5px 0; font-size: 16px;"><b>subtotal:</b> $${(datos.SUBTOTAL).toFixed(2)}</p>
+            <p style="margin: 5px 0; font-size: 16px;"><b>descuento:</b> -$${datos.DESCUENTO_APLICADO.toFixed(2)}</p>
+            <p style="margin: 5px 0; font-size: 16px;"><b>propina:</b> $${datos.IMPORTE_PROPINA.toFixed(2)}</p>
+            <p style="margin: 10px 0; font-size: 24px; font-weight: bold; border-top: 2px solid black; padding-top: 10px;"><b>TOTAL: $${(datos.SUBTOTAL - datos.DESCUENTO_APLICADO + datos.IMPORTE_PROPINA).toFixed(2)}</b></p>
         </div>
     </div>
 </body>

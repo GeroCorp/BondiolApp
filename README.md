@@ -1,12 +1,14 @@
 # Grupo: sinNombre-2025
 ###  Trabajo Final Integrador -- Primer parcial  
 
-# QRs de test
+## QRs de test
 
 ### Ingreso al local (Lista de espera)
+
 <img width="300" height="300" alt="lista_de_espera" src="https://github.com/user-attachments/assets/de731e55-a413-425b-87ad-89e8cf500d70" />
 
 ### QR para test mesa
+
 ![mesa_test](https://github.com/user-attachments/assets/2438d0d5-d004-4b23-9d6f-bf665baa0d02)
 
 
@@ -141,4 +143,13 @@ Fecha estimada de finalización: 3/10
 ## Corpus Gerónimo
 - Arreglo de UI (Fondos oscuros y fuente mas grande)
 - Arreglo funcionalidad 13°
-- Modificación funcionalidad 22° (Descarga de factura)
+- Modificación funcionalidad 22° (Envío de factura)
+
+# Septima semana
+
+## Pagés Valentino
+- Funcionalidades 23 -> 26 
+
+## Corpus Gerónimo
+- Arreglos varios
+- Funcionalidades 27 -> 30

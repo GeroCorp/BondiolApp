@@ -1,18 +1,22 @@
-﻿import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { ModalController, ToastController, LoadingController } from '@ionic/angular';
 import { Mozo, ESTADO } from 'src/app/services/mozo';
 import { AuthService } from 'src/app/services/supabase';
 import { DetallePedidoModalComponent } from './detalle-pedido-modal/detalle-pedido-modal.component';
 import { Notification } from 'src/app/services/notification';
 import { HapticService } from 'src/app/services/haptic.service';
-import { EmailService } from 'src/app/services/email';
+import { EmailService, DatosFactura } from 'src/app/services/email';
 @Component({
   selector: 'app-tab2-pedidos-confirmados',
   templateUrl: './tab2-pedidos-confirmados.page.html',
   styleUrls: ['./tab2-pedidos-confirmados.page.scss'],
   standalone: false,
 })
-export class Tab2PedidosConfirmadosPage implements OnInit {
+export class Tab2PedidosConfirmadosPage implements OnInit, AfterViewInit {
+  @ViewChild('segmentContainer') segmentContainer!: ElementRef;
+  @ViewChild('arrowLeft') arrowLeft!: ElementRef;
+  @ViewChild('arrowRight') arrowRight!: ElementRef;
+  
   pedidos: any[] = [];
   pedidosFiltrados: any[] = [];
   filtroEstado = 'todos';
@@ -31,6 +35,17 @@ export class Tab2PedidosConfirmadosPage implements OnInit {
 
   async ngOnInit() {
     await this.cargarPedidos();
+  }
+
+  ngAfterViewInit() {
+    // Detectar si el contenedor necesita scroll y configurar flechas
+    setTimeout(() => {
+      this.checkScrollNeeded();
+      // Verificar cambios en el tamaño de ventana
+      window.addEventListener('resize', () => {
+        this.checkScrollNeeded();
+      });
+    }, 100);
   }
 
   async cargarPedidos() {
@@ -53,8 +68,36 @@ export class Tab2PedidosConfirmadosPage implements OnInit {
       this.pedidosFiltrados = this.pedidos;
     } else {
       this.pedidosFiltrados = this.pedidos.filter(
-        pedido => pedido.estado === this.filtroEstado
+        (pedido) => pedido.estado === this.filtroEstado
       );
+    }
+    
+    // Centrar el botón seleccionado en el scroll
+    setTimeout(() => {
+      this.scrollToActiveButton();
+    }, 100);
+  }
+
+  /**
+   * Centra automáticamente el botón seleccionado en el contenedor
+   */
+  scrollToActiveButton() {
+    if (this.segmentContainer) {
+      const container = this.segmentContainer.nativeElement;
+      const activeButton = container.querySelector('ion-segment-button.segment-button-checked');
+      
+      if (activeButton) {
+        const containerRect = container.getBoundingClientRect();
+        const buttonRect = activeButton.getBoundingClientRect();
+        
+        const scrollLeft = container.scrollLeft;
+        const targetScroll = scrollLeft + (buttonRect.left - containerRect.left) - (containerRect.width / 2) + (buttonRect.width / 2);
+        
+        container.scrollTo({
+          left: Math.max(0, targetScroll),
+          behavior: 'smooth'
+        });
+      }
     }
   }
 
@@ -183,13 +226,17 @@ export class Tab2PedidosConfirmadosPage implements OnInit {
       const pedidoId = pedido.id || pedido.id_pedido;
       const mesaId = pedido.mesa?.id || pedido.mesa;
       const numeroMesa = pedido.mesa?.numero;
-      const cliente = await this.mozoService.getdatosCliente(pedido.id_cliente);
-
+      let cliente;
+      if (pedido.id_cliente){
+        cliente = await this.mozoService.getdatosCliente(pedido.id_cliente);
+      }else{
+        cliente = await this.mozoService.getDatosAnon(mesaId);
+      }
       console.log('💳 Confirmando pago:', {
         pedidoId,
         mesaId,
         numeroMesa,
-        id_cliente: pedido.id_cliente
+        id_cliente: pedido.id_cliente ? pedido.id_cliente : cliente.id_clienteanonimo
       });
 
       // 1️⃣ Cambiar estado del pedido a 'pagado'
@@ -201,17 +248,10 @@ export class Tab2PedidosConfirmadosPage implements OnInit {
       }
 
       // 2️⃣ Liberar la mesa
-      const { error: errorMesa } = await this.authService.client
-        .from('mesas')
-        .update({ 
-          disponible: true, 
-          cliente_asignado: null 
-        })
-        .eq('id', mesaId);
+      const isLiberada = await this.authService.liberarMesa(mesaId)
 
-      if (errorMesa) {
-        console.error('❌ Error liberando mesa:', errorMesa);
-        throw errorMesa;
+      if(!isLiberada){
+        throw new Error('No se pudo liberar la mesa');
       }
 
       console.log('✅ Mesa liberada');
@@ -219,12 +259,12 @@ export class Tab2PedidosConfirmadosPage implements OnInit {
       // 3️⃣ Limpiar datos del cliente
       if (pedido.id_cliente) {
         // ✅ CLIENTE REGISTRADO
-        console.log('👤 Limpiando mesa de cliente registrado:', pedido.id_cliente);
+        console.log('👤 Limpiando mesa de cliente registrado:', cliente.id_cliente);
         
         const { error: errorCliente } = await this.authService.client
           .from('clientes')
           .update({ mesa_asignada: null })
-          .eq('id_cliente', pedido.id_cliente);
+          .eq('id_cliente', cliente.id_cliente);
 
         if (errorCliente) {
           console.error('❌ Error actualizando cliente:', errorCliente);
@@ -235,34 +275,13 @@ export class Tab2PedidosConfirmadosPage implements OnInit {
       } else {
         // ✅ CLIENTE ANÓNIMO
         console.log('🎭 Buscando cliente anónimo en mesa:', mesaId);
-        
-        // Obtener cliente_asignado actual de la mesa
-        const { data: mesaData, error: errorMesaData } = await this.authService.client
-          .from('mesas')
-          .select('cliente_asignado')
-          .eq('id', mesaId)
-          .single();
-
-        if (errorMesaData) {
-          console.error('❌ Error obteniendo mesa:', errorMesaData);
-        } else if (mesaData?.cliente_asignado) {
-          console.log('🎭 Limpiando datos de cliente anónimo:', mesaData.cliente_asignado);
-          
+                  
           const { error: errorAnonimo } = await this.authService.client
-            .from('clientes_anonimos')
-            .update({ 
-              mesa_asignada: null,
-              en_espera: false 
-            })
-            .eq('id_clienteanonimo', mesaData.cliente_asignado);
-
-          if (errorAnonimo) {
-            console.error('❌ Error actualizando anónimo:', errorAnonimo);
-          } else {
-            console.log('✅ Cliente anónimo actualizado');
-          }
+          .from('clientes_anonimos')
+          .update({ mesa_asignada: null })
+          .eq('id_clienteanonimo', cliente.id_clienteanonimo);
       }
-      }
+      
 
       // 4️⃣ Notificaciones
       await this.notificationService.sendNotificationToPerfil(
@@ -279,21 +298,38 @@ export class Tab2PedidosConfirmadosPage implements OnInit {
 
       const detalles = await this.mozoService.getDetallesPedido(pedidoId);
 
-      const envioFactura = await this.emailService.enviarEmailFactura(pedidoId, pedido.total, cliente, pedido.porcentajePropina, pedido.descuento, detalles);
-
-       if (envioFactura) {
-         console.log('✅ Email de factura enviado al cliente');
-       } else {
-         console.error('❌ Error enviando email de factura al cliente');
-       }
-
-      if (pedido.id_cliente) {
+      // Enviar el mail solo si el pedido tiene un cliente asociado
+      if (pedido.id_cliente){
+        this.emailService.enviarEmailFactura(pedidoId, pedido.total, cliente, pedido.porcentajePropina, pedido.descuento, detalles);
         await this.notificationService.sendNotificationToCliente(
           '✅ Pago confirmado',
           'Tu pago fue confirmado. ¡Gracias por visitarnos! Esperamos verte pronto.',
           '',
           pedido.id_cliente
         );
+        console.log("Mail enviado con exito.");
+      }
+      else{
+        const datosPDF: DatosFactura ={
+          pedidoId: pedidoId,
+          SUBTOTAL: pedido.total,
+          cliente_nombre: cliente.nombre,
+          cliente_dni: cliente.dni || 0,
+          items_facturados: detalles,
+          DESCUENTO_APLICADO: pedido.descuento ? pedido.descuento : 0,
+          PORCENTAJE_PROPINA: pedido.porcentajePropina ? pedido.porcentajePropina : 0,
+          IMPORTE_PROPINA: pedido.total * (pedido.porcentajePropina / 100)
+        }
+        const res = await this.emailService.generarPDF(datosPDF);
+        const downloadLink = res?.downloadLink || '';
+        
+        await this.notificationService.sendNotificationToCliente(
+          '✅ Pago confirmado',
+          `Tu pago fue confirmado. Gracias por visitarnos! Esperamos verte pronto.\n\nPresiona para ver tu factura.`,
+          downloadLink,
+          cliente.id_clienteanonimo
+        );
+
       }
 
       await loading.dismiss();
@@ -308,6 +344,94 @@ export class Tab2PedidosConfirmadosPage implements OnInit {
     }
   }
 
+  /**
+   * Verifica si el contenedor de segment necesita scroll horizontal
+   */
+  checkScrollNeeded() {
+    if (this.segmentContainer) {
+      const container = this.segmentContainer.nativeElement;
+      const needsScroll = container.scrollWidth > container.clientWidth;
+      
+      if (needsScroll) {
+        container.classList.add('scrollable');
+        this.updateArrowVisibility();
+      } else {
+        container.classList.remove('scrollable');
+        this.hideAllArrows();
+      }
+    }
+  }
+
+  /**
+   * Evento de scroll del contenedor
+   */
+  onScroll() {
+    this.updateArrowVisibility();
+  }
+
+  /**
+   * Actualiza la visibilidad de las flechas según la posición del scroll
+   */
+  updateArrowVisibility() {
+    if (this.segmentContainer && this.arrowLeft && this.arrowRight) {
+      const container = this.segmentContainer.nativeElement;
+      const { scrollLeft, scrollWidth, clientWidth } = container;
+      
+      const atStart = scrollLeft <= 10;
+      const atEnd = scrollLeft >= scrollWidth - clientWidth - 10;
+      
+      // Mostrar/ocultar flecha izquierda
+      if (atStart) {
+        this.arrowLeft.nativeElement.classList.remove('visible');
+      } else {
+        this.arrowLeft.nativeElement.classList.add('visible');
+      }
+      
+      // Mostrar/ocultar flecha derecha
+      if (atEnd) {
+        this.arrowRight.nativeElement.classList.remove('visible');
+      } else {
+        this.arrowRight.nativeElement.classList.add('visible');
+      }
+    }
+  }
+
+  /**
+   * Oculta todas las flechas
+   */
+  hideAllArrows() {
+    if (this.arrowLeft && this.arrowRight) {
+      this.arrowLeft.nativeElement.classList.remove('visible');
+      this.arrowRight.nativeElement.classList.remove('visible');
+    }
+  }
+
+  /**
+   * Scroll hacia la izquierda
+   */
+  scrollLeft() {
+    if (this.segmentContainer) {
+      const container = this.segmentContainer.nativeElement;
+      container.scrollBy({
+        left: -150,
+        behavior: 'smooth'
+      });
+    }
+  }
+
+  /**
+   * Scroll hacia la derecha
+   */
+  scrollRight() {
+    if (this.segmentContainer) {
+      const container = this.segmentContainer.nativeElement;
+      container.scrollBy({
+        left: 150,
+        behavior: 'smooth'
+      });
+    }
+  }
+
   async showToast(message: string, color: 'success' | 'danger' | 'medium' | 'warning') {
     const toast = await this.toastController.create({
       message,
@@ -319,15 +443,27 @@ export class Tab2PedidosConfirmadosPage implements OnInit {
   }
 
   async test() {
-    const res = await this.emailService.enviarEmailFactura(
-      1,
-      500,
-      { nombre: 'Germán', apellido: 'García', email: 'geromcorpus@gmail.com', dni: '12345678'},
-      15,
-      10,
-      [{ id: 101, nombre: 'Producto A', cantidad: 2, precio_unitario: 100 },
-       { id: 202, nombre: 'Producto B', cantidad: 1, precio_unitario: 300 }]
+    const datosPDF: DatosFactura = {
+      pedidoId: 12345,
+      SUBTOTAL: 2500,
+      cliente_nombre: "Juan Pérez",
+      cliente_dni: 12345678,
+      items_facturados: [
+        { nombre_prod: "Pizza Margherita", cantidad: 1, precio_unitario: 1200, id:1 },
+        { nombre_prod: "Coca Cola 500ml", cantidad: 2, precio_unitario: 650 , id:2}
+      ],
+      DESCUENTO_APLICADO: 10,
+      PORCENTAJE_PROPINA: 10,
+      IMPORTE_PROPINA: 250
+    }
+    const res = await this.emailService.generarPDF(datosPDF);
+    const downloadLink = res?.downloadLink || '';
+    
+    await this.notificationService.sendNotificationToCliente(
+      '✅ Pago confirmado',
+      `Tu pago fue confirmado. Gracias por visitarnos! Esperamos verte pronto.\n\nPresiona para ver tu factura.`,
+      downloadLink,
+      126
     );
-    console.log('Resultado del envío de email de factura:', res);
   }
 }

@@ -18,34 +18,43 @@ interface Cliente {
 
 interface DetallesPedido {
   id: number;
-  nombre: string;
+  nombre_prod: string;
   cantidad: number;
   precio_unitario: number;
 }
 
+export interface DatosFactura {
+  pedidoId: number;
+  SUBTOTAL: number;
+  cliente_nombre: string;
+  cliente_dni: string | number;
+  items_facturados: DetallesPedido[];
+  DESCUENTO_APLICADO: number;
+  PORCENTAJE_PROPINA: number;
+  IMPORTE_PROPINA: number;
+}
+
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class EmailService {
-
   supabaseClient = supabase;
 
-  constructor(
-  ) {
-  }
+  constructor() {}
 
-  async enviarMailSupabase(datos: any){
+  async enviarMailSupabase(datos: any) {
     const bodyData = JSON.stringify(datos);
-    console.log("Datos pasados al body: ", datos);
-    const {data: response, error} = await this.supabaseClient.functions.invoke('testeoperreo', {
-      method: 'POST',
-      body: bodyData, // Contiene nombre_cliente, email_cliente, html (template) y subject
-      headers: {
-      }
-    })
-    if (error) throw new Error(`Error enviando email via Supabase: ${error.message}`);
+    console.log('Datos pasados al body: ', datos);
+    const { data: response, error } =
+      await this.supabaseClient.functions.invoke('testeoperreo', {
+        method: 'POST',
+        body: bodyData, // Contiene nombre_cliente, email_cliente, html (template) y subject
+        headers: {},
+      });
+    if (error)
+      throw new Error(`Error enviando email via Supabase: ${error.message}`);
 
-    console.log("Respuesta del envío: ", response);
+    console.log('Respuesta del envío: ', response);
 
     return response;
   }
@@ -55,22 +64,31 @@ export class EmailService {
    */
   async enviarEmailAprobacionConTemplate(cliente: Cliente): Promise<boolean> {
     try {
-      console.log('📧 Enviando email de aprobación con template HTML a:', cliente.email);
-      
-      const htmlTemplate = EmailTemplates.aprobado(cliente.email, cliente.nombre);
-      
+      console.log(
+        '📧 Enviando email de aprobación con template HTML a:',
+        cliente.email
+      );
+
+      const htmlTemplate = EmailTemplates.aprobado(
+        cliente.email,
+        cliente.nombre
+      );
+
       const datos = {
         nombre_cliente: cliente.nombre,
         email_cliente: cliente.email,
         html: htmlTemplate,
-        subject: '¡Tu cuenta ha sido aprobada!'
+        subject: '¡Tu cuenta ha sido aprobada!',
       };
 
       await this.enviarMailSupabase(datos);
       console.log('✅ Email de aprobación con template enviado');
       return true;
     } catch (error: any) {
-      console.error('❌ Error al enviar email de aprobación con template:', error);
+      console.error(
+        '❌ Error al enviar email de aprobación con template:',
+        error
+      );
       return false;
     }
   }
@@ -80,15 +98,18 @@ export class EmailService {
    */
   async enviarEmailRechazoConTemplate(cliente: Cliente): Promise<boolean> {
     try {
-      console.log('📧 Enviando email de rechazo con template HTML a:', cliente.email);
-      
+      console.log(
+        '📧 Enviando email de rechazo con template HTML a:',
+        cliente.email
+      );
+
       const htmlTemplate = EmailTemplates.rechazado(cliente.nombre);
-      
+
       const datos = {
-        nombre_cliente: cliente.nombre + " " + cliente.apellido,
+        nombre_cliente: cliente.nombre + ' ' + cliente.apellido,
         email_cliente: cliente.email,
         html: htmlTemplate,
-        subject: 'Notificación sobre su cuenta'
+        subject: 'Notificación sobre su cuenta',
       };
 
       await this.enviarMailSupabase(datos);
@@ -100,46 +121,70 @@ export class EmailService {
     }
   }
 
+  /**
+   * Genera un PDF de la factura usando los datos proporcionados
+   * @param datosFactura Datos para generar la factura (pedidoId, IMPORTE_TOTAL, cliente_nombre, cliente_dni, items_facturados, DESCUENTO_APLICADO, PORCENTAJE_PROPINA, IMPORTE_PROPINA)
+   * @returns Objeto con el enlace de descarga del PDF generado o null si hay error
+   */
+  async generarPDF(datosFactura: any): Promise<any> {
+    const bodyData = JSON.stringify(datosFactura);
+    console.log('Datos pasados al body para PDF: ', datosFactura);
+
+    try {
+      const { data: response } = await this.supabaseClient.functions.invoke(
+        'pdfConverter',
+        {
+          method: 'POST',
+          body: JSON.stringify(datosFactura),
+          headers: {},
+        }
+      );
+
+      const returnRes =
+        typeof response === 'string' ? JSON.parse(response) : response;
+
+      return returnRes;
+    } catch (error) {
+      console.error('❌ Error generando PDF de factura via Supabase:', error);
+      return null;
+    }
+  }
+
   async enviarEmailFactura(
-    pedidoId: number, 
-    montoTotal: number, 
+    pedidoId: number,
+    montoTotal: number,
     cliente: Cliente,
     porcentajePropina: number,
     descuentoAplicado: number,
     pedidoDetalles: DetallesPedido[]
   ): Promise<boolean> {
     try {
+      const datosFactura: DatosFactura = {
+        pedidoId: pedidoId,
+        SUBTOTAL: montoTotal,
+        cliente_nombre: cliente.nombre,
+        cliente_dni: cliente.dni || 0,
+        items_facturados: pedidoDetalles,
+        DESCUENTO_APLICADO: descuentoAplicado ? descuentoAplicado : 0,
+        PORCENTAJE_PROPINA: porcentajePropina ? porcentajePropina : 0,
+        IMPORTE_PROPINA: montoTotal * (porcentajePropina / 100),
+      };
 
-      const { data: response, error } = await this.supabaseClient.functions.invoke('pdfConverter', {
-        method: 'POST',
-        body: JSON.stringify({
-          pedidoId: pedidoId,
-          IMPORTE_TOTAL: montoTotal,
-          cliente_nombre: cliente.nombre,
-          cliente_dni: cliente.dni,
-          items_facturados: pedidoDetalles,
-          DESCUENTO_APLICADO: descuentoAplicado,
-          PORCENTAJE_PROPINA: porcentajePropina,
-          IMPORTE_PROPINA: montoTotal * (porcentajePropina / 100)
-        }),
-        headers: {
+      const parsedData = await this.generarPDF(datosFactura);
+      console.log('downloadLink:', parsedData?.downloadLink);
 
-        }
-        
-      })
-
-      if (error) throw new Error(`Error generando PDF de factura: ${error.message}`);
-
-      const pdfData = response;
-      const parsedData = typeof pdfData === 'string' ? JSON.parse(pdfData) : pdfData;
-      console.log("downloadLink:", parsedData?.downloadLink);
-
-      const htmlTemplate = EmailTemplates.mailFactura(cliente.nombre, montoTotal, pedidoId, parsedData?.downloadLink, Date.now().toLocaleString());
+      const htmlTemplate = EmailTemplates.mailFactura(
+        cliente.nombre,
+        montoTotal,
+        pedidoId,
+        parsedData?.downloadLink,
+        new Date().toLocaleString()
+      );
 
       const datos = {
         email_cliente: cliente.email,
         html: htmlTemplate,
-        subject: `Factura de su pedido #${pedidoId}`
+        subject: `Factura de su pedido #${pedidoId}`,
       };
 
       const mailEnviado = await this.enviarMailSupabase(datos);

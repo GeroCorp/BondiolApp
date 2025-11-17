@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ToastController, LoadingController, AlertController } from '@ionic/angular';
+import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
 import { ClienteService } from 'src/app/services/cliente.service';
 import { PropinaService } from 'src/app/services/propina.service';
 import { Notification } from 'src/app/services/notification';
@@ -27,14 +28,6 @@ export class Tab8CuentaPage implements OnInit {
   propinaSeleccionada = false;
   
   totalFinal = 0;
-
-  opcionesPropina = [
-    { porcentaje: 0, descripcion: 'Sin propina' },
-    { porcentaje: 5, descripcion: 'Satisfecho' },
-    { porcentaje: 10, descripcion: 'Muy satisfecho' },
-    { porcentaje: 15, descripcion: 'Excelente servicio' },
-    { porcentaje: 20, descripcion: 'Extraordinario' }
-  ];
 
   constructor(
     private router: Router,
@@ -347,5 +340,26 @@ export class Tab8CuentaPage implements OnInit {
       position: 'bottom',
     });
     await toast.present();
+  }
+
+  async escanearQR() {
+    try {
+      const result = await BarcodeScanner.scan();
+
+      if (result.barcodes.length === 0) {
+        this.showToast('No se detectó ningún código QR.', 'warning');
+        return;
+      }
+      const qrData = result.barcodes[0].displayValue;
+
+      const propina = parseInt(qrData);
+
+      this.showToast(`QR escaneado. Propina escaneada: ${propina}%`, 'success');
+
+      this.seleccionarPropina(propina);
+    } catch (error: any) {
+      console.error('❌ Error escaneando QR:', error);
+      this.showToast('Error al escanear el QR: ' + (error.message || 'Intenta nuevamente'), 'danger');      
+    }
   }
 }

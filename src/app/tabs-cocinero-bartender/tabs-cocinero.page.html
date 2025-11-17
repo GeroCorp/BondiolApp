@@ -3,8 +3,13 @@
   <ion-tab-bar slot="bottom">
 
     <ion-tab-button tab="tab1-agregar-producto">
-      <ion-icon name="restaurant"></ion-icon>
-      <ion-label>Platos</ion-label>
+      @if (perfil() == "cocinero"){
+        <ion-icon name="restaurant"></ion-icon>
+        <ion-label>Platos</ion-label>
+      }@else {
+        <ion-icon name="beer-outline"></ion-icon>
+        <ion-label>Bebidas</ion-label>
+      }
     </ion-tab-button>
     <ion-tab-button tab="tab3-menu" >
       <ion-icon name="list"></ion-icon>

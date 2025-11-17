@@ -1,3 +1,4 @@
+
 .loading-container {
   display: flex;
   flex-direction: column;
@@ -9,9 +10,15 @@
     margin-bottom: 20px;
   }
 
-  p {
-    color: var(--ion-color-medium);
-  }
+}
+p {
+  --color: var(--ion-text-color);
+}
+ion-card-title {
+  font-weight: bold;
+  font-size: 24px;
+  margin-bottom: 8px;
+  color: var(--ion-color-primary)
 }
 
 .empty-state {
@@ -38,14 +45,18 @@
     margin-bottom: 24px;
   }
 }
-
+.list {
+  --ion-background-color: var(--ion-color-dark);
+  border-radius: 15px;
+  border: 1px solid var(--ion-color-medium);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
 .resumen-linea {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 12px 0;
   font-size: 16px;
-
   ion-icon {
     margin-right: 8px;
     vertical-align: middle;

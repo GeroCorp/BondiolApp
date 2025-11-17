@@ -9,6 +9,7 @@ export interface ClienteEspera {
   cantidad_personas: number;
   mesa_asignada?: number;
   created_at?: string;
+  foto?: string;
 }
 
 @Injectable({

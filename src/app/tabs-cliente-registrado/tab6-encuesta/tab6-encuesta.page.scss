@@ -1,3 +1,4 @@
+
 .mensaje-container {
   margin-top: 20px;
 
@@ -20,10 +21,17 @@
     margin-bottom: 16px;
   }
 
+  ion-card-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--bs-primary);
+    margin-bottom: 8px;
+  }
+
   ion-card-subtitle {
     font-size: 16px;
     font-weight: 500;
-    color: var(--ion-color-dark);
+    color: var(--bs-gray-200);
     margin-bottom: 12px;
 
     ion-icon {
@@ -49,6 +57,9 @@
 
   ion-segment {
     margin-top: 12px;
+    ion-label{
+      color: var(--bs-primary)
+    }
   }
 
   ion-textarea {

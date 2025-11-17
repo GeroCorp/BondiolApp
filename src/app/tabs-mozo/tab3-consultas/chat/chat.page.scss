@@ -26,7 +26,7 @@ ion-header {
 
 .messages-container {
   height: 100%;
-  padding-bottom: 80px; // Espacio para el footer
+  padding-bottom: 140px; // Espacio para el footer
   overflow-y: auto;
   background-color: #e5ddd5; // Fondo estilo WhatsApp
 }
@@ -133,7 +133,11 @@ ion-footer ion-toolbar {
 
 .input-container {
   padding: 8px 16px;
-  
+  position: absolute;
+  bottom: 85px;
+  width: 100%;
+  left: 0;
+  background-color: #f0f0f0;
   .input-item {
     --background: #ffffff;
     --border-radius: 25px;
@@ -145,6 +149,7 @@ ion-footer ion-toolbar {
   
   .message-input {
     --placeholder-color: #8696a0;
+    --color: #000000;
     font-size: 16px;
   }
   

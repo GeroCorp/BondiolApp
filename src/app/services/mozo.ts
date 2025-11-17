@@ -64,18 +64,18 @@ export class Mozo {
 
     // Enviar notificación al cliente de esa mesa
     try {
-      const clienteId = await this.getdatosCliente(id_mesa).then(cliente => cliente ? cliente.cliente_id : null);
-      if (clienteId) {
-        await this.notificationService.sendNotificationToCliente(
+      let clienteId = await this.getdatosCliente(id_mesa).then(cliente => cliente ? cliente.cliente_id : null);
+      if (!clienteId) {
+        clienteId = await this.getClienteByMesa(id_mesa);
+      }
+
+      await this.notificationService.sendNotificationToCliente(
           '💬 Nuevo mensaje del mozo',
           `Tienes un nuevo mensaje en la mesa ${id_mesa}: "${contenido}"`,
           '', // URL opcional
           clienteId // Pasar el ID del cliente específico
-        );
-        console.log('✅ Notificación enviada al cliente de la mesa:', id_mesa);
-      } else {
-        console.log('ℹ️ No hay cliente asignado a la mesa:', id_mesa);
-      }
+        )
+
     } catch (error) {
       console.error('❌ Error enviando notificación al cliente:', error);
       // No lanzamos el error para que no afecte el envío del mensaje
@@ -105,13 +105,13 @@ export class Mozo {
   /**
    * Obtiene el ID del cliente que tiene asignada una mesa específica
    */
-  private async getClienteByMesa(numeroMesa: number): Promise<number | null> {
+  async getClienteByMesa(mesaId: number): Promise<number | null> {
     try {
       // Primero obtenemos el ID de la mesa por su número
       const { data: mesaData, error: mesaError } = await this.supabase
         .from('mesas')
         .select('id, cliente_asignado')
-        .eq('numero', numeroMesa)
+        .eq('id', mesaId)
         .single();
 
       if (mesaError || !mesaData) {
@@ -121,7 +121,7 @@ export class Mozo {
 
       // Si no hay cliente asignado, retornamos null
       if (!mesaData.cliente_asignado) {
-        console.log('ℹ️ Mesa sin cliente asignado:', numeroMesa);
+        console.log('ℹ️ Mesa sin cliente asignado:', mesaId);
         return null;
       }
 
@@ -270,15 +270,6 @@ export class Mozo {
  * Actualiza el estado de un pedido
  */
   async actualizarEstadoPedido(id_pedido: number, nuevoEstado: ESTADO) {
-    
-    if (nuevoEstado !== ESTADO.PENDIENTE &&
-        nuevoEstado !== ESTADO.CONFIRMADO &&
-        nuevoEstado !== ESTADO.EN_PREPARACION &&
-        nuevoEstado !== ESTADO.ENTREGADO &&
-        nuevoEstado !== ESTADO.RECHAZADO &&
-        nuevoEstado !== ESTADO.PAGADO) {
-      throw new Error('Estado inválido: ' + nuevoEstado);
-    }
 
     const { data, error } = await this.supabase
     .from('pedidos')
@@ -347,7 +338,7 @@ export class Mozo {
   }
 
   async getdatosCliente(cliente_id: number) {
-    try {
+    try { 
       const { data, error } = await this.supabase
         .from('clientes')
         .select(`*`)
@@ -364,4 +355,18 @@ export class Mozo {
     }
   }
 
+  async getDatosAnon(mesaId: number) {
+    try {
+      const { data } = await this.supabase
+        .from('clientes_anonimos')
+        .select('*')
+        .eq('mesa_asignada', mesaId)
+        .single();
+
+        return data || null;
+    } catch (error) {
+      console.error('❌ Error al obtener datos del cliente anónimo:', error);
+      throw error;
+    }
+  }
 }

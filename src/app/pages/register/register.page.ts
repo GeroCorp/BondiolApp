@@ -168,7 +168,7 @@ export class RegisterPage {
 
       if (result.barcodes.length > 0) {
         this.qrData = result.barcodes[0].displayValue;
-        // trimed: [1] "Apellido" [2] "Nombre" [4] "DNI"
+        // trimed: [1] "Apellido" | [2] "Nombre" | [4] "DNI"
         this.trimed = this.qrData ? this.qrData.split('@') : null;
 
         this.showToast('QR leído con éxito', 'success');

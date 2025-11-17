@@ -86,6 +86,7 @@ export class Tab2PedidoPage implements OnInit {
     }
   }
 
+
   // Aumentar cantidad de un item
   async increaseQuantity(index: number) {
     const currentItem = this.clienteService.pedido()[index];
