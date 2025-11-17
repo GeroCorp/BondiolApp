@@ -1,0 +1,32 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>maps</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">maps</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+
+  <google-map
+  height="90%"
+  width="100%"
+  [center]="coords"
+  [zoom]="mapZoom"
+  [options]="mapOptions"
+  (mapClick)="handleMapClick($event)"
+  >
+
+    <map-marker
+      [position]="markerPos"
+      [options]="markerOpts"
+      (mapDragend)="handleMarkerDragEnd($event)"
+    ></map-marker>
+  </google-map>
+
+
+</ion-content>

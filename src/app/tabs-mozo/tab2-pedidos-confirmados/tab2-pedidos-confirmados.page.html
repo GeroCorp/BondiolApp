@@ -1,7 +1,7 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/home" icon="arrow-back"></ion-back-button>
+      <ion-back-button defaultHref="/home" icon="caret-back" text=""></ion-back-button>
     </ion-buttons>
     <ion-title>
       <ion-icon name="checkmark-done-outline"></ion-icon> Pedidos Confirmados
@@ -18,26 +18,41 @@
 
   <!-- Filtros -->
   <ion-toolbar>
-    <ion-segment [(ngModel)]="filtroEstado" (ionChange)="filtrarPedidos()">
-      <ion-segment-button value="todos">
-        <ion-label>Todos</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="confirmado">
-        <ion-label>Confirmados</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="en_preparación">
-        <ion-label>En cocina</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="listo">
-        <ion-label>Listos</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="entregado">
-        <ion-label>Entregados</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="pago_pendiente">
-        <ion-label>💳 Pagos</ion-label>
-      </ion-segment-button>
-    </ion-segment>
+    <div class="scroll-arrows">
+      <!-- Flecha izquierda -->
+      <div class="arrow-left" #arrowLeft (click)="scrollLeft()">
+        <ion-icon name="chevron-back"></ion-icon>
+      </div>
+      
+      <!-- Contenedor de segment -->
+      <div class="segment-container" #segmentContainer (scroll)="onScroll()">
+        <ion-segment [(ngModel)]="filtroEstado" (ionChange)="filtrarPedidos()" scrollable>
+          <ion-segment-button value="todos">
+            <ion-label>Todos</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="confirmado">
+            <ion-label>Confirmados</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="en_preparación">
+            <ion-label>En cocina</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="listo">
+            <ion-label>Listos</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="entregado">
+            <ion-label>Entregados</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="pago_pendiente">
+            <ion-label>💳 Pagos</ion-label>
+          </ion-segment-button>
+        </ion-segment>
+      </div>
+      
+      <!-- Flecha derecha -->
+      <div class="arrow-right" #arrowRight (click)="scrollRight()">
+        <ion-icon name="chevron-forward"></ion-icon>
+      </div>
+    </div>
   </ion-toolbar>
 </ion-header>
 

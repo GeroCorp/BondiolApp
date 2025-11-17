@@ -5,7 +5,6 @@ ion-header {
     box-shadow: 0 2px 8px rgba(0,0,0,0.3);
     border-bottom: 1px solid rgba(255,255,255,0.2);
     --min-height: 60px;
-    
     ion-title {
       font-weight: 700;
       font-size: 1.3rem;
@@ -29,12 +28,33 @@ ion-header {
   }
 }
 
-ion-segment {
+// Contenedor del segment scrollable
+.segment-container {
+  padding: 8px 40px; // Más padding lateral para las flechas
   background: rgba(0,0,0,0.3);
-  padding: 8px;
   border-radius: 12px;
   margin: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  position: relative;
+  
+  // Ocultar scrollbar en webkit browsers
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  
+  // Ocultar scrollbar en Firefox
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
 
+ion-segment {
+  background: transparent;
+  min-width: max-content;
+  display: flex;
+  flex-wrap: nowrap;
+  
   ion-segment-button {
     --background: transparent;
     --background-checked: linear-gradient(135deg, #4a9eff, #2d7dd2);
@@ -46,6 +66,10 @@ ion-segment {
     font-size: 0.85rem;
     text-transform: none;
     min-height: 36px;
+    min-width: auto;
+    flex-shrink: 0;
+    padding: 0 12px;
+    margin: 0 4px;
     transition: all 0.3s ease;
 
     &::part(native) {
@@ -54,7 +78,120 @@ ion-segment {
 
     ion-label {
       text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
+    
+    // Responsive adjustments
+    @media (max-width: 576px) {
+      font-size: 0.75rem;
+      min-height: 32px;
+      padding: 0 8px;
+      
+      ion-label {
+        font-size: 0.75rem;
+      }
+    }
+  }
+}
+
+// Flechas indicadoras de scroll
+.scroll-arrows {
+  position: relative;
+  
+  .arrow-left,
+  .arrow-right {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(74, 158, 255, 0.9);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 15;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    
+    &:hover {
+      background: rgba(74, 158, 255, 1);
+      transform: translateY(-50%) scale(1.1);
+    }
+    
+    &:active {
+      transform: translateY(-50%) scale(0.95);
+    }
+  }
+  
+  .arrow-left {
+    left: 4px;
+    
+    &.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+  
+  .arrow-right {
+    right: 4px;
+    
+    &.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+}
+
+// Animación suave para el scroll
+.segment-container {
+  scroll-behavior: smooth;
+}
+
+// Animaciones adicionales para las flechas
+@keyframes arrowPulse {
+  0% { transform: translateY(-50%) scale(1); }
+  50% { transform: translateY(-50%) scale(1.05); }
+  100% { transform: translateY(-50%) scale(1); }
+}
+
+.scroll-arrows .arrow-left.visible,
+.scroll-arrows .arrow-right.visible {
+  animation: arrowPulse 2s ease-in-out infinite;
+  
+  &:hover {
+    animation: none;
+  }
+}
+
+// Responsive adjustments para las flechas
+@media (max-width: 576px) {
+  .scroll-arrows {
+    .arrow-left,
+    .arrow-right {
+      width: 28px;
+      height: 28px;
+      font-size: 14px;
+    }
+    
+    .arrow-left {
+      left: 2px;
+    }
+    
+    .arrow-right {
+      right: 2px;
+    }
+  }
+  
+  .segment-container {
+    padding: 8px 32px; // Menos padding en móviles
   }
 }
 

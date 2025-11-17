@@ -7,13 +7,18 @@
   --text-primary: #ffffff;
   --text-secondary: #b3b3b3;
   --primary-color: #bb86fc;
-  --secondary-color: #03dac6;
+  --secondary-color: #8b0000;
   --accent-color: #ff6b47;
   --error-color: #cf6679;
   --success-color: #4caf50;
   --border-color: #404040;
   --shadow-dark: 0 8px 24px rgba(0, 0, 0, 0.6);
 }
+ion-toolbar{
+    --background: #8b0000;
+    --color: var(--text-primary);
+}
+
 
 // Fondo con gradiente oscuro igual al de admin/mozo
 .cliente-content {

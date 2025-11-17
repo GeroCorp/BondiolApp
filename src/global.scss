@@ -38,10 +38,10 @@
 /*@import "@ionic/angular/css/palettes/dark.system.css";*/
 
 
-ion-content {
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
-}
+// ion-content {
+//     padding-top: env(safe-area-inset-top);
+//     padding-bottom: env(safe-area-inset-bottom);
+// }
 
 // Sobreescribir el offset-bottom del Shadow DOM de Ionic
 
@@ -60,3 +60,18 @@ ion-content {
 //     --overflow: hidden auto; /* solo scroll si hace falta */
 // }
 
+:host {
+  --background-dark: #1a1a1a;
+  --surface-dark: #2d2d2d;
+  --surface-variant: #3a3a3a;
+  --text-primary: #ffffff;
+  --text-secondary: #b3b3b3;
+  --primary-color: #bb86fc;
+  --secondary-color: #03dac6;
+  --accent-color: #ff6b47;
+  --error-color: #cf6679;
+  --success-color: #4caf50;
+  --border-color: #404040;
+  --shadow-dark: 0 8px 24px rgba(0, 0, 0, 0.6);
+  --color: #ffffff;
+}

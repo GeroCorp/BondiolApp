@@ -1,16 +1,18 @@
-﻿import { ChangeDetectorRef, Component, effect, inject, OnInit } from '@angular/core';
+﻿import { ChangeDetectorRef, Component, effect, inject, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthService } from 'src/app/services/supabase';
 import { ToastController, AlertController } from '@ionic/angular';
-import { ClienteService } from 'src/app/services/cliente.service';
 import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
+import { Geolocation } from '@capacitor/geolocation';
+import mapboxgl from 'mapbox-gl'; 
+
+import { ClienteService } from 'src/app/services/cliente.service';
+import { AuthService } from 'src/app/services/supabase';
 import { Notification } from 'src/app/services/notification';
 import { ListaEsperaService } from 'src/app/services/lista-espera.service';
 import { HapticService } from 'src/app/services/haptic.service';
 import { TipoClienteService } from 'src/app/services/tipo-cliente.service';
 import { supabase } from '../../services/supabase';
-
-
+import { environment } from 'src/environments/environment.prod';
 
 interface Cliente {
   id_cliente?: number;
@@ -27,7 +29,7 @@ interface Cliente {
   selector: 'app-home-cliente',
   templateUrl: './home-cliente.page.html',
   styleUrls: ['./home-cliente.page.scss'],
-  standalone: false
+  standalone: false,
 })
 export class HomeClientePage implements OnInit {
   cliente: any = null;
@@ -40,9 +42,29 @@ export class HomeClientePage implements OnInit {
   private checkInterval: any = null;
   isRegistrado: boolean = true;
   perfil = "cliente";
-  private notificationService: Notification = inject(Notification)
+  private notificationService: Notification = inject(Notification);
+
+  isDelivery = signal<boolean>(false);
 
 
+  // Configuraciones para mapa 
+  coords = {lat: 0, lng: 0}; // Las coordenades se setearán dinámicamente
+  mapZoom = 15;
+  mapOptions: google.maps.MapOptions = {
+    mapTypeId: 'roadmap',
+    zoomControl: true,
+    scrollwheel: false,
+    disableDoubleClickZoom: true,
+    maxZoom: 20,
+    minZoom: 8,
+  };
+  // Opciones del marcador
+  markerPos: google.maps.LatLngLiteral = {lat: 0, lng: 0};
+  markerOpts: google.maps.MarkerOptions = {
+    draggable: false
+  }
+
+  hideMap = signal<boolean>(true);
 
   constructor(
     private router: Router,
@@ -53,8 +75,12 @@ export class HomeClientePage implements OnInit {
     private cd: ChangeDetectorRef,
     private listaEsperaService: ListaEsperaService,
     private hapticService: HapticService,
-    private tipoClienteService: TipoClienteService
+    private tipoClienteService: TipoClienteService,
+    
   ) {
+
+    mapboxgl.accessToken = 'pk.eyJ1IjoiLWdlcm8tIiwiYSI6ImNtaHlicHNqNTBiNnUya3EwdnM4aTdzancifQ.aIqAboMSqIH0iQFNZY8Vrw'
+
     // ✅ EFECTO: Actualizar estado de espera para registrados
     effect(() => {
       if (!this.tipoClienteService.isAnonimo()) {
@@ -114,7 +140,7 @@ export class HomeClientePage implements OnInit {
         this.mesaVerificada = false;
       }
 
-      this.cd.detectChanges();
+      // this.cd.detectChanges();
     });
 
     // ✅ TIPO DE CLIENTE
@@ -296,40 +322,6 @@ export class HomeClientePage implements OnInit {
     
     return show;
   }
-  
-  
-
-  async ingresarComoAnonimo() {
-    const alert = await this.alertController.create({
-      header: 'Ingreso Anónimo',
-      inputs: [
-        {
-          name: 'nombre',
-          type: 'text',
-          placeholder: 'Ingrese su nombre'
-        }
-      ],
-      buttons: [
-        {
-          text: 'Cancelar',
-          role: 'cancel'
-        },
-        {
-          text: 'Ingresar',
-          handler: async (data) => {
-            if (!data.nombre) {
-              this.showToast('Debe ingresar un nombre', 'warning');
-              return false; 
-            }
-            await this.procesarIngresoAnonimo(data.nombre);
-            return true; 
-          }
-        }
-      ]
-    });
-
-    await alert.present();
-}
 
 private async procesarIngresoAnonimo(nombre: string) {
     try {
@@ -806,6 +798,43 @@ private async procesarIngresoAnonimo(nombre: string) {
     await toast.present();
   }
 
+  // Delivery
+  // Al activar el modo delivery mostrar mapa para seleccionar dirección
+  async pedirDelivery() {
+    this.isDelivery.set(true);
+    this.clienteService.setIsDelivery(true);
+    
+    try {
+      const position = await Geolocation.getCurrentPosition();
+      const coords = {
+        lat: position.coords.latitude,
+        lng: position.coords.longitude
+      }
+      
+      this.coords = coords;
+      this.markerPos = coords;
+      
+    }catch (error) {
+      console.error('Error obteniendo ubicación:', error);
+    }
+    this.hideMap.set(false);
+    this.router.navigate(['/pages/home-cliente/maps']);
+  }
+
+
+  handleMapClick (event: google.maps.MapMouseEvent) {
+    if (event.latLng) {
+
+      this.markerPos = event.latLng.toJSON();
+    }
+  }
+  handleMarkerDragEnd(event: google.maps.MapMouseEvent) {
+    if (event.latLng) {
+      console.log('Nueva posición del marcador:', event.latLng.toJSON());
+      this.markerPos = event.latLng.toJSON();
+    }
+  }
+
   // Redirecciones con verificación
 
   verMenu() {
@@ -855,14 +884,12 @@ private async procesarIngresoAnonimo(nombre: string) {
     }
 
 
-    async solicitarCuenta() {
-    if (!this.mesaVerificada) {
-      this.showToast('⚠️ Primero debes escanear el QR de una mesa', 'warning');
-      return;
-    }
-
-    await this.pedirCuenta();
-    this.router.navigate(['/tabs-cliente-registrado/tab8-cuenta']);
+  async solicitarCuenta() {
+  if (!this.mesaVerificada) {
+    this.showToast('⚠️ Primero debes escanear el QR de una mesa', 'warning');
+    return;
+  }
+  this.router.navigate(['/tabs-cliente-registrado/tab8-cuenta']);
   }
 
 
@@ -954,53 +981,6 @@ private setupPedidosSubscription() {
 
     } catch (error) {
       console.error('Error en suscripción de pedidos:', error);
-    }
-  }
-
-  async pedirCuenta() {
-    try {
-      if (!this.mesaAsignada) {
-        this.showToast('No tienes una mesa asignada', 'warning');
-        return;
-      }
-
-      // buscar el pedido más reciente de la mesa
-      const { data: pedido, error } = await this.authService.client
-        .from('pedidos')
-        .select('*')
-        .eq('mesa', this.mesaAsignada)
-        .order('fecha', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (error) {
-        console.error('Error buscando pedido para pedir cuenta', error);
-        this.showToast('Error al solicitar la cuenta', 'danger');
-        return;
-      }
-
-      if (!pedido) {
-        this.showToast('No se encontró ningún pedido para esta mesa', 'warning');
-        return;
-      }
-
-      // Actualizar estado del pedido para indicar que se solicita cuenta (ajusta el valor según tus estados)
-      const { error: updateError } = await this.authService.client
-        .from('pedidos')
-        .update({ estado: 'solicitando_pago' })
-        .eq('id', pedido.id);
-
-      if (updateError) {
-        console.error('Error actualizando pedido al solicitar cuenta', updateError);
-        this.showToast('Error al solicitar la cuenta', 'danger');
-        return;
-      }
-
-      this.showToast('Cuenta solicitada. El mozo te atenderá pronto', 'success');
-      // la suscripción realtime actualizará pedidosHistorial automáticamente
-    } catch (err) {
-      console.error('pedirCuenta error', err);
-      this.showToast('Error al solicitar la cuenta', 'danger');
     }
   }
 

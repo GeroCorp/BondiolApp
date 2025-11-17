@@ -14,7 +14,10 @@ export class ClienteService {
   private _clienteEnEspera = signal<boolean>(false);
   // Signal para el historial de pedidos del cliente
   private _historialPedidos = signal<any[]>([]);
-  
+  // Signal para saber si es delivery
+  private _esDelivery = signal<boolean>(false);
+  // Siganl para direccion de delivery
+  private _direccionDelivery = signal<string>('');
   private supabase: SupabaseClient;
   
   private injector = inject(Injector);
@@ -45,6 +48,16 @@ export class ClienteService {
   // Getter para el historial de pedidos
   get historialPedidos() {
     return this._historialPedidos;
+  }
+
+  // Getter para esDelivery
+  get esDelivery() {
+    return this._esDelivery;
+  }
+
+  // Getter para direccionDelivery
+  get direccionDelivery() {
+    return this._direccionDelivery;
   }
 
   // Metodos para manejo del pedido
@@ -163,6 +176,15 @@ export class ClienteService {
       console.error('Error verificando pedidos rechazados:', error);
       return false;
     }
+  }
+
+  // Actualizar isDelivery
+  setIsDelivery(esDelivery: boolean) {
+    this._esDelivery.set(esDelivery);
+  }
+  // Actualizar direccionDelivery
+  setDireccionDelivery(direccion: string) {
+    this._direccionDelivery.set(direccion);
   }
 
   // Agregar un item al pedido

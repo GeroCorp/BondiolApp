@@ -1,4 +1,4 @@
-﻿import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { ModalController, ToastController, LoadingController } from '@ionic/angular';
 import { Mozo, ESTADO } from 'src/app/services/mozo';
 import { AuthService } from 'src/app/services/supabase';
@@ -12,7 +12,11 @@ import { EmailService, DatosFactura } from 'src/app/services/email';
   styleUrls: ['./tab2-pedidos-confirmados.page.scss'],
   standalone: false,
 })
-export class Tab2PedidosConfirmadosPage implements OnInit {
+export class Tab2PedidosConfirmadosPage implements OnInit, AfterViewInit {
+  @ViewChild('segmentContainer') segmentContainer!: ElementRef;
+  @ViewChild('arrowLeft') arrowLeft!: ElementRef;
+  @ViewChild('arrowRight') arrowRight!: ElementRef;
+  
   pedidos: any[] = [];
   pedidosFiltrados: any[] = [];
   filtroEstado = 'todos';
@@ -31,6 +35,17 @@ export class Tab2PedidosConfirmadosPage implements OnInit {
 
   async ngOnInit() {
     await this.cargarPedidos();
+  }
+
+  ngAfterViewInit() {
+    // Detectar si el contenedor necesita scroll y configurar flechas
+    setTimeout(() => {
+      this.checkScrollNeeded();
+      // Verificar cambios en el tamaño de ventana
+      window.addEventListener('resize', () => {
+        this.checkScrollNeeded();
+      });
+    }, 100);
   }
 
   async cargarPedidos() {
@@ -53,8 +68,36 @@ export class Tab2PedidosConfirmadosPage implements OnInit {
       this.pedidosFiltrados = this.pedidos;
     } else {
       this.pedidosFiltrados = this.pedidos.filter(
-        pedido => pedido.estado === this.filtroEstado
+        (pedido) => pedido.estado === this.filtroEstado
       );
+    }
+    
+    // Centrar el botón seleccionado en el scroll
+    setTimeout(() => {
+      this.scrollToActiveButton();
+    }, 100);
+  }
+
+  /**
+   * Centra automáticamente el botón seleccionado en el contenedor
+   */
+  scrollToActiveButton() {
+    if (this.segmentContainer) {
+      const container = this.segmentContainer.nativeElement;
+      const activeButton = container.querySelector('ion-segment-button.segment-button-checked');
+      
+      if (activeButton) {
+        const containerRect = container.getBoundingClientRect();
+        const buttonRect = activeButton.getBoundingClientRect();
+        
+        const scrollLeft = container.scrollLeft;
+        const targetScroll = scrollLeft + (buttonRect.left - containerRect.left) - (containerRect.width / 2) + (buttonRect.width / 2);
+        
+        container.scrollTo({
+          left: Math.max(0, targetScroll),
+          behavior: 'smooth'
+        });
+      }
     }
   }
 
@@ -298,6 +341,94 @@ export class Tab2PedidosConfirmadosPage implements OnInit {
       console.error('❌ Error al confirmar pago:', error);
       await this.hapticService.vibrateError();
       this.showToast('Error al confirmar pago', 'danger');
+    }
+  }
+
+  /**
+   * Verifica si el contenedor de segment necesita scroll horizontal
+   */
+  checkScrollNeeded() {
+    if (this.segmentContainer) {
+      const container = this.segmentContainer.nativeElement;
+      const needsScroll = container.scrollWidth > container.clientWidth;
+      
+      if (needsScroll) {
+        container.classList.add('scrollable');
+        this.updateArrowVisibility();
+      } else {
+        container.classList.remove('scrollable');
+        this.hideAllArrows();
+      }
+    }
+  }
+
+  /**
+   * Evento de scroll del contenedor
+   */
+  onScroll() {
+    this.updateArrowVisibility();
+  }
+
+  /**
+   * Actualiza la visibilidad de las flechas según la posición del scroll
+   */
+  updateArrowVisibility() {
+    if (this.segmentContainer && this.arrowLeft && this.arrowRight) {
+      const container = this.segmentContainer.nativeElement;
+      const { scrollLeft, scrollWidth, clientWidth } = container;
+      
+      const atStart = scrollLeft <= 10;
+      const atEnd = scrollLeft >= scrollWidth - clientWidth - 10;
+      
+      // Mostrar/ocultar flecha izquierda
+      if (atStart) {
+        this.arrowLeft.nativeElement.classList.remove('visible');
+      } else {
+        this.arrowLeft.nativeElement.classList.add('visible');
+      }
+      
+      // Mostrar/ocultar flecha derecha
+      if (atEnd) {
+        this.arrowRight.nativeElement.classList.remove('visible');
+      } else {
+        this.arrowRight.nativeElement.classList.add('visible');
+      }
+    }
+  }
+
+  /**
+   * Oculta todas las flechas
+   */
+  hideAllArrows() {
+    if (this.arrowLeft && this.arrowRight) {
+      this.arrowLeft.nativeElement.classList.remove('visible');
+      this.arrowRight.nativeElement.classList.remove('visible');
+    }
+  }
+
+  /**
+   * Scroll hacia la izquierda
+   */
+  scrollLeft() {
+    if (this.segmentContainer) {
+      const container = this.segmentContainer.nativeElement;
+      container.scrollBy({
+        left: -150,
+        behavior: 'smooth'
+      });
+    }
+  }
+
+  /**
+   * Scroll hacia la derecha
+   */
+  scrollRight() {
+    if (this.segmentContainer) {
+      const container = this.segmentContainer.nativeElement;
+      container.scrollBy({
+        left: 150,
+        behavior: 'smooth'
+      });
     }
   }
 

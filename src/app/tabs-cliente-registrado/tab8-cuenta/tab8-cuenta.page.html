@@ -31,7 +31,7 @@
   <!-- Detalle de la cuenta -->
   <div *ngIf="!cargando && pedidoActual">
     <!-- Info del pedido -->
-    <ion-card>
+    <ion-card color="dark">
       <ion-card-header>
         <ion-card-subtitle>Pedido #{{ pedidoActual.id }}</ion-card-subtitle>
         <ion-card-title>Detalle de tu Cuenta</ion-card-title>
@@ -43,13 +43,13 @@
     </ion-card>
 
     <!-- Productos ordenados -->
-    <ion-card>
+    <ion-card color="dark">
       <ion-card-header>
         <ion-card-title>Productos</ion-card-title>
       </ion-card-header>
-      <ion-card-content>
-        <ion-list *ngIf="detalles && detalles.length > 0">
-          <ion-item *ngFor="let item of detalles" lines="full">
+      <ion-card-content >
+        <ion-list *ngIf="detalles && detalles.length > 0" class="list">
+          <ion-item *ngFor="let item of detalles" lines="full" color="dark" >
             <ion-label>
               <h3>{{ item.nombre_prod }}</h3>
               <p>{{ item.cantidad }}x ${{ item.precio_unitario }}</p>
@@ -63,7 +63,7 @@
     </ion-card>
 
     <!-- Resumen de cuenta -->
-    <ion-card color="light">
+    <ion-card color="dark">
       <ion-card-content>
         <div class="resumen-linea">
           <span>Subtotal:</span>
@@ -86,7 +86,7 @@
           <span class="monto">${{ montoPropina }}</span>
         </div>
 
-        <ion-item lines="none" class="total-final">
+        <ion-item lines="none" class="total-final" color="dark">
           <ion-label>
             <h2><strong>TOTAL A PAGAR</strong></h2>
           </ion-label>
@@ -98,27 +98,18 @@
     </ion-card>
 
     <!-- Selección de propina -->
-    <ion-card *ngIf="!propinaSeleccionada">
+    <ion-card *ngIf="!propinaSeleccionada" color="dark">
       <ion-card-header>
-        <ion-card-title>
+        <ion-card-title color="danger">
           <ion-icon name="heart"></ion-icon>
           ¿Deseas dejar propina?
         </ion-card-title>
-        <ion-card-subtitle>Selecciona tu grado de satisfacción</ion-card-subtitle>
+        <ion-card-subtitle>Selecciona tu grado de satisfacción escaneando uno de los códigos QR</ion-card-subtitle>
       </ion-card-header>
       <ion-card-content>
         <div class="propina-opciones">
-          <ion-button
-            *ngFor="let opcion of opcionesPropina"
-            expand="block"
-            [color]="propinaPorcentaje === opcion.porcentaje ? 'primary' : 'light'"
-            (click)="seleccionarPropina(opcion.porcentaje)"
-          >
-            <div class="propina-content">
-              <span class="porcentaje">{{ opcion.porcentaje }}%</span>
-              <span class="descripcion">{{ opcion.descripcion }}</span>
-              <span class="monto">${{ calcularPropina(opcion.porcentaje) }}</span>
-            </div>
+          <ion-button (click)="escanearQR()" expand="block" fill="clear" shape="round">
+            Escanear
           </ion-button>
         </div>
 
