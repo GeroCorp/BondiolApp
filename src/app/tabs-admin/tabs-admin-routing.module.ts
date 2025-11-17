@@ -29,6 +29,10 @@ const routes: Routes = [
         loadChildren: () => import('./tab5-admin-perfil/tab5-admin-perfil.module').then( m => m.Tab5AdminPerfilPageModule)
       },
       {
+        path: 'tab6-reservas',
+        loadChildren: () => import('../pages/gestion-reservas/gestion-reservas.module').then( m => m.GestionReservasPageModule)
+      },
+      {
         path: '',
         redirectTo: 'tab1-carga-empleado',
         pathMatch: 'full',

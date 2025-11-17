@@ -75,3 +75,21 @@
   --shadow-dark: 0 8px 24px rgba(0, 0, 0, 0.6);
   --color: #ffffff;
 }
+.custom-html-alert {
+  .alert-message {
+    text-align: left !important;
+    
+    strong {
+      font-weight: 600;
+      color: #000;
+    }
+    
+    small {
+      font-size: 0.85em;
+    }
+  }
+}
+
+.custom-html-alert .alert-message {
+  white-space: pre-line;
+}

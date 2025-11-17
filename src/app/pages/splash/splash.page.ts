@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { Platform, NavController } from '@ionic/angular';
-import { AuthService } from 'src/app/services/supabase';
+import { AuthService, supabase } from 'src/app/services/supabase';
 
 @Component({
   selector: 'app-splash',
@@ -10,7 +10,7 @@ import { AuthService } from 'src/app/services/supabase';
   standalone: false
 })
 export class SplashPage implements OnInit, OnDestroy {
-  private isInitialized = false;
+  private navigating = false;
 
   constructor(
     public router: Router, 
@@ -19,10 +19,60 @@ export class SplashPage implements OnInit, OnDestroy {
     private authService: AuthService
   ) { }
 
-  ngOnInit() {
-    if (!this.isInitialized) {
-      this.isInitialized = true;
-      this.initializeSplashSimple();
+   async ngOnInit() {
+    // ✅ Evitar múltiples ejecuciones
+    if (this.navigating) {
+      console.log('⚠️ Ya hay una navegación en curso');
+      return;
+    }
+
+    console.log('🎬 Splash iniciado');
+    console.log('📍 URL completa:', window.location.href);
+    console.log('📍 Router URL actual:', this.router.url);
+
+    try {
+      this.navigating = true;
+
+      // Esperar un momento para que la UI se cargue
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      const sessionCheck = await this.authService.quickAutoLogin();
+
+      if (sessionCheck.success && sessionCheck.redirectTo) {
+        console.log('✅ Sesión detectada - redirigiendo a:', sessionCheck.redirectTo);
+        await this.router.navigate([sessionCheck.redirectTo], { 
+          replaceUrl: true // ✅ IMPORTANTE: reemplazar en historial
+        });
+      } else {
+        console.log('⚠️ No hay sesión - ir a login');
+        await this.router.navigate(['/login'], { 
+          replaceUrl: true 
+        });
+      }
+
+    } catch (error) {
+      console.error('❌ Error en splash:', error);
+      await this.router.navigate(['/login'], { 
+        replaceUrl: true 
+      });
+    } finally {
+      this.navigating = false;
+    }
+  }
+
+  private async mostrarSplash() {
+    await new Promise(resolve => setTimeout(resolve, 3000));
+    
+    const resultado = await this.authService.quickAutoLogin();
+    console.log('📊 Resultado de quickAutoLogin:', resultado);
+
+    if (resultado.success && resultado.redirectTo) {
+      console.log('🎯 Auto-login exitoso - redirigiendo a:', resultado.redirectTo);
+      await this.router.navigate([resultado.redirectTo], { replaceUrl: true });
+    } else {
+      console.log('⚠️ quickAutoLogin falló, redirigiendo a login');
+      console.log('➡️ Redirigiendo a login');
+      await this.router.navigate(['/login'], { replaceUrl: true });
     }
   }
 
@@ -65,7 +115,7 @@ export class SplashPage implements OnInit, OnDestroy {
       
       // ✅ Verificar también la sesión de Supabase
       const authStatus = await this.authService.checkSession();
-      console.log('🔐 SPLASH: Session check:', authStatus.isValid ? 'válida' : 'inválida');
+      console.log('🔍 SPLASH: Session check:', authStatus.isValid ? 'válida' : 'inválida');
 
       if (authStatus.isValid) {
           console.log('✅ SPLASH: Sesión válida, redirigiendo a home');
@@ -78,7 +128,6 @@ export class SplashPage implements OnInit, OnDestroy {
     } catch (error) {
       console.error('❌ SPLASH: Error en verificación con service:', this.safeStringify(error));
       // ✅ Fallback a verificación simple
-
     }
   }
 

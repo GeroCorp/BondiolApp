@@ -39,8 +39,7 @@ const routes: Routes = [
   {
     path: 'tab8-cuenta',
     loadChildren: () => import('./tab8-cuenta/tab8-cuenta.module').then( m => m.Tab8CuentaPageModule)
-  }
-
+  },
   
 
 ];

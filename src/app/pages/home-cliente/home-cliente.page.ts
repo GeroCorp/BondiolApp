@@ -24,6 +24,8 @@ interface Cliente {
   estado?: string;
   created_at?: string;
 }
+import { ReservasService } from 'src/app/services/reservas.service';
+import { environment } from 'src/environments/environment.prod';
 
 @Component({
   selector: 'app-home-cliente',
@@ -43,6 +45,9 @@ export class HomeClientePage implements OnInit {
   isRegistrado: boolean = true;
   perfil = "cliente";
   private notificationService: Notification = inject(Notification);
+  reservaActivaHoy: any = null;
+  cargandoReserva: boolean = false;
+  private notificationService: Notification = inject(Notification)
 
   isDelivery = signal<boolean>(false);
 
@@ -76,7 +81,7 @@ export class HomeClientePage implements OnInit {
     private listaEsperaService: ListaEsperaService,
     private hapticService: HapticService,
     private tipoClienteService: TipoClienteService,
-    
+    private reservasService: ReservasService
   ) {
 
     mapboxgl.accessToken = 'pk.eyJ1IjoiLWdlcm8tIiwiYSI6ImNtaHlicHNqNTBiNnUya3EwdnM4aTdzancifQ.aIqAboMSqIH0iQFNZY8Vrw'
@@ -225,87 +230,101 @@ export class HomeClientePage implements OnInit {
 
  
 
+  
+  
   async ngOnInit() {
-    // ✅ CARGAR DATOS SEGÚN TIPO DE CLIENTE
+  console.log('🏠 [HOME-CLIENTE] ngOnInit iniciado');
+  const ahora = new Date();
+  const year = ahora.getFullYear();
+  const month = String(ahora.getMonth() + 1).padStart(2, '0');
+  const day = String(ahora.getDate()).padStart(2, '0');
+  const fechaLocal = `${year}-${month}-${day}`;
+  
+  console.log('🗓️ FECHA ACTUAL EN LA APP:', {
+    fechaLocal: fechaLocal,
+    fechaISO: ahora.toISOString(),
+    fechaLocaleString: ahora.toLocaleString('es-AR'),
+    timeZoneOffset: ahora.getTimezoneOffset()
+  });
+  
+  try {
+    const { data: { session }, error } = await this.authService.client.auth.getSession();
+    
+    if (error || !session) {
+      console.error('❌ No hay sesión activa');
+      await this.router.navigate(['/login'], { replaceUrl: true });
+      return;
+    }
+
+    console.log('✅ Sesión activa:', session.user.email);
+
     if (this.tipoClienteService.isRegistrado()) {
       await this.cargarDatosCliente();
+      await this.verificarReservaActiva();
       await this.verificarMesaAsignada();
+    } else if (this.tipoClienteService.isAnonimo()) {
+      const clienteData = this.tipoClienteService.getClienteData();
+      if (clienteData) {
+        this.cliente = clienteData;
+        this.mesaAsignada = clienteData.mesa_asignada || null;
+        this.enEspera = clienteData.en_espera !== false;
+        this.mesaVerificada = false;
+      }
     }
-    this.notificationsInit();
 
-    // ⚠️ POLLING TEMPORALMENTE DESHABILITADO - CAUSABA SPAM DE LOGS
-    // this.checkInterval = setInterval(async () => {
-    //   if (this.cliente) {
-    //     console.log('🔄 Polling de respaldo - refreshClienteData');
-    //     await this.tipoClienteService.refreshClienteData().catch((err) => {
-    //       console.error('❌ Error en polling de respaldo:', err);
-    //     });
-    //   }
-    // }, 30000); // Cambiado de 10s a 30s
-  }
-
-  ngOnDestroy() {
-    // Limpiar interval
+    // ✅ LIMPIAR INTERVAL ANTERIOR
     if (this.checkInterval) {
       clearInterval(this.checkInterval);
       this.checkInterval = null;
     }
-    
-    // Limpiar todas las suscripciones
-    this.cleanupAllSubscriptions();
-  }
 
-  /**
-   * Limpia todas las suscripciones realtime activas
-   */
-  private cleanupAllSubscriptions() {
-    console.log('🧹 Limpiando todas las suscripciones realtime...');
+    // 🔥 POLLING DINÁMICO: 10 segundos para PRODUCCIÓN también
+    const pollingInterval = 10000; // 10 segundos siempre
     
-    // Limpiar suscripción de mesa
-    if (this.mesaSubscription) {
-      this.mesaSubscription.unsubscribe?.();
-      this.mesaSubscription = null;
-      console.log('✅ Mesa subscription limpiada');
-    }
+    console.log(`⏱️ Configurando polling cada ${pollingInterval/1000} segundos`);
+    console.log(`🔧 Modo: ${environment.reservas.testing ? 'TESTING' : 'PRODUCCIÓN'}`);
     
-    // Limpiar suscripción de pedidos
-    if (this.pedidosSubscription) {
-      this.pedidosSubscription.unsubscribe?.();
-      this.pedidosSubscription = null;
-      console.log('✅ Pedidos subscription limpiada');
-    }
-    
-    // Limpiar realtime del tipoClienteService
-    this.tipoClienteService.stopRealtime();
-    console.log('✅ TipoClienteService realtime detenido');
-  }
+    this.checkInterval = setInterval(async () => {
+      console.log(`🔄 [POLLING] Verificando reservas... (cada ${pollingInterval/1000}s)`);
+      
+      if (this.cliente) {
+        await this.tipoClienteService.refreshClienteData().catch(() => {});
+        
+        if (this.isRegistrado) {
+          await this.verificarReservaActiva();
+        }
+      }
+    }, pollingInterval);
 
-  /**
-   * 🛠️ [DESARROLLO] Reactivar funcionalidades cuando sea necesario
-   */
-  reactivarRealtime() {
-    console.log('🔄 Reactivando realtime funcionalidades...');
-    
-    // Reactivar solo si es necesario
-    if (this.cliente && this.mesaAsignada) {
-      this.setupMesaSubscription();
-      this.setupPedidosSubscription();
-    }
-  }
+    console.log(`✅ Polling iniciado correctamente`);
 
-  /**
-   * 🛠️ [DESARROLLO] Actualizar datos manualmente (sin polling automático)
-   */
-  async actualizarDatosManual() {
-    console.log('🔄 Actualizando datos manualmente...');
-    try {
-      await this.tipoClienteService.refreshClienteData();
-      this.showToast('Datos actualizados', 'success');
-    } catch (error) {
-      console.error('❌ Error actualizando datos:', error);
-      this.showToast('Error actualizando datos', 'danger');
-    }
+  } catch (error) {
+    console.error('❌ Error en ngOnInit:', error);
+    this.showToast('Error al cargar la página', 'danger');
   }
+}
+
+
+  ngOnDestroy() {
+  console.log('🧹 [HOME-CLIENTE] ngOnDestroy - limpiando recursos');
+  
+  // ✅ LIMPIAR INTERVAL DE POLLING
+  if (this.checkInterval) {
+    console.log('🛑 Deteniendo interval de polling');
+    clearInterval(this.checkInterval);
+    this.checkInterval = null;
+  }
+  
+  this.tipoClienteService.stopRealtime();
+  
+  if (this.pedidosSubscription) {
+    this.pedidosSubscription.unsubscribe();
+  }
+  
+  if (this.mesaSubscription) {
+    this.mesaSubscription.unsubscribe();
+  }
+}
 
   shouldShowListaEspera(): boolean {
     const show = 
@@ -313,6 +332,14 @@ export class HomeClientePage implements OnInit {
                   !this.mesaAsignada && 
                   !this.mesaVerificada;
     
+    console.log('shouldShowListaEspera:', {
+
+      enEspera: this.enEspera,
+      mesaAsignada: this.mesaAsignada,
+      mesaVerificada: this.mesaVerificada,
+      isRegistrado: this.isRegistrado,
+      resultado: show
+    });
     
     return show;
   }
@@ -458,28 +485,79 @@ private async procesarIngresoAnonimo(nombre: string) {
   }
 
   async cargarDatosCliente() {
-    try {
-      const user = await this.authService.getCurrentUser();
-      if (user) {
-        this.cliente = await this.authService.getClienteByUserId(user.id);
-        if (this.cliente) {
-          console.log('✅ Cliente registrado cargado:', this.cliente);
-          
-          // ✅ Actualizar TipoClienteService con datos del cliente registrado
-          this.tipoClienteService['clienteData'].next(this.cliente);
-          
-          
-          if (!this.cliente.email) {
-            this.cliente.email = user.email;
-          }
-        }
-      }
-    } catch (error) {
-      console.error('❌ Error al cargar datos del cliente:', error);
-      await this.hapticService.vibrateError();
-      this.showToast('Error al cargar tus datos', 'danger');
+  try {
+    const { data: { session } } = await this.authService.client.auth.getSession();
+    
+    if (!session) {
+      await this.router.navigate(['/login'], { replaceUrl: true });
+      return;
     }
+
+    // Buscar cliente con reintentos
+    let cliente = null;
+    for (let i = 0; i < 3; i++) {
+      const { data } = await this.authService.client
+        .from('clientes')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .maybeSingle();
+
+      if (data) {
+        cliente = data;
+        break;
+      }
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+
+    if (!cliente) {
+      this.showToast('No se pudo cargar tu perfil', 'warning');
+      setTimeout(async () => {
+        await this.authService.logout();
+        await this.router.navigate(['/login'], { replaceUrl: true });
+      }, 2000);
+      return;
+    }
+
+    if (cliente.estado === 'rechazado') {
+      this.showToast('Tu cuenta ha sido rechazada', 'danger');
+      await this.authService.logout();
+      await this.router.navigate(['/login'], { replaceUrl: true });
+      return;
+    }
+
+    if (cliente.estado === 'pendiente') {
+      await this.router.navigate(['/pre-sala'], { replaceUrl: true });
+      return;
+    }
+
+    this.cliente = cliente;
+    this.tipoClienteService['tipoClienteSubject'].next('registrado');
+    this.tipoClienteService['clienteData'].next(cliente);
+    this.notificationsInit();
+
+    if (!this.cliente.email && session.user.email) {
+      this.cliente.email = session.user.email;
+    }
+
+    if (cliente.mesa_asignada) {
+      this.mesaAsignada = cliente.mesa_asignada;
+      this.enEspera = false;
+    } else {
+      this.mesaAsignada = null;
+      this.enEspera = true;
+    }
+
+    this.cd.detectChanges();
+    
+  } catch (error) {
+    console.error('❌ Error:', error);
+    this.showToast('Error al cargar datos', 'danger');
+    setTimeout(async () => {
+      await this.authService.logout();
+      await this.router.navigate(['/login'], { replaceUrl: true });
+    }, 2000);
   }
+}
 
   async notificationsInit(){
     let id; 
@@ -913,6 +991,56 @@ private async procesarIngresoAnonimo(nombre: string) {
     this.router.navigate(['/tabs-cliente-registrado/tab7-resultados']);
   }
 
+  async verReservas() {
+  console.log('🎯 [DEBUG] verReservas llamado');
+  console.log('📍 [DEBUG] Router disponible:', !!this.router);
+  console.log('📍 [DEBUG] URL actual:', this.router?.url);
+  
+  try {
+    // ✅ CRÍTICO: Detener el interval antes de navegar
+    if (this.checkInterval) {
+      console.log('🛑 Deteniendo interval antes de navegar');
+      clearInterval(this.checkInterval);
+      this.checkInterval = null;
+    }
+    
+    console.log('🚀 [DEBUG] Iniciando navegación a /crear-reserva');
+    
+    const result = await this.router.navigate(['/crear-reserva']);
+    
+    console.log('✅ [DEBUG] Resultado navegación:', result);
+    
+    if (!result) {
+      console.error('❌ [DEBUG] Navegación falló - verificar routing');
+      this.showToast('Error: No se pudo navegar a crear reserva', 'danger');
+    }
+    
+  } catch (error) {
+    console.error('❌ [DEBUG] Error en navegación:', error);
+    this.showToast('Error de navegación: ' + error, 'danger');
+  }
+}
+
+/**
+ * ✅ NUEVO: Ver mis reservas existentes
+ */
+async verMisReservas() {
+  if (!this.cliente?.id_cliente) {
+    this.showToast('Error: No se pudo obtener tu ID', 'danger');
+    return;
+  }
+
+  const resultado = await this.reservasService.getReservasCliente(this.cliente.id_cliente);
+  
+  if (resultado.success && resultado.data.length > 0) {
+    // Aquí podrías navegar a una página de listado de reservas
+    // o mostrar un modal con las reservas
+    this.mostrarModalReservas(resultado.data);
+  } else {
+    this.showToast('No tienes reservas registradas', 'medium');
+  }
+}
+
  async loadHistorialPedidos() {
     if (!this.cliente || !this.mesaAsignada) return;
 
@@ -1112,11 +1240,12 @@ private setupPedidosSubscription() {
     const alert = await this.alertController.create({
       header: '📋 En Lista de Espera',
       message: clienteId 
-        ? `Tu ID de lista: <strong>${clienteId}</strong><br><br>` +
-          `El maître verá tu solicitud y te asignará una mesa cuando esté disponible.<br><br>` +
+        ? `Tu ID de lista: ${clienteId}` +
+          `El maître verá tu solicitud y te asignará una mesa cuando esté disponible.` +
           `Mantente cerca del restaurante.`
-        : `Tu solicitud fue registrada.<br><br>` +
+        : `Tu solicitud fue registrada.` +
           `El maître te asignará una mesa cuando esté disponible.`,
+          cssClass: 'custom-html-alert',
       buttons: ['Entendido']
     });
 
@@ -1158,4 +1287,255 @@ private setupPedidosSubscription() {
       this.showToast('Error al verificar la mesa', 'danger');
     }
   }
+
+  async verificarReservaActiva() {
+  if (!this.cliente?.id_cliente || !this.isRegistrado) {
+    return;
+  }
+
+  try {
+    this.cargandoReserva = true;
+    
+    const reserva = await this.reservasService.getReservaActivaHoy(this.cliente.id_cliente);
+    
+    if (reserva) {
+      const numeroMesa = reserva.mesa?.numero || reserva.mesa_id || 'N/A';
+      
+      console.log('🎯 Reserva aprobada encontrada:', {
+        id: reserva.id,
+        fecha: reserva.fecha_reserva,
+        hora: reserva.hora_reserva,
+        mesa_numero: numeroMesa
+      });
+      
+      // ✅ VALIDAR EXPIRACIÓN LOCALMENTE
+      if (reserva.fecha_expiracion) {
+        const ahora = new Date();
+        const fechaExpiracion = new Date(reserva.fecha_expiracion);
+        
+        const tiempoRestanteMs = fechaExpiracion.getTime() - ahora.getTime();
+        
+        console.log('⏰ Validación de expiración:', {
+          ahora: ahora.toLocaleString('es-AR'),
+          fechaExpiracion: fechaExpiracion.toLocaleString('es-AR'),
+          tiempoRestanteMin: Math.round(tiempoRestanteMs / 60000),
+          expirada: tiempoRestanteMs <= 0
+        });
+        
+        // 🔥 SI EXPIRÓ: Ocultar card y marcar como expirada
+        if (tiempoRestanteMs <= 0) {
+          console.log('⏰ RESERVA EXPIRADA - Ocultando card');
+          
+          await this.reservasService.expirarReserva(reserva.id!);
+          
+          this.reservaActivaHoy = null;
+          this.cd.detectChanges();
+          
+          this.showToast(
+            '⏰ Tu reserva ha expirado. No confirmaste llegada a tiempo.',
+            'danger'
+          );
+          
+          return;
+        }
+      }
+      
+      // 🔥 VERIFICAR SI YA TIENE MESA ASIGNADA Y VERIFICADA
+      if (this.mesaAsignada && this.mesaVerificada && this.mesaAsignada === reserva.mesa_id) {
+        console.log('✅ Mesa ya verificada, ocultando card');
+        this.reservaActivaHoy = null;
+        this.cd.detectChanges();
+        return;
+      }
+
+      // 🔥 TESTING MODE: Mostrar SIEMPRE (sin validar horarios)
+      if (environment.reservas.testing) {
+        console.log('🔥 TESTING MODE - Mostrando card inmediatamente');
+        this.reservaActivaHoy = reserva;
+        this.cd.detectChanges();
+        return;
+      }
+
+      // 🔒 PRODUCCIÓN: Validar ventana de activación (1 hora antes)
+      const ahora = new Date();
+      const [fecha, hora] = [reserva.fecha_reserva, reserva.hora_reserva];
+      
+      const [year, month, day] = fecha.split('-').map(Number);
+      const horaParts = hora.split(':');
+      const hours = parseInt(horaParts[0], 10);
+      const minutes = parseInt(horaParts[1], 10);
+      
+      // 🔥 HORA DE LA RESERVA
+      const horaReserva = new Date(year, month - 1, day, hours, minutes, 0);
+      
+      // 🔥 VENTANA DE ACTIVACIÓN: 1 hora antes de la reserva
+      const ventanaActivacion = this.reservasService['VENTANA_ACTIVACION_HORAS'] || 1;
+      const horaInicio = new Date(horaReserva.getTime() - (ventanaActivacion * 60 * 60 * 1000));
+      
+      // 🔥 HORA MÁXIMA: hora_reserva + tolerancia
+      const tolerancia = this.reservasService['TOLERANCIA_MINUTOS'] || 45;
+      const horaMaxima = new Date(horaReserva.getTime() + (tolerancia * 60 * 1000));
+      
+      console.log('⏰ Validación de horario (PRODUCCIÓN):', {
+        horaInicio: horaInicio.toLocaleString('es-AR'),
+        horaReserva: horaReserva.toLocaleString('es-AR'),
+        horaMaxima: horaMaxima.toLocaleString('es-AR'),
+        ahora: ahora.toLocaleString('es-AR'),
+        dentroVentana: ahora >= horaInicio && ahora <= horaMaxima
+      });
+      
+      // 🔥 MOSTRAR CARD: Desde 1 hora antes hasta hora_reserva + tolerancia
+      if (ahora >= horaInicio && ahora <= horaMaxima) {
+        console.log('🎯 ✅ DENTRO DE VENTANA - Mostrando card');
+        this.reservaActivaHoy = reserva;
+      } else if (ahora > horaMaxima) {
+        console.log('⏰ Fuera de ventana (expiró) - Ocultando');
+        await this.reservasService.expirarReserva(reserva.id!);
+        this.reservaActivaHoy = null;
+      } else {
+        console.log('⏰ Aún no abre la ventana - Card oculto');
+        this.reservaActivaHoy = null;
+      }
+    } else {
+      console.log('❌ No hay reserva aprobada hoy');
+      this.reservaActivaHoy = null;
+    }
+    
+  } catch (error) {
+    console.error('❌ Error verificando reserva activa:', error);
+    this.reservaActivaHoy = null;
+  } finally {
+    this.cargandoReserva = false;
+    this.cd.detectChanges();
+  }
+}
+/**
+ * ✅ NUEVO: Activar reserva y asignar mesa
+ */
+async activarReserva() {
+  if (!this.reservaActivaHoy) {
+    this.showToast('No hay reserva activa', 'warning');
+    return;
+  }
+
+  const alert = await this.alertController.create({
+    header: '🎯 Activar Reserva',
+    message: `¿Confirmas que llegaste al restaurante para tu reserva?
+      Mesa: ${this.reservaActivaHoy.mesa.numero}
+      Hora: ${this.reservaActivaHoy.hora_reserva}
+      Personas: ${this.reservaActivaHoy.cantidad_personas}
+      Tu mesa será asignada y verificada automáticamente.`,
+      cssClass: 'custom-html-alert',
+    buttons: [
+      {
+        text: 'Cancelar',
+        role: 'cancel'
+      },
+      {
+        text: 'Confirmar Llegada',
+        handler: async () => {
+          await this.procesarActivacionReserva();
+        }
+      }
+    ]
+  });
+
+  await alert.present();
+}
+
+/**
+ * Procesar la activación de la reserva
+ */
+private async procesarActivacionReserva() {
+  try {
+    this.cargandoReserva = true;
+
+    const resultado = await this.reservasService.activarReservaYAsignarMesa(
+      this.reservaActivaHoy.id
+    );
+
+    if (resultado.success) {
+      // ✅ ACTUALIZAR DATOS LOCALES
+      this.mesaAsignada = resultado.data.mesa_id;
+      this.enEspera = false;
+      
+      // 🔑 CLAVE: Mesa auto-verificada sin escanear QR
+      this.mesaVerificada = resultado.data.mesa_verificada || true;
+      
+      this.reservaActivaHoy = null;
+
+      await this.hapticService.vibrateSuccess();
+      
+      this.showToast(
+        `✅ ¡Bienvenido! Mesa ${this.mesaAsignada} activada correctamente\n` +
+        `Ya puedes acceder a todas las funcionalidades`,
+        'success'
+      );
+
+      // Recargar datos del cliente
+      await this.tipoClienteService.refreshClienteData();
+      
+      // Forzar actualización de la vista
+      this.cd.detectChanges();
+      
+    } else {
+      await this.hapticService.vibrateError();
+      this.showToast(
+        resultado.error || 'Error al activar la reserva',
+        'danger'
+      );
+    }
+
+  } catch (error) {
+    console.error('Error activando reserva:', error);
+    await this.hapticService.vibrateError();
+    this.showToast('Error al procesar la reserva', 'danger');
+  } finally {
+    this.cargandoReserva = false;
+    this.cd.detectChanges();
+  }
+}
+
+async mostrarModalReservas(reservas: any[]) {
+  const reservasHtml = reservas.map(r => `
+      Mesa: ${r.mesa.numero} 
+      Fecha: ${r.fecha_reserva} 
+      Hora: ${r.hora_reserva}
+      Personas: ${r.cantidad_personas}
+      Estado: ${this.getTextoEstadoReserva(r.estado)}
+  `).join('');
+
+  const alert = await this.alertController.create({
+    header: '📅 Mis Reservas',
+    message: reservasHtml,
+    cssClass: 'custom-html-alert',
+    buttons: ['Cerrar']
+  });
+
+  await alert.present();
+}
+
+private getColorReserva(estado: string): string {
+  const colores: any = {
+    pendiente: '#ffc409',
+    aprobada: '#2dd36f',
+    rechazada: '#eb445a',
+    activa: '#3880ff',
+    completada: '#92949c',
+    expirada: '#92949c'
+  };
+  return colores[estado] || '#92949c';
+}
+
+private getTextoEstadoReserva(estado: string): string {
+  const textos: any = {
+    pendiente: '⏳ Pendiente de aprobación',
+    aprobada: '✅ Aprobada',
+    rechazada: '❌ Rechazada',
+    activa: '🟢 Activa',
+    completada: '✔️ Completada',
+    expirada: '⏰ Expirada'
+  };
+  return textos[estado] || estado;
+}
 }

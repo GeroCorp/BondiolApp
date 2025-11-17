@@ -4,21 +4,26 @@ import { environment } from 'src/environments/environment';
 import { Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 
-// ✅ Instancia única de Supabase (singleton)
-const supabaseInstance = createClient(
-  environment.SUPABASE_URL,
-  environment.SUPABASE_ANON_KEY,
-  {
-    auth: {
-      persistSession: true, // ✅ Habilita la persistencia de sesión
-      autoRefreshToken: true, // ✅ Renueva automáticamente el token
-      storage: localStorage // ✅ Usa localStorage para persistir la sesión
-    }
-  }
-);
+let supabaseInstance: SupabaseClient | null = null;
 
-// ✅ Exporta la instancia para usar en otros servicios
-export const supabase = supabaseInstance;
+export const supabase = (() => {
+  if (!supabaseInstance) {
+    supabaseInstance = createClient(
+      environment.SUPABASE_URL,
+      environment.SUPABASE_ANON_KEY,
+      {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          storage: localStorage,
+          storageKey: 'restoapp-auth' 
+        }
+      }
+    );
+  }
+  return supabaseInstance;
+})();
+
 
 @Injectable({
   providedIn: 'root',
@@ -35,7 +40,7 @@ export class AuthService {
   private lastProcessedUserId: string = ''; // ✅ Para evitar guardar sesión múltiples veces para el mismo usuario
 
   constructor(private router: Router) {
-    this.supabase = supabaseInstance; // Usa la instancia única
+    this.supabase = supabase; // Usa la instancia única
     this.initAuthListener(); // ✅ Inicializa el listener de autenticación
   }
 
@@ -111,55 +116,80 @@ export class AuthService {
   }
 
   // ✅ Guarda información de sesión en localStorage
-  private async saveUserSession(user: any) {
-    try {
-      // Verificar si localStorage está disponible
-      if (!this.isLocalStorageAvailable()) {
-        console.log('⚠️ localStorage no disponible - usando memoria');
-        return;
-      }
-      
-      // Verificar si ya existe sesión guardada para evitar queries innecesarias
-      const existingSession = this.getSavedSession();
-      if (existingSession && existingSession.id === user.id) {
-        // Eliminar este log que se ejecuta frecuentemente
-        return;
-      }
-      
-      console.log('💾 Guardando nueva sesión para:', user.email);
-      
-      // Obtener información adicional del usuario
-      const empleado = await this.getEmpleadoByUserId(user.id);
-      const cliente = await this.getClienteByUserId(user.id);
-      
-      let userType = 'unknown';
-      let profile = null;
-      let clientData = null;
-      
-      if (empleado && empleado.length > 0) {
-        userType = 'empleado';
-        profile = empleado[0].perfil;
-      } else if (cliente) {
-        userType = 'cliente';
-        profile = cliente.estado;
-        clientData = cliente;
-      }
-      
-      const userSession = {
-        id: user.id,
-        email: user.email,
-        lastLogin: new Date().toISOString(),
-        userType: userType,
-        profile: profile,
-        clientData: clientData
-      };
-      
-      localStorage.setItem('userSession', JSON.stringify(userSession));
-      console.log('✅ Sesión guardada:', userType, profile);
-    } catch (error) {
-      console.error('Error guardando sesión:', error);
+ private async saveUserSession(user: any) {
+  try {
+    // Verificar si localStorage está disponible
+    if (!this.isLocalStorageAvailable()) {
+      console.log('⚠️ localStorage no disponible - usando memoria');
+      return;
     }
+    
+    // Verificar si ya existe sesión guardada para evitar queries innecesarias
+    const existingSession = this.getSavedSession();
+    if (existingSession && existingSession.id === user.id) {
+      console.log('ℹ️ Sesión ya guardada para:', user.email);
+      return;
+    }
+    
+    console.log('💾 Guardando nueva sesión para:', user.email);
+    
+    let userType = 'unknown';
+    let profile = null;
+    let clientData = null;
+
+    try {
+      // ✅ PRIMERO: Verificar si es empleado
+      const { data: empleado, error: empError } = await this.supabase
+        .from('empleados')
+        .select('perfil, nombre')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      console.log('🔍 Búsqueda empleado:', { data: empleado, error: empError });
+
+      if (empleado) {
+        userType = 'empleado';
+        profile = empleado.perfil;
+        console.log('👔 Usuario es empleado:', profile);
+      } else {
+        // ✅ SEGUNDO: Verificar si es cliente
+        const { data: cliente, error: cliError } = await this.supabase
+          .from('clientes')
+          .select('estado, id_cliente, nombre, apellido')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        console.log('🔍 Búsqueda cliente:', { data: cliente, error: cliError });
+
+        if (cliente) {
+          userType = 'cliente';
+          profile = cliente.estado;
+          clientData = cliente;
+          console.log('👤 Usuario es cliente:', profile);
+        } else {
+          console.log('⚠️ Usuario no encontrado en empleados ni clientes');
+        }
+      }
+    } catch (queryError) {
+      console.error('⚠️ Error consultando tipo de usuario:', queryError);
+    }
+    
+    const userSession = {
+      id: user.id,
+      email: user.email,
+      lastLogin: new Date().toISOString(),
+      userType: userType,
+      profile: profile,
+      clientData: clientData
+    };
+    
+    localStorage.setItem('userSession', JSON.stringify(userSession));
+    console.log('✅ Sesión guardada:', { userType, profile });
+    
+  } catch (error) {
+    console.error('Error guardando sesión:', error);
   }
+}
 
   // ✅ Limpia la información de sesión
   private clearUserSession() {
@@ -228,56 +258,92 @@ export class AuthService {
 
   // ✅ Auto-login optimizado y más rápido para splash
   async quickAutoLogin(): Promise<{success: boolean, redirectTo?: string}> {
-    try {
-      // 1. Verificar localStorage primero (más rápido)
-      const savedSession = this.getSavedSession();
-      if (!savedSession) {
-        return { success: false };
-      }
+  try {
+    console.log('🔍 Ejecutando quickAutoLogin...');
+    
+    const { data: { session }, error } = await this.supabase.auth.getSession();
+    
+    if (error || !session) {
+      console.log('❌ No hay sesión activa');
+      return { success: false };
+    }
 
-      // 2. Verificar si la sesión es muy antigua (opcional: evitar verificaciones innecesarias)
-      const lastLogin = new Date(savedSession.lastLogin);
-      const now = new Date();
-      const hoursSinceLogin = (now.getTime() - lastLogin.getTime()) / (1000 * 60 * 60);
+    console.log('✅ Sesión encontrada para:', session.user.email);
+    console.log('📋 User ID:', session.user.id);
+
+    // ✅ VERIFICAR SI VIENE DE OAUTH CALLBACK
+    const isFromOAuthCallback = window.location.pathname === '/auth/callback';
+    if (isFromOAuthCallback) {
+      console.log('🔄 Viene de OAuth callback, dejando que auth-callback.page maneje la redirección');
+      return { success: false };
+    }
+
+    // Verificar localStorage
+    const savedSession = this.getSavedSession();
+    
+    if (savedSession && savedSession.id === session.user.id) {
+      console.log('📋 Usando datos guardados:', savedSession);
       
-      // Si es mayor a 24 horas, verificar con Supabase
-      if (hoursSinceLogin > 24) {
-        const { data: { session } } = await this.supabase.auth.getSession();
-        if (!session || session.user.id !== savedSession.id) {
-          this.clearUserSession();
-          return { success: false };
-        }
-      }
-
-      // 3. Usar datos guardados para determinar redirección (evitar queries)
       const { userType, profile } = savedSession;
-      
       let redirectTo = '/login';
       
       if (userType === 'empleado') {
         redirectTo = '/home';
       } else if (userType === 'cliente') {
-        if (profile === 'pendiente') {
-          redirectTo = '/pre-sala';
-        } else if (profile === 'aprobado') {
+        if (profile === 'aprobado') {
           redirectTo = '/home-cliente';
+        } else if (profile === 'pendiente') {
+          redirectTo = '/pre-sala';
         } else if (profile === 'rechazado') {
           await this.logout();
           return { success: false };
-        } else {
-          redirectTo = '/pre-sala';
         }
-      } else {
-        return { success: false };
       }
       
       return { success: true, redirectTo };
-      
-    } catch (error) {
-      console.error('Error en quickAutoLogin:', error);
-      return { success: false };
     }
+
+    // Consultar BD
+    console.log('🔍 Consultando BD...');
+    
+    const { data: empleado } = await this.supabase
+      .from('empleados')
+      .select('perfil')
+      .eq('user_id', session.user.id)
+      .maybeSingle();
+
+    if (empleado) {
+      console.log('✅ Es empleado');
+      return { success: true, redirectTo: '/home' };
+    }
+
+    const { data: cliente } = await this.supabase
+      .from('clientes')
+      .select('estado, id_cliente, nombre, user_id')
+      .eq('user_id', session.user.id)
+      .maybeSingle();
+
+    if (cliente) {
+      console.log('✅ Es cliente con estado:', cliente.estado);
+      
+      if (cliente.estado === 'aprobado') {
+        return { success: true, redirectTo: '/home-cliente' };
+      } else if (cliente.estado === 'pendiente') {
+        return { success: true, redirectTo: '/pre-sala' };
+      } else if (cliente.estado === 'rechazado') {
+        await this.logout();
+        return { success: false };
+      }
+    }
+
+    console.log('⚠️ Usuario sin tipo definido');
+    return { success: false };
+    
+  } catch (error) {
+    console.error('❌ Error en quickAutoLogin:', error);
+    return { success: false };
   }
+}
 
   // ✅ Auto-login basado en sesión guardada
   async autoLogin(): Promise<{success: boolean, redirectTo?: string}> {
@@ -537,16 +603,30 @@ export class AuthService {
 
   // ✅ Insertar un cliente nuevo
   async getClientesPendientes() {
-    const { data, error } = await this.supabase
-      .from('clientes')
-      .select('*')
-      .eq('estado', 'pendiente')
-      .order('created_at', { ascending: false });
+  console.log('🔍 [SUPABASE] Obteniendo clientes pendientes...');
+  
+  const { data, error } = await this.supabase
+    .from('clientes')
+    .select('*')
+    .eq('estado', 'pendiente')
+    .order('created_at', { ascending: false });
 
-    if (error)
-      throw new Error('Error al obtener clientes pendientes: ' + error.message);
-    return data ?? [];
+  if (error) {
+    console.error('❌ [SUPABASE] Error obteniendo clientes pendientes:', error);
+    throw new Error('Error al obtener clientes pendientes: ' + error.message);
   }
+  
+  console.log('✅ [SUPABASE] Clientes pendientes obtenidos:', {
+    cantidad: data?.length || 0,
+    clientes: data?.map(c => ({
+      id: c.id_cliente,
+      nombre: `${c.nombre} ${c.apellido}`,
+      dni: c.dni
+    }))
+  });
+  
+  return data ?? [];
+}
 
   // ✅ Obtener todos los clientes
   async getAllClientes(){
