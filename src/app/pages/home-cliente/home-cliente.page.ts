@@ -12,6 +12,7 @@ import { ListaEsperaService } from 'src/app/services/lista-espera.service';
 import { HapticService } from 'src/app/services/haptic.service';
 import { TipoClienteService } from 'src/app/services/tipo-cliente.service';
 import { supabase } from '../../services/supabase';
+import { ReservasService } from 'src/app/services/reservas.service';
 import { environment } from 'src/environments/environment.prod';
 
 interface Cliente {
@@ -24,8 +25,6 @@ interface Cliente {
   estado?: string;
   created_at?: string;
 }
-import { ReservasService } from 'src/app/services/reservas.service';
-import { environment } from 'src/environments/environment.prod';
 
 @Component({
   selector: 'app-home-cliente',
@@ -47,7 +46,6 @@ export class HomeClientePage implements OnInit {
   private notificationService: Notification = inject(Notification);
   reservaActivaHoy: any = null;
   cargandoReserva: boolean = false;
-  private notificationService: Notification = inject(Notification)
 
   isDelivery = signal<boolean>(false);
 

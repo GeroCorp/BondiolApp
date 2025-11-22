@@ -28,6 +28,12 @@ export class Tab4HistorialPage implements OnInit, OnDestroy {
       return pedidos;
     }
     
+    if (filtro === 'pagos') {
+      return pedidos.filter(pedido => 
+        pedido.estado === 'pago_pendiente' || pedido.estado === 'pagado' || pedido.estado === 'cuenta_solicitada'
+      );
+    }
+
     return pedidos.filter(pedido => pedido.estado === filtro);
   });
 

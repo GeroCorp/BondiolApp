@@ -1,7 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="app_name">RestoApp</string>
-    <string name="title_activity_main">RestoApp</string>
-    <string name="package_name">com.restoapp.mobile</string>
-    <string name="custom_url_scheme">com.restoapp.mobile</string>
-</resources>
