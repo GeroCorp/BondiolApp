@@ -356,52 +356,57 @@ export class ReservasService {
       TESTING_MODE: this.TESTING_MODE,
       fecha_reserva: reservaData.fecha_reserva,
       hora_reserva: reservaData.hora_reserva,
-      ahora: ahora.toLocaleString('es-AR')
+      ahora: ahora.toLocaleString('es-AR'),
+      ahoraISO: ahora.toISOString()
     });
 
     if (this.TESTING_MODE) {
-      // 🔥 TESTING: expira 1-2 minutos desde AHORA
-      const minutos = this.EXPIRACION_TESTING_MINUTOS || 1;
-      fechaExpiracion = new Date(ahora.getTime() + minutos * 60 * 1000);
+      // 🔥 TESTING: Expira 2 minutos desde AHORA
+      fechaExpiracion = new Date(ahora.getTime() + 2 * 60 * 1000);
 
-      console.log('🔥 TESTING MODE: Expira desde AHORA', {
+      console.log('🔥 TESTING MODE: Expira 2 minutos desde AHORA', {
         ahora: ahora.toLocaleString('es-AR'),
-        expiraEn: minutos + ' minutos',
-        expira: fechaExpiracion.toLocaleString('es-AR'),
-        expiraISO: fechaExpiracion.toISOString()
+        ahoraISO: ahora.toISOString(),
+        expiraLocal: fechaExpiracion.toLocaleString('es-AR'),
+        expiraISO: fechaExpiracion.toISOString(),
+        diferenciaMinutos: 2
       });
     } else {
-      // 🔒 PRODUCCIÓN: expira desde HORA DE RESERVA + tolerancia
+      // 🔒 PRODUCCIÓN: Expira desde HORA DE RESERVA + tolerancia
       const [fecha, hora] = [reservaData.fecha_reserva, reservaData.hora_reserva];
       
+      // Parsear fecha (YYYY-MM-DD)
       const [year, month, day] = fecha.split('-').map(Number);
+      
+      // Parsear hora (HH:MM:SS o HH:MM)
       const horaParts = hora.split(':');
       const hours = parseInt(horaParts[0], 10);
       const minutes = parseInt(horaParts[1], 10);
       
-      // 🔥 CREAR FECHA/HORA DE RESERVA EN ZONA LOCAL
-      const fechaHoraReserva = new Date(year, month - 1, day, hours, minutes, 0);
+      // 🔥 CREAR FECHA/HORA DE RESERVA EN ZONA LOCAL (sin UTC)
+      const fechaHoraReserva = new Date(year, month - 1, day, hours, minutes, 0, 0);
       
-      // 🔥 CALCULAR EXPIRACIÓN: hora_reserva + tolerancia
+      // 🔥 CALCULAR EXPIRACIÓN: hora_reserva + tolerancia (45 minutos)
       fechaExpiracion = new Date(fechaHoraReserva.getTime() + this.TOLERANCIA_MINUTOS * 60 * 1000);
 
       console.log('🔒 PRODUCCIÓN: Expira desde HORA RESERVA + tolerancia', {
-        fechaISO: fecha,
-        horaISO: hora,
+        fechaReserva: fecha,
+        horaReserva: hora,
         fechaHoraReservaLocal: fechaHoraReserva.toLocaleString('es-AR'),
+        fechaHoraReservaISO: fechaHoraReserva.toISOString(),
         toleranciaMinutos: this.TOLERANCIA_MINUTOS,
         expiraLocal: fechaExpiracion.toLocaleString('es-AR'),
         expiraISO: fechaExpiracion.toISOString()
       });
     }
 
-    // Guardar en BD (se convierte automáticamente a UTC)
+    // 🔥 GUARDAR EN BD (Supabase convierte a UTC automáticamente)
     const { data, error } = await supabase
       .from('reservas')
       .update({
         estado: 'aprobada',
         fecha_aprobacion: ahora.toISOString(),
-        fecha_expiracion: fechaExpiracion.toISOString(),
+        fecha_expiracion: fechaExpiracion.toISOString()
       })
       .eq('id', reservaId)
       .select()
@@ -409,7 +414,11 @@ export class ReservasService {
 
     if (error) throw error;
 
-    console.log('✅ Reserva aprobada:', reservaId);
+    console.log('✅ Reserva aprobada en BD:', {
+      id: reservaId,
+      fecha_expiracion_guardada: data.fecha_expiracion,
+      estado: data.estado
+    });
 
     // Email
     const emailEnviado = await this.emailService.enviarEmailReservaAprobada(
@@ -430,7 +439,7 @@ export class ReservasService {
 
     // Notificación
     const mensajeNotif = this.TESTING_MODE
-      ? `[TESTING] Tu reserva expira en ${this.EXPIRACION_TESTING_MINUTOS} minuto(s)`
+      ? `[TESTING] Tu reserva expira en 2 minutos`
       : `Tu reserva para el ${reservaData.fecha_reserva} a las ${reservaData.hora_reserva} ha sido aprobada`;
 
     await this.notificationService.sendNotificationToCliente(

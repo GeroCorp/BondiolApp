@@ -37,11 +37,10 @@ export class HomeClientePage implements OnInit {
   cliente: any = null;
   enEspera: boolean = true;
   mesaAsignada: number | null = null;
-  mesaVerificada: boolean = false;
+  mesaVerificada: boolean = true;
   pedidosHistorial: any[] = [];
   private pedidosSubscription: any = null;
   private mesaSubscription: any = null;
-  private checkInterval: any = null;
   isRegistrado: boolean = true;
   perfil = "cliente";
   private notificationService: Notification = inject(Notification);
@@ -272,32 +271,6 @@ export class HomeClientePage implements OnInit {
       }
     }
 
-    // ✅ LIMPIAR INTERVAL ANTERIOR
-    if (this.checkInterval) {
-      clearInterval(this.checkInterval);
-      this.checkInterval = null;
-    }
-
-    // 🔥 POLLING DINÁMICO: 10 segundos para PRODUCCIÓN también
-    const pollingInterval = 10000; // 10 segundos siempre
-    
-    console.log(`⏱️ Configurando polling cada ${pollingInterval/1000} segundos`);
-    console.log(`🔧 Modo: ${environment.reservas.testing ? 'TESTING' : 'PRODUCCIÓN'}`);
-    
-    this.checkInterval = setInterval(async () => {
-      console.log(`🔄 [POLLING] Verificando reservas... (cada ${pollingInterval/1000}s)`);
-      
-      if (this.cliente) {
-        await this.tipoClienteService.refreshClienteData().catch(() => {});
-        
-        if (this.isRegistrado) {
-          await this.verificarReservaActiva();
-        }
-      }
-    }, pollingInterval);
-
-    console.log(`✅ Polling iniciado correctamente`);
-
   } catch (error) {
     console.error('❌ Error en ngOnInit:', error);
     this.showToast('Error al cargar la página', 'danger');
@@ -307,13 +280,6 @@ export class HomeClientePage implements OnInit {
 
   ngOnDestroy() {
   console.log('🧹 [HOME-CLIENTE] ngOnDestroy - limpiando recursos');
-  
-  // ✅ LIMPIAR INTERVAL DE POLLING
-  if (this.checkInterval) {
-    console.log('🛑 Deteniendo interval de polling');
-    clearInterval(this.checkInterval);
-    this.checkInterval = null;
-  }
   
   this.tipoClienteService.stopRealtime();
   
@@ -852,7 +818,7 @@ private async procesarIngresoAnonimo(nombre: string) {
     }
   }
 
-  async logout() {
+    async logout() {
     if (this.mesaAsignada && this.cliente?.id_cliente) {
       try {
         await this.clienteService.liberarMesaCliente();
@@ -997,13 +963,6 @@ private async procesarIngresoAnonimo(nombre: string) {
   console.log('📍 [DEBUG] URL actual:', this.router?.url);
   
   try {
-    // ✅ CRÍTICO: Detener el interval antes de navegar
-    if (this.checkInterval) {
-      console.log('🛑 Deteniendo interval antes de navegar');
-      clearInterval(this.checkInterval);
-      this.checkInterval = null;
-    }
-    
     console.log('🚀 [DEBUG] Iniciando navegación a /crear-reserva');
     
     const result = await this.router.navigate(['/crear-reserva']);
@@ -1305,7 +1264,8 @@ private setupPedidosSubscription() {
         id: reserva.id,
         fecha: reserva.fecha_reserva,
         hora: reserva.hora_reserva,
-        mesa_numero: numeroMesa
+        mesa_numero: numeroMesa,
+        fecha_expiracion: reserva.fecha_expiracion
       });
       
       // ✅ VALIDAR EXPIRACIÓN LOCALMENTE
