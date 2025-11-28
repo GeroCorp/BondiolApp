@@ -1,11 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { ToastController, LoadingController, AlertController } from '@ionic/angular';
+import { ToastController, AlertController } from '@ionic/angular';
 import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
 import { ClienteService } from 'src/app/services/cliente.service';
 import { PropinaService } from 'src/app/services/propina.service';
 import { Notification } from 'src/app/services/notification';
 import { TipoClienteService } from 'src/app/services/tipo-cliente.service';
+import { CustomLoaderService } from 'src/app/services/custom-loader.service';
+import { Delivery } from 'src/app/services/delivery';
 
 @Component({
   selector: 'app-tab8-cuenta',
@@ -19,7 +21,7 @@ export class Tab8CuentaPage implements OnInit {
   detalles: any[] = [];
   
   subtotal = 0;
-  descuento = 0;
+  descuento = 0; // Para que existe esto si ya hiciste descuentoPorcentaje y montoDescuento????
   descuentoPorcentaje = 0;
   montoDescuento = 0;
   
@@ -29,19 +31,28 @@ export class Tab8CuentaPage implements OnInit {
   
   totalFinal = 0;
 
+  esDelivery = false;
+
   constructor(
     private router: Router,
     private clienteService: ClienteService,
     private propinaService: PropinaService,
     private notificationService: Notification,
     private toastController: ToastController,
-    private loadingController: LoadingController,
+    private customLoader: CustomLoaderService,
     private alertController: AlertController,
-    private tipoClienteService: TipoClienteService
+    private tipoClienteService: TipoClienteService,
+    private deliveryService: Delivery
   ) {}
 
   async ngOnInit() {
-    await this.cargarCuenta();
+    this.esDelivery = this.clienteService.esDelivery();
+    if (this.esDelivery) {
+      await this.cargarCuentaDelivery();
+      this.calcularTotalDelivery();
+    } else {
+      await this.cargarCuenta();
+    }
   }
 
   async cargarCuenta() {
@@ -189,6 +200,7 @@ export class Tab8CuentaPage implements OnInit {
 
   seleccionarPropina(porcentaje: number) {
     this.propinaPorcentaje = porcentaje;
+    this.montoPropina = this.calcularPropina(porcentaje);
     this.calcularTotal();
   }
 
@@ -199,7 +211,7 @@ export class Tab8CuentaPage implements OnInit {
 
   calcularTotal() {
     const base = this.subtotal - this.montoDescuento;
-    this.montoPropina = Math.round(base * (this.propinaPorcentaje / 100));
+    this.montoPropina = this.calcularPropina(this.propinaPorcentaje);
     this.totalFinal = base + this.montoPropina;
     
     console.log('🧮 Cálculo total:');
@@ -209,38 +221,25 @@ export class Tab8CuentaPage implements OnInit {
   }
 
   async confirmarPropina() {
-  if (this.propinaPorcentaje === 0) {
-    this.showToast('Selecciona un porcentaje de propina', 'warning');
-    return;
-  }
-
-  try {
-    console.log('💝 Guardando propina:', {
-      pedidoId: this.pedidoActual.id,
-      porcentaje: this.propinaPorcentaje,
-      monto: this.montoPropina
-    });
+  this.propinaSeleccionada = true;
+  
+  if (this.esDelivery){
+    await this.propinaService.updatePropinaDelivery(
+      this.pedidoActual.id,
+      this.propinaPorcentaje
+    );
+    this.calcularTotalDelivery(); // Recalcular total para delivery una vez guardada la propina
+  }else{
 
     await this.propinaService.guardarPropina(
       this.pedidoActual.id,
       this.propinaPorcentaje,
       this.montoPropina
     );
-
-    this.propinaSeleccionada = true;
-    this.showToast('¡Gracias por tu propina!', 'success');
-    
-    console.log('✅ Propina guardada correctamente');
-  } catch (error: any) {
-    console.error('❌ Error guardando propina:', error);
-    console.error('📋 Detalles:', {
-      mensaje: error.message,
-      pedidoId: this.pedidoActual.id,
-      porcentaje: this.propinaPorcentaje,
-      monto: this.montoPropina
-    });
-    this.showToast('Error al guardar la propina: ' + (error.message || 'Intenta nuevamente'), 'danger');
   }
+
+  await this.showToast(`Propina del ${this.propinaPorcentaje}% confirmada.`, 'success');
+
 }
 
   sinPropina() {
@@ -272,61 +271,75 @@ export class Tab8CuentaPage implements OnInit {
   }
 
   async procesarPago() {
-  const loading = await this.loadingController.create({
-    message: 'Procesando pago...',
-    spinner: 'crescent',
-  });
-  await loading.present();
+    await this.customLoader.show('Procesando pago...');
+    if (!this.esDelivery){
 
-  try {
-    console.log('💳 Procesando pago del pedido:', this.pedidoActual.id);
+    
+    try {
+      console.log('💳 Procesando pago del pedido:', this.pedidoActual.id);
 
-    await this.propinaService.marcarComoPagado(this.pedidoActual.id);
+      await this.propinaService.marcarComoPagado(this.pedidoActual.id);
 
-    console.log('✅ Pedido marcado como pago_pendiente');
+      console.log('✅ Pedido marcado como pago_pendiente');
 
-    const numeroMesa = this.pedidoActual.mesa?.numero || 'desconocida';
-    const isAnonimo = this.tipoClienteService.isAnonimo();
-    const tipoCliente = isAnonimo ? '(Cliente Anónimo)' : '';
+      const numeroMesa = this.pedidoActual.mesa?.numero || 'desconocida';
+      const isAnonimo = this.tipoClienteService.isAnonimo();
+      const tipoCliente = isAnonimo ? '(Cliente Anónimo)' : '';
 
-    await this.notificationService.sendNotificationToPerfil(
-      'mozo',
-      '💳 Pago realizado',
-      `El cliente ${tipoCliente} de la mesa ${numeroMesa} realizó el pago. Total: $${this.totalFinal}. Por favor confirma el pago.`
-    );
+      await this.notificationService.sendNotificationToPerfil(
+        'mozo',
+        '💳 Pago realizado',
+        `El cliente ${tipoCliente} de la mesa ${numeroMesa} realizó el pago. Total: $${this.totalFinal}. Por favor confirma el pago.`
+      );
 
-    console.log('✅ Notificación enviada al mozo');
+      console.log('✅ Notificación enviada al mozo');
 
-    await loading.dismiss();
+      await this.customLoader.hide();
 
-    const successAlert = await this.alertController.create({
-      header: '✅ Pago Realizado',
-      message: `Tu pago de $${this.totalFinal} fue procesado correctamente. El mozo confirmará y liberará la mesa.`,
-      buttons: [
-        {
-          text: 'Entendido',
-          handler: () => {
-            this.router.navigate(['/home-cliente']);
+      const successAlert = await this.alertController.create({
+        header: '✅ Pago Realizado',
+        message: `Tu pago de $${this.totalFinal} fue procesado correctamente. El mozo confirmará y liberará la mesa.`,
+        buttons: [
+          {
+            text: 'Entendido',
+            handler: () => {
+              this.router.navigate(['/home-cliente']);
+            }
           }
-        }
-      ],
-      backdropDismiss: false
-    });
+        ],
+        backdropDismiss: false
+      });
 
-    await successAlert.present();
+      await successAlert.present();
 
-  } catch (error: any) {
-    await loading.dismiss();
-    console.error('❌ Error procesando pago:', error);
-    console.error('📋 Detalles:', {
-      mensaje: error.message,
-      pedidoId: this.pedidoActual?.id,
-      propinaPorcentaje: this.propinaPorcentaje,
-      montoPropina: this.montoPropina
-    });
-    this.showToast('Error al procesar el pago: ' + (error.message || 'Intenta nuevamente'), 'danger');
+    } catch (error: any) {
+      await this.customLoader.hide();
+      console.error('❌ Error procesando pago:', error);
+      console.error('📋 Detalles:', {
+        mensaje: error.message,
+        pedidoId: this.pedidoActual?.id,
+        propinaPorcentaje: this.propinaPorcentaje,
+        montoPropina: this.montoPropina
+      });
+      this.showToast('Error al procesar el pago: ' + (error.message || 'Intenta nuevamente'), 'danger');
+    }
+    } else {
+      // Delivery
+      try {
+        console.log('💳 Procesando pago delivery del pedido:', this.pedidoActual.id);
+        this.deliveryService.updateEstadoPedido(this.pedidoActual.id, 'pago_pendiente');
+        this.clienteService.setIsDelivery(false);
+        this.clienteService.setDireccionDelivery('');
+        console.log('✅ Pedido de delivery marcado como pago_pendiente');
+        await this.showToast('Pago de delivery procesado correctamente.', 'success');
+        await this.customLoader.hide();
+        this.router.navigate(['/home-cliente']);
+      } catch(e: any) {
+        throw new Error('No se pudo procesar el pago de delivery: ' + e.message);
+        await this.customLoader.hide();
+      }
+    }
   }
-}
 
   formatearFecha(fecha: string): string {
     return this.clienteService.formatearFecha(fecha);
@@ -356,10 +369,47 @@ export class Tab8CuentaPage implements OnInit {
 
       this.showToast(`QR escaneado. Propina escaneada: ${propina}%`, 'success');
 
-      this.seleccionarPropina(propina);
+      this.propinaPorcentaje = propina;
+      this.confirmarPropina();
+
     } catch (error: any) {
       console.error('❌ Error escaneando QR:', error);
       this.showToast('Error al escanear el QR: ' + (error.message || 'Intenta nuevamente'), 'danger');      
     }
   }
+
+ ////////// Es un quilombo lo de arriba, lo de delivery lo hago aparte ////////////
+
+  ////////////////////
+  // Para delivery //
+  async cargarCuentaDelivery() {
+    try {
+      await this.customLoader.show("Cargando cuenta de delivery...");
+      
+      this.pedidoActual = await this.deliveryService.getPedidoPorPagar();
+      this.detalles = await this.deliveryService.getDetallesPedido(this.pedidoActual.id);
+      this.subtotal = this.pedidoActual.subtotal
+      
+      const descuentoData = await this.deliveryService.getDescuento(this.pedidoActual.cliente.id_cliente);
+      this.descuento = descuentoData?.descuento_obtenido || 0; // Obtener el valor correcto
+      
+    } catch (error) {
+      console.error('Error cargando cuenta de delivery:', error);
+      this.showToast('Error al cargar la cuenta de delivery', 'danger');
+    }finally {
+      this.cargando = false;
+      this.customLoader.hide();
+
+    }
+
+  }
+
+  private calcularTotalDelivery(){
+    const base = this.subtotal
+    this.montoDescuento = Math.round(base *  (this.descuento / 100));
+    this.montoPropina = Math.round(base * (this.propinaPorcentaje / 100));
+    this.totalFinal = base - this.montoDescuento + this.montoPropina;
+  }
+
+
 }

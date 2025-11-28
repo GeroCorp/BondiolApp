@@ -1,8 +1,9 @@
 ﻿import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { ToastController, LoadingController, AlertController } from '@ionic/angular';
+import { ToastController, AlertController } from '@ionic/angular';
 import { AuthService } from 'src/app/services/supabase';
 import { HapticService } from 'src/app/services/haptic.service';
+import { CustomLoaderService } from 'src/app/services/custom-loader.service';
 
 interface Consulta {
   id_consulta: number;
@@ -32,7 +33,7 @@ export class Tab3ConsultasPage implements OnInit {
     private router: Router,
     private authService: AuthService,
     private toastController: ToastController,
-    private loadingController: LoadingController,
+    private customLoader: CustomLoaderService,
     private alertController: AlertController,
     private hapticService: HapticService
   ) {}

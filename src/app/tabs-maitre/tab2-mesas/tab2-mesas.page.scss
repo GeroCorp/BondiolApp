@@ -21,6 +21,8 @@ ion-header {
   --padding-bottom: 0;
   --padding-start: 16px;
   --padding-end: 16px;
+  scroll-snap-type: y mandatory;
+  overflow-y: scroll;
 
   &[fullscreen="true"] {
     --offset-top: 60px;
@@ -130,6 +132,8 @@ ion-header {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     transition: all 0.3s ease;
     min-height: 70px;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
 
     &:hover {
       --background: rgba(255, 255, 255, 0.08);

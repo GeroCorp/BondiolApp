@@ -28,6 +28,14 @@
   <div class="total-display-fixed">
     <div class="total-container">
       <div class="mesa-info">Mesa: {{ nroMesa }}</div>
+      <div class="cart">
+        <button type="button"
+        (click)="hacerPedido()"
+        [disabled]="getCantidadItemsPedido() < 1">
+          <ion-icon name="cart-outline"></ion-icon>
+          <!-- <span class="item-count" *ngIf="getCantidadItemsPedido() > 0">{{ getCantidadItemsPedido() }}</span>  -->
+          Hacer Pedido
+        </button></div>
       <div class="total-amount">${{ getSubtotalPedido() }}</div>
     </div>
   </div>
@@ -39,10 +47,10 @@
     <ion-card-content>
       <ion-card-title>Menú de Platos</ion-card-title>
       
-      @if (isLoadingPlatos) {
-        <div class="loading-container">
-          <ion-spinner name="crescent"></ion-spinner>
-          <p>Cargando platos...</p>
+      @if (isLoadingPlatos || isLoadingBebidas) {
+        <div class="empty-state">
+          <ion-icon name="restaurant-outline"></ion-icon>
+          <p>Cargando menúaaaaaaaaaaa...</p>
         </div>
       } @else if (platos.length === 0) {
         <div class="empty-state">
@@ -51,50 +59,45 @@
           <p>Los platos aparecerán aquí cuando estén disponibles</p>
         </div>
       } @else {
-        <ion-grid fixed>
-          <ion-row>
-            @for (plato of platos; track $index) {
-              <ion-col size="4">
-                <ion-card (click)="seleccionarItem(plato, 'plato')" [disabled]="isLoadingItems">
-                  <ion-card-header>
-                    <ion-card-title>{{ plato.nombre }}</ion-card-title>
-                    <ion-card-subtitle>${{ plato.precio }}</ion-card-subtitle>
-                  </ion-card-header>
-                </ion-card>
-              </ion-col>
-            }
-          </ion-row>
-        </ion-grid>
+        <div class="menu-items-list">
+          @for (plato of platos; track $index) {
+            <div class="menu-item" (click)="seleccionarItem(plato, 'plato')" [ngClass]="{ disabled: isLoadingItems }">
+              <div class="item-image">
+                <img [src]="getFirstImage(plato.imagenes)" [alt]="plato.nombre" />
+              </div>
+              <div class="item-content">
+                <h3 class="item-name">{{ plato.nombre }}</h3>
+                <p class="item-description">{{ plato.descripcion }}</p>
+              </div>
+              <div class="item-price">${{ plato.precio }}</div>
+            </div>
+          }
+        </div>
       }
       
       <ion-card-title>Menú de Bebidas</ion-card-title>
       
-      @if (isLoadingBebidas) {
-        <div class="loading-container">
-          <ion-spinner name="crescent"></ion-spinner>
-          <p>Cargando bebidas...</p>
-        </div>
-      } @else if (bebidas.length === 0) {
+      @if (bebidas.length === 0) {
         <div class="empty-state">
           <ion-icon name="wine-outline"></ion-icon>
           <h2>No hay bebidas disponibles</h2>
           <p>Las bebidas aparecerán aquí cuando estén disponibles</p>
         </div>
       } @else {
-        <ion-grid fixed>
-          <ion-row>
-            @for (bebida of bebidas; track $index) {
-              <ion-col size="4">
-                <ion-card (click)="seleccionarItem(bebida, 'bebida')" [disabled]="isLoadingItems">
-                  <ion-card-header>
-                    <ion-card-title>{{ bebida.nombre }}</ion-card-title>
-                    <ion-card-subtitle>${{ bebida.precio }}</ion-card-subtitle>
-                  </ion-card-header>
-                </ion-card>
-              </ion-col>
-            }
-          </ion-row>
-        </ion-grid>
+        <div class="menu-items-list">
+          @for (bebida of bebidas; track $index) {
+            <div class="menu-item" (click)="seleccionarItem(bebida, 'bebida')" [ngClass]="{ disabled: isLoadingItems }">
+              <div class="item-image">
+                <img [src]="getFirstImage(bebida.imagenes)" [alt]="bebida.nombre" />
+              </div>
+              <div class="item-content">
+                <h3 class="item-name">{{ bebida.nombre }}</h3>
+                <p class="item-description">{{ bebida.descripcion }}</p>
+              </div>
+              <div class="item-price">${{ bebida.precio }}</div>
+            </div>
+          }
+        </div>
       }
      
     </ion-card-content>
@@ -102,6 +105,7 @@
   @if (itemSelected) {
     <app-menu-item 
     [item]="itemSelected" 
+    [itemsArray]="allProds()"
     (closeItem)="itemSelected = null"
     (addItem)="onAddItem($event)">
   </app-menu-item>

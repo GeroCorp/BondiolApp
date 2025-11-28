@@ -94,7 +94,6 @@ export class Tab3MenuPage implements OnInit {
         if (imagenes.includes(',')) {
           const imagenesArray = imagenes.split(',').map((url: string) => url.trim());
           if (imagenesArray.length > 0) {
-            console.log('Primera imagen desde cadena separada por comas:', imagenesArray[0]);
             return imagenesArray[0];
           }
         }

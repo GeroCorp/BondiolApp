@@ -203,8 +203,8 @@ ion-header {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  --padding-bottom: 24px; /* 🔹 asegura aire extra en scroll */
-  overflow-y: auto;       /* 🔹 habilita scroll en pantallas chicas */
+  --padding-bottom: 40px;
+  overflow-y: auto;
 }
 
 .registro-wrapper {
@@ -213,13 +213,11 @@ ion-header {
   justify-content: center;
   flex: 1;
   padding: 16px;
-  min-height: calc(100vh - 48px);
-
-  /* 🔹 aire extra inferior */
+  min-height: auto;
   padding-bottom: 32px;
 
   ion-card {
-    margin-bottom: 32px; /* separa el card del borde inferior */
+    margin-bottom: 32px;
   }
 }
 
@@ -234,6 +232,8 @@ ion-header {
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255,255,255,0.1);
   padding-bottom: 12px;
+  overflow-y: auto;
+  max-height: calc(100vh - 100px);
 
   @media (min-width: 480px) {
     max-width: 420px;

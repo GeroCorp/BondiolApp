@@ -1,0 +1,120 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Detalle del Pedido #{{ pedido?.id }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="cerrarModal()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="pedido-info">
+    <!-- Información general -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="information-circle-outline"></ion-icon>
+          Información del Cliente
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item lines="none">
+          <ion-icon name="person-outline" slot="start"></ion-icon>
+          <ion-label>
+            <h3>Cliente</h3>
+            <p>{{ pedido?.cliente?.nombre }} {{ pedido?.cliente?.apellido }}</p>
+          </ion-label>
+        </ion-item>
+        
+        <ion-item lines="none">
+          <ion-icon name="location-outline" slot="start"></ion-icon>
+          <ion-label>
+            <h3>Dirección de Entrega</h3>
+            <p>{{ pedido?.direccion }}</p>
+          </ion-label>
+        </ion-item>
+        
+        <ion-item lines="none">
+          <ion-icon name="time-outline" slot="start"></ion-icon>
+          <ion-label>
+            <h3>Fecha y Hora</h3>
+            <p>{{ formatearFecha(pedido?.created_at) }}</p>
+          </ion-label>
+        </ion-item>
+        
+        <ion-item lines="none">
+          <ion-label>
+            <h3>Estado</h3>
+            <ion-badge [color]="getColorEstado(pedido?.estado)">
+              {{ getTextoEstado(pedido?.estado) }}
+            </ion-badge>
+          </ion-label>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Items del pedido -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="list-outline"></ion-icon>
+          Items del Pedido
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div *ngIf="cargando" class="cargando">
+          <ion-spinner></ion-spinner>
+          <p>Cargando detalles...</p>
+        </div>
+
+        <div *ngIf="!cargando && items.length > 0">
+          <ion-list>
+            <ion-item *ngFor="let item of items">
+              <div class="item-content">
+                <div class="item-info">
+                  <h3>{{ item.nombre_prod }}</h3>
+                  <p class="item-details">
+                    <span class="cantidad">{{ item.cantidad }}x</span>
+                    <span class="precio-unitario">${{ item.precio_unitario }}</span>
+                  </p>
+                </div>
+                <div class="item-subtotal">
+                  <strong>${{ calcularSubtotal(item) }}</strong>
+                </div>
+              </div>
+            </ion-item>
+          </ion-list>
+          
+          <!-- Total -->
+          <div class="total-section">
+            <ion-item lines="none" class="total-item">
+              <ion-label slot="start">
+                <h2><strong>Total del Pedido</strong></h2>
+              </ion-label>
+              <ion-label slot="end">
+                <h2><strong>${{ pedido?.subtotal || calcularTotal() }}</strong></h2>
+              </ion-label>
+            </ion-item>
+          </div>
+        </div>
+
+        <div *ngIf="!cargando && items.length === 0" class="sin-items">
+          <ion-icon name="cart-outline"></ion-icon>
+          <p>No hay items en este pedido.</p>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <ion-buttons slot="end">
+      <ion-button expand="block" fill="clear" (click)="cerrarModal()">
+        Cerrar
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

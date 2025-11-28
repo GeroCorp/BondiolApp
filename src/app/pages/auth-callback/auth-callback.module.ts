@@ -8,6 +8,8 @@ import { AuthCallbackPageRoutingModule } from './auth-callback-routing.module';
 
 import { AuthCallbackPage } from './auth-callback.page';
 
+import { CustomSpinnerComponent } from 'src/app/components/custom-spinner/custom-spinner.component';
+
 @NgModule({
   imports: [
     CommonModule,

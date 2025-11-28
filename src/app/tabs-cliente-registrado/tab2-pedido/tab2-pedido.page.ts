@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { ClienteService } from '../../services/cliente.service';
 import { Router } from '@angular/router';
 import { ToastController } from '@ionic/angular';
@@ -16,6 +16,8 @@ export class Tab2PedidoPage implements OnInit {
   montoDescuento: number = 0;
   totalFinal: number = 0;
 
+  isDelivery = signal<boolean>(false);
+
   constructor(
     public clienteService: ClienteService, 
     private router: Router,
@@ -23,8 +25,14 @@ export class Tab2PedidoPage implements OnInit {
   ) { }
 
   async ngOnInit() {
+    this.setIsDelivery();
     await this.calcularTotales();
     await this.clienteService.getRejectedOrder();
+  }
+
+  setIsDelivery() {
+    const raw = this.clienteService.esDelivery();
+    this.isDelivery.set(raw);
   }
 
   // ✅ Calcular todos los totales con descuento
@@ -102,7 +110,7 @@ export class Tab2PedidoPage implements OnInit {
   }
 
   volverHome(){
-    this.router.navigate(["/home-cliente"])
+    this.router.navigate(["/tabs-cliente-registrado/tab1-menu"])
   }
 
   async showToast(message: string, color: 'success' | 'danger' | 'medium' = 'medium') {

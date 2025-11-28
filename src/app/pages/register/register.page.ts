@@ -1,12 +1,13 @@
 import { Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { ToastController, LoadingController } from '@ionic/angular';
+import { ToastController } from '@ionic/angular';
 import { AuthService } from 'src/app/services/supabase';
 import { Notification } from 'src/app/services/notification';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
 import { HapticService } from 'src/app/services/haptic.service';
+import { CustomLoaderService } from 'src/app/services/custom-loader.service';
 
 @Component({
   selector: 'app-register',
@@ -27,7 +28,7 @@ export class RegisterPage {
     private formBuilder: FormBuilder,
     private router: Router,
     private toastController: ToastController,
-    private loadingController: LoadingController,
+    private customLoader: CustomLoaderService,
     private authService: AuthService,
     private hapticService: HapticService
   ) {
@@ -77,17 +78,14 @@ export class RegisterPage {
     }
 
     // Mostrar loading
-    const loading = await this.loadingController.create({
-      message: 'Registrando...'
-    });
-    await loading.present();
+    await this.customLoader.show('Registrando...');
 
     try {
       // 1. Crear usuario en Auth
       const { data: user, error: authError } = await this.authService.registerCliente(email, password);
 
       if (authError) {
-        await loading.dismiss();
+        await this.customLoader.hide();
         console.error('Error al crear cuenta Auth:', authError.message);
         await this.hapticService.vibrateError();
         this.showToast('Error al crear usuario', 'danger');
@@ -99,7 +97,7 @@ export class RegisterPage {
       const publicUrlData = await this.authService.subirImagenCliente(user.user?.id || '', blob);
       
       if (!publicUrlData) {
-        await loading.dismiss();
+        await this.customLoader.hide();
         await this.hapticService.vibrateError();
         this.showToast('Error al subir la foto.', 'danger');
         return;
@@ -120,7 +118,7 @@ export class RegisterPage {
       const data = await this.authService.insertarCliente(nuevoCliente);
 
       if (!data) {
-        await loading.dismiss();
+        await this.customLoader.hide();
         console.log(data);
         await this.hapticService.vibrateError();
         this.showToast('Error al crear el perfil de cliente.', 'danger');
@@ -145,12 +143,12 @@ export class RegisterPage {
         // No detenemos el registro por un error en la notificación
       }
 
-      await loading.dismiss();
+      await this.customLoader.hide();
       this.showToast('Espere la confirmación de registro por mail.', 'success');
       this.router.navigate(['/login'], { replaceUrl: true });
 
     } catch (error) {
-      await loading.dismiss();
+      await this.customLoader.hide();
       console.error('Error en el registro:', error);
       await this.hapticService.vibrateError();
       this.showToast('Error en el registro. Intente nuevamente.', 'danger');

@@ -128,9 +128,11 @@ async logout() {
   adminMesa() {
     this.router.navigate(['/tabs-admin/tab4-admin-mesa'], {replaceUrl: true}); // Redirigir a tabs mesa
   }
-
   verReservasAdmin() {
     this.router.navigate(['/gestion-reservas'], {replaceUrl: true});
+  }
+  gestionarDelivery() {
+    this.router.navigate(['/tabs-admin/tab6-admin-delivery'], { replaceUrl: true });
   }
 
 
@@ -173,6 +175,14 @@ async logout() {
   }
   verConsultasClientes() {
     this.router.navigate(['/tabs-mozo/tab3-consultas'], { replaceUrl: true });
+  }
+
+
+  verPedidosDelivery() {
+    this.router.navigate(['/tabs-delivery/tab1-pedidos'], { replaceUrl: true });
+  }
+  verChatsClientes() {
+    this.router.navigate(['/tabs-delivery/tab2-menu-chats'], { replaceUrl: true });
   }
 
 }

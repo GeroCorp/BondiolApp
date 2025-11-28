@@ -16,9 +16,134 @@
   --shadow-dark: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
+// Estilos para scroll horizontal de filtros
+.scroll-arrows {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  
+  .arrow-left,
+  .arrow-right {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(187, 134, 252, 0.9);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 15;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    
+    &:hover {
+      background: rgba(187, 134, 252, 1);
+      transform: translateY(-50%) scale(1.1);
+    }
+    
+    &:active {
+      transform: translateY(-50%) scale(0.95);
+    }
+  }
+  
+  .arrow-left {
+    left: 4px;
+    
+    &.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+  
+  .arrow-right {
+    right: 4px;
+    
+    &.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+}
+
+// Animación suave para el scroll
+.segment-container {
+  scroll-behavior: smooth;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 8px 48px;
+  flex: 1;
+  
+  &::-webkit-scrollbar {
+    height: 4px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: rgba(187, 134, 252, 0.5);
+    border-radius: 2px;
+    
+    &:hover {
+      background: rgba(187, 134, 252, 0.8);
+    }
+  }
+}
+
+// Animaciones adicionales para las flechas
+@keyframes arrowPulse {
+  0% { transform: translateY(-50%) scale(1); }
+  50% { transform: translateY(-50%) scale(1.05); }
+  100% { transform: translateY(-50%) scale(1); }
+}
+
+.scroll-arrows .arrow-left.visible,
+.scroll-arrows .arrow-right.visible {
+  animation: arrowPulse 2s ease-in-out infinite;
+  
+  &:hover {
+    animation: none;
+  }
+}
+
+// Responsive adjustments para las flechas
+@media (max-width: 576px) {
+  .scroll-arrows {
+    .arrow-left,
+    .arrow-right {
+      width: 28px;
+      height: 28px;
+      font-size: 14px;
+    }
+    
+    .arrow-left {
+      left: 2px;
+    }
+    
+    .arrow-right {
+      right: 2px;
+    }
+  }
+  
+  .segment-container {
+    padding: 8px 32px;
+  }
+}
+
 ion-content {
   --background: var(--background-dark);
   --color: var(--text-primary);
+  scroll-snap-type: y mandatory;
+  overflow-y: scroll;
 }
 
 .loading-container {
@@ -79,6 +204,12 @@ ion-content {
   box-shadow: var(--shadow-dark);
   background: var(--surface-dark) !important;
   border: 1px solid var(--border-color);
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  min-height: 300px;
+  max-height: 550px;
+  display: flex;
+  flex-direction: column;
   
   ion-card-header,
   ion-card-content {

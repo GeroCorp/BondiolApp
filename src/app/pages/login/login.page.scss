@@ -39,13 +39,14 @@ ion-header {
 
 .login-content {
   --background: linear-gradient(135deg, #cc1e1e, #cc5f1e, #1a5a8a);
-  --padding-top: 0;
-  --padding-bottom: 0;
+  --padding-top: 16px;
+  --padding-bottom: 40px;
   --padding-start: 16px;
   --padding-end: 16px;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  overflow-y: auto;
 }
 
 /* Wrapper para centrar contenido cuando hay espacio */
@@ -54,8 +55,8 @@ ion-header {
   flex-direction: column;
   justify-content: center;
   flex: 1;
-  padding: 32px 0 16px; /* un poco más de espacio arriba */
-  min-height: calc(100vh - 56px); /* Altura menos el header */
+  padding: 24px 0 40px;
+  min-height: auto;
 }
 
 /* Card principal con diseño más moderno */
@@ -69,6 +70,8 @@ ion-header {
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255,255,255,0.1);
   margin: 0 auto;
+  overflow-y: auto;
+  max-height: calc(100vh - 120px);
 
   ion-card-header {
     padding: 24px 20px 16px;

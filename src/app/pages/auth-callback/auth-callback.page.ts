@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { supabase } from '../../services/supabase';
-import { ToastController, LoadingController } from '@ionic/angular';
+import { ToastController } from '@ionic/angular';
 import { TipoClienteService } from 'src/app/services/tipo-cliente.service';
+import { CustomLoaderService } from 'src/app/services/custom-loader.service';
 
 @Component({
   selector: 'app-auth-callback',
@@ -15,18 +16,15 @@ export class AuthCallbackPage implements OnInit {
   constructor(
     private router: Router,
     private toastController: ToastController,
-    private loadingController: LoadingController,
+    private customLoader: CustomLoaderService,
     private tipoClienteService: TipoClienteService
   ) {}
 
   async ngOnInit() {
     console.log('📄 [CALLBACK] Procesando callback OAuth...');
     
-    const loading = await this.loadingController.create({
-      message: 'Procesando inicio de sesión...',
-      spinner: 'crescent'
-    });
-    await loading.present();
+    await this.customLoader.show('Procesando inicio de sesión...');
+  
 
     try {
       // Esperar a que Supabase procese OAuth
@@ -45,7 +43,7 @@ export class AuthCallbackPage implements OnInit {
 
       if (!session?.user) {
         console.error('❌ No se obtuvo sesión válida');
-        await loading.dismiss();
+        await this.customLoader.hide();
         await this.router.navigate(['/login'], { replaceUrl: true });
         this.showToast('No se pudo iniciar sesión', 'danger');
         return;
@@ -87,7 +85,7 @@ export class AuthCallbackPage implements OnInit {
 
           if (errorVincular) {
             console.error('❌ Error vinculando cuenta:', errorVincular);
-            await loading.dismiss();
+            await this.customLoader.hide();
             this.showToast('Error al vincular cuenta', 'danger');
             return;
           }
@@ -102,7 +100,7 @@ export class AuthCallbackPage implements OnInit {
         } else {
           // Otro user_id diferente
           console.error('❌ El email ya está vinculado a otra cuenta');
-          await loading.dismiss();
+          await this.customLoader.hide();
           await supabase.auth.signOut();
           await this.router.navigate(['/login'], { replaceUrl: true });
           this.showToast('Este email ya está vinculado a otra cuenta', 'danger');
@@ -142,7 +140,7 @@ export class AuthCallbackPage implements OnInit {
           
           if (!cliente) {
             console.error('❌ No se pudo crear el cliente');
-            await loading.dismiss();
+            await this.customLoader.hide();
             await this.router.navigate(['/login'], { replaceUrl: true });
             this.showToast('Error al crear cuenta', 'danger');
             return;
@@ -155,7 +153,7 @@ export class AuthCallbackPage implements OnInit {
       this.tipoClienteService['tipoClienteSubject'].next('registrado');
       this.tipoClienteService['clienteData'].next(cliente);
 
-      await loading.dismiss();
+      await this.customLoader.hide();
 
       // Redirigir según estado
       if (cliente.estado === 'aprobado') {
@@ -175,7 +173,7 @@ export class AuthCallbackPage implements OnInit {
 
     } catch (error: any) {
       console.error('❌ Error en callback OAuth:', error);
-      await loading.dismiss();
+      await this.customLoader.hide();
       this.showToast('Error al procesar inicio de sesión: ' + error.message, 'danger');
       await this.router.navigate(['/login'], { replaceUrl: true });
     }

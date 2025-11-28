@@ -1,11 +1,12 @@
 ﻿import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
-import { ModalController, ToastController, LoadingController } from '@ionic/angular';
+import { ModalController, ToastController } from '@ionic/angular';
 import { Mozo, ESTADO } from 'src/app/services/mozo';
 import { AuthService } from 'src/app/services/supabase';
 import { DetallePedidoModalComponent } from './detalle-pedido-modal/detalle-pedido-modal.component';
 import { Notification } from 'src/app/services/notification';
 import { HapticService } from 'src/app/services/haptic.service';
 import { EmailService, DatosFactura } from 'src/app/services/email';
+import { CustomLoaderService } from 'src/app/services/custom-loader.service';
 @Component({
   selector: 'app-tab2-pedidos-confirmados',
   templateUrl: './tab2-pedidos-confirmados.page.html',
@@ -27,7 +28,7 @@ export class Tab2PedidosConfirmadosPage implements OnInit, AfterViewInit {
     private authService: AuthService,
     private modalController: ModalController,
     private toastController: ToastController,
-    private loadingController: LoadingController,
+    private customLoader: CustomLoaderService,
     private notificationService: Notification,
     private hapticService: HapticService,
     private emailService: EmailService
@@ -160,11 +161,7 @@ export class Tab2PedidosConfirmadosPage implements OnInit, AfterViewInit {
   }
 
   async marcarEntregado(pedido: any) {
-    const loading = await this.loadingController.create({
-      message: 'Marcando como entregado...',
-      spinner: 'crescent',
-    });
-    await loading.present();
+    await this.customLoader.show('Marcando como entregado...');
 
     try {
       await this.authService.actualizarEstadoPedido(pedido.id, 'entregado');
@@ -176,11 +173,11 @@ export class Tab2PedidosConfirmadosPage implements OnInit, AfterViewInit {
         pedido.id_cliente
       );
 
-      await loading.dismiss();
+      await this.customLoader.hide();
       this.showToast('Pedido marcado como entregado', 'success');
       await this.cargarPedidos();
     } catch (error) {
-      await loading.dismiss();
+      await this.customLoader.hide();
       console.error('Error al marcar como entregado:', error);
       await this.hapticService.vibrateError();
       this.showToast('Error al actualizar el pedido', 'danger');
@@ -216,11 +213,7 @@ export class Tab2PedidosConfirmadosPage implements OnInit, AfterViewInit {
       return;
     }
 
-    const loading = await this.loadingController.create({
-      message: 'Confirmando pago y liberando mesa...',
-      spinner: 'crescent',
-    });
-    await loading.present();
+    await this.customLoader.show('Confirmando pago y liberando mesa...');
 
     try {
       const pedidoId = pedido.id || pedido.id_pedido;
@@ -332,12 +325,12 @@ export class Tab2PedidosConfirmadosPage implements OnInit, AfterViewInit {
 
       }
 
-      await loading.dismiss();
+      await this.customLoader.hide();
       this.showToast('Pago confirmado y mesa liberada', 'success');
       await this.cargarPedidos();
       
     } catch (error) {
-      await loading.dismiss();
+      await this.customLoader.hide();
       console.error('❌ Error al confirmar pago:', error);
       await this.hapticService.vibrateError();
       this.showToast('Error al confirmar pago', 'danger');

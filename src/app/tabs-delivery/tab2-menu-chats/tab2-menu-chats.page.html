@@ -1,0 +1,62 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home" icon="caret-back" text=""></ion-back-button>
+    </ion-buttons>
+    <ion-title>
+      <ion-icon slot="start" name="chatbubbles-outline"></ion-icon>
+      Chats con clientes
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="chat-content">
+
+  <div class="chat-wrapper">
+    <div class="chat-content">
+
+      <!-- Header -->
+      <div class="header-section">
+        <div class="title-container">
+          <div class="title-text">
+            <h2>Selecciona un pedido para ver el chat</h2>
+          </div>
+        </div>
+      </div>
+      @if (pedidos().length > 0) {
+        <div class="chats-grid">
+          @for (pedido of pedidos(); track $index){
+            <div class="card-wrapper" (click)="abrirChat(pedido)">
+              <ion-card class="chat-card">
+                  <ion-card-header class="card-header">
+                    <div class="pedido-info">
+                      <ion-icon slot="start" name="chatbubble-ellipses-sharp" class="chat-icon"></ion-icon>
+                      <div class="pedido-details">
+                        <h3 class="chat-direccion">{{ formatearDireccion(pedido.direccion) }}</h3>
+                      </div>
+                    </div>
+                    <div class="pedido-id">
+                      <ion-badge color="success">Pedido #{{ pedido.id }}</ion-badge>
+                    </div>
+                  </ion-card-header>
+    
+                  <ion-card-content>
+                    <div class="cliente-info">
+                        <ion-icon slot="start" name="person"></ion-icon>
+                        <span>{{ pedido.cliente.nombre }} {{ pedido.cliente.apellido }}</span>
+                    </div>
+                  </ion-card-content>
+              </ion-card>
+            </div>
+          }
+        </div>
+      }@else {
+        <div class="empty-state">
+          <ion-icon slot="start" name="restaurant-outline"></ion-icon>
+          <h2>No hay chats disponibles</h2>
+        </div>
+      }
+    </div>
+  </div>
+
+</ion-content>

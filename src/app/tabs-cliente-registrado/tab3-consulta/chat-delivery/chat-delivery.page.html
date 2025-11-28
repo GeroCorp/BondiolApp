@@ -1,0 +1,61 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-button (click)="volver()" fill="clear" color="dark" shape="round" slot="end">
+      Volver
+      <ion-icon slot="start" name="home-outline"></ion-icon>
+    </ion-button>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="messages-container">
+    <div class="messages-list" #messagesWrapper>
+      
+      <div *ngFor="let mensaje of messages(); let i = index; trackBy: trackByIndex" 
+           class="message-wrapper" 
+           [ngClass]="mensaje.id_cliente == pedido()?.cliente?.id ? 'received' : 'sent'">
+        <div class="message-bubble">
+          <div class="message-header">
+            <strong class="sender-name">
+              <span *ngIf="mensaje.id_cliente == pedido()?.cliente?.id; else otherUser">Delivery</span>
+              <ng-template #otherUser>Tú</ng-template>
+            </strong>
+          </div>
+          <div class="message-content">
+            {{ mensaje.mensaje }}
+          </div>
+          <div class="message-time">
+            {{ mensaje.created_at | date:'HH:mm' }}
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="messages().length === 0" class="no-messages">
+        <p>No hay mensajes aún.</p>
+      </div>
+      <div class="input-container">
+        <ion-item lines="none" class="input-item">
+          <ion-input 
+            type="text" 
+            placeholder="Escribe un mensaje..." 
+            [(ngModel)]="newMessage" 
+            class="message-input"
+            (keydown.enter)="sendMessage()">
+          </ion-input>
+          <ion-button 
+            (click)="sendMessage()" 
+            fill="clear" 
+            slot="end" 
+            [disabled]="!newMessage.trim()" 
+            class="send-button">
+            <ion-icon slot="icon-only" name="send-sharp"></ion-icon>
+          </ion-button>
+        </ion-item>
+      </div>
+    </div>
+  </div>
+
+
+
+
+</ion-content>

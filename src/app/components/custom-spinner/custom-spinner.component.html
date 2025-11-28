@@ -1,0 +1,12 @@
+<div class="spinner-container">
+      <img 
+        [src]="iconPath" 
+        alt="Loading..." 
+        class="spinner-icon"
+        [style.width.px]="size"
+        [style.height.px]="size"
+      />
+      @if (message) {
+      <strong class="spinner-message" style="color: var(--text-primary) !important;">{{ message }}</strong>
+      }
+    </div>

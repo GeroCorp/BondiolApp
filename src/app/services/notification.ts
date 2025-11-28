@@ -149,7 +149,7 @@ export class Notification {
 
   /**
    * Envía notificación a un perfil específico
-   * @param perfil - 'dueño', 'supervisor', 'cocinero', 'bartender', 'maitre', 'mozo'
+   * @param perfil - 'dueño', 'supervisor', 'cocinero', 'bartender', 'maitre', 'mozo', 'delivery'
    * @param title - Título
    * @param body - Cuerpo
    * @param url - URL opcional

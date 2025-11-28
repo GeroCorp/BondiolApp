@@ -7,7 +7,11 @@ const routes: Routes = [
   {
     path: '',
     component: Tab3ConsultaPage
+  },  {
+    path: 'chat-delivery',
+    loadChildren: () => import('./chat-delivery/chat-delivery.module').then( m => m.ChatDeliveryPageModule)
   }
+
 ];
 
 @NgModule({

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { environment } from 'src/environments/environment';
+import { SupabaseClient } from '@supabase/supabase-js';
+import { supabaseClient } from './auth'; // ✅ Importar instancia centralizada
 
 @Injectable({
   providedIn: 'root'
@@ -9,10 +9,21 @@ export class PropinaService {
   private supabase: SupabaseClient;
 
   constructor() {
-    this.supabase = createClient(
-      environment.SUPABASE_URL,
-      environment.SUPABASE_ANON_KEY
-    );
+    this.supabase = supabaseClient; // ✅ Usar instancia centralizada
+  }
+
+  async updatePropinaDelivery(pedidoId: number, porcentaje: number){
+    
+      const { data, error } = await this.supabase
+        .from('pedidos_delivery')
+        .update({ porcentaje_propina: porcentaje })
+        .eq('id', pedidoId)
+        .select();
+      if (error) throw new Error(`Error actualizando propina: ${error.message}`);
+
+      console.log('✅ Propina actualizada en pedidos_delivery:', data);
+      return data[0];
+    
   }
 
   /**

@@ -8,13 +8,15 @@ import { CrearReservaPageRoutingModule } from './crear-reserva-routing.module';
 
 import { CrearReservaPage } from './crear-reserva.page';
 
+
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
     ReactiveFormsModule,
-    CrearReservaPageRoutingModule
+    CrearReservaPageRoutingModule,
+    
   ],
   declarations: [CrearReservaPage]
 })

@@ -3,6 +3,7 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { environment } from 'src/environments/environment';
 import { Notification } from './notification';
 import { TipoClienteService } from './tipo-cliente.service';
+import { supabaseClient } from './auth'; // ✅ Importar instancia centralizada
 
 @Injectable({
   providedIn: 'root',
@@ -18,16 +19,16 @@ export class ClienteService {
   private _esDelivery = signal<boolean>(false);
   // Siganl para direccion de delivery
   private _direccionDelivery = signal<string>('');
+
+  private _mesaAsignada: number | null = null;
+
   private supabase: SupabaseClient;
   
   private injector = inject(Injector);
 
 
   constructor(private tipoClienteService: TipoClienteService) {
-    this.supabase = createClient(
-      environment.SUPABASE_URL,
-      environment.SUPABASE_ANON_KEY
-    );
+    this.supabase = supabaseClient; // ✅ Usar instancia centralizada con persistencia
    }
 
   // Getter para acceso lazy al servicio de notificaciones
@@ -58,6 +59,14 @@ export class ClienteService {
   // Getter para direccionDelivery
   get direccionDelivery() {
     return this._direccionDelivery;
+  }
+
+  get mesaAsignada() {
+    return this._mesaAsignada;
+  }
+
+  setMesaAsignada(mesaId: number | null) {
+    this._mesaAsignada = mesaId;
   }
 
   // Metodos para manejo del pedido
@@ -181,10 +190,17 @@ export class ClienteService {
   // Actualizar isDelivery
   setIsDelivery(esDelivery: boolean) {
     this._esDelivery.set(esDelivery);
+    if (esDelivery){
+      localStorage.setItem('esDelivery', 'true');
+    } else {
+      localStorage.setItem('esDelivery', 'false');
+      localStorage.removeItem('direccionDelivery');
+    }
   }
   // Actualizar direccionDelivery
   setDireccionDelivery(direccion: string) {
     this._direccionDelivery.set(direccion);
+    localStorage.setItem('direccionDelivery', direccion);
   }
 
   // Agregar un item al pedido
@@ -320,8 +336,11 @@ getSubtotal(): number {
   }
 
   async insertPedido() {
-  try {
+    
+    const esDelivery = this._esDelivery();
     const detalles = this._pedido();
+    let idPedido: number | null = null;
+    
     console.log('📋 Detalles del pedido:', detalles);
 
     if (!detalles || detalles.length === 0) {
@@ -332,8 +351,8 @@ getSubtotal(): number {
     console.log('🎭 Es anónimo:', isAnonimo);
 
     let idCliente: number | null = null;
-    let mesaId: number;
-    let nroMesa: number | null;
+    let mesaId: number = this._mesaAsignada!;
+    let nroMesa: number | null = null;
 
     if (isAnonimo) {
       // ✅ CLIENTE ANÓNIMO
@@ -377,26 +396,66 @@ getSubtotal(): number {
         nroMesa
       });
 
-    } else {
-      // ✅ CLIENTE REGISTRADO
-      console.log('👥 Procesando pedido de cliente registrado');
+      // ✅ CABECERA: id_cliente puede ser NULL para anónimos
+      const cabecera: any = {
+        mesa: mesaId,
+        id_cliente: idCliente, // NULL para anónimos
+        fecha: new Date().toISOString(),
+        estado: 'pendiente',
+        total: Math.round(this.getSubtotal())
+      };
+      
+      const { data, error } = await this.supabase
+        .from('pedidos')
+        .insert([cabecera])
+        .select();
+      
+      if (error) {
+        throw new Error('Error al crear el pedido: ' + error.message);
+      }
+      
+      if (!data || data.length === 0) {
+        throw new Error('No se pudo obtener el ID del pedido');
+      }
+      
+      idPedido = data[0].id;
+      console.log('✅ Pedido anónimo insertado con ID:', idPedido);
+    } 
+    else if (isAnonimo === false && esDelivery === true) {
+      // ✅ CLIENTE REGISTRADO - DELIVERY
+      console.log('🚚 Procesando pedido de DELIVERY - cliente registrado');
       
       idCliente = await this.getClientId();
-      console.log('👤 ID Cliente registrado:', idCliente);
+      const subtotal = this.getSubtotal();
 
-      const { data: clienteData, error: clienteError } = await this.supabase
-        .from('clientes')
-        .select('mesa_asignada')
-        .eq('id_cliente', idCliente)
-        .single();
+      const deliveryValues = {
+        id_cliente: idCliente,
+        direccion: this._direccionDelivery(),
+        estado: 'pendiente',
+        subtotal: subtotal
+      };
 
-      if (clienteError || !clienteData?.mesa_asignada) {
-        console.error('❌ Error obteniendo mesa del cliente:', clienteError);
-        throw new Error('No se pudo obtener el ID de la mesa asignada');
+      const { data: deliveryData, error: deliveryError } = await this.supabase
+        .from('pedidos_delivery')
+        .insert([deliveryValues])
+        .select();
+
+      if (deliveryError) {
+        throw new Error('Error al crear pedido de delivery: ' + deliveryError.message);
       }
-
-      mesaId = clienteData.mesa_asignada;
       
+      console.log('✅ Pedido de delivery creado:', deliveryData);
+      idPedido = deliveryData[0].id;
+      nroMesa = null; // No hay número de mesa en delivery
+      
+    } else if (isAnonimo === false && esDelivery === false) {
+      // ✅ CLIENTE REGISTRADO - PEDIDO EN MESA
+      console.log('👥 Procesando pedido en MESA - cliente registrado');
+      
+      idCliente = await this.getClientId();
+      const subtotal = this.getSubtotal();
+      const totalConDescuento = await this.getTotal();
+
       // Obtener número de mesa
       const { data: mesaData } = await this.supabase
         .from('mesas')
@@ -405,101 +464,73 @@ getSubtotal(): number {
         .single();
       
       nroMesa = mesaData?.numero || mesaId;
-
-      console.log('✅ Datos para pedido registrado:', {
-        idCliente,
-        mesaId,
-        nroMesa
-      });
-    }
-    
-    // Calcular totales
-    const subtotal = this.getSubtotal();
-    const totalConDescuento = await this.getTotal();
-    const descuento = idCliente ? await this.getDescuentoCliente(idCliente, mesaId) : 0;
-    
-    console.log('💰 Cálculos del pedido:', {
-      subtotal,
-      descuento: descuento + '%',
-      totalConDescuento,
-      mesaId,
-      nroMesa
-    });
-
-    // ✅ CABECERA: id_cliente puede ser NULL para anónimos
-    const cabecera: any = {
-      mesa: mesaId,
-      id_cliente: idCliente, // NULL para anónimos, número para registrados
-      fecha: new Date().toISOString(),
-      estado: 'pendiente',
-      total: Math.round(totalConDescuento)
-    };
-
-    console.log('📤 Insertando cabecera del pedido:', cabecera);
-
-    const { data, error } = await this.supabase
-      .from('pedidos')
-      .insert([cabecera])
-      .select();
-
-    if (error) {
-      console.error('❌ Error insertando pedido:', error);
-      console.error('📋 Detalles del error:', {
-        code: error.code,
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-        cabeceraEnviada: cabecera
-      });
       
-      if (error.code === '23503') {
-        throw new Error('Error de referencia: El cliente o mesa no existe en la base de datos');
+      const cabecera: any = {
+        mesa: mesaId,
+        id_cliente: idCliente,
+        fecha: new Date().toISOString(),
+        estado: 'pendiente',
+        total: Math.round(totalConDescuento)
+      };
+      
+      const { data, error } = await this.supabase
+        .from('pedidos')
+        .insert([cabecera])
+        .select();
+      
+      if (error) {
+        throw new Error('Error al crear el pedido: ' + error.message);
       }
       
-      throw new Error('Error al crear el pedido: ' + error.message);
+      if (!data || data.length === 0) {
+        throw new Error('No se pudo obtener el ID del pedido');
+      }
+      
+      idPedido = data[0].id;
+      console.log('✅ Pedido en mesa insertado con ID:', idPedido);
+    } else {
+      throw new Error('Configuración de pedido inválida: cliente no identificado correctamente');
     }
-
-    if (!data || data.length === 0) {
-      throw new Error('No se pudo obtener el ID del pedido');
-    }
-
-    const idPedido = data[0].id;
-    console.log('✅ Pedido insertado con ID:', idPedido);
+    
+      
 
     // Insertar detalles del pedido
     const detallesPromises = detalles.map(async (item) => {
       console.log('🔄️ Insertando item:', {
-        nombre: item.nombre,
-        cantidad: item.quantity,
-        precio: item.precio,
-        tipo: item.tipo
-      });
+      nombre: item.nombre,
+      cantidad: item.quantity,
+      precio: item.precio,
+      tipo: item.tipo
+    });
 
-      if (!item.nombre || !item.quantity || !item.precio || !item.tipo) {
-        console.error('❌ Item inválido:', item);
-        throw new Error('Item con datos incompletos: ' + item.nombre);
-      }
+    if (!item.nombre || !item.quantity || !item.precio || !item.tipo) {
+      console.error('❌ Item inválido:', item);
+      throw new Error('Item con datos incompletos: ' + item.nombre);
+    }
 
-      const detalle = {
-        id_pedido: idPedido,
-        nombre_prod: item.nombre,
-        cantidad: item.quantity,
-        precio_unitario: item.precio,
-        tipo: item.tipo,
-      };
+    const detalle = {
+      id_pedido: idPedido!,
+      nombre_prod: item.nombre,
+      cantidad: item.quantity,
+      precio_unitario: item.precio,
+      tipo: item.tipo,
+      es_delivery: esDelivery
+    };
 
-      const { data: detalleData, error: detalleError } = await this.supabase
-        .from('detalles_pedido')
-        .insert([detalle])
-        .select();
+    console.log(detalle);
 
-      if (detalleError) {
-        console.error('❌ Error insertando detalle:', detalleError);
-        throw new Error('Error al insertar detalle: ' + detalleError.message);
-      }
+    const { data: detalleData, error: detalleError } = await this.supabase
+      .from('detalles_pedido')
+      .insert([detalle])
+      .select();
 
-      console.log('✅ Detalle insertado correctamente');
-      return detalleData;
+    if (detalleError) {
+      console.error('❌ Error insertando detalle:', detalleError);
+      throw new Error('Error al insertar detalle: ' + detalleError.message);
+    }
+
+    console.log('✅ Detalle insertado correctamente');
+    return detalleData;
     });
 
     await Promise.all(detallesPromises);
@@ -508,12 +539,20 @@ getSubtotal(): number {
 
     // ✅ ENVIAR NOTIFICACIÓN AL MOZO
     try {
-      await this.notificationService.sendNotificationToPerfil(
-        'mozo',
-        '🍽️ Nuevo pedido',
-        `Mesa ${nroMesa} - Pedido #${idPedido}${isAnonimo ? ' (Cliente anónimo)' : ''}`
-      );
-      console.log('✅ Notificación enviada al mozo');
+      if (!esDelivery){
+        await this.notificationService.sendNotificationToPerfil(
+          'mozo',
+          '🍽️ Nuevo pedido',
+          `Mesa ${nroMesa} - Pedido #${idPedido}${isAnonimo ? ' (Cliente anónimo)' : ''}`
+        );
+        console.log('✅ Notificación enviada al mozo');
+      } else{
+        await this.notificationService.sendNotificationToAdmins(
+          '🍽️ Nuevo pedido de delivery',
+          `Pedido #${idPedido} - Cliente ID: ${idCliente}`
+        );
+        console.log('✅ Notificación enviada a administradores');
+      }
     } catch (notifError) {
       console.error('⚠️ Error enviando notificación:', notifError);
       // No fallar el pedido si falla la notificación
@@ -522,13 +561,12 @@ getSubtotal(): number {
     // Limpiar el pedido después de insertarlo
     this.clearPedido();
     
+    if (!idPedido) {
+      throw new Error('No se pudo crear el pedido');
+    }
+    
     return idPedido;
-  } catch (error: any) {
-    console.error('❌ Error completo en insertPedido:', error);
-    console.error('📋 Stack trace:', error.stack);
-    throw error;
   }
-}
 
   // Metodos del chat de consultas
 
@@ -656,26 +694,75 @@ async sendMessage(contenido: string): Promise<void> {
 }
 
 
-async subscribeToNewMessages(signal: any) {
-  try {
-    this.supabase
-      .channel('custom-messages-channel')
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'mensajes' },
-        (payload) => {
-          console.log('Nuevo mensaje recibido:', payload);
-          const newRow = payload.new;
-          signal.update((arr: any) => {
-            return [...arr, newRow];
-          });
-        }
-      )
-      .subscribe();
-  } catch (error) {
-    console.error('Error al suscribirse a nuevos mensajes: ' + error);
+  async subscribeToNewMessages(signal: any) {
+    try {
+      this.supabase
+        .channel('custom-messages-channel')
+        .on(
+          'postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'mensajes' },
+          (payload) => {
+            console.log('Nuevo mensaje recibido:', payload);
+            const newRow = payload.new;
+            signal.update((arr: any) => {
+              return [...arr, newRow];
+            });
+          }
+        )
+        .subscribe();
+    } catch (error) {
+      console.error('Error al suscribirse a nuevos mensajes: ' + error);
+    }
   }
-}
+
+  // Buscar el id del ultimo pedido realizado por delivery (para el chat)
+  async getIdLastPedido() {
+    const clienteId = await this.getClientId();
+    const { data, error } = await this.supabase
+      .from('pedidos_delivery')
+      .select('id')
+      .eq('id_cliente', clienteId)
+      .order('id', { ascending: false })
+      .limit(1)
+      .single();
+    if (error) {
+      throw new Error('Error al obtener el último pedido: ' + error.message);
+    }
+
+    console.log("ID del ultimo pedido a delivery: ", data);
+
+    return data.id as number;
+  }
+
+  async sendMessageToDelivery(contenido: string, idPedido: number) {
+    try {
+      const clienteId = await this.getClientId();
+      const toInsert = {
+        mensaje: contenido,
+        id_pedido: idPedido,
+        id_cliente: clienteId,
+        created_at: new Date().toISOString()
+      }
+      const { error } = await this.supabase
+        .from('chats_delivery')
+        .insert([toInsert]);
+      if (error) {
+        throw new Error('Error al enviar mensaje: ' + error.message);
+      }     
+
+      this.notificationService.sendNotificationToPerfil(
+        'delivery',
+        `💬 Nuevo mensaje del pedido ${idPedido}`,
+        contenido,
+        ''
+      )
+
+    }catch(e){
+      throw new Error('Error al enviar mensaje: ' + e);
+    }
+  }
+
+
   // Metodos para manejo de clientes
 
   async getClientId(): Promise<number> {
@@ -692,11 +779,16 @@ async subscribeToNewMessages(signal: any) {
     throw new Error('No se pudo obtener el ID del cliente anónimo');
   }
   
-  // ✅ Si es registrado, usar el método original
-  const userid = (await this.supabase.auth.getUser()).data.user?.id;
-  if (!userid) {
-    throw new Error('Usuario no autenticado');
+  // ✅ Si es registrado, usar getSession() para mayor confiabilidad
+  const { data: sessionData, error: sessionError } = await this.supabase.auth.getSession();
+  
+  if (sessionError || !sessionData?.session?.user?.id) {
+    console.error('❌ Error obteniendo sesión:', sessionError);
+    throw new Error('Usuario no autenticado o sesión expirada');
   }
+  
+  const userid = sessionData.session.user.id;
+  console.log('✅ User ID:', userid);
   
   const { data, error } = await this.supabase
     .from('clientes')
@@ -781,7 +873,14 @@ async subscribeToNewMessages(signal: any) {
         const newRecord = payload.new as any;
         
         // Verificar si este cambio es para el cliente actual
-        const currentUserId = (await this.supabase.auth.getUser()).data.user?.id;
+        const { data: sessionData, error: sessionError } = await this.supabase.auth.getSession();
+        
+        if (sessionError || !sessionData?.session?.user?.id) {
+          console.error('❌ Error obteniendo sesión:', sessionError);
+          return;
+        }
+        
+        const currentUserId = sessionData.session.user.id;
         if (newRecord?.user_id === currentUserId) {
           
           // Verificar si se asignó una mesa (de null a un número)
@@ -817,7 +916,6 @@ async subscribeToNewMessages(signal: any) {
         // Llamar a la función y esperar el resultado
         const enEspera = await this.isCLienteEnEspera();
         console.log('✅ Cliente en espera actualizado:', enEspera);
-        
         // Actualizar el signal
         this._clienteEnEspera.set(enEspera);
         
@@ -850,14 +948,17 @@ async subscribeToNewMessages(signal: any) {
     return false;
   }
 
-  const {
-    data: { user },
-  } = await this.supabase.auth.getUser();
+  const { data: sessionData, error: sessionError } = await this.supabase.auth.getSession();
+  
+  if (sessionError || !sessionData?.session?.user?.id) {
+    console.error('❌ Error obteniendo sesión:', sessionError);
+    return false;
+  }
 
   const { data, error } = await this.supabase
     .from('clientes')
     .select('mesa_asignada')
-    .eq('user_id', user?.id)
+    .eq('user_id', sessionData.session.user.id)
     .single();
 
   if (error) {
@@ -871,6 +972,23 @@ async subscribeToNewMessages(signal: any) {
   console.log('👤 Cliente registrado en espera:', bool);
   return bool;
 }
+
+  async subscribeToClienteEnEspera(signal: any ) {
+    try {
+      const channels = this.supabase.channel('custom-update-channel')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'clientes' },
+        (payload) => {
+          console.log('🔄 Update detectado en clientes para clienteEnEspera:', payload);
+          signal.set(payload.new['mesa_asignada']);
+        }
+      ).subscribe()
+    } catch (error) {
+      console.error('❌ Error subscribing to cliente en espera:', error);
+    }
+  }
+
 
   // Metodos para manejo de mesas
 

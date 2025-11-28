@@ -35,7 +35,9 @@
         <ion-button expand="block" (click)="adminCliente()">
           Administrar clientes
         </ion-button>
-
+        <ion-button expand="block" (click)="gestionarDelivery()">
+          Gestionar Delivery
+        </ion-button>
         <ion-button expand="block" (click)="verReservasAdmin()">
           Administrar reservas
         </ion-button>
@@ -127,6 +129,21 @@
         </ion-button>
         <ion-button expand="block" color="secondary" (click)="verConsultasClientes()">
           Consultas Clientes
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+    
+    <!-- Delivery -->
+    <ion-card *ngIf="perfil() === 'delivery'">
+      <ion-card-header>
+        <ion-card-title>Gestión Delivery</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-button expand="block" color="secondary" (click)="verPedidosDelivery()">
+          Ver pedidos
+        </ion-button>
+        <ion-button expand="block" color="secondary" (click)="verChatsClientes()">
+          Chat Clientes
         </ion-button>
       </ion-card-content>
     </ion-card>

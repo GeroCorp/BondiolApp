@@ -2,7 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ListaEsperaService, ClienteEspera } from 'src/app/services/lista-espera.service';
 import { ClienteService } from 'src/app/services/cliente.service';
-import { ToastController, LoadingController, AlertController } from '@ionic/angular';
+import { ToastController, AlertController } from '@ionic/angular';
+import { CustomLoaderService } from 'src/app/services/custom-loader.service';
 
 @Component({
   selector: 'app-lista-espera-cliente',
@@ -35,7 +36,7 @@ export class ListaEsperaClientePage implements OnInit {
     private listaEsperaService: ListaEsperaService,
     private clienteService: ClienteService,
     private toastCtrl: ToastController,
-    private loadingCtrl: LoadingController,
+    private customLoader: CustomLoaderService,
     private alertCtrl: AlertController
   ) { }
 
@@ -70,10 +71,7 @@ export class ListaEsperaClientePage implements OnInit {
   async agregarALista() {
     if (!this.validarFormulario()) return;
 
-    const loading = await this.loadingCtrl.create({
-      message: 'Agregando a la lista de espera...'
-    });
-    await loading.present();
+    await this.customLoader.show('Agregando a la lista de espera...');
 
     try {
       const cliente = await this.listaEsperaService.agregarClienteEspera({
@@ -97,7 +95,7 @@ export class ListaEsperaClientePage implements OnInit {
       console.error('Error:', error);
       await this.presentToast('Error inesperado', 'danger');
     } finally {
-      await loading.dismiss();
+      await this.customLoader.hide();
     }
   }
 
@@ -105,10 +103,7 @@ export class ListaEsperaClientePage implements OnInit {
    * Consultar estado por ID
    */
   async consultarEstado(clienteId: string) {
-    const loading = await this.loadingCtrl.create({
-      message: 'Consultando estado...'
-    });
-    await loading.present();
+    await this.customLoader.show('Consultando estado...');
 
     try {
       const id = parseInt(clienteId);
@@ -127,7 +122,7 @@ export class ListaEsperaClientePage implements OnInit {
       console.error('Error:', error);
       await this.presentToast('Error al consultar estado', 'danger');
     } finally {
-      await loading.dismiss();
+      await this.customLoader.hide();
     }
   }
 
@@ -158,10 +153,7 @@ export class ListaEsperaClientePage implements OnInit {
   private async confirmarCancelacion() {
     if (!this.clienteEnEspera) return;
 
-    const loading = await this.loadingCtrl.create({
-      message: 'Cancelando turno...'
-    });
-    await loading.present();
+    await this.customLoader.show('Cancelando turno...');
 
     try {
       const cancelado = await this.listaEsperaService.cancelarTurno(this.clienteEnEspera.id!);
@@ -177,7 +169,7 @@ export class ListaEsperaClientePage implements OnInit {
       console.error('Error:', error);
       await this.presentToast('Error inesperado', 'danger');
     } finally {
-      await loading.dismiss();
+      await this.customLoader.hide();
     }
   }
 
@@ -195,11 +187,7 @@ export class ListaEsperaClientePage implements OnInit {
     }
 
     this.isRefreshing = true;
-    const loading = await this.loadingCtrl.create({
-      message: 'Actualizando estado...',
-      duration: 3000
-    });
-    await loading.present();
+    await this.customLoader.show('Actualizando estado...');
 
     try {
       const resultado = await this.listaEsperaService.consultarEstadoPorId(this.clienteEnEspera.id);
@@ -241,7 +229,7 @@ export class ListaEsperaClientePage implements OnInit {
       await this.presentToast('Error al actualizar', 'danger');
     } finally {
       this.isRefreshing = false;
-      await loading.dismiss();
+      await this.customLoader.hide();
     }
   }
 

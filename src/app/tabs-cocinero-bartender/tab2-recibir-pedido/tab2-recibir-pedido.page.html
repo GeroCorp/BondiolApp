@@ -27,7 +27,11 @@
       <ion-card *ngFor="let pedidoSector of pedidos" class="pedido-card">
         <ion-card-header>
           <ion-card-title>
-            <ion-badge color="primary">Mesa {{ pedidoSector.pedido?.mesa?.numero || 'N/A' }}</ion-badge>
+            @if (pedidoSector.pedido?.mesa?.numero){
+              <ion-badge color="primary">Mesa {{ pedidoSector.pedido?.mesa?.numero || 'N/A' }}</ion-badge>
+            } @else {
+              <ion-badge color="primary">Delivery</ion-badge>
+            }
             <ion-badge color="secondary" class="sector-badge">{{ pedidoSector.sector | titlecase }}</ion-badge>
           </ion-card-title>
           <ion-card-subtitle>
@@ -38,8 +42,8 @@
               </div>
               <div class="pedido-details">
                 <span class="pedido-id">Pedido #{{ pedidoSector.pedido_id }}</span>
-                <ion-badge [color]="getEstadoColor(pedidoSector.pedido?.estado)" class="estado-badge">
-                  {{ pedidoSector.pedido?.estado | titlecase }}
+                <ion-badge [color]="getEstadoColor(pedidoSector.estadoItem)" class="estado-badge">
+                  {{ pedidoSector.estadoItem | uppercase }}
                 </ion-badge>
               </div>
             </div>
@@ -62,7 +66,7 @@
             </ion-list>
           </div>
           
-          @if (pedidoSector.pedido.estado === 'confirmado') {
+          @if (pedidoSector.estadoItem === 'confirmado') {
           <div class="pedido-actions">
             <ion-button 
               expand="block" 
@@ -73,7 +77,7 @@
               Marcar en preparación
             </ion-button>
           </div>
-        } @else {
+        } @else if (pedidoSector.estadoItem === 'en_preparación') {
           <div class="pedido-actions">
             <ion-button 
               expand="block" 
@@ -84,6 +88,18 @@
               Marcar Completo
             </ion-button>
           </div>
+        } @else {
+          <div class="pedido-actions">
+            <ion-button 
+              expand="block" 
+              color="success"
+              disabled 
+              >
+              <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
+              Pedido Listo
+            </ion-button>
+          </div>
+
         }
 
         </ion-card-content>

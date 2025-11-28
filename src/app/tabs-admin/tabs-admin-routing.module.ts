@@ -29,8 +29,8 @@ const routes: Routes = [
         loadChildren: () => import('./tab5-admin-perfil/tab5-admin-perfil.module').then( m => m.Tab5AdminPerfilPageModule)
       },
       {
-        path: 'tab6-reservas',
-        loadChildren: () => import('../pages/gestion-reservas/gestion-reservas.module').then( m => m.GestionReservasPageModule)
+        path: 'tab6-admin-delivery',
+        loadChildren: () => import('./tab6-delivery/tab6-delivery.module').then( m => m.Tab6DeliveryPageModule)
       },
       {
         path: '',
@@ -39,6 +39,11 @@ const routes: Routes = [
       }
     ]
   },
+  {
+    path: 'tab6-delivery',
+    loadChildren: () => import('./tab6-delivery/tab6-delivery.module').then( m => m.Tab6DeliveryPageModule)
+  },
+
 ];
 
 @NgModule({

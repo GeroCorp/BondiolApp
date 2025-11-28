@@ -442,6 +442,23 @@ export class ListaEsperaService {
     }
   }
 
+  async getListaDelDia(){
+    try {
+      const hoy = new Date().toISOString().split('T')[0];
+      const { data, error } = await supabase
+        .from('lista_espera')
+        .select('*')
+        .gte('created_at', `${hoy}T00:00:00.000Z`)
+        .lt('created_at', `${hoy}T23:59:59.999Z`)
+        .order('created_at', { ascending: true });
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error al obtener lista del día:', error);
+      return [];
+    }
+  }
+
   /**
    * Actualizar información del cliente
    */

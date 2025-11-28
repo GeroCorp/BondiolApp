@@ -89,7 +89,7 @@ export class Tab2RecibirPedidoPage implements OnInit {
         return 'warning';
       case 'confirmado':
         return 'primary';
-      case 'en_preparacion':
+      case 'en_preparación':
         return 'secondary';
       case 'listo':
         return 'success';
@@ -103,13 +103,16 @@ export class Tab2RecibirPedidoPage implements OnInit {
   // Función para marcar pedido del sector como listo
   async actualizarEstado(pedidoSector: any, estado: 'en_preparación' | 'listo') {
     try {
+      console.log(pedidoSector);
       // Actualizar el estado del pedido sector a 'en preparación'
-      await this.cocinaBarService.actualizarEstadoPedidoSector(pedidoSector.id, estado);
+      const res = await this.cocinaBarService.actualizarEstadoPedidoSector(pedidoSector.id, estado);
+
+      console.log(res);
 
       // Recargar la lista de pedidos
       await this.cargarPedidosPendientes();
       
-      console.log('Pedido marcado como listo:', pedidoSector.pedidoId);
+      console.log('Pedido marcado como listo:', pedidoSector.id);
     } catch (error) {
       console.error('Error al marcar pedido como listo:', error);
     }

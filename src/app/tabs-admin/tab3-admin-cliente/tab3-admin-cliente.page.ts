@@ -2,8 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { AuthService } from 'src/app/services/supabase';
 import { EmailService } from 'src/app/services/email';
 import { PerfilService } from 'src/app/services/perfilService';
-import { ToastController, LoadingController, AlertController } from '@ionic/angular';
+import { ToastController, AlertController } from '@ionic/angular';
 import { Router } from '@angular/router';
+
+import { CustomLoaderService } from 'src/app/services/custom-loader.service';
 
 interface Cliente {
   id_cliente?: number;
@@ -32,7 +34,7 @@ export class Tab3AdminClientePage implements OnInit {
     private emailService: EmailService,
     private perfilService: PerfilService,
     private toastCtrl: ToastController,
-    private loadingCtrl: LoadingController,
+    private customLoader: CustomLoaderService,
     private alertCtrl: AlertController,
     private router: Router
   ) {
@@ -58,10 +60,8 @@ export class Tab3AdminClientePage implements OnInit {
   }
 
   async cargarClientes() {
-  const loader = await this.loadingCtrl.create({ 
-    message: 'Cargando clientes pendientes...' 
-  });
-  await loader.present();
+  
+  await this.customLoader.show('Cargando clientes pendientes...');
   
   try {
     console.log('📋 [ADMIN] Cargando clientes pendientes...');
@@ -92,7 +92,7 @@ export class Tab3AdminClientePage implements OnInit {
       'danger'
     );
   } finally {
-    await loader.dismiss();
+    await this.customLoader.hide();
   }
 }
 
@@ -191,11 +191,7 @@ async diagnosticarClientesPendientes() {
       return;
     }
 
-    const loader = await this.loadingCtrl.create({ 
-      message: 'Aprobando cliente...' 
-    });
-    await loader.present();
-
+    await this.customLoader.show('Aprobando cliente...');
     try {
       // 1. Actualizar estado en BD
       await this.authService.actualizarEstadoCliente(cliente.id_cliente, 'aprobado');
@@ -208,7 +204,7 @@ async diagnosticarClientesPendientes() {
       const emailDestino = cliente.email || user?.email;
 
       if (!emailDestino) {
-        await loader.dismiss();
+        await this.customLoader.hide();
         await this.presentToast('Cliente aprobado pero sin email para notificar', 'warning');
         await this.cargarClientes();
         return;
@@ -217,7 +213,7 @@ async diagnosticarClientesPendientes() {
       // 4. Enviar email de aprobación
       const emailEnviado = await this.emailService.enviarEmailAprobacionConTemplate(cliente)
 
-      await loader.dismiss();
+      await this.customLoader.hide();
 
       if (emailEnviado) {
         await this.presentToast(
@@ -234,7 +230,7 @@ async diagnosticarClientesPendientes() {
       await this.cargarClientes();
       
     } catch (err: any) {
-      await loader.dismiss();
+      await this.customLoader.hide();
       console.error('Error al aprobar cliente:', err);
       await this.presentToast(
         'Error al aprobar: ' + (err.message ?? err), 
@@ -272,10 +268,7 @@ async diagnosticarClientesPendientes() {
       return;
     }
 
-    const loader = await this.loadingCtrl.create({ 
-      message: 'Rechazando cliente...' 
-    });
-    await loader.present();
+    await this.customLoader.show('Rechazando cliente...');
 
     try {
       // 1. Actualizar estado en BD
@@ -286,7 +279,7 @@ async diagnosticarClientesPendientes() {
       const emailDestino = cliente.email || user?.email;
 
       if (!emailDestino) {
-        await loader.dismiss();
+        await this.customLoader.hide();
         await this.presentToast('Cliente rechazado pero sin email para notificar', 'warning');
         await this.cargarClientes();
         return;
@@ -295,7 +288,7 @@ async diagnosticarClientesPendientes() {
       // 3. Enviar email de rechazo
       const emailEnviado = await this.emailService.enviarEmailRechazoConTemplate(cliente);
 
-      await loader.dismiss();
+      await this.customLoader.hide();
 
       if (emailEnviado) {
         await this.presentToast(
@@ -312,7 +305,7 @@ async diagnosticarClientesPendientes() {
       await this.cargarClientes();
       
     } catch (err: any) {
-      await loader.dismiss();
+      await this.customLoader.hide();
       console.error('Error al rechazar cliente:', err);
       await this.presentToast(
         'Error al rechazar: ' + (err.message ?? err), 

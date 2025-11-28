@@ -6,10 +6,9 @@ import { IonicModule } from '@ionic/angular';
 
 import { MapsPageRoutingModule } from './maps-routing.module';
 
-import { MapsPage } from './maps.page';
-
 import { GoogleMapsModule } from '@angular/google-maps';
 
+import { MapsPage } from './maps.page';
 
 @NgModule({
   imports: [

@@ -1,11 +1,14 @@
-﻿import { Component, OnInit, signal, computed, OnDestroy } from '@angular/core';
-import { LoadingController, ToastController, ModalController, NavController } from '@ionic/angular';
+﻿import { Component, OnInit, signal, computed, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { ToastController, ModalController, NavController } from '@ionic/angular';
 import { ClienteService } from 'src/app/services/cliente.service';
 import { DetallePedidoModalComponent } from './detalle-pedido-modal/detalle-pedido-modal.component';
 import { Router } from '@angular/router';
+
 import { HapticService } from 'src/app/services/haptic.service';
 import { TipoClienteService } from 'src/app/services/tipo-cliente.service';
 import { AuthService } from 'src/app/services/supabase';
+import { CustomLoaderService } from 'src/app/services/custom-loader.service';
+import { Delivery } from 'src/app/services/delivery';
 
 @Component({
   selector: 'app-tab4-historial',
@@ -13,11 +16,17 @@ import { AuthService } from 'src/app/services/supabase';
   styleUrls: ['./tab4-historial.page.scss'],
   standalone: false,
 })
-export class Tab4HistorialPage implements OnInit, OnDestroy {
+export class Tab4HistorialPage implements OnInit, OnDestroy, AfterViewInit {
+  // ViewChild para scroll
+  @ViewChild('segmentContainer', { static: false }) segmentContainer: ElementRef | undefined;
+  @ViewChild('arrowLeft', { static: false }) arrowLeft: ElementRef | undefined;
+  @ViewChild('arrowRight', { static: false }) arrowRight: ElementRef | undefined;
+
   // Signals para el manejo reactivo del estado
   isLoading = signal<boolean>(false);
   filtroEstado = signal<string>('todos');
   pedidosSignal = signal<any[]>([]);
+  isDelivery: boolean = false;
   
   // Computed signal para filtrar pedidos
   pedidosFiltrados = computed(() => {
@@ -43,16 +52,18 @@ export class Tab4HistorialPage implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private clienteService: ClienteService,
-    private loadingController: LoadingController,
+    private customLoader: CustomLoaderService,
     private toastController: ToastController,
     private modalController: ModalController,
     private navController: NavController,
     private hapticService: HapticService,
     private tipoClienteService: TipoClienteService,
-    private authService: AuthService
-  ) {}
+    private authService: AuthService,
+    private deliveryService: Delivery
+  ){}
 
   async ngOnInit() {
+    this.isDelivery = this.clienteService.esDelivery();
     await this.cargarHistorial();
     await this.iniciarSuscripcion();
   }
@@ -61,6 +72,11 @@ export class Tab4HistorialPage implements OnInit, OnDestroy {
     if (this.subscription) {
       await this.subscription.unsubscribe();
     }
+  }
+
+  ngAfterViewInit() {
+    // Inicializar la visibilidad de las flechas
+    setTimeout(() => this.updateArrowVisibility(), 100);
   }
 
   /**
@@ -90,20 +106,21 @@ export class Tab4HistorialPage implements OnInit, OnDestroy {
       }
     }
 
-    if (!this.mesaActual) {
-      console.warn('⚠️ No hay mesa asignada para cargar historial');
-      this.pedidosSignal.set([]);
-      return;
+    if (!this.mesaActual && this.isDelivery) {
+
+      const pedidos = await this.deliveryService.getClientePedidos(clienteId!)
+      this.pedidosSignal.set(pedidos || []);
+
+    } else {
+  
+      const pedidos = await this.clienteService.getHistorialPedidos();
+  
+      console.log('✅ Pedidos obtenidos:', pedidos?.length || 0);
+      console.log('📦 Pedidos completos:', pedidos);
+      
+      this.pedidosSignal.set(pedidos || []);
     }
 
-    console.log('🏠 Cargando pedidos del cliente:', clienteId);
-
-    const pedidos = await this.clienteService.getHistorialPedidos();
-
-    console.log('✅ Pedidos obtenidos:', pedidos?.length || 0);
-    console.log('📦 Pedidos completos:', pedidos);
-    
-    this.pedidosSignal.set(pedidos || []);
     
   } catch (error) {
     console.error('❌ Error cargando historial:', error);
@@ -277,5 +294,67 @@ export class Tab4HistorialPage implements OnInit, OnDestroy {
       position: 'bottom',
     });
     await toast.present();
+  }
+
+  /**
+   * Manejo del scroll en los botones de filtro
+   */
+  onScroll() {
+    this.updateArrowVisibility();
+  }
+
+  /**
+   * Actualiza la visibilidad de las flechas según la posición del scroll
+   */
+  updateArrowVisibility() {
+    if (this.segmentContainer && this.arrowLeft && this.arrowRight) {
+      const container = this.segmentContainer.nativeElement;
+      const { scrollLeft, scrollWidth, clientWidth } = container;
+      
+      const atStart = scrollLeft <= 10;
+      const atEnd = scrollLeft >= scrollWidth - clientWidth - 10;
+      
+      // Mostrar/ocultar flecha izquierda
+      if (atStart) {
+        this.arrowLeft.nativeElement.classList.remove('visible');
+      } else {
+        this.arrowLeft.nativeElement.classList.add('visible');
+      }
+      
+      // Mostrar/ocultar flecha derecha
+      if (atEnd) {
+        this.arrowRight.nativeElement.classList.remove('visible');
+      } else {
+        this.arrowRight.nativeElement.classList.add('visible');
+      }
+    }
+  }
+
+  /**
+   * Scroll hacia la izquierda
+   */
+  scrollLeft() {
+    if (this.segmentContainer) {
+      const container = this.segmentContainer.nativeElement;
+      container.scrollBy({
+        left: -150,
+        behavior: 'smooth'
+      });
+      setTimeout(() => this.updateArrowVisibility(), 300);
+    }
+  }
+
+  /**
+   * Scroll hacia la derecha
+   */
+  scrollRight() {
+    if (this.segmentContainer) {
+      const container = this.segmentContainer.nativeElement;
+      container.scrollBy({
+        left: 150,
+        behavior: 'smooth'
+      });
+      setTimeout(() => this.updateArrowVisibility(), 300);
+    }
   }
 }

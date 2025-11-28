@@ -1,0 +1,78 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home" icon="arrow-back"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Pedidos Pendientes</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Pedidos Pendientes</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+   <div class="header-card">
+    <ion-card color="dark">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="bicycle-outline"></ion-icon>
+          Pedidos Pendientes de Delivery
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p class="description">Aquí puedes ver los pedidos pendientes de delivery realizados por los clientes.</p>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <div class="pedidos-container">
+    <div *ngIf="arrayPedidos().length > 0; else noPedidos" class="pedidos-list">
+      <div *ngFor="let pedido of arrayPedidos()" class="pedido-card-wrapper">
+        <ion-card class="pedido-card">
+          <ion-card-header>
+            <div class="card-header-content">
+              <ion-card-title>Pedido #{{ pedido.id }}</ion-card-title>
+              <span class="estado-badge" [ngClass]="'estado-' + pedido.estado">{{ pedido.estado }}</span>
+            </div>
+          </ion-card-header>
+          
+          <ion-card-content>
+            <div class="pedido-info">
+              <div class="info-row">
+                <span class="label">Cliente:</span>
+                <span class="value">{{ pedido.cliente.nombre }} {{ pedido.cliente.apellido }}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Total:</span>
+                <span class="value precio">${{ pedido.subtotal }}</span>
+              </div>
+            </div>
+            <ion-button (click)="showDetalles(pedido)" fill="outline">
+              <ion-icon slot="start" name="list"></ion-icon>
+              Ver Detalles
+            </ion-button>
+            <ion-button expand="block" color="success" (click)="confirmarPedido(pedido)" class="confirm-btn ion-padding" [disabled]="pedido.estado !== 'pendiente' && pedido.estado !== 'listo' ">
+              <ion-icon name="checkmark-circle" slot="start"></ion-icon>
+              {{ getTextoEstado(pedido.estado) }}
+            </ion-button>
+            <ion-button expand="block" color="danger" (click)="rechazarPedido(pedido)" class="reject-btn" [disabled]="pedido.estado !== 'pendiente' && pedido.estado !== 'listo' ">
+              <ion-icon slot="start" name="ban-outline"></ion-icon>
+              Rechazar
+            </ion-button>
+          </ion-card-content>
+        </ion-card>
+      </div>
+    </div>
+
+    <ng-template #noPedidos>
+      <div class="sin-pedidos">
+        <ion-icon name="cart-outline"></ion-icon>
+        <p>No hay pedidos pendientes.</p>
+      </div>
+    </ng-template>
+  </div>
+
+</ion-content>

@@ -1,0 +1,62 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-button (click)="volver()" fill="clear" shape="round" slot="end">
+      Volver
+      <ion-icon slot="start" name="home-outline"></ion-icon>
+    </ion-button>
+    <ion-title>Chat con {{ pedido()?.cliente?.nombre }} {{ pedido()?.cliente?.apellido }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="messages-container">
+    <div class="messages-list" #messagesWrapper>
+      
+      <div *ngFor="let mensaje of messages(); let i = index; trackBy: trackByIndex" 
+           class="message-wrapper" 
+           [ngClass]="mensaje.id_delivery == idDelivery ? 'sent' : 'received'">
+        <div class="message-bubble">
+          <div class="message-header">
+            <strong class="sender-name">
+              <span *ngIf="mensaje.id_delivery == idDelivery; else otherUser">Tú</span>
+              <ng-template #otherUser>{{ pedido()?.cliente?.nombre || 'Anónimo' }}</ng-template>
+            </strong>
+          </div>
+          <div class="message-content">
+            {{ mensaje.mensaje }}
+          </div>
+          <div class="message-time">
+            {{ mensaje.created_at | date:'HH:mm' }}
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="messages().length === 0" class="no-messages">
+        <p>No hay mensajes aún.</p>
+      </div>
+      <div class="input-container">
+        <ion-item lines="none" class="input-item">
+          <ion-input 
+            type="text" 
+            placeholder="Escribe un mensaje..." 
+            [(ngModel)]="newMessage" 
+            class="message-input"
+            (keydown.enter)="sendMessage()">
+          </ion-input>
+          <ion-button 
+            (click)="sendMessage()" 
+            fill="clear" 
+            slot="end" 
+            [disabled]="!newMessage.trim()" 
+            class="send-button">
+            <ion-icon slot="icon-only" name="send-sharp"></ion-icon>
+          </ion-button>
+        </ion-item>
+      </div>
+    </div>
+  </div>
+
+
+
+
+</ion-content>

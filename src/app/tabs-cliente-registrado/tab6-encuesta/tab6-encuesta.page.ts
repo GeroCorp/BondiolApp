@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { ToastController, LoadingController, AlertController } from '@ionic/angular';
+import { ToastController, AlertController } from '@ionic/angular';
 import { ClienteService } from 'src/app/services/cliente.service';
 import { EncuestaService } from 'src/app/services/encuesta.service';
 import { HapticService } from 'src/app/services/haptic.service';
 import { TipoClienteService } from 'src/app/services/tipo-cliente.service';
+import { CustomLoaderService } from 'src/app/services/custom-loader.service';
 
 @Component({
   selector: 'app-tab6-encuesta',
@@ -35,7 +36,7 @@ export class Tab6EncuestaPage implements OnInit {
     private clienteService: ClienteService,
     private encuestaService: EncuestaService,
     private toastController: ToastController,
-    private loadingController: LoadingController,
+    private customLoader: CustomLoaderService,
     private hapticService: HapticService,
     private alertController: AlertController,
     private tipoClienteService: TipoClienteService
@@ -146,11 +147,7 @@ export class Tab6EncuestaPage implements OnInit {
 
   async enviarEncuesta() {
   if (this.formularioCompleto()) {
-    const loading = await this.loadingController.create({
-      message: 'Enviando encuesta...',
-      spinner: 'crescent',
-    });
-    await loading.present();
+    await this.customLoader.show('Enviando encuesta...');
 
     try {
       // ✅ OBTENER DATOS DEL CLIENTE
@@ -192,7 +189,7 @@ export class Tab6EncuestaPage implements OnInit {
         isAnonimo  // ✅ PARÁMETRO FALTANTE
       );
 
-      await loading.dismiss();
+      await this.customLoader.hide();
       
       await this.hapticService.vibrateSuccess();
       
@@ -212,7 +209,7 @@ export class Tab6EncuestaPage implements OnInit {
       await alert.present();
       
     } catch (error: any) {
-      await loading.dismiss();
+      await this.customLoader.hide();
       console.error('❌ Error enviando encuesta:', error);
       await this.hapticService.vibrateError();
       

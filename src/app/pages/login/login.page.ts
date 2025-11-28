@@ -1,13 +1,14 @@
 import { Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { ToastController, LoadingController } from '@ionic/angular';
+import { ToastController } from '@ionic/angular';
 import { AuthService } from 'src/app/services/supabase';
 import { Notification } from 'src/app/services/notification';
 import { TipoClienteService } from 'src/app/services/tipo-cliente.service';
 import { SocialAuthService } from 'src/app/services/social-auth.service';
 import { HapticService } from 'src/app/services/haptic.service';
 import { EmailService } from 'src/app/services/email';
+import { CustomLoaderService } from 'src/app/services/custom-loader.service';
 
 @Component({
   selector: 'app-login',
@@ -25,7 +26,7 @@ export class LoginPage {
     private formBuilder: FormBuilder,
     private router: Router,
     private toastController: ToastController,
-    private loadingController: LoadingController,
+    private customLoader: CustomLoaderService,
     private authService: AuthService,
     private v: HapticService,
     private tipoClienteService: TipoClienteService,
@@ -47,10 +48,7 @@ export class LoginPage {
     return;
   }
 
-  const loading = await this.loadingController.create({
-    message: 'Iniciando sesión...'
-  });
-  await loading.present();
+  await this.customLoader.show('Iniciando sesión...');
 
   try {
     // ✅ CRÍTICO: Limpiar datos de cliente anónimo antes de login
@@ -68,7 +66,7 @@ export class LoginPage {
 
     if (clienteCheck && !clienteCheck.user_id) {
       // Email existe pero no tiene user_id (nunca se registró con contraseña)
-      await loading.dismiss();
+      await this.customLoader.hide();
       this.showToast(
         'Este email está registrado. Por favor usa "Continuar con Google" para iniciar sesión.',
         'warning'
@@ -79,7 +77,7 @@ export class LoginPage {
     const { user, session } = await this.authService.login(email, password);
 
     if (!user) {
-      await loading.dismiss();
+      await this.customLoader.hide();
       this.showToast('Error al obtener usuario.', 'danger');
       return;
     }
@@ -96,7 +94,7 @@ export class LoginPage {
       this.notificationService.setUserTag(empleado[0].perfil);
       this.notificationService.setExternalUserId(user.id);
       
-      await loading.dismiss();
+      await this.customLoader.hide();
       this.router.navigate(['/home'], {
         replaceUrl: true,
         state: {
@@ -123,7 +121,7 @@ export class LoginPage {
 
       // Verificar estado del cliente
       if (cliente.estado === 'rechazado') {
-        await loading.dismiss();
+        await this.customLoader.hide();
         await this.authService.logout();
         this.showToast(
           'Tu cuenta fue rechazada. Contacta al administrador para más información.',
@@ -133,7 +131,7 @@ export class LoginPage {
       }
       
       if (cliente.estado === 'pendiente') {
-        await loading.dismiss();
+        await this.customLoader.hide();
         this.router.navigate(['/pre-sala'], { replaceUrl: true });
         return;
       }
@@ -141,7 +139,7 @@ export class LoginPage {
       if (cliente.estado === 'aprobado') {
         this.notificationService.setUserTag('cliente');
         
-        await loading.dismiss();
+        await this.customLoader.hide();
         this.router.navigate(['/home-cliente'], { replaceUrl: true });
         this.showToast(`¡Bienvenido/a ${cliente.nombre}!`, 'success');
         return;
@@ -149,11 +147,11 @@ export class LoginPage {
     }
 
     // Si no es ni empleado ni cliente
-    await loading.dismiss();
+    await this.customLoader.hide();
     this.showToast('Usuario no registrado correctamente.', 'danger');
     
   } catch (error: any) {
-    await loading.dismiss();
+    await this.customLoader.hide();
     console.error('Error en login:', error);
     this.showToast('Error al iniciar sesión: ' + (error.message || error), 'danger');
   }
@@ -213,6 +211,11 @@ export class LoginPage {
       
       case "cliente":
         email = "juanjo@mail.com"
+        password = "123123"
+        break;
+      
+      case "delivery":
+        email = "delivery@resto-empleado.com"
         password = "123123"
         break;
     }

@@ -4,12 +4,16 @@ import { ClienteService } from '../../services/cliente.service';
 import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
 import { ToastController } from '@ionic/angular';
 import { Router } from '@angular/router';
+import { CustomLoaderService } from '../../services/custom-loader.service';
 
 interface Item {
   id: number;
   nombre: string;
   precio: number;
   tipo: 'plato' | 'bebida';
+  descripcion?: string;
+  tiempo?: number;
+  imagenes?: string;
 }
 
 @Component({
@@ -22,6 +26,9 @@ export class Tab1MenuPage implements OnInit {
   nroMesa: number = 7;
   platos: Item[] = [];
   bebidas: Item[] = [];
+
+  allProds = signal<Item[]>([]);
+
   itemSelected: Item | null = null;
   totalConDescuento: number = 0;
   
@@ -36,32 +43,32 @@ export class Tab1MenuPage implements OnInit {
     private authService: AuthService,
     private clienteService: ClienteService,
     private toastController: ToastController,
-    private router: Router
+    private router: Router,
+    private customLoader: CustomLoaderService
   ) { 
   }
 
   async ngOnInit() {
+    await this.customLoader.show('Cargando menú...');
     await Promise.all([
       this.cargarPlatos(),
       this.cargarBebidas()
     ]);
+    this.allProds.set([...this.platos, ...this.bebidas]);
+    this.customLoader.hide();
   }
 
   async actualizarTotal() {
     this.totalConDescuento = await this.clienteService.getTotal();
   }
-
-
-  async checkDenied(){
-    
+  getCantidadItemsPedido(): number {
+    return this.clienteService.pedido().length;
   }
-
   async cargarPlatos(){
     this.isLoadingPlatos = true;
     try {
       this.platos = await this.authService.getPlatos();
       if (this.platos.length > 0) {
-        this.showToast('Platos cargados', 'success');
       } else {
         this.showToast('No se encontraron platos', 'medium');
       }
@@ -78,7 +85,6 @@ export class Tab1MenuPage implements OnInit {
     try {
       this.bebidas = await this.authService.getBebidas();
       if (this.bebidas.length > 0) {
-        this.showToast('Bebidas cargadas', 'success');
       } else {
         this.showToast('No se encontraron bebidas', 'medium');
       }
@@ -102,6 +108,23 @@ export class Tab1MenuPage implements OnInit {
     }, 300);
   }
 
+  getFirstImage(imagenes: string | string[] | undefined): string {
+    if (!imagenes) {
+      return 'assets/placeholder.png';
+    }
+    
+    if (typeof imagenes === 'string') {
+      const images = imagenes.split(',');
+      return images[0]?.trim() || 'assets/placeholder.png';
+    }
+    
+    if (Array.isArray(imagenes) && imagenes.length > 0) {
+      return imagenes[0]?.trim() || 'assets/placeholder.png';
+    }
+    
+    return 'assets/placeholder.png';
+  }
+
   async onAddItem(item: Item){
     this.clienteService.addItem(item);
     this.showToast(`${item.nombre} agregado al pedido`, 'success');
@@ -122,6 +145,9 @@ export class Tab1MenuPage implements OnInit {
 
   volverHome(){
     this.router.navigate(["/home-cliente"])
+  }
+  hacerPedido() {
+    this.router.navigate(["/tabs-cliente-registrado/tab2-pedido"]);
   }
 
   async showToast(message: string, color: 'success' | 'danger' | 'medium') {

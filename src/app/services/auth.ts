@@ -2,23 +2,41 @@ import { Injectable } from '@angular/core';
 import { createClient, SupabaseClient, AuthError } from '@supabase/supabase-js';
 import { environment } from 'src/environments/environment';
 
+// ✅ Instancia ÚNICA de Supabase con persistencia de sesión
+let supabaseInstance: SupabaseClient | null = null;
+
+export const supabaseClient = (() => {
+  if (!supabaseInstance) {
+    supabaseInstance = createClient(
+      environment.SUPABASE_URL,
+      environment.SUPABASE_ANON_KEY,
+      {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          storage: typeof window !== 'undefined' ? localStorage : undefined,
+          storageKey: 'restoapp-auth'
+        }
+      }
+    );
+  }
+  return supabaseInstance;
+})();
+
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private supabase: SupabaseClient;
+  public client: SupabaseClient;
 
   constructor() {
-    this.supabase = createClient(
-      environment.SUPABASE_URL,
-      environment.SUPABASE_ANON_KEY
-    );
+    this.client = supabaseClient; // ✅ Usar instancia única con persistencia
   }
 
   // ✅ Iniciar sesión con email y contraseña
   async login(email: string, password: string) {
     try {
-      const { data, error } = await this.supabase.auth.signInWithPassword({
+      const { data, error } = await this.client.auth.signInWithPassword({
         email,
         password,
       });
@@ -40,7 +58,7 @@ export class AuthService {
   // ✅ Cerrar sesión
   async logout() {
     try {
-      const { error } = await this.supabase.auth.signOut();
+      const { error } = await this.client.auth.signOut();
       if (error) throw new Error(this.mapAuthError(error));
     } catch (err) {
       console.error('Error en logout:', err);
@@ -50,14 +68,14 @@ export class AuthService {
 
   // ✅ Obtener usuario actual
   async getUser() {
-    const { data, error } = await this.supabase.auth.getUser();
+    const { data, error } = await this.client.auth.getUser();
     if (error) throw new Error('No se pudo obtener el usuario actual.');
     return data.user;
   }
 
   // ✅ Obtener empleado (perfil) desde la tabla según user_id
   async getEmpleadoByUserId(userId: string) {
-    const { data, error } = await this.supabase
+    const { data, error } = await this.client
       .from('empleados')
       .select('*')
       .eq('user_id', userId);

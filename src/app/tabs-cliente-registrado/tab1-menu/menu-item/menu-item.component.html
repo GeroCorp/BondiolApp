@@ -6,11 +6,15 @@
       
     <ion-card-header>
       <div class="carrusel">
-        <ion-img [src]="item.imagenes[currentImageIndex]" width="70%" height="auto"></ion-img>
-        <div class="carrusel-controls">
-          <button (click)="prevImage()" [disabled]="currentImageIndex === 0"><ion-icon name="caret-back-outline"></ion-icon></button>
-          <button (click)="nextImage()" [disabled]="currentImageIndex === item.imagenes.length - 1"><ion-icon name="caret-forward-outline"></ion-icon></button>
-        </div>
+        @if (item?.imagenes && item.imagenes.length > 0) {
+          <ion-img [src]="item.imagenes[currentImageIndex]"></ion-img>
+          <div class="carrusel-controls">
+            <button (click)="prevImage()" [disabled]="currentImageIndex === 0"><ion-icon name="caret-back-outline"></ion-icon></button>
+            <button (click)="nextImage()" [disabled]="currentImageIndex === item.imagenes.length - 1"><ion-icon name="caret-forward-outline"></ion-icon></button>
+          </div>
+        } @else {
+          <ion-img src="assets/placeholder.png"></ion-img>
+        }
       </div>
     </ion-card-header>
     <div class="sub-header">

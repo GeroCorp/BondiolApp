@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { environment } from 'src/environments/environment';
+import { SupabaseClient } from '@supabase/supabase-js';
+import { supabaseClient } from './auth'; // ✅ Importar instancia centralizada
 
 @Injectable({
   providedIn: 'root'
@@ -9,10 +9,7 @@ export class EncuestaService {
   private supabase: SupabaseClient;
 
   constructor() {
-    this.supabase = createClient(
-      environment.SUPABASE_URL,
-      environment.SUPABASE_ANON_KEY
-    );
+    this.supabase = supabaseClient; // ✅ Usar instancia centralizada
   }
 
   /**

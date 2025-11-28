@@ -43,6 +43,7 @@
 //     padding-bottom: env(safe-area-inset-bottom);
 // }
 
+
 // Sobreescribir el offset-bottom del Shadow DOM de Ionic
 
 
@@ -93,3 +94,95 @@
 .custom-html-alert .alert-message {
   white-space: pre-line;
 }
+
+// ✅ CUSTOM LOADER CON ICONO DE LA APP
+.custom-loader {
+  --loading-bg-overlay: rgba(0, 0, 0, 0.5) !important;
+  
+  ion-spinner {
+    display: none !important;
+  }
+
+  .loading-wrapper {
+    background: #961d1d;
+    --color: var(--text-primary) !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 30px;
+    border-radius: 12px;
+  }
+
+  .loading-wrapper::before {
+    content: '';
+    width: 100px;
+    height: 100px;
+    background-image: url('assets/icon/icon-only.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    animation: pulse 500ms ease-in-out infinite;
+  }
+
+  .loading-message {
+    --color: var(--text-primary) !important;
+    font-size: 1.8rem;
+    text-align: center;
+  }
+}
+.sc-ion-loading-md-h{
+  color: white !important;
+  font-size: 1rem;
+  font-weight: bold;
+}
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+// ✅ MEJORAR VISUALIZACIÓN DE CARDS - EVITAR CORTES
+// Aplicar scroll-snap a contenedores de cards
+// .wrap,
+// ion-content {
+//   scroll-behavior: smooth;
+// }
+
+// // Cards dentro de listas verticales
+// ion-card {
+//   margin: 12px;
+//   scroll-snap-align: start;
+//   scroll-snap-stop: always;
+// }
+
+// // Contenedores con multiple cards (pedidos, mesas, etc.)
+// .pedido-card,
+// .card-container,
+// [class*="list"],
+// [class*="cards"] {
+//   scroll-snap-align: center;
+//   scroll-snap-stop: always;
+// }
+
+// // Ajustar altura de contenedores para mostrar 1-2 cards máximo
+// ion-content.pedidos-content,
+// ion-content.mesas-content,
+// ion-content.consultas-content {
+//   --padding-bottom: 80px;
+// }
+
+// // Asegurar que cada card tenga tamaño consistente
+// .pedido-card,
+// .mesa-card,
+// .consulta-card,
+// ion-card {
+//   min-height: 250px;
+//   max-height: 500px;
+//   width: 100%;
+// }
+

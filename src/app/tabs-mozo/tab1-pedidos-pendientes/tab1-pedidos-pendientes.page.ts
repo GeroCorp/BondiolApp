@@ -1,11 +1,12 @@
 ﻿import { Component, OnInit } from '@angular/core';
-import { AlertController, ToastController, LoadingController } from '@ionic/angular';
+import { AlertController, ToastController } from '@ionic/angular';
 import { AuthService } from 'src/app/services/supabase';
 import { Vibration } from '@awesome-cordova-plugins/vibration/ngx';
 import { ESTADO, Mozo } from 'src/app/services/mozo';
 import { Notification } from 'src/app/services/notification';
 
 import { HapticService } from 'src/app/services/haptic.service';
+import { CustomLoaderService } from 'src/app/services/custom-loader.service';
 interface Pedido {
   id: number;
   mesa_id: number;
@@ -43,7 +44,7 @@ export class Tab1PedidosPendientesPage implements OnInit {
     private authService: AuthService,
     private alertController: AlertController,
     private toastController: ToastController,
-    private loadingController: LoadingController,
+    private customLoader: CustomLoaderService,
     private vibration: Vibration,
     private notificationService: Notification,
     private hapticService: HapticService
@@ -176,11 +177,7 @@ export class Tab1PedidosPendientesPage implements OnInit {
   }
 
   async procesarRechazo(pedido: Pedido, motivo?: string) {
-    const loading = await this.loadingController.create({
-      message: 'Rechazando pedido...',
-      spinner: 'crescent',
-    });
-    await loading.present();
+    await this.customLoader.show('Rechazando pedido...');
 
     const msg = motivo ? `Tu pedido de la mesa ${pedido.mesa?.numero} fue rechazado. Motivo: ${motivo}` : `Tu pedido de la mesa ${pedido.mesa?.numero} fue rechazado.`;
 
@@ -194,13 +191,13 @@ export class Tab1PedidosPendientesPage implements OnInit {
         pedido.cliente_id
       );
 
-      await loading.dismiss();
+      await this.customLoader.hide();
       this.showToast('Pedido rechazado. El cliente podrá modificarlo.', 'warning');
       this.vibration.vibrate([100, 50, 100]);
 
       await this.cargarPedidosPendientes();
     } catch (error) {
-      await loading.dismiss();
+      await this.customLoader.hide();
       console.error('Error al rechazar pedido:', error);
       await this.hapticService.vibrateError();
       this.showToast('Error al rechazar el pedido', 'danger');
@@ -237,11 +234,7 @@ export class Tab1PedidosPendientesPage implements OnInit {
   }
 
   async procesarConfirmacion(pedido: Pedido) {
-    const loading = await this.loadingController.create({
-      message: 'Confirmando pedido...',
-      spinner: 'crescent',
-    });
-    await loading.present();
+    await this.customLoader.show('Confirmando pedido...');
 
     try {
       await this.mozoService.actualizarEstadoPedido(pedido.id, ESTADO.CONFIRMADO);
@@ -266,12 +259,12 @@ export class Tab1PedidosPendientesPage implements OnInit {
         pedido.cliente_id
       );
 
-      await loading.dismiss();
+      await this.customLoader.hide();
       this.showToast('Pedido confirmado y enviado a cocina/bar', 'success');
 
       await this.cargarPedidosPendientes();
     } catch (error) {
-      await loading.dismiss();
+      await this.customLoader.hide();
       console.error('Error al confirmar pedido:', error);
       await this.hapticService.vibrateError();
       this.showToast('Error al confirmar el pedido', 'danger');

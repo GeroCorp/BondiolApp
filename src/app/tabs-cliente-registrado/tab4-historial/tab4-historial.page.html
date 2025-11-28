@@ -17,26 +17,41 @@
 
   <!-- Filtros -->
   <ion-toolbar>
-    <ion-segment value="todos" (ionChange)="cambiarFiltro($event.detail.value)">
-      <ion-segment-button value="todos">
-        <ion-label>Todos</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="pendiente">
-        <ion-label>Pendientes</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="en_preparación">
-        <ion-label>En preparación</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="listo">
-        <ion-label>Listo</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="entregado">
-        <ion-label>Entregados</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="pagos">
-        <ion-label>Pagados</ion-label>
-      </ion-segment-button>
-    </ion-segment>
+    <div class="scroll-arrows">
+      <!-- Flecha izquierda -->
+      <div class="arrow-left" #arrowLeft (click)="scrollLeft()">
+        <ion-icon name="chevron-back"></ion-icon>
+      </div>
+      
+      <!-- Contenedor de segment -->
+      <div class="segment-container" #segmentContainer (scroll)="onScroll()">
+        <ion-segment value="todos" (ionChange)="cambiarFiltro($event.detail.value)" scrollable>
+          <ion-segment-button value="todos">
+            <ion-label>Todos</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="pendiente">
+            <ion-label>Pendientes</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="en_preparación">
+            <ion-label>En preparación</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="listo">
+            <ion-label>Listo</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="entregado">
+            <ion-label>Entregados</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="pagos">
+            <ion-label>Pagados</ion-label>
+          </ion-segment-button>
+        </ion-segment>
+      </div>
+      
+      <!-- Flecha derecha -->
+      <div class="arrow-right" #arrowRight (click)="scrollRight()">
+        <ion-icon name="chevron-forward"></ion-icon>
+      </div>
+    </div>
   </ion-toolbar>
 </ion-header>
 
@@ -69,9 +84,11 @@
               <ion-icon [name]="getIconoEstado(pedido.estado)"></ion-icon>
               Pedido #{{ pedido.id }}
             </ion-card-title>
-            <ion-card-subtitle>
-              Mesa {{ pedido.mesa?.numero }} • {{ formatearFecha(pedido.fecha) }}
-            </ion-card-subtitle>
+            @if(!isDelivery) {
+              <ion-card-subtitle>
+                Mesa {{ pedido.mesa?.numero }} • {{ formatearFecha(pedido.fecha) }}
+              </ion-card-subtitle>
+            }
           </div>
           <ion-badge [color]="getColorEstado(pedido.estado)" class="estado-badge">
             {{ getTextoEstado(pedido.estado) }}
@@ -84,11 +101,19 @@
         <div class="resumen-pedido">
           <div class="items-info">
             <ion-icon name="restaurant-outline"></ion-icon>
-            <span>{{ calcularTotalItems(pedido.detalles_pedido) }} productos</span>
+            @if (!isDelivery){
+              <span>{{ calcularTotalItems(pedido.detalles_pedido) }} productos</span>
+            } @else {
+              <span>{{ calcularTotalItems(pedido.detalles) }} productos</span>
+            }
           </div>
           <div class="total-info">
             <ion-icon name="card-outline"></ion-icon>
-            <span><strong>Total: ${{ pedido.total }}</strong></span>
+            @if (!isDelivery){
+              <span><strong>Total: ${{ pedido.total }}</strong></span>
+            } @else {
+              <span><strong>Total: ${{ pedido.subtotal }}</strong></span>
+            }
           </div>
         </div>
 

@@ -1,0 +1,115 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home" icon="caret-back" text=""></ion-back-button>
+    </ion-buttons>
+    <ion-title>
+      <ion-icon slot="start" name="checkmark-done-outline"></ion-icon> Pedidos
+    </ion-title>
+  </ion-toolbar>
+  <!-- Filtros -->
+  <ion-toolbar>
+    <div class="scroll-arrows">
+      <!-- Flecha izquierda -->
+      <div class="arrow-left" #arrowLeft (click)="scrollLeft()">
+        <ion-icon name="chevron-back"></ion-icon>
+      </div>
+      
+      <!-- Contenedor de segment -->
+      <div class="segment-container" #segmentContainer (scroll)="onScroll()">
+        <ion-segment [(ngModel)]="filtroEstado" (ionChange)="filtrarPedidos()" scrollable>
+          <ion-segment-button value="todos">
+            <ion-label>Todos</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="confirmado">
+            <ion-label>Confirmados</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="listo">
+            <ion-label>Listos</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="entregado">
+            <ion-label>Entregados</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="pago_pendiente">
+            <ion-label>💳 Pagos</ion-label>
+          </ion-segment-button>
+        </ion-segment>
+      </div>
+    
+      <!-- Flecha derecha -->
+      <div class="arrow-right" #arrowRight (click)="scrollRight()">
+        <ion-icon name="chevron-forward"></ion-icon>
+      </div>
+    </div>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="pedido-content">
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+  @if (pedidos()) {
+    <div class="pedido-wrapper">
+      @for (pedido of pedidosFiltrados(); track $index){
+        <!-- (click)="showMapRoute(pedido.direccion)" -->
+        <ion-card class="pedido-card ion-margin" >
+          <ion-card-header>
+            <ion-card-title>
+             {{ formatearDireccion(pedido.direccion) }}
+            </ion-card-title>
+            <ion-card-subtitle class="pedido-info">
+              <div class="pedido-details">
+                <span> <ion-icon slot="start" name="person-outline"></ion-icon> {{ pedido.cliente.nombre }}  {{ pedido.cliente.apellido }}</span>
+                <span class="pedido-id">Pedido #{{ pedido.id }}</span>
+                <ion-badge [color]="formatearColor(pedido.estado)" class="estado-badge">
+                  {{ pedido.estado | uppercase }}
+                </ion-badge>
+              </div>
+              <div class="fecha-info">
+                <ion-icon slot="start" name="time-outline"></ion-icon>
+                {{ formatearFecha(pedido.created_at) }}
+              </div>
+            </ion-card-subtitle>
+          </ion-card-header>
+
+          <ion-card-content>
+            <div class="items-section">
+              <h4 class="items-title">
+                <ion-icon slot="start" name="restaurant-outline"></ion-icon>
+                Items del Pedido
+              </h4>
+              <ion-list class="items-list">
+                @for (item of pedido.items; track $index) {
+                  <ion-item class="item-pedido">
+                    <ion-icon slot="start" name="checkbox-outline"></ion-icon>
+                    <ion-label>
+                      <h3>{{ item.nombre_prod }} (x{{ item.cantidad }})</h3>
+                    </ion-label>
+                  </ion-item>
+                }
+              </ion-list>
+            </div>
+            <div class="pedido-actions">
+              <ion-button fill="outline" expand="block" color="primary" (click)="showMaproute(pedido.id)">
+                <ion-icon slot="start" name="map-outline"></ion-icon>
+                Ver Ruta
+              </ion-button>
+              
+              <ion-button expand="block" color="success" [disabled]="toDisableEstado(pedido.estado)" (click)="actualizarEstadoPedido(pedido)">
+                <ion-icon slot="start" name="checkmark-done-outline"></ion-icon>
+                {{ formatEstado(pedido.estado) }}
+              </ion-button>
+              
+              <ion-button expand="block" class="btn-cancel">
+                <ion-icon slot="start" name="close-outline"></ion-icon>
+                Cancelar Pedido
+              </ion-button>
+
+            </div>
+          </ion-card-content>
+        </ion-card>
+      }
+    </div>
+  }
+
+</ion-content>

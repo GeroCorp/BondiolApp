@@ -1,0 +1,435 @@
+ion-header {
+  ion-toolbar {
+    --background: linear-gradient(135deg, #8b0000, #a52a2a, #b22222);
+    --color: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+    --min-height: 60px;
+    ion-title {
+      font-weight: 700;
+      font-size: 1.3rem;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      
+      ion-icon {
+        color: #4a9eff;
+        margin-right: 8px;
+        font-size: 1.4rem;
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+      }
+    }
+
+    ion-button {
+      --color: #fff;
+    }
+
+    ion-back-button {
+      --color: #fff;
+    }
+  }
+}
+
+// Contenedor del segment scrollable
+.segment-container {
+  padding: 8px 40px; // Más padding lateral para las flechas
+  background: rgba(0,0,0,0.3);
+  border-radius: 12px;
+  margin: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  position: relative;
+  
+  // Ocultar scrollbar en webkit browsers
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  
+  // Ocultar scrollbar en Firefox
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+ion-segment {
+  background: transparent;
+  min-width: max-content;
+  display: flex;
+  flex-wrap: nowrap;
+  
+  ion-segment-button {
+    --background: transparent;
+    --background-checked: linear-gradient(135deg, #4a9eff, #2d7dd2);
+    --color: rgba(255,255,255,0.7);
+    --color-checked: #fff;
+    --indicator-color: transparent;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: none;
+    min-height: 36px;
+    min-width: auto;
+    flex-shrink: 0;
+    padding: 0 12px;
+    margin: 0 4px;
+    transition: all 0.3s ease;
+
+    &::part(native) {
+      border-radius: 8px;
+    }
+
+    ion-label {
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    // Responsive adjustments
+    @media (max-width: 576px) {
+      font-size: 0.75rem;
+      min-height: 32px;
+      padding: 0 8px;
+      
+      ion-label {
+        font-size: 0.75rem;
+      }
+    }
+  }
+}
+
+// Flechas indicadoras de scroll
+.scroll-arrows {
+  position: relative;
+  
+  .arrow-left,
+  .arrow-right {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(74, 158, 255, 0.9);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 15;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    
+    &:hover {
+      background: rgba(74, 158, 255, 1);
+      transform: translateY(-50%) scale(1.1);
+    }
+    
+    &:active {
+      transform: translateY(-50%) scale(0.95);
+    }
+  }
+  
+  .arrow-left {
+    left: 4px;
+    
+    &.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+  
+  .arrow-right {
+    right: 4px;
+    
+    &.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+}
+
+// Animación suave para el scroll
+.segment-container {
+  scroll-behavior: smooth;
+}
+
+// Animaciones adicionales para las flechas
+@keyframes arrowPulse {
+  0% { transform: translateY(-50%) scale(1); }
+  50% { transform: translateY(-50%) scale(1.05); }
+  100% { transform: translateY(-50%) scale(1); }
+}
+
+.scroll-arrows .arrow-left.visible,
+.scroll-arrows .arrow-right.visible {
+  animation: arrowPulse 2s ease-in-out infinite;
+  
+  &:hover {
+    animation: none;
+  }
+}
+
+// Responsive adjustments para las flechas
+@media (max-width: 576px) {
+  .scroll-arrows {
+    .arrow-left,
+    .arrow-right {
+      width: 28px;
+      height: 28px;
+      font-size: 14px;
+    }
+    
+    .arrow-left {
+      left: 2px;
+    }
+    
+    .arrow-right {
+      right: 2px;
+    }
+  }
+  
+  .segment-container {
+    padding: 8px 32px; // Menos padding en móviles
+  }
+}
+
+ion-content {
+  --background: linear-gradient(180deg, #1a1a1a 0%, #2d2d2d 50%, #1a5a8a 100%);
+}
+
+.pedido-content {
+  --padding-top: 10px;
+  --padding-bottom: 10px;
+  --padding-start: 16px;
+  --padding-end: 16px;
+
+}
+
+
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+.pedidos-list {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 20px; 
+}
+
+.pedido-card {
+  background: linear-gradient(145deg, #2a2a2a, #1e1e1e);
+  border-radius: 14px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.05);
+  margin-bottom: 16px;
+
+  
+  ion-card-header {
+    padding: 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    
+    ion-card-title {
+      color: #ff6b47;
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      
+      .sector-badge {
+        font-size: 0.8rem;
+        font-weight: 600;
+      }
+    }
+    
+    ion-card-subtitle {
+      color: rgba(255,255,255,0.7);
+      
+      .pedido-info {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        
+            .fecha-info {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9rem;
+            
+            ion-icon {
+                color: #4a9eff;
+            }
+            }
+            
+        }
+    }
+}
+.pedido-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  
+      .fecha-info {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.9rem;
+      
+      ion-icon {
+          color: #4a9eff;
+      }
+      }
+      
+  }
+.pedido-details {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  
+  .pedido-id {
+    font-size: 0.9rem;
+    color: rgba(255,255,255,0.8);
+    font-weight: 500;
+  }
+  
+  .estado-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+}
+  
+  ion-card-content {
+    padding: 16px;
+    color: #ffffff;
+    
+    .items-section {
+      margin-bottom: 20px;
+      
+      .items-title {
+        color: #ff6b47;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        
+        ion-icon {
+          color: #4a9eff;
+        }
+      }
+      
+      .items-list {
+        background: transparent;
+        
+        .item-pedido {
+          --background: rgba(255,255,255,0.05);
+          --border-color: transparent;
+          margin-bottom: 8px;
+          border-radius: 8px;
+          border-left: 3px solid #ff6b47;
+          transition: all 0.3s ease;
+          
+          &:hover {
+            --background: rgba(255,255,255,0.08);
+            transform: translateX(4px);
+          }
+          
+          ion-icon {
+            color: #4a9eff;
+          }
+          
+          ion-label {
+            h3 {
+              color: #ffffff;
+              font-size: 0.95rem;
+              margin: 0;
+              font-weight: 500;
+            }
+          }
+        }
+      }
+    }
+    
+    .pedido-actions {
+      margin-top: 16px;
+      
+      ion-button {
+        --border-radius: 12px;
+        font-weight: 600;
+        height: 46px;
+        
+        &[color="success"] {
+          --background: linear-gradient(135deg, #28a745, #20c997);
+          --color: #ffffff;
+          box-shadow: 0 3px 12px rgba(40,167,69,0.4);
+        }
+        
+        &[disabled] {
+          --background: rgba(255,255,255,0.1);
+          --color: rgba(255,255,255,0.4);
+          box-shadow: none;
+        }
+      }
+    }
+  }
+}
+
+.botones-accion {
+  margin-top: 16px;
+
+  ion-button {
+    font-weight: 700;
+    height: 48px;
+    --border-radius: 12px;
+    text-transform: none;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+
+    ion-icon {
+      font-size: 22px;
+    }
+
+    &[color="success"] {
+      --background: linear-gradient(135deg, #4a9eff, #2d7dd2);
+      box-shadow: 0 3px 12px rgba(74, 158, 255, 0.4);
+
+      &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 16px rgba(74, 158, 255, 0.5);
+      }
+    }
+  }
+
+  ion-button[fill="outline"] {
+    --border-width: 2px;
+    --border-color: #4a9eff;
+    --color: #4a9eff;
+    font-weight: 600;
+
+    &:hover {
+      --background: rgba(74, 158, 255, 0.1);
+    }
+  }
+}
+
+span {
+    font-size: 1.05rem;
+  }

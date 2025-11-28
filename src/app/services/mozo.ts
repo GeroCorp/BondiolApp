@@ -1,7 +1,7 @@
 import { Injectable, signal } from '@angular/core';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { environment } from 'src/environments/environment';
+import { SupabaseClient } from '@supabase/supabase-js';
 import { Notification } from './notification';
+import { supabaseClient } from './auth'; // ✅ Importar instancia centralizada
 
 export enum ESTADO {
   PENDIENTE = 'pendiente',
@@ -21,27 +21,27 @@ export class Mozo {
   constructor(
     private notificationService: Notification
   ) {
-    this.supabase = createClient(environment.SUPABASE_URL, environment.SUPABASE_ANON_KEY);
+    this.supabase = supabaseClient; // ✅ Usar instancia centralizada
   }
   
   async getChatsMesas(id_mesa: number){
-  const hoy = new Date();
-  const fechaHoy = hoy.toISOString().split('T')[0]; // Esto da formato YYYY-MM-DD
+    const hoy = new Date();
+    const fechaHoy = hoy.toISOString().split('T')[0]; // Esto da formato YYYY-MM-DD
 
-  const { data, error } = await this.supabase
-  .from('mensajes')
-  .select(`*`)
-  .eq('nroMesa', id_mesa)
-  .gte('date_sended', `${fechaHoy}T00:00:00.000Z`) // Desde las 00:00:00 de hoy
-  .lte('date_sended', `${fechaHoy}T23:59:59.999Z`) // Hasta las 23:59:59 de hoy
-  .order('date_sended', { ascending: true });
+    const { data, error } = await this.supabase
+    .from('mensajes')
+    .select(`*`)
+    .eq('nroMesa', id_mesa)
+    .gte('date_sended', `${fechaHoy}T00:00:00.000Z`) // Desde las 00:00:00 de hoy
+    .lte('date_sended', `${fechaHoy}T23:59:59.999Z`) // Hasta las 23:59:59 de hoy
+    .order('date_sended', { ascending: true });
 
-  if (error) {
-    console.error('Error al obtener los mensajes del chat:', error);
-    return [];
+    if (error) {
+      console.error('Error al obtener los mensajes del chat:', error);
+      return [];
+    }
+    return data;
   }
-  return data;
-}
 
   async sendMessage(id_mesa: number, contenido: string, nombre_usuario: string = 'Mozo') {
     const { error } = await this.supabase

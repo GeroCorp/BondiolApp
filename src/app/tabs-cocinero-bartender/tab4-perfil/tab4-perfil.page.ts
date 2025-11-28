@@ -1,10 +1,11 @@
 ﻿import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { LoadingController, ToastController } from '@ionic/angular';
+import { ToastController } from '@ionic/angular';
 import { PerfilService } from 'src/app/services/perfilService';
 import { AuthService } from 'src/app/services/supabase';
 
 import { HapticService } from 'src/app/services/haptic.service';
+import { CustomLoaderService } from 'src/app/services/custom-loader.service';
 interface Empleado {
   id_empleado?: number;
   user_id?: string;
@@ -28,13 +29,14 @@ export class Tab4PerfilPage implements OnInit {
 
   perfil: any;
   empleadoPerfil: Empleado[] = [];
+  empleado: Empleado | null = null;
   
   constructor(
     private supabaseService: AuthService,
     private perfilService: PerfilService,
     private router: Router,
     private toastController: ToastController,
-    private loadingController: LoadingController,
+    private customLoader: CustomLoaderService,
     private hapticService: HapticService
   ) { 
     this.perfil = this.perfilService.getPerfil();
@@ -46,19 +48,16 @@ export class Tab4PerfilPage implements OnInit {
   }
 
   async cargarPerfilEmpleado() {
-    const loader = await this.loadingController.create({ 
-      message: 'Cargando perfil' 
-    });
-    await loader.present();
+    await this.customLoader.show('Cargando perfil');
     
     try {
-      this.empleadoPerfil = await this.supabaseService.cargarEmpleado();
+      this.empleado = await this.supabaseService.cargarEmpleado();
     } catch (err: any) {
       console.error('Error cargando empleado:', err);
       await this.hapticService.vibrateError();
       await this.showToast('Error cargando empleado: ' + (err.message ?? err), 'danger');
     } finally {
-      await loader.dismiss();
+      await this.customLoader.hide();
     }
   }
 

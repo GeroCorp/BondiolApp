@@ -8,10 +8,20 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { GoogleMapsModule } from '@angular/google-maps';
+import { CustomSpinnerComponent } from 'src/app/components/custom-spinner/custom-spinner.component';
+
 
 @NgModule({
   declarations: [AppComponent],
-  imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule, ReactiveFormsModule, QRCodeComponent, GoogleMapsModule],
+  imports: [
+    BrowserModule, 
+    IonicModule.forRoot(), 
+    AppRoutingModule, 
+    ReactiveFormsModule, 
+    QRCodeComponent, 
+    GoogleMapsModule,
+    CustomSpinnerComponent // ✅ Importar como standalone component
+  ],
   providers: [Vibration, { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }],
   bootstrap: [AppComponent],
 })

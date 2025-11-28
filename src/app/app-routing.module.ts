@@ -76,10 +76,15 @@ const routes: Routes = [
     loadChildren: () => import('./pages/auth-callback/auth-callback.module').then( m => m.AuthCallbackPageModule)
   },
   {
+    path: 'tabs-delivery',
+    loadChildren: () => import('./tabs-delivery/tabs-delivery.module').then( m => m.TabsDeliveryPageModule)
+  },
+  {
     path: '**',
     redirectTo: 'splash',
     pathMatch: 'full'
-  }
+  },
+
 ];
 
 @NgModule({

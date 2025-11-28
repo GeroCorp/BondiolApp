@@ -2,6 +2,10 @@
   <ion-toolbar color="primary">
     <ion-title> <ion-icon name="restaurant"></ion-icon> RestoApp </ion-title>
     <ion-buttons slot="end">
+      <ion-button (click)="recargarDatos()" [disabled]="cargandoRecarga()">
+        <ion-spinner *ngIf="cargandoRecarga()" name="crescent"></ion-spinner>
+        <ion-icon *ngIf="!cargandoRecarga()" name="refresh-outline"></ion-icon>
+      </ion-button>
       <ion-button (click)="logout()">
         <ion-icon name="log-out-outline"></ion-icon>
       </ion-button>
@@ -13,18 +17,22 @@
   <div class="cliente-wrapper">
     <!-- Header de bienvenida -->
     <div class="bienvenida-header">
-      <div class="avatar-container">
-        <img
-          [src]="cliente?.foto || 'assets/avatar_placeholder.svg'"
-          alt="Foto de perfil"
-        />
+      <div class="bienvenida-card">
+        <div class="avatar-container">
+          <img
+            [src]="cliente?.foto || 'assets/avatar_placeholder.svg'"
+            alt="Foto de perfil"
+          />
+        </div>
+        <div class="bienvenida-info">
+          <h2>{{ cliente?.nombre }} {{ cliente?.apellido }}</h2>
+          <strong *ngIf="mesaVerificada() && mesaAsignada()">Mesa {{ mesaAsignada() }} Asignada</strong>
+          <strong *ngIf="isDelivery()">Direccion ingresada: <br>{{direccionDelivery}}</strong>
+        </div>
       </div>
-      <h1>¡Bienvenido/a!</h1>
-      <h2>{{ cliente?.nombre }} {{ cliente?.apellido }}</h2>
-      <p class="email">{{ cliente?.email }}</p>
     </div>
 
-    @if (isRegistrado && reservaActivaHoy && !mesaVerificada) {
+    @if (isRegistrado() && reservaActivaHoy && !mesaVerificada()) {
 <ion-card color="success">
   <ion-card-header>
     <ion-card-title>
@@ -65,114 +73,97 @@
 </ion-card>
 }
 
-    <!-- Botón de escaneo QR prominente -->
-    @if (!mesaVerificada && mesaAsignada) {
-    <ion-card color="warning">
-      <ion-card-header>
-        <ion-card-title>
-          <ion-icon name="qr-code-outline"></ion-icon>
-          Verifica tu Mesa Asignada
-        </ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <p>
-          Tienes asignada la Mesa {{ mesaAsignada }}. Para comenzar a usar el
-          restaurante, escanea el código QR de tu mesa para verificarla.
-        </p>
-        <ion-button expand="block" size="large" (click)="escanearQRMesa()">
-          <ion-icon slot="start" name="qr-code"></ion-icon>
-          Verificar Mesa {{ mesaAsignada }}
-        </ion-button>
-        <ion-button expand="block" size="large" (click)="testMesa()">
-          <ion-icon slot="start" name="qr-code"></ion-icon>
-          Verificar Mesa debug {{ mesaAsignada }}
-        </ion-button>
-      </ion-card-content>
+  <!-- Botón de escaneo QR prominente -->
+  @if (!isDelivery() && !mesaAsignada()) {
+      
+    <ion-card color="danger">
+    <ion-card-header>
+      <ion-card-title>
+        <ion-icon name="alert-circle-outline"></ion-icon>
+        ¿Qué desea hacer?
+      </ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-button
+        expand="block"
+        size="large"
+        fill="outline"
+        (click)="escanearQRListaEspera()"
+      >
+        <ion-icon slot="start" name="time-outline"></ion-icon>
+        Unirse a Lista de Espera
+      </ion-button>
+      <ion-button
+      *ngIf="isRegistrado()"
+        expand="block"
+        size="large"
+        fill="outline"
+        (click)="pedirDelivery()"
+      >
+       <ion-icon slot="start" name="bicycle-outline"></ion-icon>
+        Pedir delivery
+      </ion-button>
+      <ion-button
+        expand="block"
+        size="large"
+        fill="outline"
+        (click)="verReservas()"
+      >
+        <ion-icon slot="start" name="calendar-outline"></ion-icon>
+        Hacer Reserva
+      </ion-button>
+    
+      <ion-button
+        expand="block"
+        size="large"
+        fill="outline"
+        color="dark"
+        (click)="unirseListaEsperaSimulado()"
+        style="margin-top: 10px"
+      >
+        <ion-icon slot="start" name="bug-outline"></ion-icon>
+        [TESTING] Unirse a Lista de Espera
+      </ion-button>
+    </ion-card-content>
     </ion-card>
-    } @else if (shouldShowListaEspera() && !isDelivery()) {
-<ion-card color="danger">
-  <ion-card-header>
-    <ion-card-title>
-      <ion-icon name="alert-circle-outline"></ion-icon>
-      ¿Qué desea hacer?
-    </ion-card-title>
-  </ion-card-header>
-  <ion-card-content>
-    <ion-button
-      expand="block"
-      size="large"
-      fill="outline"
-      (click)="escanearQRListaEspera()"
-    >
-      <ion-icon slot="start" name="time-outline"></ion-icon>
-      Unirse a Lista de Espera
-    </ion-button>
-    <ion-button
-      expand="block"
-      size="large"
-      fill="outline"
-      (click)="pedirDelivery()"
-    >
-      <ion-icon slot="start" name="bike"></ion-icon>
-      Pedir delivery
-    </ion-button>
-
-    <ion-button
-      expand="block"
-      size="large"
-      fill="outline"
-      color="dark"
-      (click)="unirseListaEsperaSimulado()"
-      style="margin-top: 10px"
-    >
-      <ion-icon slot="start" name="bug-outline"></ion-icon>
-      [TESTING] Unirse a Lista de Espera
-    </ion-button>
-  </ion-card-content>
-</ion-card>
-    }
-
-    <!-- Estado de mesa verificada -->
-    @if (mesaVerificada && mesaAsignada || isDelivery()) {
-    <ion-card color="success">
-      <ion-card-content>
-        <div style="text-align: center">
-          <ion-icon name="checkmark-circle" style="font-size: 48px"></ion-icon>
-          <h3 *ngIf="!isDelivery()">Mesa {{ mesaAsignada }} Asignada</h3>
-          <p>Ya puedes acceder a todas las funcionalidades</p>
-          <!-- Botón de cambiar mesa eliminado -->
-        </div>
-      </ion-card-content>
-    </ion-card>
+    
+    } @else if (!mesaVerificada() && mesaAsignada()) {
+      <ion-card color="warning">
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon name="qr-code-outline"></ion-icon>
+            Verifica tu Mesa Asignada
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <p>
+            Tienes asignada la Mesa {{ mesaAsignada() }}. Para comenzar a usar el
+            restaurante, escanea el código QR de tu mesa para verificarla.
+          </p>
+          <ion-button expand="block" size="large" (click)="escanearQRMesa()">
+            <ion-icon slot="start" name="qr-code"></ion-icon>
+            Verificar Mesa {{ mesaAsignada() }}
+          </ion-button>
+          <ion-button expand="block" size="large" (click)="testMesa()">
+            <ion-icon slot="start" name="qr-code"></ion-icon>
+            Verificar Mesa debug {{ mesaAsignada() }}
+          </ion-button>
+        </ion-card-content>
+      </ion-card>
     }
     <div class="mapa" [hidden]="hideMap()" id="mapContainer"> 
     </div> 
     <!-- Tarjetas de funcionalidades -->
     <ion-card>
-      <ion-card-header>
-        <ion-card-title>¿Qué deseas hacer?</ion-card-title>
-      </ion-card-header>
       <ion-card-content>
         <ion-button
           expand="block"
           color="secondary"
           (click)="verMenu()"
-          [disabled]="!mesaVerificada && !isDelivery()"
+          [disabled]="(!mesaVerificada() && !isDelivery())"
         >
           <ion-icon name="book-outline" slot="start"></ion-icon>
-          Ver Menú @if (!mesaVerificada) {
-          <ion-icon name="lock-closed" slot="end"></ion-icon>
-          }
-        </ion-button>
-
-        <ion-button
-          expand="block"
-          color="secondary"
-          (click)="hacerPedido()"
-          [disabled]="!mesaVerificada && !isDelivery()"
-        >
-          <ion-icon name="cart-outline" slot="start"></ion-icon>
-          Hacer Pedido @if (!mesaVerificada) {
+          Ver Menú @if (!mesaVerificada() && !isDelivery()) {
           <ion-icon name="lock-closed" slot="end"></ion-icon>
           }
         </ion-button>
@@ -181,12 +172,12 @@
           expand="block"
           color="tertiary"
           (click)="verHistorial()"
-          [disabled]="!mesaVerificada && !isDelivery()"
+          [disabled]="!mesaVerificada() && !isDelivery()"
         >
           <ion-icon name="receipt-outline" slot="start"></ion-icon>
           Historial de Pedidos
           <ion-icon
-            *ngIf="!mesaVerificada && !isDelivery()"
+            *ngIf="!mesaVerificada() && !isDelivery()"
             name="lock-closed"
             slot="end"
           ></ion-icon>
@@ -196,10 +187,10 @@
           expand="block"
           color="secondary"
           (click)="hacerConsulta()"
-          [disabled]="!mesaVerificada && !isDelivery()"
+          [disabled]="(!mesaVerificada() && !isDelivery())"
         >
           <ion-icon name="chatbubble-outline" slot="start"></ion-icon>
-          Consulta Mozos @if (!mesaVerificada) {
+          Consulta Mozos @if (!mesaVerificada() && !isDelivery()) {
           <ion-icon name="lock-closed" slot="end"></ion-icon>
           }
         </ion-button>
@@ -208,10 +199,11 @@
           expand="block"
           color="tertiary"
           (click)="verJuegos()"
-          [disabled]="!mesaVerificada || !isRegistrado "
+          [disabled]="!mesaVerificada() && !isDelivery() ||   !isRegistrado()"
         >
           <ion-icon name="game-controller-outline" slot="start"></ion-icon>
-          Juegos y Descuentos @if (!mesaVerificada) {
+          Juegos y Descuentos 
+          @if (!mesaVerificada() && !isDelivery()) {
           <ion-icon name="lock-closed" slot="end"></ion-icon>
           }
         </ion-button>
@@ -220,10 +212,16 @@
           expand="block"
           color="success"
           (click)="solicitarCuenta()"
-          [disabled]="!mesaVerificada && !isDelivery()"
+          [disabled]="(!mesaVerificada() && !isDelivery())"
         >
           <ion-icon name="card-outline" slot="start"></ion-icon>
-          Pedir la Cuenta @if (!mesaVerificada) {
+          @if(!isDelivery()){
+            Pedir la Cuenta 
+          }@else {
+            Pagar pedido
+          }
+          
+          @if (!mesaVerificada() && !isDelivery()) {
           <ion-icon name="lock-closed" slot="end"></ion-icon>
           }
         </ion-button>
@@ -232,10 +230,10 @@
           expand="block"
           color="secondary"
           (click)="verEncuesta()"
-          [disabled]="!mesaVerificada || !isRegistrado"
+          [disabled]="!mesaVerificada() || !isRegistrado()"
         >
           <ion-icon name="clipboard-outline" slot="start"></ion-icon>
-          Encuesta @if (!mesaVerificada) {
+          Encuesta @if (!mesaVerificada()) {
           <ion-icon name="lock-closed" slot="end"></ion-icon>
           }
         </ion-button>
@@ -244,49 +242,23 @@
           expand="block"
           color="secondary"
           (click)="verResultados()"
-          [disabled]="!mesaVerificada || !isDelivery()"
+          [disabled]="(!mesaVerificada() && !isDelivery() && !habilitarEncuesta())"
         >
           <ion-icon name="clipboard-outline" slot="start"></ion-icon>
-          resultados encuestas @if (!mesaVerificada) {
+          Resultados encuestas @if (!mesaVerificada() && !isDelivery() && habilitarEncuesta()) {
           <ion-icon name="lock-closed" slot="end"></ion-icon>
           }
         </ion-button>
 
         <ion-button
-      expand="block"
-      color="secondary"
-      (click)="verReservas()"
-    >
-      <ion-icon name="calendar-outline" slot="start"></ion-icon>
-      Hacer Reserva
-    </ion-button>
-
-    <ion-button
-      expand="block"
-      color="secondary"
-      fill="outline"
-      (click)="verMisReservas()"
-    >
-      <ion-icon name="list-outline" slot="start"></ion-icon>
-      Mis Reservas
-    </ion-button>
-      </ion-card-content>
-    </ion-card>
-
-    <!-- Info de cuenta -->
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title>Estado de tu cuenta</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <div class="estado-badge aprobado">
-          <ion-icon name="checkmark-circle"></ion-icon>
-          <span>Cuenta Aprobada</span>
-        </div>
-        <p class="info-text">
-          Tu cuenta fue verificada el {{ cliente?.created_at | date:'dd/MM/yyyy'
-          }}
-        </p>
+          expand="block"
+          color="secondary"
+          fill="outline"
+          (click)="verMisReservas()"
+        >
+          <ion-icon name="list-outline" slot="start"></ion-icon>
+          Mis Reservas
+        </ion-button>
       </ion-card-content>
     </ion-card>
   </div>

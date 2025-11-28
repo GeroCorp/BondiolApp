@@ -1,6 +1,6 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>maps</ion-title>
+    <ion-title>Seleccionar Ubicación</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -11,9 +11,19 @@
     </ion-toolbar>
   </ion-header>
 
+  <ion-item lines="all" class="search">
+      <ion-input
+        label="Ingrese su direccion"
+        labelPlacement="floating"
+        type="text"
+        #inputDireccion
+        [(ngModel)]="direccionInput"
+        (keyup.enter)="buscarDireccion()"
+     ></ion-input>
+  </ion-item>
 
   <google-map
-  height="90%"
+  height="85%"
   width="100%"
   [center]="coords"
   [zoom]="mapZoom"
@@ -28,5 +38,14 @@
     ></map-marker>
   </google-map>
 
+  <div class="direccion-input">
+    
+  </div>
+  <div class="button-container">
+    <ion-button expand="block" 
+    (click)="confirmarUbicacion()">
+      Confirmar Ubicación
+    </ion-button>
+  </div>
 
 </ion-content>
