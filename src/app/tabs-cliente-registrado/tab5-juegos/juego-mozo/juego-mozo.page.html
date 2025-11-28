@@ -1,0 +1,142 @@
+<ion-card class="game-card">
+  <ion-card-header>
+    <ion-card-title>
+      🍽️ Mozo Express
+      <ion-button 
+        fill="clear" 
+        size="small" 
+        (click)="cerrarJuego()" 
+        slot="end"
+        class="close-button">
+        <ion-icon name="close" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-card-title>
+    <ion-card-subtitle>
+      Inclina tu dispositivo para mover al mozo hasta la mesa
+    </ion-card-subtitle>
+  </ion-card-header>
+
+  <ion-card-content>
+    <!-- Instrucciones -->
+    <div *ngIf="!juegoIniciado && !juegoTerminado_" class="instrucciones">
+      <ion-icon name="information-circle" color="primary" style="font-size: 64px;"></ion-icon>
+      <h3>¿Cómo jugar?</h3>
+      <ion-list lines="none">
+        <ion-item>
+          <ion-icon name="phone-portrait-outline" slot="start" color="primary"></ion-icon>
+          <ion-label class="ion-text-wrap">
+            Inclina tu dispositivo para mover al mozo
+          </ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-icon name="navigate-outline" slot="start" color="success"></ion-icon>
+          <ion-label class="ion-text-wrap">
+            Llega hasta la mesa sin tocar los obstáculos
+          </ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-icon name="warning-outline" slot="start" color="danger"></ion-icon>
+          <ion-label class="ion-text-wrap">
+            Evita los patines, la banana y el aceite
+          </ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-icon name="trophy-outline" slot="start" color="warning"></ion-icon>
+          <ion-label class="ion-text-wrap">
+            <strong>Gana 25% de descuento</strong> en el primer intento
+          </ion-label>
+        </ion-item>
+      </ion-list>
+
+      <ion-button 
+        expand="block" 
+        size="large" 
+        (click)="iniciarJuego()"
+        color="primary">
+        <ion-icon name="play" slot="start"></ion-icon>
+        Iniciar Juego
+      </ion-button>
+    </div>
+
+    <!-- Canvas del juego -->
+    <div 
+      *ngIf="juegoIniciado"
+      #gameCanvas 
+      class="game-canvas"
+      [class.game-over]="juegoTerminado_">
+      
+      <!-- Mozo -->
+      <div 
+        class="mozo"
+        [style.left.px]="mozo.x"
+        [style.top.px]="mozo.y"
+        [style.width.px]="mozoSize"
+        [style.height.px]="mozoSize">
+        <ion-icon name="person" [class.moving]="!juegoTerminado_"></ion-icon>
+        <div class="bandeja">🍽️</div>
+      </div>
+
+      <!-- Mesa destino -->
+      <div 
+        class="mesa"
+        [style.left.px]="mesa.x"
+        [style.top.px]="mesa.y"
+        [style.width.px]="mesaSize"
+        [style.height.px]="mesaSize">
+        <ion-icon name="restaurant"></ion-icon>
+        <div class="label">META</div>
+      </div>
+
+      <!-- Obstáculos -->
+      <div 
+        *ngFor="let obstaculo of obstaculos"
+        class="obstaculo"
+        [class.obstaculo-patines]="obstaculo.tipo === 'patines'"
+        [class.obstaculo-banana]="obstaculo.tipo === 'banana'"
+        [class.obstaculo-aceite]="obstaculo.tipo === 'aceite'"
+        [style.left.px]="obstaculo.x"
+        [style.top.px]="obstaculo.y"
+        [style.width.px]="obstaculoSize"
+        [style.height.px]="obstaculoSize">
+        <span class="obstaculo-emoji">
+          {{ obstaculo.tipo === 'patines' ? '🛼' : obstaculo.tipo === 'banana' ? '🍌' : '🛢️' }}
+        </span>
+      </div>
+
+      <!-- Mensaje de fin de juego -->
+      <div *ngIf="juegoTerminado_" class="game-over-overlay">
+        <div class="game-over-content" [class.win]="gano" [class.lose]="!gano">
+          <ion-icon 
+            [name]="gano ? 'checkmark-circle' : 'close-circle'"
+            [color]="gano ? 'success' : 'danger'"
+            style="font-size: 80px;">
+          </ion-icon>
+          <h2>{{ gano ? '¡Ganaste! 🎉' : '¡Perdiste! 😢' }}</h2>
+          <p>{{ mensaje }}</p>
+          
+          <div *ngIf="gano && primerIntentoDisponible" class="descuento-badge">
+            <ion-badge color="success" style="font-size: 28px; padding: 10px 20px;">
+              ¡25% de Descuento! 🎊
+            </ion-badge>
+          </div>
+          
+          <ion-button 
+            expand="block" 
+            (click)="reiniciarJuego()"
+            [color]="gano ? 'success' : 'primary'">
+            <ion-icon name="refresh" slot="start"></ion-icon>
+            Jugar de Nuevo
+          </ion-button>
+          
+          <ion-button 
+            expand="block" 
+            fill="outline"
+            (click)="cerrarJuego()">
+            <ion-icon name="arrow-back" slot="start"></ion-icon>
+            Volver a Juegos
+          </ion-button>
+        </div>
+      </div>
+    </div>
+  </ion-card-content>
+</ion-card>

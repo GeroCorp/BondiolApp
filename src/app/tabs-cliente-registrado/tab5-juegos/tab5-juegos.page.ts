@@ -12,7 +12,7 @@ import { ToastController, AlertController } from '@ionic/angular';
 export class Tab5JuegosPage implements OnInit {
   descuentoObtenido: number = 0;
   primerIntentoUsado: boolean = false;
-  juegoActivo: 'memoria' | 'adivinanza' | 'ruleta' | null = null;
+  juegoActivo: 'memoria' | 'adivinanza' | 'ruleta' | 'mozo' | null = null;
 
   constructor(
     private router: Router,
@@ -41,12 +41,12 @@ export class Tab5JuegosPage implements OnInit {
     }
   }
 
-  seleccionarJuego(juego: 'memoria' | 'adivinanza' | 'ruleta') {
-    if (this.primerIntentoUsado && this.descuentoObtenido === 0) {
-      this.showToast('Ya usaste tu primer intento. Puedes seguir jugando libremente pero no obtendrás descuentos.', 'warning');
-    }
-    this.juegoActivo = juego;
+  seleccionarJuego(juego: 'memoria' | 'adivinanza' | 'ruleta' | 'mozo') {
+  if (this.primerIntentoUsado && this.descuentoObtenido === 0) {
+    this.showToast('Ya usaste tu primer intento. Puedes seguir jugando libremente pero no obtendrás descuentos.', 'warning');
   }
+  this.juegoActivo = juego;
+}
 
   async onJuegoTerminado(evento: { gano: boolean; descuento: number; primerIntento: boolean }) {
     console.log('Juego terminado:', evento);

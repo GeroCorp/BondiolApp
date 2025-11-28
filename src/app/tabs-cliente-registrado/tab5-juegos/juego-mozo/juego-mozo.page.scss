@@ -1,0 +1,232 @@
+.game-card {
+  margin: 16px;
+  min-height: 600px;
+
+  ion-card-header {
+    position: relative;
+
+    .close-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+    }
+  }
+}
+
+.instrucciones {
+  text-align: center;
+  padding: 20px;
+
+  ion-icon {
+    margin-bottom: 16px;
+  }
+
+  h3 {
+    margin: 16px 0;
+    font-size: 24px;
+    font-weight: bold;
+  }
+
+  ion-list {
+    margin: 20px 0;
+    text-align: left;
+  }
+
+  ion-button {
+    margin-top: 24px;
+  }
+}
+
+.game-canvas {
+  position: relative;
+  width: 100%;
+  height: 500px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+
+  &.game-over {
+    filter: blur(2px);
+  }
+}
+
+.mozo {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.1s ease;
+  z-index: 10;
+
+  ion-icon {
+    font-size: 40px;
+    color: #fff;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+
+    &.moving {
+      animation: wobble 0.5s ease-in-out infinite;
+    }
+  }
+
+  .bandeja {
+    position: absolute;
+    top: -10px;
+    font-size: 24px;
+    animation: float 2s ease-in-out infinite;
+  }
+}
+
+.mesa {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.2);
+  border: 3px solid #2dd36f;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(45, 211, 111, 0.5);
+  animation: pulse 1.5s ease-in-out infinite;
+
+  ion-icon {
+    font-size: 36px;
+    color: #2dd36f;
+  }
+
+  .label {
+    font-size: 12px;
+    font-weight: bold;
+    color: #2dd36f;
+    margin-top: 4px;
+  }
+}
+
+.obstaculo {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  animation: rotate 3s linear infinite;
+
+  .obstaculo-emoji {
+    font-size: 32px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  }
+
+  &.obstaculo-patines {
+    border: 2px solid #3880ff;
+  }
+
+  &.obstaculo-banana {
+    border: 2px solid #ffc409;
+  }
+
+  &.obstaculo-aceite {
+    border: 2px solid #eb445a;
+  }
+}
+
+.game-over-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
+  z-index: 100;
+  animation: fadeIn 0.3s ease;
+}
+
+.game-over-content {
+  background: var(--ion-card-background, #fff);
+  padding: 32px;
+  border-radius: 16px;
+  text-align: center;
+  max-width: 90%;
+  animation: slideUp 0.3s ease;
+
+  ion-icon {
+    margin-bottom: 16px;
+  }
+
+  h2 {
+    font-size: 28px;
+    font-weight: bold;
+    margin: 16px 0;
+  }
+
+  p {
+    font-size: 16px;
+    color: var(--ion-text-color);
+    margin-bottom: 24px;
+  }
+
+  .descuento-badge {
+    margin: 20px 0;
+    animation: bounce 0.5s ease;
+  }
+
+  ion-button {
+    margin-top: 12px;
+  }
+
+  &.win {
+    border: 3px solid #2dd36f;
+    box-shadow: 0 0 30px rgba(45, 211, 111, 0.5);
+  }
+
+  &.lose {
+    border: 3px solid #eb445a;
+    box-shadow: 0 0 30px rgba(235, 68, 90, 0.5);
+  }
+}
+
+// Animaciones
+@keyframes wobble {
+  0%, 100% { transform: rotate(-5deg); }
+  50% { transform: rotate(5deg); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
