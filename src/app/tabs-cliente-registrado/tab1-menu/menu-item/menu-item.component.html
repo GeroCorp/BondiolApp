@@ -3,14 +3,26 @@
       <ion-button (click)="onClose()" >
         <ion-icon slot="icon-only" name="close-outline"></ion-icon>
       </ion-button>
+
+      <!-- BOTÓN PRODUCTO ANTERIOR (Arriba) - OCULTO -->
+      <div class="product-nav-top hidden-nav">
+        <button id="btn-prev-product" (click)="prevProduct()" [disabled]="currentItemIndex === 0" class="product-nav-btn">
+          <ion-icon name="chevron-up-outline"></ion-icon>
+          <span>Anterior</span>
+        </button>
+      </div>
       
     <ion-card-header>
       <div class="carrusel">
-        @if (item?.imagenes && item.imagenes.length > 0) {
-          <ion-img [src]="item.imagenes[currentImageIndex]"></ion-img>
+        @if (itemsArray[currentItemIndex]?.imagenes && itemsArray[currentItemIndex].imagenes.length > 0) {
+          <ion-img [src]="itemsArray[currentItemIndex].imagenes[currentImageIndex]"></ion-img>
           <div class="carrusel-controls">
-            <button (click)="prevImage()" [disabled]="currentImageIndex === 0"><ion-icon name="caret-back-outline"></ion-icon></button>
-            <button (click)="nextImage()" [disabled]="currentImageIndex === item.imagenes.length - 1"><ion-icon name="caret-forward-outline"></ion-icon></button>
+            <button id="btn-prev-image" (click)="prevImage()" [disabled]="currentImageIndex === 0">
+              <ion-icon name="caret-back-outline"></ion-icon>
+            </button>
+            <button id="btn-next-image" (click)="nextImage()" [disabled]="currentImageIndex === itemsArray[currentItemIndex]?.imagenes?.length - 1">
+              <ion-icon name="caret-forward-outline"></ion-icon>
+            </button>
           </div>
         } @else {
           <ion-img src="assets/placeholder.png"></ion-img>
@@ -18,14 +30,14 @@
       </div>
     </ion-card-header>
     <div class="sub-header">
-      <ion-card-title>{{ item?.nombre }}</ion-card-title>
-      <ion-label>Precio: {{ item?.precio | currency:'$' }}</ion-label>
+      <ion-card-title>{{ itemsArray[currentItemIndex]?.nombre }}</ion-card-title>
+      <ion-label>Precio: {{ itemsArray[currentItemIndex]?.precio | currency:'$' }}</ion-label>
     </div>
     <ion-card-content>
-      <p>{{ item?.descripcion }}</p>
+      <p>{{ itemsArray[currentItemIndex]?.descripcion }}</p>
     </ion-card-content>
     <div class="bottom">
-      <small>Tiempo estimado {{ item?.tiempo }} min</small>
+      <small>Tiempo estimado {{ itemsArray[currentItemIndex]?.tiempo }} min</small>
       <div class="quantity-container">
         <div class="quantity-controls">
           <ion-button fill="outline" size="small" (click)="decreaseQuantity()" [disabled]="quantity <= 1">
@@ -38,9 +50,17 @@
         </div>
         <ion-button (click)="onAddItem()" color="primary">
           <ion-icon slot="start" name="add"></ion-icon>
-          Agregar ({{ (item?.precio * quantity) | currency:'$':'symbol':'1.0-0' }})
+          Agregar ({{ (itemsArray[currentItemIndex]?.precio * quantity) | currency:'$':'symbol':'1.0-0' }})
         </ion-button>
       </div>
+    </div>
+
+    <!-- BOTÓN PRODUCTO SIGUIENTE (Abajo) - OCULTO -->
+    <div class="product-nav-bottom hidden-nav">
+      <button id="btn-next-product" (click)="nextProduct()" [disabled]="currentItemIndex === itemsArray.length - 1" class="product-nav-btn">
+        <ion-icon name="chevron-down-outline"></ion-icon>
+        <span>Siguiente</span>
+      </button>
     </div>
 
   </ion-card>

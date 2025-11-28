@@ -1,195 +1,105 @@
-// TEMA OSCURO - Juego Ruleta
-// Variables del tema oscuro
-:host {
-  --background-dark: #1a1a1a;
-  --surface-dark: #2d2d2d;
-  --surface-variant: #3a3a3a;
-  --text-primary: #ffffff;
-  --text-secondary: #b3b3b3;
-  --primary-color: #bb86fc;
-  --secondary-color: #03dac6;
-  --accent-color: #ff6b47;
-  --error-color: #cf6679;
-  --border-color: #404040;
-  --shadow-dark: 0 8px 24px rgba(0, 0, 0, 0.6);
-}
-
-// Fondo con gradiente oscuro mejorado
-ion-content {
-  --background: linear-gradient(180deg, var(--background-dark) 0%, var(--surface-dark) 50%, #1a3a5a 100%);
-  --color: var(--text-primary);
-}
-
-// Header oscuro
-ion-header {
-  ion-toolbar {
-    --background: var(--surface-dark);
-    --color: var(--text-primary);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
-    border-bottom: 1px solid var(--border-color);
-    
-    ion-title {
-      color: var(--text-primary);
-      font-weight: 600;
-      
-      ion-icon {
-        color: var(--accent-color);
-        margin-right: 8px;
-      }
-    }
-    
-    ion-buttons ion-button {
-      --color: var(--text-primary);
-      
-      &:hover {
-        --background: var(--surface-variant);
-      }
-    }
-  }
-}
-
 .style-card {
-  margin: 0;
-  background: var(--surface-dark) !important;
-  border: 1px solid var(--border-color);
-  border-radius: 15px;
-  box-shadow: var(--shadow-dark);
-  ion-card-title, ion-card-subtitle {
-    color: white !important;
-  }
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  border: 2px solid #ff6b6b;
+  border-radius: 16px;
+  overflow: hidden;
 }
 
-// Container principal del juego
-.game-container {
-  padding: 20px;
-  text-align: center;
-}
-
-// Título del juego
-.game-title {
-  color: var(--text-primary);
-  font-size: 2rem;
-  font-weight: bold;
-  margin-bottom: 8px;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-.game-subtitle {
-  color: var(--text-secondary);
-  font-size: 1rem;
-  margin-bottom: 30px;
-  opacity: 0.8;
-}
-
-// Estadísticas del juego
-.game-stats {
-  display: flex;
-  justify-content: space-around;
-  margin-bottom: 30px;
+ion-card-header {
+  background: rgba(255, 107, 107, 0.1);
+  border-bottom: 2px solid #ff6b6b;
   padding: 16px;
-  background: var(--surface-variant);
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-dark);
-  
-  .stat-item {
-    text-align: center;
-    
-    .stat-label {
-      font-size: 0.8rem;
-      color: var(--text-secondary);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 4px;
-    }
-    
-    .stat-value {
-      font-size: 1.5rem;
-      font-weight: bold;
-      color: var(--secondary-color);
-      
-      &.result {
-        color: var(--accent-color);
-      }
-      
-      &.spins {
-        color: var(--primary-color);
-      }
-    }
-  }
 }
 
+ion-card-title {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 24px;
+  margin-bottom: 5px;
+}
+
+ion-card-subtitle {
+  color: #ffbb33;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+ion-card-content {
+  padding: 20px;
+  background: linear-gradient(to bottom, #2d2d2d, #1a1a1a);
+}
+
+/* Estilos de badges e información */
+ion-badge {
+  font-size: 14px !important;
+  padding: 8px 16px !important;
+  font-weight: 600;
+}
+
+/* Contenedor de la ruleta */
 .ruleta-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 30px 0;
   position: relative;
-  width: 320px;
-  height: 320px;
-  margin: 30px auto;
-  background: var(--surface-dark);
-  border-radius: 50%;
-  padding: 10px;
-  box-shadow: var(--shadow-dark), inset 0 0 20px rgba(187, 134, 252, 0.1);
-  border: 2px solid var(--border-color);
+  height: 400px;
 }
 
 .ruleta-indicador {
-  position: absolute;
-  top: -25px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 36px;
-  color: var(--accent-color);
+  font-size: 32px;
+  color: #ff6b6b;
+  margin-bottom: 20px;
+  font-weight: bold;
+  text-shadow: 0 0 10px rgba(255, 107, 107, 0.8);
   z-index: 10;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-  filter: drop-shadow(0 0 8px var(--accent-color));
 }
 
+/* Ruleta */
 .ruleta {
-  position: relative;
   width: 300px;
   height: 300px;
   border-radius: 50%;
-  overflow: hidden;
+  position: relative;
   box-shadow: 
-    0 0 30px rgba(0, 0, 0, 0.6),
-    inset 0 0 20px rgba(187, 134, 252, 0.2);
-  transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
-  border: 3px solid var(--primary-color);
+    0 0 30px rgba(255, 107, 107, 0.6),
+    0 0 60px rgba(255, 215, 0, 0.3),
+    inset 0 0 30px rgba(0, 0, 0, 0.5);
+  border: 8px solid #ff6b6b;
+  overflow: hidden;
+  transition: transform 4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .sector {
   position: absolute;
-  width: 50%;
-  height: 50%;
-  top: 50%;
-  left: 50%;
-  transform-origin: 0% 0%;
-  clip-path: polygon(0 0, 100% 0, 0 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--border-color);
-  
-  // Colores alternados más vibrantes para tema oscuro
-  &:nth-child(odd) {
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-  }
-  
-  &:nth-child(even) {
-    background: linear-gradient(135deg, var(--accent-color), var(--error-color));
-  }
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  transform-origin: center;
+  clip-path: polygon(50% 50%, 50% 0%, 100% 0%);
 }
 
+.sector:nth-child(1) { transform: rotate(0deg); background: linear-gradient(45deg, #ff6b6b, #ff4757); }
+.sector:nth-child(2) { transform: rotate(45deg); background: linear-gradient(45deg, #4caf50, #45a049); }
+.sector:nth-child(3) { transform: rotate(90deg); background: linear-gradient(45deg, #ff6b6b, #ff4757); }
+.sector:nth-child(4) { transform: rotate(135deg); background: linear-gradient(45deg, #4caf50, #45a049); }
+.sector:nth-child(5) { transform: rotate(180deg); background: linear-gradient(45deg, #ff6b6b, #ff4757); }
+.sector:nth-child(6) { transform: rotate(225deg); background: linear-gradient(45deg, #4caf50, #45a049); }
+.sector:nth-child(7) { transform: rotate(270deg); background: linear-gradient(45deg, #ff6b6b, #ff4757); }
+.sector:nth-child(8) { transform: rotate(315deg); background: linear-gradient(45deg, #4caf50, #45a049); }
+
 .sector-text {
-  position: absolute;
-  top: 25%;
-  left: 15%;
-  color: white;
-  font-size: 20px;
+  font-size: 32px;
   font-weight: bold;
-  text-shadow: 
-    2px 2px 4px rgba(0, 0, 0, 0.8),
-    0 0 8px rgba(0, 0, 0, 0.6);
-  transform: rotate(-45deg);
+  color: #ffffff;
+  text-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
+  user-select: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .ruleta-centro {
@@ -197,210 +107,104 @@ ion-header {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 70px;
-  height: 70px;
-  background: linear-gradient(135deg, var(--surface-variant), var(--surface-dark));
+  width: 80px;
+  height: 80px;
+  background: radial-gradient(circle, #ffbb33 0%, #ff6b6b 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 
-    0 0 15px rgba(0, 0, 0, 0.5),
-    inset 0 0 10px rgba(187, 134, 252, 0.2);
+  box-shadow: 0 0 20px rgba(255, 107, 107, 0.8);
   z-index: 5;
-  border: 2px solid var(--primary-color);
-  
-  &:before {
-    content: "🎯";
+  color: #ffffff;
+}
+
+/* Tarjeta de resultado */
+ion-card[color="success"] {
+  background: linear-gradient(135deg, #2d5016 0%, #1a3d0a 100%) !important;
+  border: 2px solid #4caf50;
+  margin: 20px 0;
+}
+
+ion-card[color="danger"] {
+  background: linear-gradient(135deg, #5d1a1a 0%, #3d0a0a 100%) !important;
+  border: 2px solid #ff6b6b;
+  margin: 20px 0;
+}
+
+ion-card[color="danger"] h2,
+ion-card[color="success"] h2 {
+  color: #ffffff;
+  margin: 0;
+  font-weight: 700;
+}
+
+/* Botones */
+ion-button {
+  --border-radius: 8px;
+  font-weight: 600;
+  font-size: 16px;
+  margin: 10px 0;
+}
+
+ion-button[color="danger"] {
+  --background: linear-gradient(135deg, #ff6b6b 0%, #ff4757 100%);
+  --box-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
+}
+
+ion-button[fill="outline"] {
+  --border-color: #ff6b6b;
+  --color: #ff6b6b;
+}
+
+ion-button[fill="outline"]:hover {
+  --background: rgba(255, 107, 107, 0.1);
+}
+
+ion-button[disabled] {
+  opacity: 0.6;
+}
+
+/* Tarjeta de instrucciones */
+ion-card[color="light"] {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  margin: 15px 0;
+}
+
+ion-card[color="light"] p {
+  color: #ffffff;
+  margin: 8px 0;
+  line-height: 1.6;
+}
+
+ion-card[color="light"] strong {
+  color: #ffbb33;
+}
+
+/* Spinner */
+ion-spinner {
+  color: #ffffff;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .ruleta {
+    width: 250px;
+    height: 250px;
+    border-width: 6px;
+  }
+
+  .ruleta-centro {
+    width: 70px;
+    height: 70px;
+  }
+
+  .sector-text {
     font-size: 24px;
   }
-}
 
-// Controles del juego
-.game-controls {
-  margin-top: 30px;
-  display: flex;
-  gap: 16px;
-  justify-content: center;
-  flex-wrap: wrap;
-  
-  ion-button {
-    --border-radius: 12px;
-    font-weight: 600;
-    height: 48px;
-    
-    &.spin-button {
-      --background: linear-gradient(135deg, var(--accent-color), var(--error-color));
-      --color: white;
-      --box-shadow: 0 4px 12px rgba(255, 107, 71, 0.3);
-      font-size: 1.1rem;
-      
-      &:hover {
-        --box-shadow: 0 6px 16px rgba(255, 107, 71, 0.4);
-        transform: translateY(-2px);
-      }
-      
-      &:disabled {
-        --background: var(--surface-variant);
-        --color: var(--text-secondary);
-        --box-shadow: none;
-      }
-    }
-    
-    &.reset-button {
-      --background: var(--surface-variant);
-      --color: var(--text-primary);
-      border: 1px solid var(--border-color);
-      
-      &:hover {
-        --background: var(--border-color);
-      }
-    }
-  }
-}
-
-// Resultado
-.result-display {
-  margin-top: 20px;
-  padding: 16px;
-  background: var(--surface-variant);
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-  
-  .result-text {
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 8px;
-  }
-  
-  .result-value {
-    font-size: 2rem;
-    font-weight: bold;
-    color: var(--secondary-color);
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  }
-}
-
-// Historial de giros
-.spin-history {
-  margin-top: 20px;
-  
-  .history-title {
-    color: var(--text-primary);
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-bottom: 12px;
-  }
-  
-  .history-list {
-    display: flex;
-    gap: 8px;
-    justify-content: center;
-    flex-wrap: wrap;
-    
-    .history-item {
-      padding: 6px 12px;
-      background: var(--surface-dark);
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      color: var(--secondary-color);
-      font-weight: 600;
-      font-size: 0.9rem;
-      
-      &.recent {
-        background: var(--primary-color);
-        color: var(--background-dark);
-        box-shadow: 0 2px 4px rgba(187, 134, 252, 0.3);
-      }
-    }
-  }
-}
-
-// Animaciones
-.spinning {
-  animation: spin-glow 4s ease-out;
-}
-
-@keyframes spin-glow {
-  0% {
-    box-shadow: 
-      0 0 30px rgba(0, 0, 0, 0.6),
-      inset 0 0 20px rgba(187, 134, 252, 0.2);
-  }
-  50% {
-    box-shadow: 
-      0 0 40px rgba(255, 107, 71, 0.6),
-      inset 0 0 30px rgba(255, 107, 71, 0.3);
-  }
-  100% {
-    box-shadow: 
-      0 0 30px rgba(0, 0, 0, 0.6),
-      inset 0 0 20px rgba(187, 134, 252, 0.2);
-  }
-}
-
-// Responsive design
-@media (max-width: 768px) {
-  .game-container {
-    padding: 15px;
-  }
-  
-  .ruleta-container {
-    width: 280px;
-    height: 280px;
-    
-    .ruleta {
-      width: 260px;
-      height: 260px;
-    }
-    
-    .sector-text {
-      font-size: 16px;
-    }
-    
-    .ruleta-centro {
-      width: 60px;
-      height: 60px;
-      
-      &:before {
-        font-size: 20px;
-      }
-    }
-  }
-  
-  .game-stats {
-    padding: 12px;
-    
-    .stat-item .stat-value {
-      font-size: 1.2rem;
-    }
-  }
-}
-
-@media (max-width: 480px) {
-  .ruleta-container {
-    width: 240px;
-    height: 240px;
-    
-    .ruleta {
-      width: 220px;
-      height: 220px;
-    }
-    
-    .sector-text {
-      font-size: 14px;
-      top: 30%;
-      left: 20%;
-    }
-  }
-  
-  .game-controls {
-    flex-direction: column;
-    align-items: center;
-    
-    ion-button {
-      width: 200px;
-    }
+  ion-card-title {
+    font-size: 20px;
   }
 }

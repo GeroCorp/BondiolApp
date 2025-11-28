@@ -7,6 +7,7 @@ import { Notification } from 'src/app/services/notification';
 import { HapticService } from 'src/app/services/haptic.service';
 import { EmailService, DatosFactura } from 'src/app/services/email';
 import { CustomLoaderService } from 'src/app/services/custom-loader.service';
+import { ClienteService } from 'src/app/services/cliente.service';
 @Component({
   selector: 'app-tab2-pedidos-confirmados',
   templateUrl: './tab2-pedidos-confirmados.page.html',
@@ -31,7 +32,8 @@ export class Tab2PedidosConfirmadosPage implements OnInit, AfterViewInit {
     private customLoader: CustomLoaderService,
     private notificationService: Notification,
     private hapticService: HapticService,
-    private emailService: EmailService
+    private emailService: EmailService,
+    private clienteService: ClienteService // Para habilitar pago al entregar pedido
   ) {}
 
   async ngOnInit() {
@@ -172,6 +174,8 @@ export class Tab2PedidosConfirmadosPage implements OnInit, AfterViewInit {
         '',
         pedido.id_cliente
       );
+
+      this.clienteService.setCanPay(true); // Habilitar pago para el cliente
 
       await this.customLoader.hide();
       this.showToast('Pedido marcado como entregado', 'success');

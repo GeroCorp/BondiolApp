@@ -1,7 +1,6 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { AuthService } from '../../services/supabase';
 import { ClienteService } from '../../services/cliente.service';
-import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
 import { ToastController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { CustomLoaderService } from '../../services/custom-loader.service';
@@ -23,7 +22,7 @@ interface Item {
   standalone: false,
 })
 export class Tab1MenuPage implements OnInit {
-  nroMesa: number = 7;
+  nroMesa: number | null = null;
   platos: Item[] = [];
   bebidas: Item[] = [];
 
@@ -50,6 +49,8 @@ export class Tab1MenuPage implements OnInit {
 
   async ngOnInit() {
     await this.customLoader.show('Cargando menú...');
+    this.nroMesa = this.clienteService.mesaAsignada;
+
     await Promise.all([
       this.cargarPlatos(),
       this.cargarBebidas()

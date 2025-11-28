@@ -1,16 +1,15 @@
 ﻿import { Component, OnInit } from '@angular/core';
-import { AlertController, ToastController } from '@ionic/angular';
-import { AuthService } from 'src/app/services/supabase';
+import { AlertController, ToastController, ModalController } from '@ionic/angular';
 import { Vibration } from '@awesome-cordova-plugins/vibration/ngx';
 import { ESTADO, Mozo } from 'src/app/services/mozo';
 import { Notification } from 'src/app/services/notification';
-
+import { DetallePedidoModalComponent } from '../tab2-pedidos-confirmados/detalle-pedido-modal/detalle-pedido-modal.component';
 import { HapticService } from 'src/app/services/haptic.service';
 import { CustomLoaderService } from 'src/app/services/custom-loader.service';
 interface Pedido {
   id: number;
   mesa_id: number;
-  cliente_id: number;
+  id_cliente: number;
   estado: string;
   total: number;
   fecha: string;
@@ -41,9 +40,9 @@ export class Tab1PedidosPendientesPage implements OnInit {
 
   constructor(
     private mozoService: Mozo,
-    private authService: AuthService,
     private alertController: AlertController,
     private toastController: ToastController,
+    private modalController: ModalController,
     private customLoader: CustomLoaderService,
     private vibration: Vibration,
     private notificationService: Notification,
@@ -70,25 +69,11 @@ export class Tab1PedidosPendientesPage implements OnInit {
           const items = await this.mozoService.getDetallesPedido(pedido.id);
           pedido.items = items;
           
-          // Calcular subtotal (suma de items SIN descuento)
-          const subtotal = items.reduce((sum, item) => 
-            sum + (item.precio_unitario * item.cantidad), 0
-          );
-          pedido.subtotal = subtotal;
-          
-          // El total CON descuento ya viene desde la BD
-          // Si el total es diferente al subtotal, hay descuento
-          if (pedido.total < subtotal) {
-            const descuentoMonto = subtotal - pedido.total;
-            pedido.descuento_porcentaje = Math.round((descuentoMonto / subtotal) * 100);
-            console.log(`✅ Pedido ${pedido.id} tiene ${pedido.descuento_porcentaje}% de descuento`);
-          } else {
-            pedido.descuento_porcentaje = 0;
-          }
+          pedido.descuento_porcentaje = 0;
           
           console.log({
             pedidoId: pedido.id,
-            subtotal: subtotal,
+            subtotal: pedido.total,
             total: pedido.total,
             descuento: pedido.descuento_porcentaje
           });
@@ -188,7 +173,7 @@ export class Tab1PedidosPendientesPage implements OnInit {
         'Pedido rechazado',
         msg,
         '',
-        pedido.cliente_id
+        pedido.id_cliente
       );
 
       await this.customLoader.hide();
@@ -214,7 +199,7 @@ export class Tab1PedidosPendientesPage implements OnInit {
 
     const alert = await this.alertController.create({
       header: 'Confirmar pedido',
-      message: `¿Confirmar pedido de la mesa ${pedido.mesa?.numero}?<br><strong>Total: $${pedido.total}</strong>${mensajeDescuento}`,
+      message: `¿Confirmar pedido de la mesa ${pedido.mesa?.numero}?\nTotal: $${pedido.total}${mensajeDescuento}`,
       buttons: [
         {
           text: 'Cancelar',
@@ -256,7 +241,7 @@ export class Tab1PedidosPendientesPage implements OnInit {
         'Pedido Aprobado',
         `Tu pedido de la mesa ${pedido.mesa?.numero} fue aprobado.`,
         '',
-        pedido.cliente_id
+        pedido.id_cliente
       );
 
       await this.customLoader.hide();
@@ -269,6 +254,29 @@ export class Tab1PedidosPendientesPage implements OnInit {
       await this.hapticService.vibrateError();
       this.showToast('Error al confirmar el pedido', 'danger');
       this.vibration.vibrate(1000);
+    }
+  }
+
+  async verDetalle(pedido: Pedido) {
+    try {
+      // Cargar los items del pedido
+      const items = await this.mozoService.getDetallesPedido(pedido.id);
+      
+      // Crear y presentar el modal
+      const modal = await this.modalController.create({
+        component: DetallePedidoModalComponent,
+        componentProps: {
+          pedido: pedido,
+          items: items || []
+        },
+        cssClass: 'detalle-pedido-modal'
+      });
+      
+      await modal.present();
+    } catch (error) {
+      console.error('Error al cargar detalle del pedido:', error);
+      await this.hapticService.vibrateError();
+      this.showToast('Error al cargar el detalle del pedido', 'danger');
     }
   }
 

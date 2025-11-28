@@ -42,8 +42,8 @@ const config: CapacitorConfig = {
     CapacitorHttp: {
       enabled: true
     },
-    "Motion": {
-      "permissions": [
+    Motion: {
+      permissions: [
         "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.ACCESS_COARSE_LOCATION"
       ]

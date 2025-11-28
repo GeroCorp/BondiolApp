@@ -83,7 +83,7 @@ export class Tab2PedidoPage implements OnInit {
       
       this.clienteService.clearPedido();
       await this.calcularTotales();
-      
+      this.clienteService.setJuegosAccess(true);
       // Opcional: redirigir al home
       setTimeout(() => {
         this.router.navigate(['/home-cliente']);

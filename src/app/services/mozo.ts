@@ -328,7 +328,8 @@ export class Mozo {
     const { data, error } = await this.supabase
     .from('detalles_pedido')
     .select(`*`)
-    .eq('id_pedido', id_pedido);
+    .eq('id_pedido', id_pedido)
+    .eq('es_delivery', false);
 
     if (error) throw new Error('Error obteniendo detalles del pedido: ' + error.message);
     

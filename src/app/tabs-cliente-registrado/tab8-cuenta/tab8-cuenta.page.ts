@@ -56,8 +56,9 @@ export class Tab8CuentaPage implements OnInit {
   }
 
   async cargarCuenta() {
-    this.cargando = true;
+    await this.customLoader.show('Cargando cuenta...'); 
     try {
+
       console.log('🔍 Buscando pedido entregado...');
       
       const isAnonimo = this.tipoClienteService.isAnonimo();
@@ -80,7 +81,7 @@ export class Tab8CuentaPage implements OnInit {
         if (!mesaId) {
           console.log('❌ Cliente anónimo sin mesa asignada');
           this.showToast('No tienes una mesa asignada', 'warning');
-          this.cargando = false;
+          this.customLoader.hide();
           return;
         }
 
@@ -107,7 +108,7 @@ export class Tab8CuentaPage implements OnInit {
 
         if (!pedidos || pedidos.length === 0) {
           console.log('⚠️ No hay pedidos entregados para esta mesa');
-          this.cargando = false;
+          this.customLoader.hide();
           return;
         }
 
@@ -118,49 +119,20 @@ export class Tab8CuentaPage implements OnInit {
         clienteId = await this.clienteService.getClientId();
         console.log('👤 ID Cliente registrado:', clienteId);
 
-        const { data: clienteData, error: clienteError } = await this.clienteService.client
-          .from('clientes')
-          .select('mesa_asignada')
-          .eq('id_cliente', clienteId)
-          .single();
+        const mesaId = this.clienteService.mesaAsignada;
 
-        if (clienteError || !clienteData?.mesa_asignada) {
-          console.log('❌ Cliente sin mesa asignada');
-          this.showToast('No tienes una mesa asignada', 'warning');
-          this.cargando = false;
-          return;
-        }
-
-        mesaId = clienteData.mesa_asignada;
         console.log('🪑 Mesa ID del cliente:', mesaId);
 
-        const { data: pedidos, error: pedidoError } = await this.clienteService.client
-          .from('pedidos')
-          .select(`
-            *,
-            mesa:mesas!inner(numero, id),
-            detalles_pedido(*)
-          `)
-          .eq('id_cliente', clienteId)
-          .eq('mesa', mesaId)
-          .eq('estado', 'entregado')
-          .order('fecha', { ascending: false })
-          .limit(1);
+        this.pedidoActual = await this.clienteService.getLastPedidoConDetalles(clienteId);
 
-        if (pedidoError) {
-          console.error('❌ Error buscando pedido:', pedidoError);
-          throw pedidoError;
+        if (!this.pedidoActual || this.pedidoActual.estado !== 'entregado') {
+          console.log('⚠️ No hay pedidos entregados para este cliente');
+          this.pedidoActual = null;
+          this.customLoader.hide();
+          this.showToast('No tienes pedidos entregados para pagar.', 'warning');
+          this.router.navigate(['/home-cliente']);
+          return
         }
-
-        console.log('📦 Pedidos encontrados (registrado):', pedidos);
-
-        if (!pedidos || pedidos.length === 0) {
-          console.log('⚠️ No hay pedidos entregados para esta mesa');
-          this.cargando = false;
-          return;
-        }
-
-        this.pedidoActual = pedidos[0];
       }
 
       console.log('✅ Pedido actual:', this.pedidoActual);
@@ -194,6 +166,7 @@ export class Tab8CuentaPage implements OnInit {
       console.error('❌ Error cargando cuenta:', error);
       this.showToast('Error al cargar la cuenta', 'danger');
     } finally {
+      this.customLoader.hide();
       this.cargando = false;
     }
   }
@@ -397,7 +370,6 @@ export class Tab8CuentaPage implements OnInit {
       console.error('Error cargando cuenta de delivery:', error);
       this.showToast('Error al cargar la cuenta de delivery', 'danger');
     }finally {
-      this.cargando = false;
       this.customLoader.hide();
 
     }

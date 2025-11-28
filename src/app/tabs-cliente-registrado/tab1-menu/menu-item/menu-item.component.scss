@@ -315,3 +315,14 @@ ion-card-content {
     }
   }
 }
+
+.hidden-nav {
+  display: none !important; // ✅ Oculta completamente los botones
+}
+
+// O si prefieres que ocupen espacio pero sean invisibles:
+// .hidden-nav {
+//   visibility: hidden;
+//   height: 0;
+//   overflow: hidden;
+// }

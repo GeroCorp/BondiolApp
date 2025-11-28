@@ -188,7 +188,7 @@ export class Notification {
   */
   async sendNotificationToCliente(title: string, body: string, url?: string, cliente_id: number | null = null) {
     // En caso que no se pase id por parametros obtiene la del cliente actual (sesión)
-    if (!cliente_id) cliente_id = await this.clienteService.getClientId();
+    if (cliente_id === null) cliente_id = await this.clienteService.getClientId(); // ✅ ARREGLADO
     if (!url) url = '';
 
     return CapacitorHttp.post({
@@ -206,10 +206,10 @@ export class Notification {
         'Authorization': `Basic ${environment.oneSignalRestApi}`
       }
     }).then((response: HttpResponse) => {
-      console.log(`Notificación a Cliente enviada:`, response);
+      console.log(`✅ Notificación a Cliente ${cliente_id} enviada:`, response);
       return response.status === 200;
     }).catch(err => {
-      console.error(`Error enviando notificación a Cliente:`, err);
+      console.error(`❌ Error enviando notificación a Cliente:`, err);
       return false;
     })
   }

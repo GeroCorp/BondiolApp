@@ -180,6 +180,13 @@
           (cerrar)="cerrarJuego()">
         </app-juego-ruleta>
       }
+      @if (juegoActivo === 'mozo') {
+        <app-juego-mozo
+          [primerIntentoDisponible]="!primerIntentoUsado && descuentoObtenido === 0"
+          (juegoTerminado)="onJuegoTerminado($event)"
+          (cerrar)="cerrarJuego()">
+        </app-juego-mozo>
+      }
     </div>
   }
 

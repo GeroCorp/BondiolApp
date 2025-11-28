@@ -8,7 +8,7 @@ import { Tab5JuegosPage } from './tab5-juegos.page';
 import { JuegoMemoriaPage } from './juego-memoria/juego-memoria.page';
 import { JuegoAdivinanzaPage } from './juego-adivinanza/juego-adivinanza.page';
 import { JuegoRuletaPage } from './juego-ruleta/juego-ruleta.page';
-import { JuegoMozoPage } from './juego-mozo/juego-mozo.page';
+import { JuegoMozoComponent } from './juego-mozo/juego-mozo.page';
 
 @NgModule({
   imports: [
@@ -27,7 +27,7 @@ import { JuegoMozoPage } from './juego-mozo/juego-mozo.page';
     JuegoMemoriaPage,
     JuegoAdivinanzaPage,
     JuegoRuletaPage,
-    JuegoMozoPage
+    JuegoMozoComponent
   ]
 })
 export class Tab5JuegosPageModule {}

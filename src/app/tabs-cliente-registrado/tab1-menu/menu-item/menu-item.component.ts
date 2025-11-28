@@ -1,7 +1,6 @@
 import { Component, Input, OnInit, OnChanges, Output, SimpleChanges, EventEmitter, OnDestroy } from '@angular/core';
-import { IonCard, IonCardSubtitle, IonCardTitle, IonCardHeader, IonImg, IonLabel, IonCardContent, IonButton, IonIcon, IonButtons, IonBackButton } from "@ionic/angular/standalone";
+import { IonCard, IonCardTitle, IonCardHeader, IonImg, IonLabel, IonCardContent, IonButton, IonIcon } from "@ionic/angular/standalone";
 import { CommonModule } from '@angular/common';
-import { Motion, MotionEventResult } from '@capacitor/motion';
 
 @Component({
   selector: 'app-menu-item',
@@ -13,27 +12,31 @@ export class MenuItemComponent implements OnInit, OnChanges, OnDestroy {
   @Input() item: any = {};
   @Input() itemsArray: any[] = [];
   @Output() closeItem = new EventEmitter<void>();
-  @Output() addItem = new EventEmitter<any>()
+  @Output() addItem = new EventEmitter<any>();
   
   public currentImageIndex: number = 0;
   public quantity: number = 1;
   public currentItemIndex: number = 0;
   
   // Variables para detectar movimiento
-  private lastAccelX: number = 0;
-  private lastAccelY: number = 0;
-  private accelXCount: number = 0;
-  private accelYCount: number = 0;
-  private motionSubscription: any = null;
-
+  private ZDirection: 'left' | 'right' | null = null;
+  private XDirection: 'forward' | 'backward' | null = null;
+  private ZCount: number = 0;
+  private lastActionTime: number = 0;
+  private actionCooldown: number = 1000; // ✅ Cambié a 1500ms (1.5 segundos)
+  
   constructor() { }
 
   ngOnInit() {
     if (this.item && Object.keys(this.item).length > 0) {
+      this.searchForItemIndex();
+      this.itemsArray.forEach(i => {
+        console.log(i);
+      }); // para ver los items en consola
       this.handleImages();
       this.resetState();
     }
-    this.initializeMotionDetection();
+    this.initialiZeDeviceOrientation();
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -45,113 +48,108 @@ export class MenuItemComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnDestroy() {
-    // Detener la suscripción al destruir el componente
-    if (this.motionSubscription) {
-      this.motionSubscription.remove();
+    window.removeEventListener('deviceorientation', this.orientationHandler);
+  }
+
+  private searchForItemIndex() {
+    if (this.itemsArray && this.item) {
+      const index = this.itemsArray.findIndex(i => i.id === this.item.id);
+      if (index !== -1) {
+        this.currentItemIndex = index;
+      }
     }
   }
 
-  private async initializeMotionDetection() {
-    try {
-      console.log('Inicializando Motion Detection...');
-      
-      // Agregamos el listener directamente
-      this.motionSubscription = await Motion.addListener('accel', (event: MotionEventResult) => {
-        console.log('🎯 EVENT COMPLETO:', JSON.stringify(event));
-        console.log('🎯 EVENT KEYS:', Object.keys(event));
-        console.log('🎯 EVENT acceleration:', event.acceleration);
-        this.handleMotion(event);
-      });
-      console.log('✅ Motion Detection activo - Listener registrado');
-    } catch (error: any) {
-      console.warn('❌ Motion API error:', error);
-      console.error('Error completo:', JSON.stringify(error));
-    }
+  private orientationHandler = (event: DeviceOrientationEvent) => {
+    this.handleDeviceOrientation(event);
+  };
+
+  private isNativeApp(): boolean {
+    // Detecta si la app está corriendo en Capacitor (nativa) o en navegador
+    return (window as any).capacitor !== undefined;
   }
 
-  private handleMotion(event: MotionEventResult) {
-    console.log('🔴 handleMotion LLAMADO');
-    const accelX = event.acceleration?.x || 0;
-    const accelY = event.acceleration?.y || 0;
+  private initialiZeDeviceOrientation() {
+    // Solo inicializar en apps nativas
+    if (!this.isNativeApp()) {
+      console.log('⚠️ DeviceOrientation deshabilitado - No es una app nativa');
+      return;
+    }
 
-    console.log('Motion Event Raw:', {
-      accelX,
-      accelY,
-      fullEvent: event,
-      timestamp: new Date().toLocaleTimeString()
-    });
+    console.log('📱 InicialiZando DeviceOrientation...');
+    window.addEventListener('deviceorientation', this.orientationHandler);
+    console.log('✅ DeviceOrientation listener registrado');
+  }
 
-    // Detectar movimiento izquierda/derecha (eje X)
-    if (accelX > 5) { // Movimiento hacia la derecha
-      console.log('Aceleración X DERECHA detectada:', accelX, 'lastAccelX:', this.lastAccelX);
-      if (this.lastAccelX <= 0) {
-        this.accelXCount++;
-        this.lastAccelX = accelX;
-        console.log('✓ Movimiento DERECHA confirmado. accelXCount:', this.accelXCount);
+  private handleDeviceOrientation(event: DeviceOrientationEvent) {
+    const Y = event.alpha || 0;
+    const X = event.beta || 0;
+    const Z = event.gamma || 0;
+
+    const now = Date.now();
+    const canAct = (now - this.lastActionTime) > this.actionCooldown;
+
+    console.log(`Rotación X: ${X.toFixed(1)} Z: ${Z.toFixed(1)} | canAct: ${canAct}`);
+    // Si está bloqueado, no hacer nada
+
+
+    // ===== DETECCIÓN IZQUIERDA/DERECHA (Z) =====
+    if (Z > 25) {
+      if (this.ZDirection !== 'right' && canAct) {
+        console.log('➡️ DERECHA detectada - Click en botón prevImage');
+        this.simulateButtonClick('btn-prev-image');
+        this.ZDirection = 'right';
+        this.lastActionTime = now;
+        this.ZCount = 0;
+      }
+    } else if (Z < -25) {
+      if (this.ZDirection !== 'left' && canAct) {
+        console.log('⬅️ IZQUIERDA detectada - Click en botón nextImage');
+        this.simulateButtonClick('btn-next-image');
+        this.ZDirection = 'left';
+        this.lastActionTime = now;
+        this.ZCount++;
         
-        // Si se detectan 3+ cambios izq-der, volver al inicio
-        if (this.accelXCount >= 3) {
-          console.log('🔄 COMBO DETECTADO - Volviendo al inicio');
+        if (this.ZCount >= 5) {
+          console.log('🔄 COMBO IZQUIERDA DETECTADO - Volviendo al inicio');
           this.currentItemIndex = 0;
           this.currentImageIndex = 0;
-          this.updateItem();
-          this.accelXCount = 0;
-        } else {
-          console.log('⬅️ Ejecutando prevImage()');
-          this.prevImage(); // Foto anterior
+          this.ZCount = 0;
         }
       }
-    } else if (accelX < -5) { // Movimiento hacia la izquierda
-      console.log('Aceleración X IZQUIERDA detectada:', accelX, 'lastAccelX:', this.lastAccelX);
-      if (this.lastAccelX >= 0) {
-        this.accelXCount++;
-        this.lastAccelX = accelX;
-        console.log('✓ Movimiento IZQUIERDA confirmado. accelXCount:', this.accelXCount);
-        
-        // Si se detectan 3+ cambios izq-der, volver al inicio
-        if (this.accelXCount >= 3) {
-          console.log('🔄 COMBO DETECTADO - Volviendo al inicio');
-          this.currentItemIndex = 0;
-          this.currentImageIndex = 0;
-          this.updateItem();
-          this.accelXCount = 0;
-        } else {
-          console.log('➡️ Ejecutando nextImage()');
-          this.nextImage(); // Foto siguiente
-        }
-      }
-    } else {
-      console.log('Aceleración X neutral/baja:', accelX);
-      this.lastAccelX = 0;
-      this.accelXCount = 0;
+    } else if (Math.abs(Z) < 5) {
+      this.ZDirection = null;
+      console.log('↔️ Zona neutral Z - reset');
     }
 
-    // Detectar movimiento adelante/atrás (eje Y)
-    if (accelY > 8) { // Movimiento hacia adelante
-      console.log('Aceleración Y ADELANTE detectada:', accelY, 'lastAccelY:', this.lastAccelY);
-      if (this.lastAccelY <= 0) {
-        console.log('⬇️ Ejecutando nextProduct()');
-        this.nextProduct();
-        this.lastAccelY = accelY;
+    // ===== DETECCIÓN ADELANTE/ATRÁS (X) - SOLO si está en posición normal =====
+    if (X < 20 ) { // ✅ Agregué && X > -60
+      if (this.XDirection !== 'forward' && canAct) {
+        console.log('⬇️ ADELANTE detectada - Click en botón nextProduct');
+        this.simulateButtonClick('btn-next-product');
+        this.XDirection = 'forward';
+        this.lastActionTime = now;
       }
-    } else if (accelY < -8) { // Movimiento hacia atrás
-      console.log('Aceleración Y ATRÁS detectada:', accelY, 'lastAccelY:', this.lastAccelY);
-      if (this.lastAccelY >= 0) {
-        console.log('⬆️ Ejecutando prevProduct()');
-        this.prevProduct();
-        this.lastAccelY = accelY;
+    } else if (X > -50 ) { // ✅ Agregué && X < 60
+      if (this.XDirection !== 'backward' && canAct) {
+        console.log('⬆️ ATRÁS detectada - Click en botón prevProduct');
+        this.simulateButtonClick('btn-prev-product');
+        this.XDirection = 'backward';
+        this.lastActionTime = now;
       }
-    } else {
-      console.log('Aceleración Y neutral/baja:', accelY);
-      this.lastAccelY = 0;
+    } else if (Math.abs(X) < 5) {
+      this.XDirection = null;
+      console.log('⬆️⬇️ Zona neutral X - reset');
     }
   }
 
-  private updateItem() {
-    if (this.itemsArray && this.itemsArray.length > this.currentItemIndex) {
-      this.item = this.itemsArray[this.currentItemIndex];
-      this.handleImages();
-      this.resetState();
+  private simulateButtonClick(buttonId: string) {
+    const button = document.getElementById(buttonId);
+    if (button) {
+      button.click();
+      console.log(`✅ Click simulado en ${buttonId}`);
+    } else {
+      console.warn(`⚠️ Botón ${buttonId} no encontrado`);
     }
   }
 
@@ -166,7 +164,6 @@ export class MenuItemComponent implements OnInit, OnChanges, OnDestroy {
       return;
     }
     
-    // Si es un string, hacer split; si es array, usar directamente
     const imgArray = typeof this.item.imagenes === 'string' 
       ? this.item.imagenes.split(',')
       : Array.isArray(this.item.imagenes) 
@@ -194,7 +191,7 @@ export class MenuItemComponent implements OnInit, OnChanges, OnDestroy {
   public nextProduct() {
     if (this.itemsArray && this.currentItemIndex < this.itemsArray.length - 1) {
       this.currentItemIndex++;
-      this.updateItem();
+      // this.updateItem();
       console.log('Next Product:', this.currentItemIndex, this.item?.nombre);
     }
   }
@@ -202,7 +199,7 @@ export class MenuItemComponent implements OnInit, OnChanges, OnDestroy {
   public prevProduct() {
     if (this.currentItemIndex > 0) {
       this.currentItemIndex--;
-      this.updateItem();
+      // this.updateItem();
       console.log('Previous Product:', this.currentItemIndex, this.item?.nombre);
     }
   }
@@ -216,7 +213,6 @@ export class MenuItemComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   onAddItem(){
-    // Crear un objeto con el item y la cantidad
     const itemWithQuantity = {
       ...this.item,
       quantity: this.quantity,
@@ -234,5 +230,4 @@ export class MenuItemComponent implements OnInit, OnChanges, OnDestroy {
       this.quantity--;
     }
   }
-
 }

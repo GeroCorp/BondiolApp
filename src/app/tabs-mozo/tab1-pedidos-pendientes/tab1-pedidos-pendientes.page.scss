@@ -1,11 +1,9 @@
 .pendientes-content{
-  --background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+  --background: linear-gradient(180deg, #1a1a1a 0%, #2d2d2d 50%, #1a5a8a 100%);
   --color: #ffffff;
   --padding-bottom: 0;
   --padding-start: 16px;
   --padding-end: 16px;
-  scroll-snap-type: y mandatory;
-  overflow-y: scroll;
 }
 
 .wrap {

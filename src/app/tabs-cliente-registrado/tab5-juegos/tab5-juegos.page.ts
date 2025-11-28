@@ -45,6 +45,7 @@ export class Tab5JuegosPage implements OnInit {
   if (this.primerIntentoUsado && this.descuentoObtenido === 0) {
     this.showToast('Ya usaste tu primer intento. Puedes seguir jugando libremente pero no obtendrás descuentos.', 'warning');
   }
+  console.log("Entrnado al juego...");
   this.juegoActivo = juego;
 }
 
@@ -60,7 +61,14 @@ export class Tab5JuegosPage implements OnInit {
       const alert = await this.alertController.create({
         header: '¡Felicitaciones! 🎉',
         message: `Has ganado un descuento del ${evento.descuento}% en tu cuenta final.`,
-        buttons: ['¡Genial!']
+        buttons: [
+          {
+            text: '¡Genial!',
+            handler: () => {
+              this.juegoActivo = null; // Solo cerrar cuando se presiona el botón
+            }
+          }
+        ]
       });
       await alert.present();
     } else if (evento.primerIntento && !evento.gano) {
@@ -72,9 +80,7 @@ export class Tab5JuegosPage implements OnInit {
       this.showToast('¡Ganaste! Pero el descuento solo se aplica en el primer intento.', 'success');
     }
 
-    setTimeout(() => {
-      this.juegoActivo = null;
-    }, 2000);
+    // Se eliminó el cierre automático del juego 
   }
 
   async guardarDescuento(descuento: number) {

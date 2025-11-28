@@ -12,7 +12,6 @@ import { TipoClienteService } from 'src/app/services/tipo-cliente.service';
 import { supabase } from '../../services/supabase';
 import { ReservasService } from 'src/app/services/reservas.service';
 import { environment } from 'src/environments/environment.prod';
-import { CustomLoaderService } from 'src/app/services/custom-loader.service';
 
 interface Cliente {
   id_cliente?: number;
@@ -46,11 +45,12 @@ export class HomeClientePage implements OnInit {
   reservaActivaHoy: any = null;
   cargandoReserva: boolean = false;
   cargandoRecarga = signal<boolean>(false);
+  juegosAccess = signal<boolean>(false);
+  canPay = signal<boolean>(false);
 
   isDelivery = signal<boolean>(false);
   direccionDelivery: string = '';
 
-  hideMap = signal<boolean>(true);
 
   constructor(
     private router: Router,
@@ -60,7 +60,6 @@ export class HomeClientePage implements OnInit {
     private clienteService: ClienteService,
     private cd: ChangeDetectorRef,
     private listaEsperaService: ListaEsperaService,
-    private customLoader: CustomLoaderService,
     private hapticService: HapticService,
     private tipoClienteService: TipoClienteService,
     private reservasService: ReservasService
@@ -77,6 +76,15 @@ export class HomeClientePage implements OnInit {
         if(this.isDelivery() && this.direccionDelivery === ''){
           this.isDelivery.set(false)
         }
+        const access = localStorage.getItem('juegosAccess');
+        this.juegosAccess.set(access === 'true');
+        if (this.juegosAccess()){
+          console.log("Acceso a juegos habilitado");
+          this.showToast('¡Acceso a juegos habilitado!', 'success');
+        }
+        const canPayStorage = localStorage.getItem('canPay');
+        this.canPay.set(canPayStorage === 'true');
+        
         // console.log('📊 Estado del cliente en espera (registrado):', this.enEspera()); // ⚠️ LOG DESHABILITADO
       }
     });
@@ -104,78 +112,6 @@ export class HomeClientePage implements OnInit {
   testMesa(){
     this.mesaVerificada.set(true);
   }
-  
-
-  private async setupMesaSubscription() {
-    // ⚠️ TEMPORALMENTE DESHABILITADO - CAUSABA SPAM DE LOGS
-    console.log('⚠️ setupMesaSubscription DESHABILITADO temporalmente');
-    return;
-    
-    // Limpiar suscripción anterior
-    if (this.mesaSubscription) {
-      console.log('🧹 Limpiando suscripción de mesa anterior...');
-      this.mesaSubscription.unsubscribe?.();
-      this.mesaSubscription = null;
-    }
-
-    if (!this.cliente) {
-      console.log('⚠️ No hay cliente, saltando setupMesaSubscription');
-      return;
-    }
-
-    console.log('🔄 Configurando nueva suscripción de mesa para:', this.cliente.nombre);
-
-    // Suscribirse a cambios en la fila de clientes_anonimos (importante: el maitre debe actualizar esta tabla)
-    const idAnon = this.cliente.id_clienteanonimo ?? this.cliente.id_cliente;
-    if (idAnon) {
-      this.mesaSubscription = supabase
-        .channel(`anonimo-mesa-${idAnon}`)
-        .on('postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'clientes_anonimos',
-            filter: `id_clienteanonimo=eq.${idAnon}`
-          },
-          async (payload) => {
-            console.log('Realtime clientes_anonimos payload:', payload);
-            // refrescar datos y actualizar UI
-            await this.tipoClienteService.refreshClienteData().catch(() => {});
-            const updated = this.tipoClienteService.getClienteData();
-            this.mesaAsignada.set(updated?.mesa_asignada ?? this.mesaAsignada());
-            this.enEspera.set(updated?.en_espera === undefined ? this.enEspera() : !!updated?.en_espera);
-            this.cd.detectChanges();
-          })
-        .subscribe();
-      return;
-    }
-
-    // Fallback: suscribirse a la tabla mesas por numero si tienes mesaAsignada (por si el maitre actualiza desde mesas)
-    if (this.mesaAsignada()) {
-      this.mesaSubscription = supabase
-        .channel('mesa-changes')
-        .on('postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'mesas',
-            filter: `numero=eq.${this.mesaAsignada()}`
-          },
-          async () => {
-            console.log('Realtime mesas payload');
-            await this.tipoClienteService.refreshClienteData().catch(() => {});
-            const updated = this.tipoClienteService.getClienteData();
-            this.mesaAsignada.set(updated?.mesa_asignada ?? this.mesaAsignada());
-            this.enEspera.set(updated?.en_espera === undefined ? this.enEspera() : !!updated?.en_espera);
-            this.cd.detectChanges();
-          })
-        .subscribe();
-    }
-  }
-
- 
-
-  
   
   async ngOnInit() {
     console.log('🏠 [HOME-CLIENTE] ngOnInit iniciado');
@@ -347,7 +283,7 @@ private async procesarIngresoAnonimo(nombre: string) {
         this.mesaVerificada.set(false);
 
         if (this.mesaAsignada()) {
-          await this.setupMesaSubscription();
+          
         }
       } else {
         const id = this.cliente.id_cliente ?? this.tipoClienteService.getClienteId();
@@ -367,7 +303,7 @@ private async procesarIngresoAnonimo(nombre: string) {
         this.mesaVerificada.set(false);
 
         if (this.mesaAsignada()) {
-          await this.setupMesaSubscription();
+          
         }
       }
 

@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 
 import { CustomLoaderService } from 'src/app/services/custom-loader.service';
 import { Delivery } from 'src/app/services/delivery';
+import { ClienteService } from 'src/app/services/cliente.service';
 
 @Component({
   selector: 'app-tab1-pedidos',
@@ -26,7 +27,8 @@ export class Tab1PedidosPage implements OnInit {
     private deliveryService: Delivery, 
     private toastController: ToastController,
     private customLoader: CustomLoaderService,
-    private router: Router
+    private router: Router,
+    private clienteService: ClienteService
   ) { 
   }
 
@@ -128,6 +130,7 @@ export class Tab1PedidosPage implements OnInit {
       nuevoEstado = 'en_camino';
     } else if (pedido.estado === 'en_camino') {
       nuevoEstado = 'entregado';
+      this.clienteService.setCanPay(true); // Habilitar pago para el cliente
     } else if (pedido.estado === 'pago_pendiente') {
       nuevoEstado = 'pagado';
     }

@@ -1,12 +1,12 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
-import { JuegoMozoPage } from './juego-mozo.page';
+import { JuegoMozoComponent } from './juego-mozo.page';
 
 const routes: Routes = [
   {
     path: '',
-    component: JuegoMozoPage
+    component: JuegoMozoComponent
   }
 ];
 

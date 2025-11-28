@@ -1,5 +1,5 @@
 ﻿import { Component, OnInit, signal, computed, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
-import { ToastController, ModalController, NavController } from '@ionic/angular';
+import { ToastController, ModalController } from '@ionic/angular';
 import { ClienteService } from 'src/app/services/cliente.service';
 import { DetallePedidoModalComponent } from './detalle-pedido-modal/detalle-pedido-modal.component';
 import { Router } from '@angular/router';
@@ -7,7 +7,6 @@ import { Router } from '@angular/router';
 import { HapticService } from 'src/app/services/haptic.service';
 import { TipoClienteService } from 'src/app/services/tipo-cliente.service';
 import { AuthService } from 'src/app/services/supabase';
-import { CustomLoaderService } from 'src/app/services/custom-loader.service';
 import { Delivery } from 'src/app/services/delivery';
 
 @Component({
@@ -52,10 +51,8 @@ export class Tab4HistorialPage implements OnInit, OnDestroy, AfterViewInit {
   constructor(
     private router: Router,
     private clienteService: ClienteService,
-    private customLoader: CustomLoaderService,
     private toastController: ToastController,
     private modalController: ModalController,
-    private navController: NavController,
     private hapticService: HapticService,
     private tipoClienteService: TipoClienteService,
     private authService: AuthService,

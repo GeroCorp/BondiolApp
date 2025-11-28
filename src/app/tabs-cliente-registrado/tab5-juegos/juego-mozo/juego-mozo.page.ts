@@ -16,8 +16,8 @@ interface Obstaculo {
 
 @Component({
   selector: 'app-juego-mozo',
-  templateUrl: './juego-mozo.component.html',
-  styleUrls: ['./juego-mozo.component.scss'],
+  templateUrl: './juego-mozo.page.html',
+  styleUrls: ['./juego-mozo.page.scss'],
   standalone: false
 })
 export class JuegoMozoComponent implements OnInit, OnDestroy {
@@ -38,6 +38,8 @@ export class JuegoMozoComponent implements OnInit, OnDestroy {
   mensaje: string = '';
 
   // Posiciones
+  // El orden de las esquinas es empezando desde inferior derecha y en sentido horario
+  esquinas: Posicion[] = [{x: 0, y: 0},{x: 30, y: 0},{x: 30, y: 30},{x: 0, y: 30}];
   mozo: Posicion = { x: 30, y: 30 };
   mesa: Posicion = { x: 0, y: 0 };
   obstaculos: Obstaculo[] = [];
@@ -52,8 +54,8 @@ export class JuegoMozoComponent implements OnInit, OnDestroy {
   // Movimiento
   private velocidadX: number = 0;
   private velocidadY: number = 0;
-  private sensibilidad: number = 15;
-  private friction: number = 0.95;
+  private sensibilidad: number = 0.2;
+  private friction: number = 0.65;
   private maxVelocidad: number = 8;
 
   // Audio
@@ -78,7 +80,7 @@ export class JuegoMozoComponent implements OnInit, OnDestroy {
 
   inicializarAudio() {
     try {
-      this.audioInicio = new Audio('assets/sounds/game-start.mp3');
+      this.audioInicio = new Audio('assets/sounds/game_start.mp3');
       this.audioFin = new Audio('assets/sounds/game-win.mp3');
       this.audioError = new Audio('assets/sounds/game-error.mp3');
       
@@ -113,7 +115,7 @@ export class JuegoMozoComponent implements OnInit, OnDestroy {
         this.reproducirSonido(this.audioInicio);
         
         // Iniciar giroscopio
-        this.iniciarGiroscopio();
+        this.initialiZeDeviceOrientation();
         
         // Iniciar loop del juego
         this.gameLoop();
@@ -122,16 +124,37 @@ export class JuegoMozoComponent implements OnInit, OnDestroy {
   }
 
   posicionarElementos() {
-    // Mozo en esquina superior izquierda
+    // Esquinas disponibles: [superior-izquierda, superior-derecha, inferior-derecha, inferior-izquierda]
+    const esquinas = [
+      { x: 30, y: 30 },                                              // Superior-izquierda
+      { x: this.canvasWidth - this.mozoSize - 30, y: 30 },          // Superior-derecha
+      { x: this.canvasWidth - this.mozoSize - 30, y: this.canvasHeight - this.mozoSize - 30 }, // Inferior-derecha
+      { x: 30, y: this.canvasHeight - this.mozoSize - 30 }          // Inferior-izquierda
+    ];
+
+    // Pares de esquinas contrarias
+    const pareesContrarias = [
+      [0, 2], // Superior-izquierda vs Inferior-derecha
+      [1, 3]  // Superior-derecha vs Inferior-izquierda
+    ];
+
+    // Elegir aleatoriamente un par de esquinas contrarias
+    const parAleatorio = pareesContrarias[Math.floor(Math.random() * pareesContrarias.length)];
+    
+    // Decidir aleatoriamente cuál esquina para mozo y cuál para mesa
+    const indicesMozoMesa = Math.random() < 0.5 ? 
+      [parAleatorio[0], parAleatorio[1]] : 
+      [parAleatorio[1], parAleatorio[0]];
+
+    // Asignar posiciones
     this.mozo = {
-      x: 30,
-      y: 30
+      x: esquinas[indicesMozoMesa[0]].x,
+      y: esquinas[indicesMozoMesa[0]].y
     };
 
-    // Mesa en esquina inferior derecha
     this.mesa = {
-      x: this.canvasWidth - this.mesaSize - 30,
-      y: this.canvasHeight - this.mesaSize - 30
+      x: esquinas[indicesMozoMesa[1]].x,
+      y: esquinas[indicesMozoMesa[1]].y
     };
 
     // Generar obstáculos aleatorios en el centro
@@ -168,31 +191,47 @@ export class JuegoMozoComponent implements OnInit, OnDestroy {
     }
   }
 
-  async iniciarGiroscopio() {
-    try {
-      // ✅ CORRECCIÓN: Motion.addListener solicita permisos automáticamente
-      this.motionListener = await Motion.addListener('accel', (event) => {
-        if (!this.juegoIniciado || this.juegoTerminado_) return;
 
-        // Actualizar velocidad basada en aceleración
-        // Invertir x e y según la orientación del dispositivo
-        this.velocidadX += event.acceleration.y * this.sensibilidad;
-        this.velocidadY += event.acceleration.x * this.sensibilidad;
 
-        // Limitar velocidad máxima
-        this.velocidadX = Math.max(-this.maxVelocidad, Math.min(this.maxVelocidad, this.velocidadX));
-        this.velocidadY = Math.max(-this.maxVelocidad, Math.min(this.maxVelocidad, this.velocidadY));
-      });
+  private orientationHandler = (event: DeviceOrientationEvent) => {
+    this.handleDeviceOrientation(event);
+  };
 
-      console.log('✅ Giroscopio iniciado correctamente');
-    } catch (error) {
-      console.error('Error iniciando giroscopio:', error);
-      
-      // Mostrar mensaje al usuario si falla el giroscopio
-      this.mensaje = 'No se pudo acceder al giroscopio del dispositivo';
-      this.juegoTerminado_ = true;
-      this.juegoIniciado = false;
+  private isNativeApp(): boolean {
+    // Detecta si la app está corriendo en Capacitor (nativa) o en navegador
+    return (window as any).capacitor !== undefined;
+  }
+
+  private initialiZeDeviceOrientation() {
+    // Solo inicializar en apps nativas
+    if (!this.isNativeApp()) {
+      console.log('⚠️ DeviceOrientation deshabilitado - No es una app nativa');
+      return;
     }
+
+    console.log('📱 InicialiZando DeviceOrientation...');
+    window.addEventListener('deviceorientation', this.orientationHandler);
+    console.log('✅ DeviceOrientation listener registrado');
+  }
+
+   private handleDeviceOrientation(event: DeviceOrientationEvent) {
+    const Y = event.alpha || 0; 
+    const X = event.beta || 0;
+    const Z = event.gamma || 0;
+    
+
+    // Si X baja, entonces, el muñeco sube
+    this.velocidadY += (X - 0) * this.sensibilidad; // Ajustar según orientación
+
+    // Si Z sube, entonces, el muñeco va a la derecha
+    this.velocidadX += (Z - 0) * this.sensibilidad; // Ajustar según orientación
+
+    // Capeamos la velocidad máxima
+    this.velocidadX = Math.max(-this.maxVelocidad, Math.min(this.maxVelocidad, this.velocidadX));
+    this.velocidadY = Math.max(-this.maxVelocidad, Math.min(this.maxVelocidad, this.velocidadY));
+    
+
+    console.log(`Orientaciones: X ${X.toFixed(1)}    Y ${Y.toFixed(1)}    Z ${Z.toFixed(1)}`);
   }
 
   gameLoop() {
@@ -350,6 +389,8 @@ export class JuegoMozoComponent implements OnInit, OnDestroy {
       this.motionListener.remove();
       this.motionListener = null;
     }
+    window.removeEventListener('deviceorientation', this.orientationHandler);
+
   }
 
   detenerJuego() {
@@ -361,6 +402,7 @@ export class JuegoMozoComponent implements OnInit, OnDestroy {
     }
     
     this.detenerGiroscopio();
+
   }
 
   reiniciarJuego() {

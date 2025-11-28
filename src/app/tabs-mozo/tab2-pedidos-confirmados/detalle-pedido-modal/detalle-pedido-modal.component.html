@@ -20,7 +20,7 @@
         </ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        <ion-item lines="none">
+        <ion-item lines="none" class="datos-cliente">
           <ion-icon name="location-outline" slot="start"></ion-icon>
           <ion-label>
             <h3>Mesa</h3>
@@ -28,7 +28,7 @@
           </ion-label>
         </ion-item>
         
-        <ion-item lines="none">
+        <ion-item lines="none" class="datos-cliente">
           <ion-icon name="person-outline" slot="start"></ion-icon>
           <ion-label>
             <h3>Cliente</h3>
@@ -36,7 +36,7 @@
           </ion-label>
         </ion-item>
         
-        <ion-item lines="none">
+        <ion-item lines="none" class="datos-cliente">
           <ion-icon name="time-outline" slot="start"></ion-icon>
           <ion-label>
             <h3>Fecha y Hora</h3>
@@ -44,7 +44,7 @@
           </ion-label>
         </ion-item>
         
-        <ion-item lines="none">
+        <ion-item lines="none" class="datos-cliente">
           <ion-label>
             <h3>Estado</h3>
             <ion-badge [color]="getColorEstado(pedido?.estado)">

@@ -151,8 +151,7 @@
         </ion-card-content>
       </ion-card>
     }
-    <div class="mapa" [hidden]="hideMap()" id="mapContainer"> 
-    </div> 
+
     <!-- Tarjetas de funcionalidades -->
     <ion-card>
       <ion-card-content>
@@ -170,7 +169,7 @@
 
         <ion-button
           expand="block"
-          color="tertiary"
+          color="secondary"
           (click)="verHistorial()"
           [disabled]="!mesaVerificada() && !isDelivery()"
         >
@@ -199,7 +198,7 @@
           expand="block"
           color="tertiary"
           (click)="verJuegos()"
-          [disabled]="!mesaVerificada() && !isDelivery() ||   !isRegistrado()"
+          [disabled]="!mesaVerificada() && !isDelivery() || !isRegistrado() || !juegosAccess()"
         >
           <ion-icon name="game-controller-outline" slot="start"></ion-icon>
           Juegos y Descuentos 
@@ -212,7 +211,7 @@
           expand="block"
           color="success"
           (click)="solicitarCuenta()"
-          [disabled]="(!mesaVerificada() && !isDelivery())"
+          [disabled]="(!mesaVerificada() && !isDelivery() && !canPay())"
         >
           <ion-icon name="card-outline" slot="start"></ion-icon>
           @if(!isDelivery()){

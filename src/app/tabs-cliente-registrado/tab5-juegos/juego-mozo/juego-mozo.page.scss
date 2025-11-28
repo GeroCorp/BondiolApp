@@ -47,7 +47,7 @@
   box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
 
   &.game-over {
-    filter: blur(2px);
+    filter: brightness(0.8) contrast(1.2);
   }
 }
 
@@ -139,8 +139,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(5px);
+  background: rgba(0, 0, 0, 0.85);
   z-index: 100;
   animation: fadeIn 0.3s ease;
 }
@@ -151,22 +150,28 @@
   border-radius: 16px;
   text-align: center;
   max-width: 90%;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
   animation: slideUp 0.3s ease;
+  transform: scale(1);
+  opacity: 1;
 
   ion-icon {
     margin-bottom: 16px;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   }
 
   h2 {
     font-size: 28px;
     font-weight: bold;
     margin: 16px 0;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   }
 
   p {
     font-size: 16px;
     color: var(--ion-text-color);
     margin-bottom: 24px;
+    font-weight: 500;
   }
 
   .descuento-badge {
@@ -176,16 +181,17 @@
 
   ion-button {
     margin-top: 12px;
+    font-weight: 600;
   }
 
   &.win {
     border: 3px solid #2dd36f;
-    box-shadow: 0 0 30px rgba(45, 211, 111, 0.5);
+    box-shadow: 0 10px 40px rgba(45, 211, 111, 0.3);
   }
 
   &.lose {
     border: 3px solid #eb445a;
-    box-shadow: 0 0 30px rgba(235, 68, 90, 0.5);
+    box-shadow: 0 10px 40px rgba(235, 68, 90, 0.3);
   }
 }
 

@@ -19,7 +19,8 @@ const routes: Routes = [
   {
     path: 'juego-ruleta',
     loadChildren: () => import('./juego-ruleta/juego-ruleta.module').then( m => m.JuegoRuletaPageModule)
-  },  {
+  },
+  {
     path: 'juego-mozo',
     loadChildren: () => import('./juego-mozo/juego-mozo.module').then( m => m.JuegoMozoPageModule)
   }

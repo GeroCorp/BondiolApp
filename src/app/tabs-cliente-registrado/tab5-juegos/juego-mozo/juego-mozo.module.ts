@@ -6,7 +6,7 @@ import { IonicModule } from '@ionic/angular';
 
 import { JuegoMozoPageRoutingModule } from './juego-mozo-routing.module';
 
-import { JuegoMozoPage } from './juego-mozo.page';
+import { JuegoMozoComponent } from './juego-mozo.page';
 
 @NgModule({
   imports: [
@@ -15,6 +15,6 @@ import { JuegoMozoPage } from './juego-mozo.page';
     IonicModule,
     JuegoMozoPageRoutingModule
   ],
-  declarations: [JuegoMozoPage]
+  declarations: [JuegoMozoComponent]
 })
 export class JuegoMozoPageModule {}

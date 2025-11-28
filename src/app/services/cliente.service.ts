@@ -1,6 +1,5 @@
 import { inject, Injectable, Injector, signal } from '@angular/core';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { environment } from 'src/environments/environment';
+import { SupabaseClient } from '@supabase/supabase-js';
 import { Notification } from './notification';
 import { TipoClienteService } from './tipo-cliente.service';
 import { supabaseClient } from './auth'; // ✅ Importar instancia centralizada
@@ -21,6 +20,10 @@ export class ClienteService {
   private _direccionDelivery = signal<string>('');
 
   private _mesaAsignada: number | null = null;
+
+  private _juegosAccess = signal<boolean>(false);
+
+  private _canPay = signal<boolean>(false);
 
   private supabase: SupabaseClient;
   
@@ -65,8 +68,35 @@ export class ClienteService {
     return this._mesaAsignada;
   }
 
+  get juegosAccess() {
+    return this._juegosAccess;
+  }
+
+  get canPay() {
+    return this._canPay;
+  }
+
+
   setMesaAsignada(mesaId: number | null) {
     this._mesaAsignada = mesaId;
+  }
+
+  setJuegosAccess(accessed: boolean) {
+    this._juegosAccess.set(accessed);
+    if (accessed){
+      localStorage.setItem('juegosAccess', 'true');
+    }else{
+      localStorage.setItem('juegosAccess', 'false');
+    }
+  }
+
+  setCanPay(canPay: boolean) {
+    this._canPay.set(canPay);
+    if (canPay){
+      localStorage.setItem('canPay', 'true');
+    }else{
+      localStorage.setItem('canPay', 'false');
+    }
   }
 
   // Metodos para manejo del pedido
@@ -572,7 +602,24 @@ getSubtotal(): number {
 
   get client() {
   return this.supabase;
-}
+  }
+
+  async getLastPedidoConDetalles(id_cliente:number) {
+    const { data: pedido, error } = await this.supabase
+    .from('pedidos')
+    .select('*')
+    .eq('id_cliente', id_cliente)
+    .order('fecha', { ascending: false })
+    .limit(1)
+    .single();
+    if (error) {
+      throw new Error('Error al obtener el pedido: ' + error.message);
+    }
+
+    pedido.detalles_pedido = await this.getDetallesPedido(pedido.id);
+
+    return pedido;
+  }
   
   async getChatMessages() {
   try {
@@ -766,43 +813,47 @@ async sendMessage(contenido: string): Promise<void> {
   // Metodos para manejo de clientes
 
   async getClientId(): Promise<number> {
-  // ✅ Verificar si es anónimo
-  if (this.tipoClienteService.isAnonimo()) {
-    const clienteData = this.tipoClienteService.getClienteData();
-    const idAnonimo = clienteData?.id_clienteanonimo ?? clienteData?.id_cliente;
-    
-    if (idAnonimo) {
-      console.log('✅ ID Cliente Anónimo:', idAnonimo);
-      return idAnonimo;
+    // ✅ Verificar si es anónimo
+    if (this.tipoClienteService.isAnonimo()) {
+      const clienteData = this.tipoClienteService.getClienteData();
+      const idAnonimo = clienteData?.id_clienteanonimo ?? clienteData?.id_cliente;
+      
+      if (idAnonimo) {
+        console.log('✅ ID Cliente Anónimo:', idAnonimo);
+        return idAnonimo;
+      }
+      
+      throw new Error('No se pudo obtener el ID del cliente anónimo');
     }
     
-    throw new Error('No se pudo obtener el ID del cliente anónimo');
-  }
-  
-  // ✅ Si es registrado, usar getSession() para mayor confiabilidad
-  const { data: sessionData, error: sessionError } = await this.supabase.auth.getSession();
-  
-  if (sessionError || !sessionData?.session?.user?.id) {
-    console.error('❌ Error obteniendo sesión:', sessionError);
-    throw new Error('Usuario no autenticado o sesión expirada');
-  }
-  
-  const userid = sessionData.session.user.id;
-  console.log('✅ User ID:', userid);
-  
-  const { data, error } = await this.supabase
-    .from('clientes')
-    .select('id_cliente')
-    .eq('user_id', userid)
-    .single();
+    // ✅ Si es registrado, usar getSession() para mayor confiabilidad
+    const { data: sessionData, error: sessionError } = await this.supabase.auth.getSession();
+    
+    if (sessionError || !sessionData?.session?.user?.id) {
+      console.error('❌ Error obteniendo sesión:', sessionError);
+      throw new Error('Usuario no autenticado o sesión expirada');
+    }
+    
+    const userid = sessionData.session.user.id;
+    console.log('✅ User ID:', userid);
+    
+    const { data: clientes, error } = await this.supabase
+      .from('clientes')
+      .select('id_cliente')
+      .eq('user_id', userid);
 
-  if (error) {
-    throw new Error('Error al obtener id del cliente: ' + error.message);
-  }
+    if (error) {
+      throw new Error('Error al obtener id del cliente: ' + error.message);
+    }
 
-  console.log('✅ ID Cliente Registrado:', data.id_cliente);
-  return data.id_cliente ?? -1;
-}
+    if (!clientes || clientes.length === 0) {
+      throw new Error('No se encontró cliente registrado con este usuario');
+    }
+
+    const id = clientes[0].id_cliente;
+    console.log('✅ ID Cliente Registrado:', id);
+    return id ?? -1;
+  }
 
   async getNombreCliente(): Promise<string> {
   try {
@@ -1282,9 +1333,6 @@ async sendMessage(contenido: string): Promise<void> {
             descuento_obtenido: descuento,
             primer_intento_usado: true,
             fecha: new Date().toISOString(),
-          },
-          {
-            onConflict: 'mesa_id,cliente_id',
           }
         )
         .select();
@@ -1418,22 +1466,13 @@ async getHistorialPedidos() {
 
     } else {
       const clienteId = await this.getClientId();
-      
-      console.log('👤 Buscando pedidos de cliente registrado:', clienteId);
-
       // ✅ QUERY PARA REGISTRADOS
-      const { data, error } = await this.supabase
+      
+      const { data: pedidos, error } = await this.supabase
         .from('pedidos')
         .select(`
           *,
-          mesa:mesas(numero, id),
-          detalles_pedido(
-            id,
-            nombre_prod,
-            cantidad,
-            precio_unitario,
-            tipo
-          )
+          mesa:mesas(numero, id)
         `)
         .eq('id_cliente', clienteId)
         .order('fecha', { ascending: false });
@@ -1442,12 +1481,19 @@ async getHistorialPedidos() {
         console.error('❌ Error obteniendo historial registrado:', error);
         throw new Error('Error al obtener historial: ' + error.message);
       }
-
-      console.log('✅ Historial registrado obtenido:', data?.length || 0, 'pedidos');
-      console.log('📦 Datos completos:', data);
       
-      this._historialPedidos.set(data || []);
-      return data || [];
+      pedidos.forEach(async pedido => {
+        const detalles = await this.getDetallesPedido(pedido.id);
+        pedido.detalles_pedido = detalles;
+      })
+      console.log('👤 Buscando pedidos de cliente registrado:', clienteId);
+
+
+      console.log('✅ Historial registrado obtenido:', pedidos?.length || 0, 'pedidos');
+      console.log('📦 Datos completos:', pedidos);
+      
+      this._historialPedidos.set(pedidos || []);
+      return pedidos || [];
     }
   } catch (error) {
     console.error('❌ Error en getHistorialPedidos:', error);
@@ -1476,71 +1522,6 @@ async getHistorialPedidos() {
     }
   }
 
-  /**
-   * Obtiene el pedido entregado actual del cliente
-   */
-  async getPedidoEntregadoActual(): Promise<any | null> {
-  try {
-    const isAnonimo = this.tipoClienteService.isAnonimo();
-    const clienteData = this.tipoClienteService.getClienteData();
-
-    if (isAnonimo) {
-      // ✅ ANÓNIMO: Buscar por mesa
-      const mesaId = clienteData?.mesa_asignada;
-      
-      if (!mesaId) {
-        console.warn('⚠️ Cliente anónimo sin mesa');
-        return null;
-      }
-
-      const { data, error } = await this.supabase
-        .from('pedidos')
-        .select(`
-          *,
-          mesa:mesas(numero, id),
-          detalles_pedido(*)
-        `)
-        .eq('mesa', mesaId)
-        .is('id_cliente', null)
-        .eq('estado', 'entregado')
-        .order('fecha', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (error) throw error;
-
-      return data;
-
-    } else {
-      // ✅ REGISTRADO: Buscar por id_cliente
-      const clienteId = await this.getClientId();
-      const mesaId = await this.getNroMesa(clienteId);
-
-      if (!mesaId) return null;
-
-      const { data, error } = await this.supabase
-        .from('pedidos')
-        .select(`
-          *,
-          mesa:mesas(numero, id),
-          detalles_pedido(*)
-        `)
-        .eq('id_cliente', clienteId)
-        .eq('mesa', mesaId)
-        .eq('estado', 'entregado')
-        .order('fecha', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (error) throw error;
-
-      return data;
-    }
-  } catch (error) {
-    console.error('❌ Error obteniendo pedido entregado:', error);
-    return null;
-  }
-}
 
 /**
  * Suscripción en tiempo real a cambios en los pedidos del cliente
@@ -1633,18 +1614,19 @@ async subscribeToHistorialPedidos() {
  */
 async getDetallesPedido(pedidoId: number) {
   try {
-    const { data, error } = await this.supabase
+    const { data: detalles, error } = await this.supabase
       .from('detalles_pedido')
       .select('*')
       .eq('id_pedido', pedidoId)
-      .order('id', { ascending: true });
+      .eq('es_delivery', false)
+      .order('id', { ascending: true })
 
     if (error) {
       console.error('❌ Error obteniendo detalles del pedido:', error);
       throw new Error('Error al obtener detalles: ' + error.message);
     }
 
-    return data || [];
+    return detalles || [];
   } catch (error) {
     console.error('Error en getDetallesPedido:', error);
     throw error;

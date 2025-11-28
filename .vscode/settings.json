@@ -3,5 +3,6 @@
     "@ionic/angular/common",
     "@ionic/angular/standalone"
   ],
-  "deno.enable": true
+  "deno.enable": true,
+  "java.configuration.updateBuildConfiguration": "interactive"
 }
