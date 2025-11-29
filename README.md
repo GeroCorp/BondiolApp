@@ -152,4 +152,24 @@ Fecha estimada de finalización: 3/10
 
 ## Corpus Gerónimo
 - Arreglos varios
-- Funcionalidades 27 -> 30
+- Funcionalidades 27 - 28
+
+# Octava semana
+## Pagés Valentino
+- Arreglos en UI
+- Funcionalidad Extra 2
+
+## Corpus Gerónimo
+- Funcionalidades 29 - 30
+- Arreglos de UI
+- Fixes de funciones previas
+
+# Novena semana
+## Pagés Valentino
+- Migración de la base de datos
+(Error con la creada por anterior líder)
+
+## Corpus Gerónimo
+- Funcionalidad 31
+- Fixeo de funcionalidad extra 2
+- Arreglos en UI
