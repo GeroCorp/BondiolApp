@@ -4,4 +4,5 @@
     <string name="title_activity_main">RestoApp</string>
     <string name="package_name">com.restoapp.mobile</string>
     <string name="custom_url_scheme">com.restoapp.mobile</string>
+    <string name="server_client_id">143351493481-fba5rkk25jstfus8okff8ndud3djh5kf.apps.googleusercontent.com</string>
 </resources>

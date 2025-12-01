@@ -229,10 +229,10 @@
           expand="block"
           color="secondary"
           (click)="verEncuesta()"
-          [disabled]="!mesaVerificada() || !isRegistrado()"
+          [disabled]="!mesaVerificada() && !isRegistrado() && !isDelivery() && !habilitarEncuesta()"
         >
           <ion-icon name="clipboard-outline" slot="start"></ion-icon>
-          Encuesta @if (!mesaVerificada()) {
+          Encuesta @if (!mesaVerificada()  && !isDelivery() && !habilitarEncuesta()) {
           <ion-icon name="lock-closed" slot="end"></ion-icon>
           }
         </ion-button>
@@ -241,7 +241,7 @@
           expand="block"
           color="secondary"
           (click)="verResultados()"
-          [disabled]="(!mesaVerificada() && !isDelivery() && !habilitarEncuesta())"
+          [disabled]="(!mesaVerificada() && !isDelivery())"
         >
           <ion-icon name="clipboard-outline" slot="start"></ion-icon>
           Resultados encuestas @if (!mesaVerificada() && !isDelivery() && habilitarEncuesta()) {

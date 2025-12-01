@@ -16,7 +16,7 @@ import { Delivery } from 'src/app/services/delivery';
   standalone: false,
 })
 export class Tab8CuentaPage implements OnInit {
-  cargando = true;
+  cargando = false;
   pedidoActual: any = null;
   detalles: any[] = [];
   

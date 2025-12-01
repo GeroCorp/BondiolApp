@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ToastController } from '@ionic/angular';
 import { SafeUrl } from '@angular/platform-browser';
 import { PerfilService } from 'src/app/services/perfilService';
+import { CustomLoaderService } from 'src/app/services/custom-loader.service';
 
 
 @Component({
@@ -29,7 +30,8 @@ export class Tab2CargaMesasPage {
     private fb: FormBuilder,
     private authService: AuthService,
     private toast: ToastController,
-    private perfilService: PerfilService
+    private perfilService: PerfilService,
+    private customLoaderService: CustomLoaderService
   ) {
     this.perfil = this.perfilService.getPerfil();
     console.log('Perfil recibido en Tabs admin:', this.perfil);
@@ -97,7 +99,7 @@ export class Tab2CargaMesasPage {
 
 
   async onSubmit(){
-
+    await this.customLoaderService.show('Creando mesa...');
     if (!this.mesaForm.valid) {
       this.mesaForm.markAllAsTouched();
 
@@ -137,17 +139,22 @@ export class Tab2CargaMesasPage {
     try {
       const { data, error } = await this.authService.
       insertarMesa(mesaData);
-      if (!error) {
-        this.showToast('Mesa creada correctamente', 'success');
-        this.mesaForm.reset();
-        this.qrData = "";
+      
+      if (error) {
+        throw new Error(error.message);
       }
+      console.log(data);
+      this.showToast('Mesa creada correctamente', 'success');
+      this.mesaForm.reset();
+      this.qrData = "";
+      
 
     }catch (e){
       this.showToast('Error al crear mesa', 'danger');
       console.error(e);
     }
-
+    
+    this.customLoaderService.hide();
     
   }
 

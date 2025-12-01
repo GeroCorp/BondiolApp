@@ -3,7 +3,8 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { AuthService } from 'src/app/services/supabase';
 import { Router } from '@angular/router';
-import { ToastController, LoadingController } from '@ionic/angular';
+import { ToastController } from '@ionic/angular';
+import { CustomLoaderService } from 'src/app/services/custom-loader.service';
 import { PerfilService } from 'src/app/services/perfilService';
 import { HapticService } from 'src/app/services/haptic.service';
 //Implementar loadingController
@@ -19,7 +20,7 @@ import { HapticService } from 'src/app/services/haptic.service';
 export class Tab1AgregarProductoPage {
 
   productoForm: FormGroup;
-  imagenes: string[] = [];
+  imagenes: any[] = [];
   perfil: string | null = null;
 
   constructor(
@@ -28,7 +29,7 @@ export class Tab1AgregarProductoPage {
     private router: Router, 
     private toastController: ToastController,
     private perfilService: PerfilService,
-    // private loadingCtrl: LoadingController // implementarlo,
+    private customLoaderService: CustomLoaderService,
     private hapticService: HapticService
   ) {
     this.perfil = this.perfilService.getPerfil();
@@ -74,7 +75,6 @@ export class Tab1AgregarProductoPage {
       resultType: CameraResultType.DataUrl,
       source: CameraSource.Camera,
     });
-
     if (image?.dataUrl) {
       this.imagenes.push(image.dataUrl);
     }
@@ -99,6 +99,7 @@ export class Tab1AgregarProductoPage {
     for (const campo in this.productoForm.controls) {
       const control = this.productoForm.get(campo);
       if (control && control.invalid) {
+          this.customLoaderService.hide();
         await this.hapticService.vibrateError();
         this.showToast(this.validationMessages[campo], 'danger');
         break; // solo muestra el primer error
@@ -107,6 +108,7 @@ export class Tab1AgregarProductoPage {
   }
 
   async crearProducto() {
+    await this.customLoaderService.show('Creando producto...');
     let { nombre, descripcion, tiempo, precio } = this.productoForm.value;
 
     nombre = this.normalizarTexto(nombre);
@@ -117,6 +119,7 @@ export class Tab1AgregarProductoPage {
 
       // 1️⃣ Si hay campos vacíos
       if (Object.values(this.productoForm.value).some(val => !val)) {
+          this.customLoaderService.hide();
         await this.hapticService.vibrateError();
         this.showToast('Aún faltan campos por completar.', 'danger');
       } else {
@@ -128,11 +131,21 @@ export class Tab1AgregarProductoPage {
 
     // Validacion de imagen aparte ya que no forma parte del formGroup
     if (this.imagenes.length < 3) {
+          this.customLoaderService.hide();
       await this.hapticService.vibrateError();
       this.showToast('Debe cargar 3 fotos para completar el registro.', 'danger');
       return;
     }
 
+    // Transformar imagenes antes de pasarlas
+    this.imagenes = this.imagenes.map(img => this.supabaseService.dataURLtoBlob(img));
+    let imagenes_posta: string[] = [];
+    // Y subirlas a storage para pasar solo las URLs a la tabla correspondiente
+    for (let img of this.imagenes) {
+      const fileName = `${nombre.replace(/\s+/g, '_')}_${new Date().getTime()}.jpeg`;
+      const publicUrl = await this.supabaseService.subirImagenPlatos(img, fileName, this.perfil === 'cocinero' ? 'platos' : 'bebidas');
+      imagenes_posta.push(publicUrl); // agregar URL pública al array
+    }
     try {
       // Insertar producto en Supabase Auth
       const nuevoProducto = {
@@ -140,8 +153,9 @@ export class Tab1AgregarProductoPage {
         descripcion: descripcion,
         tiempo: tiempo,
         precio: precio,
-        imagenes: this.imagenes,
+        imagenes: imagenes_posta.join(','),
       };
+
 
       if (this.perfil === 'cocinero') {
 
@@ -150,12 +164,14 @@ export class Tab1AgregarProductoPage {
 
         if (errBuscar) {
           console.error('Error verificando plato:', errBuscar.message);
+          this.customLoaderService.hide();
           await this.hapticService.vibrateError();
           this.showToast('No se pudo verificar el menú', 'danger');
           return;
         }
 
         if (existente && existente.length > 0) {
+          this.customLoaderService.hide();
           await this.hapticService.vibrateError();
           this.showToast('El plato ya existe en la carta.', 'danger');
           return;
@@ -164,7 +180,8 @@ export class Tab1AgregarProductoPage {
         const { data, error } = await this.supabaseService.insertarPlato(nuevoProducto);
 
         if (error) {
-          console.error('Error al insertar producto:', error.message);
+          console.error('Error al insertar producto:', error);
+          this.customLoaderService.hide();
           await this.hapticService.vibrateError();
           this.showToast('Error al guardar datos del producto', 'danger');
         } else {
@@ -179,12 +196,14 @@ export class Tab1AgregarProductoPage {
 
         if (errBuscar) {
           console.error('Error verificando plato:', errBuscar.message);
+          this.customLoaderService.hide();
           await this.hapticService.vibrateError();
           this.showToast('No se pudo verificar el menú', 'danger');
           return;
         }
 
         if (existente && existente.length > 0) {
+          this.customLoaderService.hide();
           await this.hapticService.vibrateError();
           this.showToast('El plato ya existe en la carta.', 'danger');
           return;
@@ -196,6 +215,7 @@ export class Tab1AgregarProductoPage {
           console.error('Error al insertar producto:', error.message);
           await this.hapticService.vibrateError();
           this.showToast('Error al guardar datos del producto', 'danger');
+          this.customLoaderService.hide();
         } else {
           console.log('Producto creado:', data);
           this.showToast('Producto creado correctamente', 'success');
@@ -203,11 +223,14 @@ export class Tab1AgregarProductoPage {
           this.imagenes = [];
         }
       }
-
+      
     } catch (err: any) {
       await this.hapticService.vibrateError();
+      this.customLoaderService.hide();
       this.showToast(err.message, 'danger');
     }
+    this.customLoaderService.hide();
+
 
   }
 

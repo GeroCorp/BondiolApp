@@ -1,4 +1,5 @@
 import { Component, OnInit, signal } from '@angular/core';
+import { CustomLoaderService } from 'src/app/services/custom-loader.service';
 import { PerfilService } from 'src/app/services/perfilService';
 import { AuthService } from 'src/app/services/supabase';
 
@@ -21,13 +22,15 @@ export class Tab3MenuPage implements OnInit {
 
   constructor(
     private perfilService: PerfilService,
-    private authService: AuthService
+    private authService: AuthService,
+    private customLoaderService: CustomLoaderService
   ) { 
     this.perfil = this.perfilService.getPerfil();
     console.log('Perfil recibido en Tabs cocinero/bartender:', this.perfil);
   }
 
   async ngOnInit() {
+    await this.customLoaderService.show('Cargando productos...');
     this.isLoadingData = true;
     
     // Tiempo mínimo de carga para evitar parpadeo del spinner
@@ -43,11 +46,13 @@ export class Tab3MenuPage implements OnInit {
       
     } catch (error) {
       console.error('Error inesperado al obtener productos:', error);
+      this.customLoaderService.hide();
       // Aún así esperar el tiempo mínimo en caso de error
       await minLoadingTime;
     } finally {
       this.isLoadingData = false;
     }
+    this.customLoaderService.hide();
   }
 
   async cargarPlatos() {

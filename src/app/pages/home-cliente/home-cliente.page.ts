@@ -31,7 +31,7 @@ interface Cliente {
   standalone: false,
 })
 export class HomeClientePage implements OnInit {
-  habilitarEncuesta = signal<boolean>(false);
+  habilitarEncuesta = signal<boolean>(true);
   cliente: any = null;
   enEspera = signal<boolean>(true);
   mesaAsignada = signal<number | null>(null);

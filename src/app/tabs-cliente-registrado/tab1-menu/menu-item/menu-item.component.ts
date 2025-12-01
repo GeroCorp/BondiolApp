@@ -22,8 +22,10 @@ export class MenuItemComponent implements OnInit, OnChanges, OnDestroy {
   private ZDirection: 'left' | 'right' | null = null;
   private XDirection: 'forward' | 'backward' | null = null;
   private ZCount: number = 0;
+  private XCount: number = 0;
   private lastActionTime: number = 0;
   private actionCooldown: number = 1000; // ✅ Cambié a 1500ms (1.5 segundos)
+  private lastProductChangeTime: number = 0;
   
   constructor() { }
 
@@ -64,17 +66,11 @@ export class MenuItemComponent implements OnInit, OnChanges, OnDestroy {
     this.handleDeviceOrientation(event);
   };
 
-  private isNativeApp(): boolean {
-    // Detecta si la app está corriendo en Capacitor (nativa) o en navegador
-    return (window as any).capacitor !== undefined;
-  }
+
 
   private initialiZeDeviceOrientation() {
     // Solo inicializar en apps nativas
-    if (!this.isNativeApp()) {
-      console.log('⚠️ DeviceOrientation deshabilitado - No es una app nativa');
-      return;
-    }
+
 
     console.log('📱 InicialiZando DeviceOrientation...');
     window.addEventListener('deviceorientation', this.orientationHandler);
@@ -89,12 +85,12 @@ export class MenuItemComponent implements OnInit, OnChanges, OnDestroy {
     const now = Date.now();
     const canAct = (now - this.lastActionTime) > this.actionCooldown;
 
-    console.log(`Rotación X: ${X.toFixed(1)} Z: ${Z.toFixed(1)} | canAct: ${canAct}`);
+    console.log(`Rotación Y: ${Y.toFixed(1)} X: ${X.toFixed(1)} Z: ${Z.toFixed(1)} | canAct: ${canAct}`);
     // Si está bloqueado, no hacer nada
 
 
     // ===== DETECCIÓN IZQUIERDA/DERECHA (Z) =====
-    if (Z > 25) {
+    if (Z > 55) {
       if (this.ZDirection !== 'right' && canAct) {
         console.log('➡️ DERECHA detectada - Click en botón prevImage');
         this.simulateButtonClick('btn-prev-image');
@@ -102,7 +98,7 @@ export class MenuItemComponent implements OnInit, OnChanges, OnDestroy {
         this.lastActionTime = now;
         this.ZCount = 0;
       }
-    } else if (Z < -25) {
+    } else if (Z < -55) {
       if (this.ZDirection !== 'left' && canAct) {
         console.log('⬅️ IZQUIERDA detectada - Click en botón nextImage');
         this.simulateButtonClick('btn-next-image');
@@ -117,29 +113,45 @@ export class MenuItemComponent implements OnInit, OnChanges, OnDestroy {
           this.ZCount = 0;
         }
       }
-    } else if (Math.abs(Z) < 5) {
+    } else if ( Z > -5 && Z < 5) {
       this.ZDirection = null;
       console.log('↔️ Zona neutral Z - reset');
     }
 
-    // ===== DETECCIÓN ADELANTE/ATRÁS (X) - SOLO si está en posición normal =====
-    if (X < 20 ) { // ✅ Agregué && X > -60
-      if (this.XDirection !== 'forward' && canAct) {
+    // ===== DETECCIÓN ADELANTE/ATRÁS (Y - ALPHA) =====
+
+    const canChangeProduct = (now - this.lastProductChangeTime) > this.actionCooldown;
+
+
+    if (X < 30) {
+      if (this.XDirection !== 'forward' && canAct && canChangeProduct) {
         console.log('⬇️ ADELANTE detectada - Click en botón nextProduct');
         this.simulateButtonClick('btn-next-product');
         this.XDirection = 'forward';
         this.lastActionTime = now;
+        this.lastProductChangeTime = now; // 🔒 Bloquea cambios de producto
+
+        this.XCount = 0;
       }
-    } else if (X > -50 ) { // ✅ Agregué && X < 60
-      if (this.XDirection !== 'backward' && canAct) {
+    } else if (X > 100) {
+      if (this.XDirection !== 'backward' && canAct && canChangeProduct) {
         console.log('⬆️ ATRÁS detectada - Click en botón prevProduct');
         this.simulateButtonClick('btn-prev-product');
         this.XDirection = 'backward';
         this.lastActionTime = now;
+        this.lastProductChangeTime = now; // 🔒 Bloquea cambios de producto
+
+        this.XCount++;
+        
+        if (this.XCount >= 5) {
+          console.log('🔄 COMBO ATRÁS DETECTADO - Volviendo al inicio');
+          this.currentItemIndex = 0;
+          this.currentImageIndex = 0;
+          this.XCount = 0;
+        }
       }
-    } else if (Math.abs(X) < 5) {
-      this.XDirection = null;
-      console.log('⬆️⬇️ Zona neutral X - reset');
+    } else if ((Y > 170 && Y < 190) || (Y > 350 || Y < 10)) {
+      console.log('⬆️⬇️ Zona neutral Y - reset');
     }
   }
 
@@ -190,8 +202,12 @@ export class MenuItemComponent implements OnInit, OnChanges, OnDestroy {
 
   public nextProduct() {
     if (this.itemsArray && this.currentItemIndex < this.itemsArray.length - 1) {
+      this.item = this.itemsArray[this.currentItemIndex + 1];
       this.currentItemIndex++;
-      // this.updateItem();
+      this.XDirection = null;
+
+      this.currentImageIndex = 0;
+      this.handleImages();
       console.log('Next Product:', this.currentItemIndex, this.item?.nombre);
     }
   }
@@ -199,7 +215,12 @@ export class MenuItemComponent implements OnInit, OnChanges, OnDestroy {
   public prevProduct() {
     if (this.currentItemIndex > 0) {
       this.currentItemIndex--;
-      // this.updateItem();
+      this.item = this.itemsArray[this.currentItemIndex];
+
+      this.XDirection = null;
+
+      this.currentImageIndex = 0;
+      this.handleImages();
       console.log('Previous Product:', this.currentItemIndex, this.item?.nombre);
     }
   }

@@ -540,7 +540,9 @@ export class AuthService {
   
   // 🔑 Insertar nuevo plato
   async insertarPlato(producto: any) {
-    return await this.supabase.from('platos').insert([producto]);
+    const {data , error} = await this.supabase.from('platos').insert([producto]);
+    if (error) throw new Error('Error al insertar plato: ' + error.message);
+    return {data, error};
   }
 
   // 🔑 Insertar nueva bebida
@@ -716,11 +718,10 @@ export class AuthService {
     // La URL pública es lo que guardarás en la base de datos
     return publicUrlData.publicUrl;
   }
-  async subirImagenPlatos(platoId: string, imageBlob: Blob) {
-
-    const fileName = `${platoId}_plato_${Date.now()}.jpeg`;
+  async subirImagenPlatos(imageBlob: Blob, fileName:string, perfil: string) {
+    const bucket = perfil === 'cocinero' ? 'platos' : 'bebidas';
     const { data, error } = await this.supabase.storage
-      .from('platos')
+      .from(bucket)
       .upload(fileName, imageBlob, {
         cacheControl: '3600',
         upsert: false // No sobrescribir
@@ -732,10 +733,11 @@ export class AuthService {
 
     // Obtener la URL pública de la imagen
     const { data: publicUrlData } = this.supabase.storage
-      .from('clientes-registrados')
+      .from(bucket)
       .getPublicUrl(fileName);
 
     // La URL pública es lo que guardarás en la base de datos
+    console.log(publicUrlData.publicUrl);
     return publicUrlData.publicUrl;
   }
 

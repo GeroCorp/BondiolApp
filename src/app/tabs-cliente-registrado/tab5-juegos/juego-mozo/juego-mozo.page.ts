@@ -197,17 +197,11 @@ export class JuegoMozoComponent implements OnInit, OnDestroy {
     this.handleDeviceOrientation(event);
   };
 
-  private isNativeApp(): boolean {
-    // Detecta si la app está corriendo en Capacitor (nativa) o en navegador
-    return (window as any).capacitor !== undefined;
-  }
+
 
   private initialiZeDeviceOrientation() {
     // Solo inicializar en apps nativas
-    if (!this.isNativeApp()) {
-      console.log('⚠️ DeviceOrientation deshabilitado - No es una app nativa');
-      return;
-    }
+
 
     console.log('📱 InicialiZando DeviceOrientation...');
     window.addEventListener('deviceorientation', this.orientationHandler);
