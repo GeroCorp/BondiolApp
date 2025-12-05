@@ -1361,9 +1361,6 @@ async sendMessage(contenido: string): Promise<void> {
             descuento_obtenido: 0,
             primer_intento_usado: true,
             fecha: new Date().toISOString(),
-          },
-          {
-            onConflict: 'mesa_id,cliente_id',
           }
         )
         .select();

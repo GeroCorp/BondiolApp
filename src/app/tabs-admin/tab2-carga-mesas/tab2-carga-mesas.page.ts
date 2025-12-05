@@ -30,7 +30,6 @@ export class Tab2CargaMesasPage {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router,
     private toast: ToastController,
     private perfilService: PerfilService,
     private customLoaderService: CustomLoaderService

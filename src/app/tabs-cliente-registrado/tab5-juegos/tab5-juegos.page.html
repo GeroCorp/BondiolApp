@@ -24,15 +24,15 @@
             <ion-icon name="trophy" style="font-size: 64px; color: #ffd700;"></ion-icon>
             <h2 style="margin: 10px 0;">¡Descuento Obtenido!</h2>
             <h1 style="margin: 0; font-size: 48px;">{{ descuentoObtenido }}%</h1>
-            <p style="margin-top: 10px;">Se aplicará a tu cuenta final</p>
+            <p style="margin-top: 10px; color: var(--text-primary)" >Se aplicará a tu cuenta final</p>
           } @else if (primerIntentoUsado) {
             <ion-icon name="information-circle" style="font-size: 64px;"></ion-icon>
             <h2 style="margin: 10px 0;">Primer Intento Usado</h2>
-            <p style="color: var(--text-muted);">Puedes seguir jugando libremente, pero no obtendrás más descuentos en esta visita.</p>
+            <p style="color: var(--text-primary)">Puedes seguir jugando libremente, pero no obtendrás más descuentos en esta visita.</p>
           } @else {
             <ion-icon name="game-controller" style="font-size: 64px;"></ion-icon>
             <h2 style="margin: 10px 0;">¡Gana Descuentos!</h2>
-            <p style="color: var(--text-muted);">Gana en el primer intento de cualquier juego para obtener un descuento en tu cuenta.</p>
+            <p style="color: var(--text-primary)">Gana en el primer intento de cualquier juego para obtener un descuento en tu cuenta.</p>
           }
         </div>
       </ion-card-content>

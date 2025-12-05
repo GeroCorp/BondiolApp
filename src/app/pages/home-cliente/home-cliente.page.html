@@ -198,11 +198,11 @@
           expand="block"
           color="tertiary"
           (click)="verJuegos()"
-          [disabled]="!mesaVerificada() && !isDelivery() || !isRegistrado() || !juegosAccess()"
+          [disabled]="!mesaVerificada() || !isDelivery() && (!isRegistrado() && !juegosAccess())"
         >
           <ion-icon name="game-controller-outline" slot="start"></ion-icon>
           Juegos y Descuentos 
-          @if (!mesaVerificada() && !isDelivery()) {
+          @if (!mesaVerificada() || !isDelivery() && (!isRegistrado() && !juegosAccess())) {
           <ion-icon name="lock-closed" slot="end"></ion-icon>
           }
         </ion-button>
