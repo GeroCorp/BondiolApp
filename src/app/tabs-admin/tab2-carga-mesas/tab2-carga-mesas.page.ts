@@ -5,6 +5,7 @@ import { ToastController } from '@ionic/angular';
 import { SafeUrl } from '@angular/platform-browser';
 import { PerfilService } from 'src/app/services/perfilService';
 import { CustomLoaderService } from 'src/app/services/custom-loader.service';
+import { Router } from '@angular/router';
 
 
 @Component({
@@ -29,6 +30,7 @@ export class Tab2CargaMesasPage {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
+    private router: Router,
     private toast: ToastController,
     private perfilService: PerfilService,
     private customLoaderService: CustomLoaderService
@@ -90,7 +92,7 @@ export class Tab2CargaMesasPage {
       this.qrData = payload.join(",");
     }else {
       this.showToast('Completar todos los campos para generar el QR', 'danger');
-      return;
+      throw new Error('Faltan campos para generar el QR');
     }
     console.log('Datos de la mesa para QR:', this.qrData);
 
@@ -110,6 +112,7 @@ export class Tab2CargaMesasPage {
       } else {
         // De no haber campos vacios, verificar otros errores
         this.handleErrors();
+        this.customLoaderService.hide();
       }
       return;
     }
@@ -117,7 +120,8 @@ export class Tab2CargaMesasPage {
       const { numero, capacidad, tipo } = this.mesaForm.value;
       if (!this.qrData) {
         this.showToast('Generar el QR antes de crear la mesa', 'danger');
-        return;
+        this.customLoaderService.hide();
+        throw new Error('QR no generado');
       }
 
       // Obtener la imagen del QR en base64 desde el canvas
@@ -151,13 +155,33 @@ export class Tab2CargaMesasPage {
 
     }catch (e){
       this.showToast('Error al crear mesa', 'danger');
+        this.customLoaderService.hide();
       console.error(e);
+    }finally {
+      this.mesaForm.reset();
+      this.qrData = "";
+      this.qrCodeDownloadLink = '';
+      this.customLoaderService.hide();
     }
     
     this.customLoaderService.hide();
     
   }
 
+  downloadQRCode() {
+    const qrBlob = this.getQRBlob();
+    if (!qrBlob) {
+      this.showToast('No se pudo descargar el QR', 'danger');
+      return;
+    }
+    const url = URL.createObjectURL(qrBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `mesa_${this.mesaForm.value.numero}_qrcode.jpg`;
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
 
   getQRBlob(): Blob | null {
   // Busca el elemento canvas dentro del contenedor
