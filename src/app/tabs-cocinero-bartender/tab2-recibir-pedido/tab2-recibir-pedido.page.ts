@@ -34,6 +34,11 @@ export class Tab2RecibirPedidoPage implements OnInit {
         try {
           const pedidos = await this.cocinaBarService.getPedidosPendientesSector(sector);
           this.pedidos = pedidos || [];
+          this.pedidos.forEach(pedido => {
+            if (!pedido.estadoItem) {
+              pedido.estadoItem = 'confirmado';
+            }
+          });
         } catch (error) {
           console.error('Error al cargar pedidos pendientes:', error);
         }

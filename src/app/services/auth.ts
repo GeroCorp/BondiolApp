@@ -1,27 +1,9 @@
 import { Injectable } from '@angular/core';
-import { createClient, SupabaseClient, AuthError } from '@supabase/supabase-js';
-import { environment } from 'src/environments/environment';
+import { AuthError, SupabaseClient } from '@supabase/supabase-js';
+import { supabase } from './supabase';
 
-// ✅ Instancia ÚNICA de Supabase con persistencia de sesión
-let supabaseInstance: SupabaseClient | null = null;
-
-export const supabaseClient = (() => {
-  if (!supabaseInstance) {
-    supabaseInstance = createClient(
-      environment.SUPABASE_URL,
-      environment.SUPABASE_ANON_KEY,
-      {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true,
-          storage: typeof window !== 'undefined' ? localStorage : undefined,
-          storageKey: 'restoapp-auth'
-        }
-      }
-    );
-  }
-  return supabaseInstance;
-})();
+// ✅ Reusar la misma instancia de Supabase que el resto de la app
+export const supabaseClient: SupabaseClient = supabase;
 
 @Injectable({
   providedIn: 'root',

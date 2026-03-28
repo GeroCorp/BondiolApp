@@ -34,7 +34,7 @@ export class ConcinaBar {
   
   // 2. Separar los IDs según el tipo de pedido
   const pedidoIdsMesa = sectorItems
-    .filter(item => item.es_delivery === false)
+    .filter(item => item.es_delivery !== true)
     .map(item => item.pedido_id);
     
   const pedidoIdsDelivery = sectorItems
@@ -44,26 +44,31 @@ export class ConcinaBar {
   // 3. Consultar la tabla 'pedidos' (pedidos en mesa) - SOLO ESTADOS ACTIVOS
   const estadosActivos = ['confirmado', 'en_preparación', 'listo'];
   
-  const [pedidosMesa, pedidosDelivery] = await Promise.all([
-      // A. Consultar Pedidos de Mesa - FILTRAR POR ESTADOS ACTIVOS
-      this.supabase
-        .from('pedidos') // Asumo que es 'pedidos'
+  const pedidosMesaPromise = pedidoIdsMesa.length > 0
+    ? this.supabase
+        .from('pedidos')
         .select(`
           id, estado, fecha, total,
           mesa:mesas!id(numero)
         `)
         .in('id', pedidoIdsMesa)
-        .in('estado', estadosActivos),
+        .in('estado', estadosActivos)
+    : Promise.resolve({ data: [], error: null });
 
-      // B. Consultar Pedidos Delivery - FILTRAR POR ESTADOS ACTIVOS
-      this.supabase
-        .from('pedidos_delivery') // Asumo que es 'pedidos_delivery'
+  const pedidosDeliveryPromise = pedidoIdsDelivery.length > 0
+    ? this.supabase
+        .from('pedidos_delivery')
         .select(`
           id, estado, created_at, subtotal,
           direccion, clientes:id_cliente(nombre)
         `)
         .in('id', pedidoIdsDelivery)
         .in('estado', estadosActivos)
+    : Promise.resolve({ data: [], error: null });
+
+  const [pedidosMesa, pedidosDelivery] = await Promise.all([
+    pedidosMesaPromise,
+    pedidosDeliveryPromise
   ]);
   
   if (pedidosMesa.error || pedidosDelivery.error) {

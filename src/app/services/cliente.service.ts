@@ -220,17 +220,22 @@ export class ClienteService {
   // Actualizar isDelivery
   setIsDelivery(esDelivery: boolean) {
     this._esDelivery.set(esDelivery);
-    if (esDelivery){
+    if (esDelivery) {
       localStorage.setItem('esDelivery', 'true');
     } else {
-      localStorage.setItem('esDelivery', 'false');
+      localStorage.removeItem('esDelivery');
+      this._direccionDelivery.set('');
       localStorage.removeItem('direccionDelivery');
     }
   }
   // Actualizar direccionDelivery
   setDireccionDelivery(direccion: string) {
     this._direccionDelivery.set(direccion);
-    localStorage.setItem('direccionDelivery', direccion);
+    if (direccion) {
+      localStorage.setItem('direccionDelivery', direccion);
+    } else {
+      localStorage.removeItem('direccionDelivery');
+    }
   }
 
   // Agregar un item al pedido
@@ -1026,15 +1031,29 @@ async sendMessage(contenido: string): Promise<void> {
 
   async subscribeToClienteEnEspera(signal: any ) {
     try {
-      const channels = this.supabase.channel('custom-update-channel')
+      const { data: { session }, error: sessionError } = await this.supabase.auth.getSession();
+      if (sessionError || !session?.user?.id) {
+        console.error('❌ No se pudo obtener sesión para suscripción de cliente en espera:', sessionError);
+        return;
+      }
+
+      const userId = session.user.id;
+      const channels = this.supabase.channel(`cliente-en-espera-${userId}`)
       .on(
         'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'clientes' },
+        { event: 'UPDATE', schema: 'public', table: 'clientes', filter: `user_id=eq.${userId}` },
         (payload) => {
           console.log('🔄 Update detectado en clientes para clienteEnEspera:', payload);
-          signal.set(payload.new['mesa_asignada']);
+          const mesaAsignada = payload.new?.['mesa_asignada'];
+          const enEspera = mesaAsignada === null;
+
+          if (signal && typeof signal.set === 'function') {
+            signal.set(enEspera);
+          } else {
+            console.warn('⚠️ subscribeToClienteEnEspera recibió un valor inválido:', signal);
+          }
         }
-      ).subscribe()
+      ).subscribe();
     } catch (error) {
       console.error('❌ Error subscribing to cliente en espera:', error);
     }

@@ -69,13 +69,14 @@ export class MenuItemComponent implements OnInit, OnChanges, OnDestroy {
 
 
   private initialiZeDeviceOrientation() {
-    // Solo inicializar en apps nativas
-
-
-    console.log('📱 InicialiZando DeviceOrientation...');
+  console.log('📱 InicialiZando DeviceOrientation...');
+  
+  // ✅ Delay de 2 segundos para evitar que se dispare al abrir el modal
+  setTimeout(() => {
     window.addEventListener('deviceorientation', this.orientationHandler);
     console.log('✅ DeviceOrientation listener registrado');
-  }
+  }, 2000);
+}
 
   private handleDeviceOrientation(event: DeviceOrientationEvent) {
     const Y = event.alpha || 0;

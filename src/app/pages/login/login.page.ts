@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ToastController } from '@ionic/angular';
 import { AuthService } from 'src/app/services/supabase';
+import { ClienteService } from 'src/app/services/cliente.service';
 import { Notification } from 'src/app/services/notification';
 import { TipoClienteService } from 'src/app/services/tipo-cliente.service';
 import { SocialAuthService } from 'src/app/services/social-auth.service';
@@ -28,6 +29,7 @@ export class LoginPage {
     private toastController: ToastController,
     private customLoader: CustomLoaderService,
     private authService: AuthService,
+    private clienteService: ClienteService,
     private v: HapticService,
     private tipoClienteService: TipoClienteService,
     private socialAuthService: SocialAuthService 
@@ -138,6 +140,8 @@ export class LoginPage {
       
       if (cliente.estado === 'aprobado') {
         this.notificationService.setUserTag('cliente');
+        this.clienteService.setIsDelivery(false);
+        this.clienteService.setDireccionDelivery('');
         
         await this.customLoader.hide();
         this.router.navigate(['/home-cliente'], { replaceUrl: true });

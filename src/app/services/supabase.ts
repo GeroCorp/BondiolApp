@@ -1155,7 +1155,7 @@ async enviarPedidoSector(pedidoId: number, sector: 'cocina' | 'bar', items: any[
       pedido_id: pedidoId,
       sector: sector,
       items: items,
-      estado: 'pendiente',
+      estadoItem: 'confirmado',
       created_at: new Date().toISOString()
     };
 
