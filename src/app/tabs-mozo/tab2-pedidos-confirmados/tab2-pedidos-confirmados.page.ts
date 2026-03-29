@@ -136,6 +136,7 @@ export class Tab2PedidosConfirmadosPage implements OnInit, AfterViewInit {
     const colores: any = {
       confirmado: 'warning',
       en_preparacion: 'tertiary',
+      'en_preparación': 'tertiary',
       listo: 'success',
       entregado: 'medium'
     };
@@ -147,6 +148,7 @@ export class Tab2PedidosConfirmadosPage implements OnInit, AfterViewInit {
       pendiente: 'Pendiente',
       confirmado: 'Confirmado',
       en_preparacion: 'En preparación',
+      'en_preparación': 'En preparación',
       listo: 'Listo',
       entregado: 'Entregado'
     };
@@ -157,6 +159,7 @@ export class Tab2PedidosConfirmadosPage implements OnInit, AfterViewInit {
     const colores: any = {
       pendiente: 'warning',
       en_preparacion: 'tertiary',
+      'en_preparación': 'tertiary',
       listo: 'success'
     };
     return colores[estado] || 'medium';

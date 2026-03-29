@@ -68,9 +68,9 @@ export class Tab1MenuPage implements OnInit {
   async cargarPlatos(){
     this.isLoadingPlatos = true;
     try {
-      this.platos = await this.authService.getPlatos();
-      if (this.platos.length > 0) {
-      } else {
+      const platos = await this.authService.getPlatos();
+      this.platos = (platos || []).map(plato => ({ ...plato, tipo: 'plato' }));
+      if (this.platos.length === 0) {
         this.showToast('No se encontraron platos', 'medium');
       }
     } catch (error) {
@@ -84,9 +84,9 @@ export class Tab1MenuPage implements OnInit {
   async cargarBebidas(){
     this.isLoadingBebidas = true;
     try {
-      this.bebidas = await this.authService.getBebidas();
-      if (this.bebidas.length > 0) {
-      } else {
+      const bebidas = await this.authService.getBebidas();
+      this.bebidas = (bebidas || []).map(bebida => ({ ...bebida, tipo: 'bebida' }));
+      if (this.bebidas.length === 0) {
         this.showToast('No se encontraron bebidas', 'medium');
       }
     } catch (error) {

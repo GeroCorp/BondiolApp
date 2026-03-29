@@ -131,14 +131,17 @@ export class HomeClientePage implements OnInit {
     try {
 
       const { data: { session }, error } = await this.authService.client.auth.getSession();
-      
-      if (error || !session) {
-        console.error('❌ No hay sesión activa');
+      const hasSession = !error && !!session;
+
+      if (!hasSession && !this.tipoClienteService.isAnonimo()) {
+        console.error('❌ No hay sesión activa y no es cliente anónimo');
         await this.router.navigate(['/login'], { replaceUrl: true });
         return;
       }
 
-      console.log('✅ Sesión activa:', session.user.email);
+      if (hasSession) {
+        console.log('✅ Sesión activa:', session.user.email);
+      }
 
       const storageDelivery = localStorage.getItem('esDelivery');
       if (storageDelivery !== null) {
@@ -161,6 +164,10 @@ export class HomeClientePage implements OnInit {
           this.mesaAsignada.set(clienteData.mesa_asignada || null);
           this.enEspera.set(clienteData.en_espera !== false);
           this.mesaVerificada.set(false);
+        } else {
+          console.warn('⚠️ Cliente anónimo sin datos locales; redirigiendo a ingreso-anonimo');
+          await this.router.navigate(['/ingreso-anonimo'], { replaceUrl: true });
+          return;
         }
       }
       
@@ -197,7 +204,7 @@ private async procesarIngresoAnonimo(nombre: string) {
 
       // Normalizar y asignar propiedades necesarias para la UI
       this.cliente = {
-        id_cliente: clienteCreado.id_cliente ?? clienteCreado.id_clienteanonimo,
+        id_clienteanonimo: clienteCreado.id_clienteanonimo ?? clienteCreado.id_cliente,
         nombre: clienteCreado.nombre,
         apellido: clienteCreado.apellido ?? '',
         foto: clienteCreado.foto ?? fotoDefault,
@@ -534,8 +541,13 @@ private async procesarIngresoAnonimo(nombre: string) {
     
     const listaDelDia = await this.listaEsperaService.getListaDelDia();
 
+    const nombreCompleto = [this.cliente?.nombre, this.cliente?.apellido]
+      .filter(Boolean)
+      .join(' ')
+      .trim();
+
     const clienteYaEnLista = listaDelDia.some((item: any) => {
-      return item.nombre_cliente === `${this.cliente.nombre} ${this.cliente.apellido}`;
+      return (item.nombre_cliente || '').trim().toLowerCase() === nombreCompleto.toLowerCase();
     });
 
     if (!clienteYaEnLista){
@@ -757,7 +769,7 @@ private async procesarIngresoAnonimo(nombre: string) {
   }
 
     async logout() {
-    if (this.mesaAsignada() && this.cliente?.id_cliente) {
+    if (!this.tipoClienteService.isAnonimo() && this.mesaAsignada() && this.cliente?.id_cliente) {
       try {
         await this.clienteService.liberarMesaCliente();
       } catch (error) {
@@ -829,7 +841,7 @@ private async procesarIngresoAnonimo(nombre: string) {
     verEncuesta() {
 
     if (!this.isRegistrado()) {
-      this.showToast('⚠️ Los juegos son solo para clientes registrados', 'warning');
+      this.showToast('⚠️ Las encuestas son solo para clientes registrados', 'warning');
       return;
     }
     this.router.navigate(['/tabs-cliente-registrado/tab6-encuesta']);
@@ -896,17 +908,22 @@ async verMisReservas() {
       // ✅ BUSCAR POR MESA (funciona para registrados y anónimos)
       const { data: pedidos, error } = await this.authService.client
         .from('pedidos')
-        .select(`
-          *,
-          detalles_pedido(*),
-          propinas(*)
-        `)
+        .select('*')
         .eq('mesa', this.mesaAsignada())
         .order('fecha', { ascending: false });
 
       if (error) throw error;
 
-      this.pedidosHistorial = pedidos || [];
+      const pedidosConDetalles = pedidos || [];
+      if (pedidosConDetalles.length > 0) {
+        await Promise.all(pedidosConDetalles.map(async (pedido: any) => {
+          const detalles = await this.clienteService.getDetallesPedido(pedido.id);
+          pedido.detalles_pedido = detalles;
+          return pedido;
+        }));
+      }
+
+      this.pedidosHistorial = pedidosConDetalles;
       
       console.log('✅ Historial cargado:', this.pedidosHistorial.length, 'pedidos');
       

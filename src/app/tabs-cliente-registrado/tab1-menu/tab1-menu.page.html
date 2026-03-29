@@ -11,82 +11,93 @@
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar>
-      <ion-title size="large">tab1-menu</ion-title>
+      <ion-title size="large">Menú</ion-title>
     </ion-toolbar>
   </ion-header>
 
+  <ng-container *ngIf="nroMesa === 0; else menuContent">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-subtitle>Mesa no asignada</ion-card-subtitle>
+      </ion-card-header>
+    </ion-card>
+  </ng-container>
 
-  @if (nroMesa == 0) {
-  <ion-card>
-    <ion-card-header>
-      <ion-card-subtitle>Mesa no asignada</ion-card-subtitle>
-    </ion-card-header>
-  </ion-card>
-  } @else {
-  
-  <!-- Total visible y fijo -->
-  <div class="total-display-fixed">
-    <div class="total-container">
-      <div class="mesa-info">Mesa: {{ nroMesa }}</div>
-      <div class="cart">
-        <button type="button"
-        (click)="hacerPedido()"
-        [disabled]="getCantidadItemsPedido() < 1">
-          <ion-icon name="cart-outline"></ion-icon>
-          <!-- <span class="item-count" *ngIf="getCantidadItemsPedido() > 0">{{ getCantidadItemsPedido() }}</span>  -->
-          Hacer Pedido
-        </button></div>
-      <div class="total-amount">${{ getSubtotalPedido() }}</div>
+  <ng-template #menuContent>
+    <div class="total-display-fixed">
+      <div class="total-container">
+        <div class="mesa-info">Mesa: {{ nroMesa }}</div>
+        <div class="cart">
+          <button type="button"
+            (click)="hacerPedido()"
+            [disabled]="getCantidadItemsPedido() < 1">
+            <ion-icon name="cart-outline"></ion-icon>
+            Hacer Pedido
+          </button>
+        </div>
+        <div class="total-amount">${{ getSubtotalPedido() }}</div>
+      </div>
     </div>
-  </div>
 
-  <ion-card class="main-card">
-    <ion-card-header>
-      <ion-card-title>Menú de Platos y Bebidas</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <ion-card-title>Menú de Platos</ion-card-title>
-      
-      @if (isLoadingPlatos || isLoadingBebidas) {
-        <div class="empty-state">
-          <ion-icon name="restaurant-outline"></ion-icon>
-          <p>Cargando menúaaaaaaaaaaa...</p>
-        </div>
-      } @else if (platos.length === 0) {
-        <div class="empty-state">
-          <ion-icon name="restaurant-outline"></ion-icon>
-          <h2>No hay platos disponibles</h2>
-          <p>Los platos aparecerán aquí cuando estén disponibles</p>
-        </div>
-      } @else {
-        <div class="menu-items-list">
-          @for (plato of platos; track $index) {
-            <div class="menu-item" (click)="seleccionarItem(plato, 'plato')" [ngClass]="{ disabled: isLoadingItems }">
-              <div class="item-image">
-                <img [src]="getFirstImage(plato.imagenes)" [alt]="plato.nombre" />
-              </div>
-              <div class="item-content">
-                <h3 class="item-name">{{ plato.nombre }}</h3>
-                <p class="item-description">{{ plato.descripcion }}</p>
-              </div>
-              <div class="item-price">${{ plato.precio }}</div>
+    <ion-card class="main-card">
+      <ion-card-header>
+        <ion-card-title>Menú de Platos y Bebidas</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-card-title>Menú de Platos</ion-card-title>
+
+        <ng-container *ngIf="isLoadingPlatos || isLoadingBebidas; else platosList">
+          <div class="empty-state">
+            <ion-icon name="restaurant-outline"></ion-icon>
+            <p>Cargando menú...</p>
+          </div>
+        </ng-container>
+
+        <ng-template #platosList>
+          <ng-container *ngIf="platos.length === 0; else platosItems">
+            <div class="empty-state">
+              <ion-icon name="restaurant-outline"></ion-icon>
+              <h2>No hay platos disponibles</h2>
+              <p>Los platos aparecerán aquí cuando estén disponibles</p>
             </div>
-          }
-        </div>
-      }
-      
-      <ion-card-title>Menú de Bebidas</ion-card-title>
-      
-      @if (bebidas.length === 0) {
-        <div class="empty-state">
-          <ion-icon name="wine-outline"></ion-icon>
-          <h2>No hay bebidas disponibles</h2>
-          <p>Las bebidas aparecerán aquí cuando estén disponibles</p>
-        </div>
-      } @else {
-        <div class="menu-items-list">
-          @for (bebida of bebidas; track $index) {
-            <div class="menu-item" (click)="seleccionarItem(bebida, 'bebida')" [ngClass]="{ disabled: isLoadingItems }">
+          </ng-container>
+          <ng-template #platosItems>
+            <div class="menu-items-list">
+              <div
+                class="menu-item"
+                *ngFor="let plato of platos"
+                (click)="seleccionarItem(plato, 'plato')"
+                [ngClass]="{ disabled: isLoadingItems }"
+              >
+                <div class="item-image">
+                  <img [src]="getFirstImage(plato.imagenes)" [alt]="plato.nombre" />
+                </div>
+                <div class="item-content">
+                  <h3 class="item-name">{{ plato.nombre }}</h3>
+                  <p class="item-description">{{ plato.descripcion }}</p>
+                </div>
+                <div class="item-price">${{ plato.precio }}</div>
+              </div>
+            </div>
+          </ng-template>
+        </ng-template>
+
+        <ion-card-title>Menú de Bebidas</ion-card-title>
+        <ng-container *ngIf="bebidas.length === 0; else bebidasItems">
+          <div class="empty-state">
+            <ion-icon name="wine-outline"></ion-icon>
+            <h2>No hay bebidas disponibles</h2>
+            <p>Las bebidas aparecerán aquí cuando estén disponibles</p>
+          </div>
+        </ng-container>
+        <ng-template #bebidasItems>
+          <div class="menu-items-list">
+            <div
+              class="menu-item"
+              *ngFor="let bebida of bebidas"
+              (click)="seleccionarItem(bebida, 'bebida')"
+              [ngClass]="{ disabled: isLoadingItems }"
+            >
               <div class="item-image">
                 <img [src]="getFirstImage(bebida.imagenes)" [alt]="bebida.nombre" />
               </div>
@@ -96,19 +107,18 @@
               </div>
               <div class="item-price">${{ bebida.precio }}</div>
             </div>
-          }
-        </div>
-      }
-     
-    </ion-card-content>
-  </ion-card>
-  @if (itemSelected) {
-    <app-menu-item 
-    [item]="itemSelected" 
-    [itemsArray]="allProds()"
-    (closeItem)="itemSelected = null"
-    (addItem)="onAddItem($event)">
-  </app-menu-item>
-  }
-}
+          </div>
+        </ng-template>
+      </ion-card-content>
+    </ion-card>
+
+    <ng-container *ngIf="itemSelected">
+      <app-menu-item
+        [item]="itemSelected"
+        [itemsArray]="allProds()"
+        (closeItem)="itemSelected = null"
+        (addItem)="onAddItem($event)">
+      </app-menu-item>
+    </ng-container>
+  </ng-template>
 </ion-content>

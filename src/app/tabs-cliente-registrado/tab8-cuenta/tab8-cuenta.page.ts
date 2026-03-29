@@ -88,11 +88,7 @@ export class Tab8CuentaPage implements OnInit {
         // ✅ Buscar pedido por MESA (id_cliente será NULL)
         const { data: pedidos, error: pedidoError } = await this.clienteService.client
           .from('pedidos')
-          .select(`
-            *,
-            mesa:mesas!inner(numero, id),
-            detalles_pedido(*)
-          `)
+          .select('*')
           .eq('mesa', mesaId)
           .is('id_cliente', null)
           .eq('estado', 'entregado')
@@ -113,6 +109,7 @@ export class Tab8CuentaPage implements OnInit {
         }
 
         this.pedidoActual = pedidos[0];
+        this.pedidoActual.detalles_pedido = await this.clienteService.getDetallesPedido(this.pedidoActual.id);
 
       } else {
         // ✅ CLIENTE REGISTRADO

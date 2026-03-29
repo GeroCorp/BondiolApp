@@ -37,11 +37,12 @@
         <ion-card-title>Detalle de tu Cuenta</ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        @if (esDelivery){
+        <ng-container *ngIf="esDelivery; else mesaInfo">
           <p><strong>Delivery</strong></p>
-        }@else {
+        </ng-container>
+        <ng-template #mesaInfo>
           <p><strong>Mesa:</strong> {{ pedidoActual.mesa?.numero || pedidoActual.mesa }}</p>
-        }
+        </ng-template>
         <p><strong>Fecha:</strong> {{ formatearFecha(pedidoActual.fecha || pedidoActual.created_at) }}</p>
       </ion-card-content>
     </ion-card>
@@ -162,11 +163,12 @@
         </ion-button>
         <p class="texto-info">
           <ion-icon name="information-circle"></ion-icon>
-          @if (esDelivery){
+          <ng-container *ngIf="esDelivery; else mozoInfo">
             El delivery confirmará tu pago
-          }@else {  
+          </ng-container>
+          <ng-template #mozoInfo>
             El mozo confirmará tu pago y liberará la mesa
-          }
+          </ng-template>
         </p>
       </ion-card-content>
     </ion-card>

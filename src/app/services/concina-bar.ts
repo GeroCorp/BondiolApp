@@ -205,25 +205,32 @@ export class ConcinaBar {
   
 
   // Función auxiliar para verificar si todos los items de un pedido están listos
-  private async verificarTodosItemsListos(pedidoId: number, delivery: boolean): Promise<boolean> {
+  private async verificarTodosItemsListos(pedidoId: number, delivery: boolean | null): Promise<boolean> {
     try {
-      const dataArray = [];
-      
-      const { data, error } = await this.supabase
+      const dataArray: any[] = [];
+      let query = this.supabase
         .from('pedidos_sector')
         .select('estadoItem')
-        .eq('pedido_id', pedidoId)
-        .eq('es_delivery', delivery);
-      
+        .eq('pedido_id', pedidoId);
+
+      if (delivery !== null) {
+        query = query.eq('es_delivery', delivery);
+      }
+
+      const { data, error } = await query;
       if (error) {
         console.error('Error al verificar items del pedido:', error);
         return false;
       }
-      dataArray.push(...(data || []));
-      
 
-      // Verificar que todos los items estén en estado "listo"
-      return dataArray.every(item => item.estadoItem === 'listo') ?? false;
+      dataArray.push(...(data || []));
+
+      if (dataArray.length === 0) {
+        console.warn(`No se encontraron items de pedidos sector para pedido ${pedidoId}`);
+        return false;
+      }
+
+      return dataArray.every(item => item.estadoItem === 'listo');
     } catch (error) {
       console.error('Error en verificarTodosItemsListos:', error);
       return false;

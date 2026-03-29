@@ -622,6 +622,7 @@ getSubtotal(): number {
     }
 
     pedido.detalles_pedido = await this.getDetallesPedido(pedido.id);
+    pedido.estado = this.normalizeEstado(pedido.estado);
 
     return pedido;
   }
@@ -1439,6 +1440,7 @@ async getHistorialPedidos() {
     });
 
     let mesaId: number | null = null;
+    let pedidos: any[] = [];
 
     if (isAnonimo) {
       mesaId = clienteData?.mesa_asignada || null;
@@ -1451,22 +1453,14 @@ async getHistorialPedidos() {
 
       console.log('🎭 Buscando pedidos de cliente anónimo en mesa:', mesaId);
 
-      // ✅ QUERY PARA ANÓNIMOS
       const { data, error } = await this.supabase
         .from('pedidos')
         .select(`
           *,
-          mesa:mesas(numero, id),
-          detalles_pedido(
-            id,
-            nombre_prod,
-            cantidad,
-            precio_unitario,
-            tipo
-          )
+          mesa:mesas(numero, id)
         `)
         .eq('mesa', mesaId)
-        .is('id_cliente', null)  // ✅ Solo anónimos
+        .is('id_cliente', null)
         .order('fecha', { ascending: false });
 
       if (error) {
@@ -1474,17 +1468,12 @@ async getHistorialPedidos() {
         throw new Error('Error al obtener historial: ' + error.message);
       }
 
-      console.log('✅ Historial anónimo obtenido:', data?.length || 0, 'pedidos');
-      console.log('📦 Datos completos:', data);
-      
-      this._historialPedidos.set(data || []);
-      return data || [];
-
+      pedidos = data || [];
     } else {
       const clienteId = await this.getClientId();
-      // ✅ QUERY PARA REGISTRADOS
-      
-      const { data: pedidos, error } = await this.supabase
+      console.log('👤 Buscando pedidos de cliente registrado:', clienteId);
+
+      const { data: pedidosData, error } = await this.supabase
         .from('pedidos')
         .select(`
           *,
@@ -1497,20 +1486,22 @@ async getHistorialPedidos() {
         console.error('❌ Error obteniendo historial registrado:', error);
         throw new Error('Error al obtener historial: ' + error.message);
       }
-      
-      pedidos.forEach(async pedido => {
-        const detalles = await this.getDetallesPedido(pedido.id);
-        pedido.detalles_pedido = detalles;
-      })
-      console.log('👤 Buscando pedidos de cliente registrado:', clienteId);
 
-
-      console.log('✅ Historial registrado obtenido:', pedidos?.length || 0, 'pedidos');
-      console.log('📦 Datos completos:', pedidos);
-      
-      this._historialPedidos.set(pedidos || []);
-      return pedidos || [];
+      pedidos = pedidosData || [];
     }
+
+    if (pedidos.length > 0) {
+      await Promise.all(pedidos.map(async pedido => {
+        pedido.estado = this.normalizeEstado(pedido.estado);
+        pedido.detalles_pedido = await this.getDetallesPedido(pedido.id);
+      }));
+    }
+
+    console.log('✅ Historial obtenido:', pedidos.length, 'pedidos');
+    console.log('📦 Datos completos:', pedidos);
+
+    this._historialPedidos.set(pedidos);
+    return pedidos;
   } catch (error) {
     console.error('❌ Error en getHistorialPedidos:', error);
     throw error;
@@ -1674,6 +1665,7 @@ formatearFecha(fecha: string): string {
  * Obtiene el color según el estado del pedido
  */
 getColorEstado(estado: string): string {
+    estado = this.normalizeEstado(estado);
     const colores: any = {
       pendiente: 'warning',
       confirmado: 'tertiary',
@@ -1692,6 +1684,7 @@ getColorEstado(estado: string): string {
  * Obtiene el texto formateado del estado
  */
 getTextoEstado(estado: string): string {
+    estado = this.normalizeEstado(estado);
     const textos: any = {
       pendiente: 'Pendiente',
       confirmado: 'Confirmado',
@@ -1704,6 +1697,16 @@ getTextoEstado(estado: string): string {
       cancelado: 'Cancelado'
     };
     return textos[estado] || estado;
+  }
+
+normalizeEstado(estado: string): string {
+    if (!estado) return '';
+    return String(estado)
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/ñ/g, 'n')
+      .replace(/\s+/g, '_')
+      .toLowerCase();
   }
 
   async debugPedidoData() {

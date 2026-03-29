@@ -32,7 +32,7 @@
       </div>
     </div>
 
-    @if (isRegistrado() && reservaActivaHoy && !mesaVerificada()) {
+    <ng-container *ngIf="isRegistrado() && reservaActivaHoy && !mesaVerificada()">
 <ion-card color="success">
   <ion-card-header>
     <ion-card-title>
@@ -71,11 +71,10 @@
     </ion-button>
   </ion-card-content>
 </ion-card>
-}
+</ng-container>
 
   <!-- Botón de escaneo QR prominente -->
-  @if (!isDelivery() && !mesaAsignada()) {
-      
+  <ng-container *ngIf="!isDelivery() && !mesaAsignada()">
     <ion-card color="danger">
     <ion-card-header>
       <ion-card-title>
@@ -94,7 +93,7 @@
         Unirse a Lista de Espera
       </ion-button>
       <ion-button
-      *ngIf="isRegistrado()"
+        *ngIf="isRegistrado()"
         expand="block"
         size="large"
         fill="outline"
@@ -126,8 +125,8 @@
       </ion-button>
     </ion-card-content>
     </ion-card>
-    
-    } @else if (!mesaVerificada() && mesaAsignada()) {
+  </ng-container>
+  <ng-container *ngIf="!mesaVerificada() && mesaAsignada()">
       <ion-card color="warning">
         <ion-card-header>
           <ion-card-title>
@@ -150,7 +149,7 @@
           </ion-button>
         </ion-card-content>
       </ion-card>
-    }
+  </ng-container>
 
     <!-- Tarjetas de funcionalidades -->
     <ion-card>
@@ -162,9 +161,8 @@
           [disabled]="(!mesaVerificada() && !isDelivery())"
         >
           <ion-icon name="book-outline" slot="start"></ion-icon>
-          Ver Menú @if (!mesaVerificada() && !isDelivery()) {
-          <ion-icon name="lock-closed" slot="end"></ion-icon>
-          }
+          Ver Menú
+          <ion-icon name="lock-closed" slot="end" *ngIf="!mesaVerificada() && !isDelivery()"></ion-icon>
         </ion-button>
 
         <ion-button
@@ -189,9 +187,8 @@
           [disabled]="(!mesaVerificada() && !isDelivery())"
         >
           <ion-icon name="chatbubble-outline" slot="start"></ion-icon>
-          Consulta Mozos @if (!mesaVerificada() && !isDelivery()) {
-          <ion-icon name="lock-closed" slot="end"></ion-icon>
-          }
+          Consulta Mozos
+          <ion-icon name="lock-closed" slot="end" *ngIf="!mesaVerificada() && !isDelivery()"></ion-icon>
         </ion-button>
 
         <ion-button
@@ -202,9 +199,7 @@
         >
           <ion-icon name="game-controller-outline" slot="start"></ion-icon>
           Juegos y Descuentos 
-          @if (!mesaVerificada() || !isDelivery() && (!isRegistrado() && !juegosAccess())) {
-          <ion-icon name="lock-closed" slot="end"></ion-icon>
-          }
+          <ion-icon name="lock-closed" slot="end" *ngIf="!mesaVerificada() || (!isDelivery() && (!isRegistrado() && !juegosAccess()))"></ion-icon>
         </ion-button>
 
         <ion-button
@@ -214,27 +209,21 @@
           [disabled]="(!mesaVerificada() && !isDelivery() && !canPay())"
         >
           <ion-icon name="card-outline" slot="start"></ion-icon>
-          @if(!isDelivery()){
-            Pedir la Cuenta 
-          }@else {
-            Pagar pedido
-          }
+          <span *ngIf="!isDelivery(); else pagarPedido">Pedir la Cuenta</span>
+          <ng-template #pagarPedido>Pagar pedido</ng-template>
           
-          @if (!mesaVerificada() && !isDelivery()) {
-          <ion-icon name="lock-closed" slot="end"></ion-icon>
-          }
+          <ion-icon name="lock-closed" slot="end" *ngIf="!mesaVerificada() && !isDelivery()"></ion-icon>
         </ion-button>
 
         <ion-button
           expand="block"
           color="secondary"
           (click)="verEncuesta()"
-          [disabled]="!mesaVerificada() && !isRegistrado() && !isDelivery() && !habilitarEncuesta()"
+          [disabled]="!isRegistrado() || (!mesaVerificada() && !isDelivery() && !habilitarEncuesta())"
         >
           <ion-icon name="clipboard-outline" slot="start"></ion-icon>
-          Encuesta @if (!mesaVerificada()  && !isDelivery() && !habilitarEncuesta()) {
-          <ion-icon name="lock-closed" slot="end"></ion-icon>
-          }
+          Encuesta
+          <ion-icon name="lock-closed" slot="end" *ngIf="!mesaVerificada()  && !isDelivery() && !habilitarEncuesta()"></ion-icon>
         </ion-button>
 
         <ion-button
@@ -244,9 +233,8 @@
           [disabled]="(!mesaVerificada() && !isDelivery())"
         >
           <ion-icon name="clipboard-outline" slot="start"></ion-icon>
-          Resultados encuestas @if (!mesaVerificada() && !isDelivery() && habilitarEncuesta()) {
-          <ion-icon name="lock-closed" slot="end"></ion-icon>
-          }
+          Resultados encuestas
+          <ion-icon name="lock-closed" slot="end" *ngIf="!mesaVerificada() && !isDelivery() && habilitarEncuesta()"></ion-icon>
         </ion-button>
 
         <ion-button

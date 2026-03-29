@@ -44,8 +44,13 @@ export class MenuItemComponent implements OnInit, OnChanges, OnDestroy {
   ngOnChanges(changes: SimpleChanges) {
     if (changes['item'] && changes['item'].currentValue) {
       this.item = changes['item'].currentValue;
+      this.searchForItemIndex();
       this.handleImages();
       this.resetState();
+    }
+
+    if (changes['itemsArray'] && changes['itemsArray'].currentValue && this.item) {
+      this.searchForItemIndex();
     }
   }
 
@@ -55,7 +60,10 @@ export class MenuItemComponent implements OnInit, OnChanges, OnDestroy {
 
   private searchForItemIndex() {
     if (this.itemsArray && this.item) {
-      const index = this.itemsArray.findIndex(i => i.id === this.item.id);
+      const index = this.itemsArray.findIndex(i =>
+        i.id === this.item.id &&
+        (i.tipo === this.item.tipo || !i.tipo || !this.item.tipo)
+      );
       if (index !== -1) {
         this.currentItemIndex = index;
       }

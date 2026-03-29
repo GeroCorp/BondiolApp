@@ -37,12 +37,13 @@ export class Tab4HistorialPage implements OnInit, OnDestroy, AfterViewInit {
     }
     
     if (filtro === 'pagos') {
-      return pedidos.filter(pedido => 
-        pedido.estado === 'pago_pendiente' || pedido.estado === 'pagado' || pedido.estado === 'cuenta_solicitada'
-      );
+      return pedidos.filter(pedido => {
+        const estadoNormalizado = this.clienteService.normalizeEstado(pedido.estado);
+        return ['pago_pendiente', 'pagado', 'cuenta_solicitada'].includes(estadoNormalizado);
+      });
     }
 
-    return pedidos.filter(pedido => pedido.estado === filtro);
+    return pedidos.filter(pedido => this.clienteService.normalizeEstado(pedido.estado) === filtro);
   });
 
   private subscription: any;
