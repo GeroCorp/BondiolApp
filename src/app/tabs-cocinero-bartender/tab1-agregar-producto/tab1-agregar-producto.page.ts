@@ -137,14 +137,15 @@ export class Tab1AgregarProductoPage {
       return;
     }
 
-    // Transformar imagenes antes de pasarlas
-    this.imagenes = this.imagenes.map(img => this.supabaseService.dataURLtoBlob(img));
+    // Subir imágenes - NO modificar array original (preserva preview)
     let imagenes_posta: string[] = [];
-    // Y subirlas a storage para pasar solo las URLs a la tabla correspondiente
+    const bucketType = this.perfil === 'cocinero' ? 'platos' : 'bebidas';
+    console.log('🔍 Perfil detectado:', this.perfil, '| Bucket:', bucketType);
     for (let img of this.imagenes) {
       const fileName = `${nombre.replace(/\s+/g, '_')}_${new Date().getTime()}.jpeg`;
-      const publicUrl = await this.supabaseService.subirImagenPlatos(img, fileName, this.perfil === 'cocinero' ? 'platos' : 'bebidas');
-      imagenes_posta.push(publicUrl); // agregar URL pública al array
+      const blob = this.supabaseService.dataURLtoBlob(img);
+      const publicUrl = await this.supabaseService.subirImagenPlatos(blob, fileName, bucketType);
+      imagenes_posta.push(publicUrl);
     }
     try {
       // Insertar producto en Supabase Auth
