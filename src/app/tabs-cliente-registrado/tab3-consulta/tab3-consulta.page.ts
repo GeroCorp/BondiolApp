@@ -152,13 +152,10 @@ export class Tab3ConsultaPage implements OnInit, OnDestroy {
           
           const nuevoMensaje = payload.new as Msg;
           
-          // ✅ CAMBIO: Solo agregar mensajes posteriores a sessionStartTime
-          if (nuevoMensaje.nroMesa === this.mesaActual && 
-              nuevoMensaje.date_sended >= this.sessionStartTime) {
+          // ✅ El filtro de mesa ya está en el subscribe, no necesitamos comparar fechas
+          if (nuevoMensaje.nroMesa === this.mesaActual) {
             this.messages.update(mensajes => [...mensajes, nuevoMensaje]);
             setTimeout(() => this.scrollToBottom(), 100);
-          } else {
-            console.log('⏭️ Mensaje ignorado (anterior a la sesión):', nuevoMensaje.date_sended);
           }
         }
       )

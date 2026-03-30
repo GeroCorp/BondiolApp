@@ -713,7 +713,25 @@ async sendMessage(contenido: string): Promise<void> {
 
     if (isAnonimo) {
       nombreUsuario = clienteData?.nombre || 'Cliente Anónimo';
-      nroMesa = clienteData?.mesa_asignada || null;
+      const mesaId = clienteData?.mesa_asignada || null;
+
+      if (!mesaId) {
+        console.error('❌ No se puede enviar mensaje: el cliente anónimo no tiene mesa asignada');
+        return;
+      }
+
+      const { data: mesaData, error: mesaError } = await this.supabase
+        .from('mesas')
+        .select('numero')
+        .eq('id', mesaId)
+        .single();
+
+      if (mesaError || !mesaData) {
+        console.error('❌ No se pudo obtener el número de mesa para el cliente anónimo:', mesaError);
+        return;
+      }
+
+      nroMesa = mesaData.numero;
     } else {
       nombreUsuario = await this.getNombreCliente();
       const clienteId = await this.getClientId();
@@ -725,7 +743,7 @@ async sendMessage(contenido: string): Promise<void> {
       return;
     }
 
-    const { error } = await this.client
+    const { error } = await this.supabase
       .from('mensajes')
       .insert({
         contenido,

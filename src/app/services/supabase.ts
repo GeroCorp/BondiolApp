@@ -552,18 +552,20 @@ export class AuthService {
   
   // 🔑 Verificar existencia del plato en el menú
   async buscarPlatoPorNombre(nombre: string) {
+    const normalizado = nombre.trim().toLowerCase();
     return await this.supabase
-    .from('platos')
+      .from('platos')
       .select('*')
-      .ilike('nombre', nombre); // o .eq si querés exacto
+      .eq('nombre', normalizado);
   }
 
   // 🔑 Verificar existencia de la bebida en el menú
   async buscarBebidaPorNombre(nombre: string) {
+    const normalizado = nombre.trim().toLowerCase();
     return await this.supabase
       .from('bebidas')
       .select('*')
-      .ilike('nombre', nombre); // o .eq si querés exacto
+      .eq('nombre', normalizado);
   }
 
   async getPlatos() {
@@ -718,16 +720,17 @@ export class AuthService {
     // La URL pública es lo que guardarás en la base de datos
     return publicUrlData.publicUrl;
   }
-  async subirImagenPlatos(imageBlob: Blob, fileName:string, perfil: string) {
-    const bucket = perfil === 'cocinero' ? 'platos' : 'bebidas';
+  async subirImagenPlatos(imageBlob: Blob, fileName:string, bucket: string) {
+    console.log('📤 Subiendo imagen a bucket:', bucket, 'archivo:', fileName);
     const { data, error } = await this.supabase.storage
       .from(bucket)
       .upload(fileName, imageBlob, {
         cacheControl: '3600',
-        upsert: false // No sobrescribir
+        upsert: false
       });
 
     if (error) {
+      console.error('❌ Error de storage:', error.message);
       throw new Error(`Error al subir la imagen: ${error.message}`)
     }
 
@@ -736,8 +739,7 @@ export class AuthService {
       .from(bucket)
       .getPublicUrl(fileName);
 
-    // La URL pública es lo que guardarás en la base de datos
-    console.log(publicUrlData.publicUrl);
+    console.log('✅ Imagen subida: ', publicUrlData.publicUrl);
     return publicUrlData.publicUrl;
   }
 
