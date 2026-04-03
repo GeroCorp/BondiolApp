@@ -583,7 +583,7 @@ private async procesarIngresoAnonimo(nombre: string) {
         return;
       }
 
-      console.log('📍 Mesa escaneada:', { numero: numeroMesa, capacidad, tipo });
+      console.log(`📍 Mesa tonto del culo: n°: ${numeroMesa}, Capacidad: ${capacidad}, Tipo: ${tipo}`);
       console.log('📍 Mesa asignada:', this.mesaAsignada());
 
       if (this.mesaAsignada() && this.mesaAsignada() !== numeroMesa) {
@@ -632,7 +632,12 @@ private async procesarIngresoAnonimo(nombre: string) {
         return;
       }
 
+      // Cuidado con los valores en la BD, parece que algunos valores están cambiados #CAMBIAR DATOS DE LOS QR EN README
       if (mesa.cantidad !== capacidad || mesa.tipo !== tipo) {
+        console.log('❌ Datos del QR no coinciden con la mesa registrada:', {
+          qr: { numeroMesa, capacidad, tipo },
+          db: { numero: mesa.numero, cantidad: mesa.cantidad, tipo: mesa.tipo, id: mesa.id }
+        });
         await this.hapticService.vibrateError();
         this.showToast(`Los datos del QR no coinciden con la mesa registrada`, 'danger');
         return;
