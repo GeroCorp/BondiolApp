@@ -199,6 +199,7 @@ export class RegisterPage {
 
 
   // Mensajes auxiliares de validación
+  // Agregar errores como "Mail ya registrado" o "DNI ya registrado"
   private validationMessages: { [key: string]: string } = {
     name: 'El nombre es obligatorio y debe tener un mínimo de 4 caracteres (sin números).',
     surname: 'El apellido es obligatorio y debe tener un mínimo de 4 caracteres (sin números).',
