@@ -46,7 +46,7 @@ export class EmailService {
     const bodyData = JSON.stringify(datos);
     console.log('Datos pasados al body: ', datos);
     const { data: response, error } =
-      await this.supabaseClient.functions.invoke('testeoperreo', {
+      await this.supabaseClient.functions.invoke('mailSender', {
         method: 'POST',
         body: bodyData, // Contiene nombre_cliente, email_cliente, html (template) y subject
         headers: {},

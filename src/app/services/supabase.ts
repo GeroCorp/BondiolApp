@@ -750,7 +750,7 @@ export class AuthService {
       .from('mesas')
       .upload(fileName, imageBlob, {
         cacheControl: '3600',
-        upsert: false // No sobrescribir
+        upsert: true
       });
 
     if (error) {
