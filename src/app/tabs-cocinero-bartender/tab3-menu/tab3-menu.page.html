@@ -45,6 +45,7 @@
                       (ionImgDidLoad)="onImageDidLoad(getImageId(item, 'plato'))"
                       (ionError)="handleImageError($event, getImageId(item, 'plato'))">
                     </ion-img>
+                    <p>{{ item.imagenes | json }}</p>
                   </div>
                 </ion-thumbnail>
                 <ion-label>
@@ -56,6 +57,13 @@
                     {{ getAllImages(item.imagenes).length }} fotos
                   </div>
                 </ion-label>
+                <ion-buttons slot="end">
+                  <ion-button 
+                    color="danger"
+                    (click)="eliminarPlato(item)">
+                    <ion-icon name="trash-outline"></ion-icon>
+                  </ion-button>
+                </ion-buttons>
               </ion-item>
             }
           } @else {
@@ -108,6 +116,7 @@
         }
         </ion-list>
       }
+      
     </ion-card-content>
   </ion-card>
 </ion-content>
