@@ -46,7 +46,8 @@ export class EmailService {
     const bodyData = JSON.stringify(datos);
     console.log('Datos pasados al body: ', datos);
     const { data: response, error } =
-      await this.supabaseClient.functions.invoke('testeoperreo', {
+    // La función del supabase cambió el nomre de mailSender a quick-action
+      await this.supabaseClient.functions.invoke('quick-action', {
         method: 'POST',
         body: bodyData, // Contiene nombre_cliente, email_cliente, html (template) y subject
         headers: {},
