@@ -38,7 +38,18 @@ export class Tab2RecibirPedidoPage implements OnInit {
             if (!pedido.estadoItem) {
               pedido.estadoItem = 'confirmado';
             }
-          });
+            //aca viene una funcion que te ordena los pedidos para que el listo se vaya al finaal , no estoy segura que ande super bien por el async
+          })
+          pedidos.sort((a, b) => {
+            const estadoOrder: { [key: string]: number } = {
+              'pendiente': 1,
+              'confirmado': 2,
+              'en_preparación': 3,
+              'listo': 4,
+              'pagado': 5
+            };
+            return estadoOrder[a.estadoItem] - estadoOrder[b.estadoItem];
+          })  ;
         } catch (error) {
           console.error('Error al cargar pedidos pendientes:', error);
         }

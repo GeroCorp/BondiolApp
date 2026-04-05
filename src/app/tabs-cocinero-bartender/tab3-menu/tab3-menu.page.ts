@@ -237,4 +237,23 @@ async eliminarPlato(plato: any) {
 
   await alert.present();
 }
+
+async recargarMenu(event: any) {
+  try {
+    this.isLoadingData = true;
+
+    if (this.perfil === 'cocinero') {
+      await this.cargarPlatos();
+    } else {
+      await this.cargarBebidas();
+    }//ojo si anda
+
+  } catch (error) {
+    console.error('Error al refrescar menú:', error);
+  } finally {
+    event.target.complete();
+    this.isLoadingData = false;
+  }
+}
+
 }
