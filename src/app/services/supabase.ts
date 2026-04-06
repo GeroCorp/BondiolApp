@@ -545,6 +545,17 @@ export class AuthService {
     return {data, error};
   }
 
+  // eliminar un plato 
+  async eliminarPlato(id: number) {
+  const { data, error } = await this.supabase
+    .from('platos')
+    .delete()
+    .eq('id', id);
+
+  if (error) throw new Error('Error al eliminar plato: ' + error.message);
+
+  return { data, error };
+}
   // 🔑 Insertar nueva bebida
   async insertarBebida(producto: any) {
     return await this.supabase.from('bebidas').insert([producto]);
