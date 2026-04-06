@@ -1,4 +1,5 @@
 import { Component, OnInit, signal } from '@angular/core';
+import { AlertController } from '@ionic/angular';
 import { CustomLoaderService } from 'src/app/services/custom-loader.service';
 import { PerfilService } from 'src/app/services/perfilService';
 import { AuthService } from 'src/app/services/supabase';
@@ -23,6 +24,7 @@ export class Tab3MenuPage implements OnInit {
   constructor(
     private perfilService: PerfilService,
     private authService: AuthService,
+    private alertCtrl: AlertController,
     private customLoaderService: CustomLoaderService
   ) { 
     this.perfil = this.perfilService.getPerfil();
@@ -87,7 +89,8 @@ export class Tab3MenuPage implements OnInit {
     } catch (error) {
       console.error('Error cargando bebidas:', error);
     }
-  }  getFirstImage(imagenes: any): string {
+  }  
+  getFirstImage(imagenes: any): string {
     try {
       if (!imagenes) {
         console.warn('No hay imágenes disponibles');
@@ -210,4 +213,47 @@ export class Tab3MenuPage implements OnInit {
   onImageDidLoad(imageId: string) {
     this.imageLoadingStates[imageId] = false;
   }
+
+async eliminarPlato(plato: any) {
+
+  const alert = await this.alertCtrl.create({
+    header: 'Eliminar plato',
+    message: `¿Eliminar ${plato.nombre}?`,
+    buttons: [
+      { text: 'Cancelar', role: 'cancel' },
+      {
+        text: 'Eliminar',
+        role: 'destructive',
+        handler: async () => {
+          await this.authService.eliminarPlato(plato.id);
+
+          this.platos.update(lista =>
+            lista.filter(p => p.id !== plato.id)
+          );
+        }
+      }
+    ]
+  });
+
+  await alert.present();
+}
+
+async recargarMenu(event: any) {
+  try {
+    this.isLoadingData = true;
+
+    if (this.perfil === 'cocinero') {
+      await this.cargarPlatos();
+    } else {
+      await this.cargarBebidas();
+    }//ojo si anda
+
+  } catch (error) {
+    console.error('Error al refrescar menú:', error);
+  } finally {
+    event.target.complete();
+    this.isLoadingData = false;
+  }
+}
+
 }
