@@ -6,16 +6,10 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="home-content">
+<ion-content  class="home-content">
   <div class="home-wrapper">
     <!-- Bienvenida -->
     @if (perfil()) {
-    <div class="container-bienvenida">
-      <h1>¡Bienvenido/a de vuelta!</h1>
-      <h2>
-        Ingresaste con perfil de: <strong>{{ perfil() }}</strong>
-      </h2>
-    </div>
 
     <!-- Dueño / Supervisor -->
     <ion-card *ngIf="perfil() === 'dueño' || perfil() === 'supervisor'">

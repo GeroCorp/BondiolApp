@@ -1,16 +1,16 @@
 <ion-content [fullscreen]="true" class="empleado-content">
   <h2 class="empleado-title ion-text-center">Perfil</h2>
-    <div *ngFor="let empleado of empleadoPerfil" class="empleado-card">
+    <div *ngIf="empleado as emp" class="empleado-card">
       
       <div class="empleado-avatar">
-        <img [src]="empleado.foto || 'assets/avatar-placeholder.png'" id="img-empleado" />
+        <img [src]="emp.foto || 'assets/avatar-placeholder.png'" id="img-empleado" />
       </div>
 
       <div class="empleado-text">
-        <p>Nombre Completo: {{ empleado.nombre }} {{ empleado.apellido }}</p>
-        <p>Rol: {{empleado.perfil}}</p>
-        <p>DNI: {{empleado.dni}}</p>
-        <p>CUIL: {{empleado.cuil}}</p>
+        <p>Nombre Completo: {{ emp.nombre }} {{ emp.apellido }}</p>
+        <p>Rol: {{emp.perfil}}</p>
+        <p>DNI: {{emp.dni}}</p>
+        <p>CUIL: {{emp.cuil}}</p>
       </div>
     </div>
 

@@ -45,7 +45,7 @@ export class Tab1AgregarProductoPage {
 
   async seleccionarDeGaleria() {
     if (this.imagenes.length >= 3) {
-      await this.hapticService.vibrateError();
+      await this.hapticService.vibrateError();// tenes que probarloooo
       this.showToast('Ya cargaste las 3 fotos permitidas', 'danger');
       return;
     }

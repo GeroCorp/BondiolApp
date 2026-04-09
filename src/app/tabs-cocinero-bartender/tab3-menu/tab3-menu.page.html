@@ -5,6 +5,16 @@
 </ion-header>
 
 <ion-content [fullscreen]="true"  >
+
+  <!-- probando refresher -->
+    <ion-refresher slot="fixed" (ionRefresh)="recargarMenu($event)">
+    <ion-refresher-content
+      pullingIcon="chevron-down-circle-outline"
+      pullingText="Deslizá para actualizar"
+      refreshingSpinner="crescent"
+      refreshingText="Actualizando menú...">
+    </ion-refresher-content>
+  </ion-refresher>
   <ion-header collapse="condense">
     <ion-toolbar>
       <ion-title size="large">tab3-menu</ion-title>
@@ -56,6 +66,13 @@
                     {{ getAllImages(item.imagenes).length }} fotos
                   </div>
                 </ion-label>
+                <ion-buttons slot="end">
+                <ion-button 
+                  color="danger"
+                  (click)="eliminarPlato(item)">
+                  <ion-icon name="trash-outline"></ion-icon>
+                </ion-button>
+              </ion-buttons>
               </ion-item>
             }
           } @else {
