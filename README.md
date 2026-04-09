@@ -1,5 +1,7 @@
+# Trabajo Final Integrador
 # Grupo: BondiolApp
-###  Trabajo Final Integrador -- Primer parcial  
+## Integrantes
+### Borda Victoria - Pagés Valentino - Corpus Gerónimo
 
 ## Icono del local
 <img width="250" height="250" alt="icon-only" src="https://github.com/user-attachments/assets/4d4fd8bd-d805-4616-9ab4-af32eeee228c" />
@@ -16,7 +18,8 @@ En orden son: Mesa 8, Mesa 7, Mesa 6, Mesa 5\
 <img width="100" height="100" alt="Mesa_5" src="https://github.com/user-attachments/assets/bfd73ea9-190a-4725-858b-171cc83342b8" />
 
 # Splash Screen
-<img width="371" height="822" alt="image" src="https://github.com/user-attachments/assets/c757c475-0d33-43d8-9181-12a4d33a136f" />
+<img width="413" height="892" alt="image" src="https://github.com/user-attachments/assets/facf7c03-24f1-45bd-acc1-1220a15ab278" />
+
 
 ## Pagés Valentino
 - Puntos 4, 5 y 6
