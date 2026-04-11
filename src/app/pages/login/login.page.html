@@ -1,9 +1,99 @@
 <ion-header [translucent]="true">
   <ion-toolbar class="ion-text-center custom-header">
-    <img src="assets/icon/icon-only.png" alt="Logo" width="85" />
+    <div slot="start" class="header-spacer"></div>
+ 
+    <ion-title class="toolbar-logo-title">
+      <img src="assets/icon/icon-only.png" alt="Logo" width="85" />
+    </ion-title>
+ 
+    <!-- Botón Acceso Rápido esquina superior derecha -->
+    <div slot="end" class="quick-access-btn-wrapper">
+      <ion-button fill="clear" class="quick-access-trigger" (click)="toggleQuickAccess()">
+        <ion-icon name="people-circle-outline"></ion-icon>
+      </ion-button>
+    </div>
   </ion-toolbar>
 </ion-header>
-
+ 
+<!-- Backdrop -->
+<div class="quick-access-backdrop" [class.visible]="quickAccessOpen" (click)="closeQuickAccess()"></div>
+ 
+<!-- Panel estilo Google Accounts -->
+<div class="quick-access-panel" [class.open]="quickAccessOpen">
+  <div class="quick-access-header">
+    <span class="quick-access-title">Acceso Rápido</span>
+    <ion-button fill="clear" class="close-btn" (click)="closeQuickAccess()">
+      <ion-icon name="close-outline"></ion-icon>
+    </ion-button>
+  </div>
+  <div class="quick-access-list">
+    <button class="qa-item" (click)="fastFill('dueño'); closeQuickAccess()">
+      <div class="qa-avatar qa-avatar--dueno">D</div>
+      <div class="qa-info">
+        <span class="qa-name">Dueño</span>
+        <span class="qa-email">dueno@resto-admin.com</span>
+      </div>
+      <ion-icon name="chevron-forward-outline" class="qa-arrow"></ion-icon>
+    </button>
+    <button class="qa-item" (click)="fastFill('supervisor'); closeQuickAccess()">
+      <div class="qa-avatar qa-avatar--supervisor">S</div>
+      <div class="qa-info">
+        <span class="qa-name">Supervisor</span>
+        <span class="qa-email">supervisor@resto-admin.com</span>
+      </div>
+      <ion-icon name="chevron-forward-outline" class="qa-arrow"></ion-icon>
+    </button>
+    <button class="qa-item" (click)="fastFill('maitre'); closeQuickAccess()">
+      <div class="qa-avatar qa-avatar--maitre">M</div>
+      <div class="qa-info">
+        <span class="qa-name">Maître</span>
+        <span class="qa-email">maitre@resto-empleado.com</span>
+      </div>
+      <ion-icon name="chevron-forward-outline" class="qa-arrow"></ion-icon>
+    </button>
+    <button class="qa-item" (click)="fastFill('mozo'); closeQuickAccess()">
+      <div class="qa-avatar qa-avatar--mozo">Mz</div>
+      <div class="qa-info">
+        <span class="qa-name">Mozo</span>
+        <span class="qa-email">mozo@resto-empleado.com</span>
+      </div>
+      <ion-icon name="chevron-forward-outline" class="qa-arrow"></ion-icon>
+    </button>
+    <button class="qa-item" (click)="fastFill('delivery'); closeQuickAccess()">
+      <div class="qa-avatar qa-avatar--delivery">Dv</div>
+      <div class="qa-info">
+        <span class="qa-name">Delivery</span>
+        <span class="qa-email">delivery@resto-empleado.com</span>
+      </div>
+      <ion-icon name="chevron-forward-outline" class="qa-arrow"></ion-icon>
+    </button>
+    <button class="qa-item" (click)="fastFill('cocinero'); closeQuickAccess()">
+      <div class="qa-avatar qa-avatar--cocinero">C</div>
+      <div class="qa-info">
+        <span class="qa-name">Cocinero</span>
+        <span class="qa-email">cocinero@resto-empleado.com</span>
+      </div>
+      <ion-icon name="chevron-forward-outline" class="qa-arrow"></ion-icon>
+    </button>
+    <button class="qa-item" (click)="fastFill('bartender'); closeQuickAccess()">
+      <div class="qa-avatar qa-avatar--bartender">B</div>
+      <div class="qa-info">
+        <span class="qa-name">Bartender</span>
+        <span class="qa-email">bartender@resto-empleado.com</span>
+      </div>
+      <ion-icon name="chevron-forward-outline" class="qa-arrow"></ion-icon>
+    </button>
+    <button class="qa-item" (click)="fastFill('cliente'); closeQuickAccess()">
+      <div class="qa-avatar qa-avatar--cliente">Cl</div>
+      <div class="qa-info">
+        <span class="qa-name">Cliente</span>
+        <span class="qa-email">juanjo@mail.com</span>
+      </div>
+      <ion-icon name="chevron-forward-outline" class="qa-arrow"></ion-icon>
+    </button>
+  </div>
+</div>
+ 
 <ion-content [fullscreen]="true" class="login-content">
   <div class="login-wrapper">
     <ion-card class="card-container">
@@ -17,7 +107,7 @@
             labelPlacement="floating"
             class="ion-margin-top"
           />
-
+ 
           <div class="password-container">
             <ion-input
               [type]="passwordVisible ? 'text' : 'password'"
@@ -35,7 +125,7 @@
               <ion-icon [name]="passwordVisible ? 'eye' : 'eye-off'"></ion-icon>
             </ion-button>
           </div>
-
+ 
           <ion-button
             expand="block"
             type="submit"
@@ -49,7 +139,6 @@
           expand="block"
           class="ion-margin-top"
           color="danger"
-          class="ion-margin-top"
           (click)="registrar()"
         >
           Registrarse<ion-icon
@@ -57,7 +146,7 @@
             slot="end"
           ></ion-icon>
         </ion-button>
-
+ 
         <ion-button
           expand="block"
           fill="outline"
@@ -66,14 +155,14 @@
         >
           Ingresar como Anónimo
         </ion-button>
-
+ 
         <div class="ion-text-center ion-margin-vertical">
           <ion-text color="medium">
             <p>Inicia sesión con:</p>
           </ion-text>
         </div>
-
-        <!-- Botón de facebook OAuth -->
+ 
+        <!-- Botón de Google OAuth -->
         <ion-button
           expand="block"
           fill="outline"
@@ -82,35 +171,9 @@
           class="ion-margin-top"
         >
           <ion-icon name="logo-google" slot="start"></ion-icon>
-          Continuar con Google
+          Google
         </ion-button>
       </ion-card-content>
-
-      <ion-card>
-        <ion-card-header>
-          <ion-card-title class="ion-text-center">Acceso Rápido</ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          <ion-item lines="none">
-            <ion-select
-              id="select-id"
-              placeholder="Selecciona usuario"
-              interface="action-sheet"
-              (ionChange)="fastFill($event.detail.value)"
-              cancelText="Cancelar"
-            >
-              <ion-select-option value="dueño">Dueño</ion-select-option>
-              <ion-select-option value="supervisor">Supervisor</ion-select-option>
-              <ion-select-option value="maitre">Maitre</ion-select-option>
-              <ion-select-option value="mozo">Mozo</ion-select-option>
-              <ion-select-option value="delivery">Delivery</ion-select-option>
-              <ion-select-option value="cocinero">Cocinero</ion-select-option>
-              <ion-select-option value="bartender">Bartender</ion-select-option>
-              <ion-select-option value="cliente">Cliente</ion-select-option>
-            </ion-select>
-          </ion-item>
-        </ion-card-content>
-      </ion-card>
     </ion-card>
   </div>
 </ion-content>
