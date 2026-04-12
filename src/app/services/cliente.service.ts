@@ -292,7 +292,7 @@ async getTotal(): Promise<number> {
 
   try {
     const clienteId = await this.getClientId();
-    const mesaId = await this.getNroMesa(clienteId);
+    const mesaId = await this.getMesaID(clienteId);
     const descuento = await this.getDescuentoCliente(clienteId, mesaId);
     
     if (descuento > 0) {
@@ -320,7 +320,7 @@ getSubtotal(): number {
 
     try {
       const clienteId = await this.getClientId();
-      const mesaId = await this.getNroMesa(clienteId);
+      const mesaId = await this.getMesaID(clienteId);
       const descuento = await this.getDescuentoCliente(clienteId, mesaId);
 
       if (descuento > 0) {
@@ -337,7 +337,7 @@ getSubtotal(): number {
   async getPorcentajeDescuento(): Promise<number> {
     try {
       const clienteId = await this.getClientId();
-      const mesaId = await this.getNroMesa(clienteId);
+      const mesaId = await this.getMesaID(clienteId);
       return await this.getDescuentoCliente(clienteId, mesaId);
     } catch (error) {
       console.error('Error obteniendo porcentaje descuento:', error);
@@ -1299,6 +1299,7 @@ async sendMessage(contenido: string): Promise<void> {
   async liberarMesaCliente(nroMesa?: number, clientId?: number) {
     try {
       const clienteId = clientId || (await this.getClientId());
+      const mesaId = await this.getMesaID(clienteId);
       const numeroMesa = nroMesa || (await this.getNroMesa(clienteId));
 
       if (!numeroMesa) {
@@ -1324,6 +1325,21 @@ async sendMessage(contenido: string): Promise<void> {
         .eq('id_cliente', clienteId);
 
       if (errorCliente) throw errorCliente;
+
+      // Resetear descuento obtenido en juegos al liberar la mesa
+      if (mesaId) {
+        const { error: errorDescuento } = await this.supabase
+          .from('juegos_descuentos')
+          .delete()
+          .eq('mesa_id', mesaId)
+          .eq('cliente_id', clienteId);
+
+        if (errorDescuento) {
+          console.error('Error reseteando descuento de juegos:', errorDescuento);
+        } else {
+          console.log('✅ Descuento de juegos reseteado');
+        }
+      }
 
       console.log('Mesa liberada exitosamente');
       return true;
