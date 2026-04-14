@@ -13,6 +13,28 @@ ion-header {
   }
 }
 
+
+.header-spacer {
+  width: 48px;
+  height: 48px;
+  display: block;
+}
+
+toolbar-logo-title {
+  position: absolute;
+  left: 0;
+  right: 0;
+  text-align: center;
+  pointer-events: none;
+  padding: 0;
+ 
+  img {
+    display: inline-block;
+    vertical-align: middle;
+  }
+}
+ 
+
 /* contenedor del input + botón */
 .password-container {
   position: relative;
@@ -70,6 +92,7 @@ ion-header {
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255,255,255,0.1);
   margin: 0 auto;
+  margin-top: 100px;
   overflow-y: auto;
   max-height: calc(100vh - 120px);
 
@@ -85,7 +108,7 @@ ion-header {
   }
 
   ion-card-content {
-    padding: 0 20px 24px;
+    padding: 0 20px 30px;
 
     form {
       ion-input {
@@ -180,3 +203,198 @@ ion-header {
 }
 
             
+/* ===== ACCESO RÁPIDO - Botón en header ===== */
+.quick-access-btn-wrapper {
+  padding-right: 4px;
+
+  .quick-access-trigger {
+    --color: rgba(255, 255, 255, 0.9);
+    --padding-start: 8px;
+    --padding-end: 8px;
+
+    ion-icon {
+      font-size: 1.8rem;
+    }
+  }
+}
+
+/* ===== BACKDROP ===== */
+.quick-access-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+
+  &.visible {
+    opacity: 1;
+    pointer-events: all;
+  }
+}
+
+/* ===== PANEL estilo Google Accounts ===== */
+.quick-access-panel {
+  position: fixed;
+  top: 56px;
+  right: 12px;
+  width: 300px;
+  max-height: 520px;
+  background: #1e1e1e;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.6),
+    0 2px 8px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 107, 71, 0.15);
+  z-index: 1001;
+  overflow: hidden;
+
+  /* Animación entrada */
+  opacity: 0;
+  transform: translateY(-8px) scale(0.97);
+  transform-origin: top right;
+  pointer-events: none;
+  transition:
+    opacity 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &.open {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: all;
+  }
+}
+
+.quick-access-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+  .quick-access-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .close-btn {
+    --color: rgba(255, 255, 255, 0.4);
+    --padding-start: 4px;
+    --padding-end: 4px;
+    height: 28px;
+
+    ion-icon {
+      font-size: 1.1rem;
+    }
+
+    &:hover {
+      --color: rgba(255, 255, 255, 0.8);
+    }
+  }
+}
+
+.quick-access-list {
+  overflow-y: auto;
+  max-height: 460px;
+  padding: 6px 0;
+
+  /* Scrollbar sutil */
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 2px;
+  }
+}
+
+.qa-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.06);
+
+    .qa-arrow {
+      opacity: 1;
+      transform: translateX(2px);
+    }
+  }
+
+  &:active {
+    background: rgba(255, 107, 71, 0.12);
+  }
+}
+
+/* Avatares con color por perfil */
+.qa-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  color: #fff;
+
+  &--dueno      { background: linear-gradient(135deg, #8b0000, #b22222); }
+  &--supervisor { background: linear-gradient(135deg, #1a5276, #2e86c1); }
+  &--maitre     { background: linear-gradient(135deg, #6c3483, #9b59b6); }
+  &--mozo       { background: linear-gradient(135deg, #1e8449, #27ae60); }
+  &--delivery   { background: linear-gradient(135deg, #b7770d, #f39c12); }
+  &--cocinero   { background: linear-gradient(135deg, #922b21, #e74c3c); }
+  &--bartender  { background: linear-gradient(135deg, #1a5276, #5dade2); }
+  &--cliente    { background: linear-gradient(135deg, #2e4057, #4a6fa5); }
+}
+
+.qa-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+
+  .qa-name {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.92);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .qa-email {
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.4);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 1px;
+  }
+}
+
+.qa-arrow {
+  color: rgba(255, 255, 255, 0.25);
+  font-size: 0.9rem;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}

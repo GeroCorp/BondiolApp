@@ -761,7 +761,7 @@ export class AuthService {
       .from('mesas')
       .upload(fileName, imageBlob, {
         cacheControl: '3600',
-        upsert: false // No sobrescribir
+        upsert: true
       });
 
     if (error) {
@@ -847,6 +847,39 @@ export class AuthService {
         
         console.log('✅ Usando query simple, mesas encontradas:', simpleData?.length);
         return simpleData || [];
+      }
+
+      // ✅ FIX: Para mesas con cliente_asignado pero sin JOIN a clientes registrados,
+      // buscar en clientes_anonimos
+      const mesasSinCliente = (data || []).filter(
+        (m: any) => m.cliente_asignado && !m.clientes
+      );
+
+      if (mesasSinCliente.length > 0) {
+        const idsAnonimos = mesasSinCliente.map((m: any) => m.cliente_asignado);
+
+        const { data: anonimos } = await this.supabase
+          .from('clientes_anonimos')
+          .select('id_clienteanonimo, nombre')
+          .in('id_clienteanonimo', idsAnonimos);
+
+        if (anonimos && anonimos.length > 0) {
+          const mapAnonimos = new Map(anonimos.map((a: any) => [a.id_clienteanonimo, a]));
+
+          (data || []).forEach((mesa: any) => {
+            if (mesa.cliente_asignado && !mesa.clientes) {
+              const anon = mapAnonimos.get(mesa.cliente_asignado);
+              if (anon) {
+                mesa.clientes = {
+                  id_cliente: anon.id_clienteanonimo,
+                  nombre: anon.nombre,
+                  apellido: '',
+                  esAnonimo: true
+                };
+              }
+            }
+          });
+        }
       }
 
       console.log('✅ Query con JOIN exitosa, mesas encontradas:', data?.length);

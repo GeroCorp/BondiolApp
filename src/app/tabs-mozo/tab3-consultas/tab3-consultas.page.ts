@@ -108,36 +108,47 @@ export class Tab3ConsultasPage implements OnInit {
   async cargarMesas() {
     try {
       console.log('📋 Cargando TODAS las mesas...');
-      
-      // Obtener TODAS las mesas con su estado
+
+      // Obtener TODAS las mesas con su estado (registrados via JOIN)
       this.mesas = await this.authService.getMesasConEstado();
+
+      // ✅ FIX ANÓNIMOS: Para mesas con cliente_asignado pero sin datos de cliente
+      // (ocurre cuando la FK de la BD no apunta a clientes sino a clientes_anonimos),
+      // cruzar también con clientes_anonimos usando mesa_asignada
+      const mesasSinCliente = this.mesas.filter((m: any) => !m.clientes);
       
-      console.log('✅ Total de mesas cargadas:', this.mesas.length);
-      
-      // Debug: mostrar resumen de mesas
-      const mesasOcupadas = this.mesas.filter(m => m.cliente_asignado || m.clientes);
-      const mesasLibres = this.mesas.filter(m => !m.cliente_asignado && !m.clientes);
-      
-      console.log('📊 Desglose de mesas:', {
-        total: this.mesas.length,
-        ocupadas: mesasOcupadas.length,
-        libres: mesasLibres.length,
-        registrados: mesasOcupadas.filter(m => m.clientes && !m.clientes.esAnonimo).length,
-        anonimos: mesasOcupadas.filter(m => m.clientes && m.clientes.esAnonimo).length
-      });
-      
-      // Mostrar detalle de cada mesa
-      this.mesas.forEach(mesa => {
-        const estado = (mesa.cliente_asignado || mesa.clientes) ? '🔴 OCUPADA' : '🟢 LIBRE';
-        const cliente = mesa.clientes 
-          ? `${mesa.clientes.nombre} ${mesa.clientes.esAnonimo ? '(Anónimo)' : '(Registrado)'}`
-          : 'Sin cliente';
-        console.log(`  Mesa ${mesa.numero}: ${estado} - ${cliente}`);
-      });
-      
-      if (this.mesas.length > 0) {
-        this.showToast(`${this.mesas.length} mesas cargadas correctamente`, 'success');
+      if (mesasSinCliente.length > 0) {
+        const { data: anonimos } = await this.authService.client
+          .from('clientes_anonimos')
+          .select('id_clienteanonimo, nombre, mesa_asignada')
+          .not('mesa_asignada', 'is', null);
+
+        if (anonimos && anonimos.length > 0) {
+          // Mapear por mesa_asignada (que es el ID de la mesa)
+          const mapPorMesaId = new Map(anonimos.map((a: any) => [a.mesa_asignada, a]));
+
+          this.mesas.forEach((mesa: any) => {
+            if (!mesa.clientes) {
+              const anon = mapPorMesaId.get(mesa.id);
+              if (anon) {
+                mesa.clientes = {
+                  id_cliente: anon.id_clienteanonimo,
+                  nombre: anon.nombre,
+                  apellido: '',
+                  esAnonimo: true
+                };
+                // Garantizar que cliente_asignado tenga valor aunque FK falle
+                if (!mesa.cliente_asignado) {
+                  mesa.cliente_asignado = anon.id_clienteanonimo;
+                }
+              }
+            }
+          });
+        }
       }
+
+      console.log('✅ Total de mesas cargadas:', this.mesas.length);
+
     } catch (error) {
       console.error('❌ Error al cargar mesas:', error);
       await this.hapticService.vibrateError();

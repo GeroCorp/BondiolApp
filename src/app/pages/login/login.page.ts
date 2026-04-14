@@ -20,6 +20,7 @@ import { CustomLoaderService } from 'src/app/services/custom-loader.service';
 export class LoginPage {
   loginForm: FormGroup;
   passwordVisible = false;
+  quickAccessOpen = false;
   private notificationService: Notification = inject(Notification);
 
   constructor(
@@ -42,6 +43,14 @@ export class LoginPage {
 
   cambiarVisibilidadPassword() {
     this.passwordVisible = !this.passwordVisible;
+  }
+
+  toggleQuickAccess() {
+    this.quickAccessOpen = !this.quickAccessOpen;
+  }
+
+  closeQuickAccess() {
+    this.quickAccessOpen = false;
   }
 
   async onLogin() {
