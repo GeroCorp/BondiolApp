@@ -171,6 +171,14 @@ export class RegisterPage {
 
         this.showToast('QR leído con éxito', 'success');
         console.log(this.qrData);
+
+        // Rellenar el formulario con los datos del QR
+        this.registerForm.patchValue({
+          name: this.trimed ? this.trimed[2] : '',
+          surname: this.trimed ? this.trimed[1] : '',
+          dni: this.trimed ? this.trimed[4] : ''
+        })
+
       }
     } catch (error) {
       console.error('Error al leer el QR:', error);
