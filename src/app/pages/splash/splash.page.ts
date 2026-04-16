@@ -31,8 +31,8 @@ export class SplashPage implements OnInit, OnDestroy {
     try {
       this.navigating = true;
 
-      // Esperar un momento para que la UI se cargue
-      await new Promise(resolve => setTimeout(resolve, 2500));
+      // Esperar para mostrar el splash (simulando carga)
+      await new Promise(resolve => setTimeout(resolve, 3500));
 
       const sessionCheck = await this.authService.quickAutoLogin();
 

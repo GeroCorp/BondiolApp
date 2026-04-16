@@ -8,13 +8,18 @@ import { LoginPageRoutingModule } from './login-routing.module';
 
 import { LoginPage } from './login.page';
 
+import { MainButtonComponent } from 'src/app/components/main-button/main-button.component';
+import { SecondaryButtonComponent } from 'src/app/components/secondary-button/secondary-button.component';
+
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
     LoginPageRoutingModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    MainButtonComponent,
+    SecondaryButtonComponent
   ],
   declarations: [LoginPage]
 })

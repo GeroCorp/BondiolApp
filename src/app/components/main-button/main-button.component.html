@@ -1,0 +1,10 @@
+<ion-button 
+  [type]="type"
+  [disabled]="disabled"
+  (click)="onClick()"
+  class="custom-main-button">
+  <ng-content></ng-content>
+  @if (icon){
+    <ion-icon slot="end" [name]="icon" ></ion-icon>
+  }
+</ion-button>

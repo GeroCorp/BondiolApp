@@ -8,6 +8,8 @@ import { IonicModule } from '@ionic/angular';
 import { HomePageRoutingModule } from './home-routing.module';
 
 import { HomePage } from './home.page';
+import { MainButtonComponent } from 'src/app/components/main-button/main-button.component';
+import { SecondaryButtonComponent } from 'src/app/components/secondary-button/secondary-button.component';
 
 @NgModule({
   imports: [
@@ -15,7 +17,9 @@ import { HomePage } from './home.page';
     FormsModule,
     IonicModule,
     HomePageRoutingModule,
-    RouterModule.forChild([{path: '', component: HomePage}])
+    RouterModule.forChild([{path: '', component: HomePage}]),
+    SecondaryButtonComponent,
+    MainButtonComponent
   ],
   declarations: [HomePage]
 })

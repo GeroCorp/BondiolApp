@@ -1,0 +1,20 @@
+.custom-secondary-button {
+  --background: transparent;
+  --color: white;
+  --border-radius: 8px;
+  --border: 1.5px solid rgba(255, 255, 255, 0.6); /* Semi-transparent white */
+}
+
+/* Tamaños para diferentes casos */
+
+/* Opcion en menú */
+.menu-option {
+  --padding: 40px;
+  font-size: 1.25rem;
+}
+
+/* Boton secundario */
+.secondary {
+  --height: 48px;
+  font-size: 0.95rem;
+}

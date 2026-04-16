@@ -1,8 +1,7 @@
+@import '../../../theme/tabs-shared.scss';
+
 .spinner-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    @extend .flex-column-center;
     gap: 15px;
 }
 
@@ -15,13 +14,4 @@
     font-size: 1.5rem;
     font-weight: bold;
     margin: 0;
-}
-
-@keyframes pulse {
-    0%, 100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.4;
-    }
 }

@@ -1,3 +1,5 @@
+@import '../../../theme/_tabs-shared.scss';
+
 ion-header {
   ion-toolbar {
     --background: linear-gradient(135deg, #8b0000, #a52a2a, #b22222);
@@ -15,12 +17,7 @@ ion-header {
 }
 
 .espera-content {
-  --background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
-  --color: #ffffff;
-  --padding-top: 0;
-  --padding-bottom: 0;
-  --padding-start: 16px;
-  --padding-end: 16px;
+  @extend %tabs-content-dark-simple;
 
   &[fullscreen="true"] {
     --offset-top: 60px;
@@ -50,53 +47,12 @@ ion-header {
 
 /* Loading container */
 .loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 40px 20px;
-
-  ion-spinner {
-    --color: #ff6b47;
-    transform: scale(1.2);
-  }
-
-  p {
-    color: rgba(255, 255, 255, 0.7);
-    margin-top: 20px;
-    font-size: 1.1rem;
-  }
+  @extend %tabs-loading-container-compact;
 }
 
 /* Empty state */
 .empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 60px 20px;
-  text-align: center;
-
-  ion-icon {
-    font-size: 4rem;
-    margin-bottom: 20px;
-    opacity: 0.6;
-    color: #ff6b47;
-  }
-
-  h2 {
-    margin: 0 0 12px 0;
-    color: rgba(255, 255, 255, 0.9);
-    font-weight: 600;
-    font-size: 1.4rem;
-  }
-
-  p {
-    color: rgba(255, 255, 255, 0.6);
-    margin: 0;
-    line-height: 1.5;
-    font-size: 1.1rem;
-  }
+  @extend %tabs-empty-state-compact;
 }
 
 /* Lista de clientes */
@@ -131,21 +87,7 @@ ion-header {
   }
 
   .espera-item {
-    --background: rgba(255, 255, 255, 0.05);
-    --border-color: rgba(255, 107, 71, 0.2);
-    --color: #ffffff;
-    margin: 0 0 12px 0;
-    border-radius: 12px;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    transition: all 0.3s ease;
-    min-height: 70px;
-
-    &:hover {
-      --background: rgba(255, 255, 255, 0.08);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-    }
+    @extend %tabs-list-item;
 
     ion-avatar {
       width: 55px;

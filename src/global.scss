@@ -25,6 +25,9 @@
 @import "@ionic/angular/css/text-transformation.css";
 @import "@ionic/angular/css/flex-utils.css";
 
+/* Shared styles for tabs */
+@import "./theme/_tabs-shared.scss";
+
 /**
  * Ionic Dark Mode
  * -----------------------------------------------------
@@ -46,11 +49,71 @@
 
 // Sobreescribir el offset-bottom del Shadow DOM de Ionic
 
+// Aplicar fondo global a ion-content
+ion-content {
+  --background: linear-gradient(180deg, #370617 0%, #6A040F 40%, #9D0208 100%);
+}
 
 // Alternativa para controlar el scroll interno
 .inner-scroll {
     --padding-bottom: 60px !important;
 }
+
+ion-card{
+  
+  /* Use Night Bordeaux with 70% opacity */
+  --background: rgba(55, 6, 23, 0.7); 
+  
+  /* Adds the frosted glass effect */
+  --backdrop-filter: blur(10px); 
+  
+  /* A very thin border makes it look sharp and premium */
+  --border: 1px solid rgba(255, 255, 255, 0.1); 
+  --border-radius: 20px;
+  --padding: 24px;
+  --box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+
+  ion-card-header {
+    padding: 24px 20px 16px;
+
+    ion-card-title {
+      color: #ff6b47;
+      font-weight: 700;
+      font-size: 1.5rem;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+  }
+
+  ion-card-content {
+    padding: 0 20px 30px;
+
+    form {
+      ion-input {
+        --background: rgba(255,255,255,0.05);
+        --color: #ffffff;
+        --placeholder-color: rgba(255,255,255,0.6);
+        --border-color: rgba(255,107,71,0.3);
+        --border-radius: 12px;
+        margin-bottom: 16px;
+
+        &.ion-focused {
+          --border-color: #ff6b47;
+          --background: rgba(255,255,255,0.08);
+        }
+      }
+
+      ion-button[fill="clear"] {
+        --color: rgba(255,255,255,0.7);
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 10;
+      }
+    }
+  }
+}
+
 
 // No funciona bien
 // .no-scroll-padding {
@@ -62,9 +125,9 @@
 // }
 
 :host {
-  --background-dark: #1a1a1a;
-  --surface-dark: #2d2d2d;
-  --surface-variant: #3a3a3a;
+  --background-dark: #370617;
+  --surface-dark: #6A040F;
+  --surface-variant: #9D0208;
   --text-primary: #ffffff;
   --text-secondary: #b3b3b3;
   --primary-color: #bb86fc;
@@ -72,7 +135,7 @@
   --accent-color: #ff6b47;
   --error-color: #cf6679;
   --success-color: #4caf50;
-  --border-color: #404040;
+  --border-color: #2a2a4a;
   --shadow-dark: 0 8px 24px rgba(0, 0, 0, 0.6);
   --color: #ffffff;
 }

@@ -94,7 +94,7 @@
   </div>
 </div>
  
-<ion-content [fullscreen]="true" class="login-content">
+<ion-content [fullscreen]="true">
   <div class="login-wrapper">
     <ion-card class="card-container">
       <ion-card-content class="ion-padding">
@@ -126,35 +126,24 @@
             </ion-button>
           </div>
  
-          <ion-button
-            expand="block"
-            type="submit"
-            class="btn-primary ion-margin-top"
-          >
-            Iniciar sesión
-            <ion-icon name="log-in-outline" slot="end"></ion-icon>
-          </ion-button>
+          <app-main-button 
+          icon="log-in-outline"
+          type="submit">
+            INICIAR SESIÓN
+          </app-main-button>
         </form>
-        <ion-button
-          expand="block"
-          class="ion-margin-top"
-          color="danger"
-          (click)="registrar()"
-        >
-          Registrarse<ion-icon
-            name="person-circle-outline"
-            slot="end"
-          ></ion-icon>
-        </ion-button>
+        <app-secondary-button
+          (btnClick)="registrar()"
+          icon="person-circle-outline"
+          [class]="'secondary'">
+          Registrarse
+        </app-secondary-button>
  
-        <ion-button
-          expand="block"
-          fill="outline"
-          color="secondary"
-          (click)="irClienteAnonimo()"
-        >
-          Ingresar como Anónimo
-        </ion-button>
+        <app-secondary-button
+          (btnClick)="irClienteAnonimo()"
+          [class]="'secondary'">
+          Ingresar como Invitado
+        </app-secondary-button>
  
         <div class="ion-text-center ion-margin-vertical">
           <ion-text color="medium">
@@ -165,10 +154,8 @@
         <!-- Botón de Google OAuth -->
         <ion-button
           expand="block"
-          fill="outline"
-          color="danger"
           (click)="loginConGoogle()"
-          class="ion-margin-top"
+          class="ion-margin-top google-button"
         >
           <ion-icon name="logo-google" slot="start"></ion-icon>
           Google

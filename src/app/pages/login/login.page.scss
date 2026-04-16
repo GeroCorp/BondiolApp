@@ -1,3 +1,5 @@
+@import '../../../theme/tabs-shared.scss';
+
 ion-header {
   ion-toolbar.custom-header {
     --background: linear-gradient(135deg, #8b0000, #a52a2a, #b22222);
@@ -33,17 +35,19 @@ toolbar-logo-title {
     vertical-align: middle;
   }
 }
- 
 
+ion-input {
+  flex: 1; /* ocupa todo el ancho disponible */   
+  --background: rgba(55, 6, 23, 0.6);
+  --color: #ffffff;
+  --font-size: 2rem; 
+}
 /* contenedor del input + botón */
 .password-container {
   position: relative;
   display: flex;
   align-items: center;
 
-  ion-input {
-    flex: 1; /* ocupa todo el ancho disponible */
-  }
 
   .password-toggle {
     --color: rgba(255,255,255,0.7);
@@ -59,17 +63,6 @@ toolbar-logo-title {
   }
 }
 
-.login-content {
-  --background: linear-gradient(135deg, #cc1e1e, #cc5f1e, #1a5a8a);
-  --padding-top: 16px;
-  --padding-bottom: 40px;
-  --padding-start: 16px;
-  --padding-end: 16px;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  overflow-y: auto;
-}
 
 /* Wrapper para centrar contenido cuando hay espacio */
 .login-wrapper {
@@ -79,62 +72,6 @@ toolbar-logo-title {
   flex: 1;
   padding: 24px 0 40px;
   min-height: auto;
-}
-
-/* Card principal con diseño más moderno */
-.card-container {
-  border-radius: 20px;
-  box-shadow: 0 25px 50px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1);
-  background: linear-gradient(145deg, #1e1e1e, #2a2a2a);
-  color: #ffffff;
-  width: 100%;
-  max-width: 400px;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,0.1);
-  margin: 0 auto;
-  margin-top: 100px;
-  overflow-y: auto;
-  max-height: calc(100vh - 120px);
-
-  ion-card-header {
-    padding: 24px 20px 16px;
-
-    ion-card-title {
-      color: #ff6b47;
-      font-weight: 700;
-      font-size: 1.5rem;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    }
-  }
-
-  ion-card-content {
-    padding: 0 20px 30px;
-
-    form {
-      ion-input {
-        --background: rgba(255,255,255,0.05);
-        --color: #ffffff;
-        --placeholder-color: rgba(255,255,255,0.6);
-        --border-color: rgba(255,107,71,0.3);
-        --border-radius: 12px;
-        margin-bottom: 16px;
-
-        &.ion-focused {
-          --border-color: #ff6b47;
-          --background: rgba(255,255,255,0.08);
-        }
-      }
-
-      ion-button[fill="clear"] {
-        --color: rgba(255,255,255,0.7);
-        position: absolute;
-        right: 8px;
-        top: 50%;
-        transform: translateY(-50%);
-        z-index: 10;
-      }
-    }
-  }
 }
 
 /* Card de acceso rápido integrada */
@@ -156,7 +93,23 @@ toolbar-logo-title {
   }
 
   ion-card-content {
-    padding: 0 20px 16px;
+    padding: 0 20px 16px !important;
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    box-sizing: border-box !important;
+
+    form {
+      width: 100% !important;
+      display: flex !important;
+      flex-direction: column !important;
+      box-sizing: border-box !important;
+
+      app-main-button {
+        width: 100% !important;
+        min-width: 100% !important;
+      }
+    }
 
     ion-item {
       --background: transparent;
@@ -180,26 +133,10 @@ toolbar-logo-title {
   }
 }
 
-/* Botón principal mejorado */
-.btn-primary {
-  --background: linear-gradient(135deg, #ff6b47, #ff4525);
-  --background-hover: linear-gradient(135deg, #e55a3c, #e03d1f);
-  --color: #ffffff;
-  --border-radius: 12px;
-  font-weight: 700;
-  font-size: 1.1rem;
-  height: 48px;
-  box-shadow: 0 4px 15px rgba(255,107,71,0.4);
-  transition: all 0.3s ease;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(255,107,71,0.5);
-  }
-
-  ion-icon {
-    margin-left: 8px;
-  }
+.google-button {
+  --background: white;
+  --color: #333;
+  --border-radius: 8px;
 }
 
             

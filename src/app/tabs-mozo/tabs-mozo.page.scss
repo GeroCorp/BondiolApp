@@ -1,102 +1,20 @@
 // tabs-mozo.page.scss
+// Usa estilos compartidos de _tabs-shared.scss
+
+@import '../../theme/_tabs-shared.scss';
+
+:host {
+  @extend %shared-tab-header;
+  @extend %shared-tab-bar-base;
+  @extend %shared-tab-bar-extended;
+}
 
 ion-tabs {
   --background: transparent;
 }
 
-ion-tab-bar {
-  --background: linear-gradient(135deg, #8b0000, #a52a2a, #b22222);
-  --color: rgba(255, 255, 255, 0.7);
-  height: 70px;
-  padding-bottom: 8px;
-  padding-top: 8px;
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
-
-  ion-tab-button {
-    --color: rgba(255, 255, 255, 0.6);
-    --color-selected: #ffffff;
-    --ripple-color: rgba(255, 107, 71, 0.3);
-    font-size: 12px;
-    font-weight: 500;
-    position: relative;
-    
-    ion-icon {
-      font-size: 26px;
-      margin-bottom: 4px;
-      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-      transition: all 0.3s ease;
-    }
-
-    ion-label {
-      font-size: 11px;
-      margin-top: 4px;
-      text-transform: none;
-      font-weight: 600;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-    }
-
-    ion-badge {
-      position: absolute;
-      top: 6px;
-      right: calc(50% - 22px);
-      min-width: 20px;
-      height: 20px;
-      font-size: 11px;
-      font-weight: bold;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0 6px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-      animation: badgePulse 2s infinite;
-      border: 2px solid rgba(255, 255, 255, 0.3);
-    }
-
-    // Tab seleccionado
-    &.tab-selected {
-      --color: #ffffff;
-      
-      ion-icon {
-        transform: scale(1.15);
-        color: #ff6b47;
-        filter: drop-shadow(0 3px 6px rgba(255, 107, 71, 0.5));
-      }
-
-      ion-label {
-        font-weight: 700;
-        color: #ff6b47;
-      }
-    }
-
-    // Efecto hover
-    &:hover:not(.tab-selected) {
-      ion-icon {
-        transform: scale(1.05);
-        color: rgba(255, 255, 255, 0.9);
-      }
-    }
-  }
-}
-
-@keyframes badgePulse {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.1);
-    opacity: 0.85;
-  }
-}
-
-// Badges por tab
-ion-tab-button[tab="tab1-pedidos-pendientes"] {
-  ion-badge {
-    background: linear-gradient(135deg, #ffc409, #ffaa00);
-    color: #000000;
-  }
+ion-content {
+  @extend %tabs-content-dark-blue;
 }
 
 ion-tab-button[tab="tab3-consultas"] {

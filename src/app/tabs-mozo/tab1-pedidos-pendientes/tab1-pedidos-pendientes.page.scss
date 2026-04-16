@@ -1,5 +1,7 @@
-.pendientes-content{
-  --background: linear-gradient(180deg, #1a1a1a 0%, #2d2d2d 50%, #1a5a8a 100%);
+@import '../../../theme/_tabs-shared.scss';
+
+.pendientes-content {
+  --background: linear-gradient(180deg, #370617 0%, #6A040F 40%, #9D0208 100%);
   --color: #ffffff;
   --padding-bottom: 0;
   --padding-start: 16px;
@@ -7,29 +9,27 @@
 }
 
 .wrap {
-  padding-bottom: 90px;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
+  @extend .tabs-wrapper;
 }
+
 ion-header {
   ion-toolbar {
     --background: linear-gradient(135deg, #8b0000, #a52a2a, #b22222);
     --color: #fff;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-    border-bottom: 1px solid rgba(255,255,255,0.2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
     --min-height: 60px;
-    
+
     ion-title {
       font-weight: 700;
       font-size: 1.3rem;
-      text-shadow: 0 1px 3px rgba(0,0,0,0.3);
-      
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+
       ion-icon {
         color: #ff6b47;
         margin-right: 8px;
         font-size: 1.4rem;
-        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
       }
     }
 
@@ -44,88 +44,20 @@ ion-header {
 }
 
 ion-content {
-  --background: linear-gradient(180deg, #1a1a1a 0%, #2d2d2d 50%, #1a5a8a 100%);
+  --background: linear-gradient(180deg, #370617 0%, #6A040F 40%, #9D0208 100%);
 }
 
 .loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 70vh;
-  color: white;
-
-  ion-spinner {
-    width: 50px;
-    height: 50px;
-    margin-bottom: 20px;
-    --color: #ff6b47;
-  }
-
-  p {
-    font-size: 18px;
-    font-weight: 600;
-    color: #fff;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-  }
+  @extend %tabs-loading-container;
 }
 
 .empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 70vh;
-  color: white;
-  text-align: center;
-  padding: 20px;
-
-  ion-icon {
-    font-size: 100px;
-    margin-bottom: 20px;
-    color: #4a9eff;
-    filter: drop-shadow(0 4px 8px rgba(74, 158, 255, 0.5));
-  }
-
-  h2 {
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 10px;
-    text-shadow: 0 2px 8px rgba(0,0,0,0.4);
-  }
-
-  p {
-    font-size: 16px;
-    opacity: 0.8;
-  }
+  @extend %tabs-empty-state;
 }
 
 .pedido-card {
+  @extend %tabs-card-item;
   margin: 16px;
-  border-radius: 14px;
-  box-shadow: 0 6px 24px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.1);
-  overflow: hidden;
-  background: linear-gradient(145deg, #2a2a2a, #1e1e1e);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,0.05);
-  animation: fadeInUp 0.6s ease-out;
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
-  min-height: 350px;
-  max-height: 600px;
-  display: flex;
-  flex-direction: column;
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 .header-pedido {
@@ -140,11 +72,11 @@ ion-content {
     align-items: center;
     gap: 8px;
     color: #ff6b47;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 
     ion-icon {
       font-size: 24px;
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
     }
   }
 
@@ -154,7 +86,7 @@ ion-content {
     display: flex;
     align-items: center;
     gap: 4px;
-    color: rgba(255,255,255,0.7);
+    color: rgba(255, 255, 255, 0.7);
 
     ion-icon {
       font-size: 16px;
@@ -164,18 +96,7 @@ ion-content {
   ion-badge {
     animation: blink 1.5s infinite;
     font-weight: 700;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-  }
-}
-
-@keyframes blink {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.6;
-    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   }
 }
 
@@ -185,9 +106,9 @@ ion-content {
   gap: 8px;
   margin-bottom: 16px;
   padding: 12px;
-  background: rgba(139,0,0,0.2);
+  background: rgba(139, 0, 0, 0.2);
   border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 
   ion-icon {
     font-size: 20px;

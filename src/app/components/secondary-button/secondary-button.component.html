@@ -1,0 +1,14 @@
+<!-- PARA USARLO IMPORTAR EL COMPONENTE EN EL MODULO QUE SE UTILICE-->
+
+<ion-button 
+  expand="block" 
+  [type]="type"
+  [disabled]="disabled"
+  [class]="clase"
+  (click)="onClick()"
+  class="custom-secondary-button">
+  <ng-content></ng-content>
+  @if (icon) {
+    <ion-icon slot="end" [name]="icon"></ion-icon>
+  }
+</ion-button>
