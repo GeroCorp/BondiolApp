@@ -74,6 +74,65 @@ ion-input {
   min-height: auto;
 }
 
+<<<<<<< HEAD
+=======
+/* Card principal con diseño más moderno */
+.card-container {
+  border-radius: 20px;
+  box-shadow: 0 25px 50px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1);
+  background: linear-gradient(145deg, #1e1e1e, #2a2a2a);
+  color: #ffffff;
+  width: 100%;
+  max-width: 400px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.1);
+  margin: 0 auto;
+  margin-top: 20px;
+  overflow-y: auto;
+  max-height: calc(100vh - 120px);
+
+  ion-card-header {
+    padding: 24px 20px 16px;
+
+    ion-card-title {
+      color: #ff6b47;
+      font-weight: 700;
+      font-size: 1.5rem;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+  }
+
+  ion-card-content {
+    padding: 0 20px 30px;
+
+    form {
+      ion-input {
+        --background: rgba(255,255,255,0.05);
+        --color: #ffffff;
+        --placeholder-color: rgba(255,255,255,0.6);
+        --border-color: rgba(255,107,71,0.3);
+        --border-radius: 12px;
+        margin-bottom: 16px;
+
+        &.ion-focused {
+          --border-color: #ff6b47;
+          --background: rgba(255,255,255,0.08);
+        }
+      }
+
+      ion-button[fill="clear"] {
+        --color: rgba(255,255,255,0.7);
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 10;
+      }
+    }
+  }
+}
+
+>>>>>>> 318668403b73ad16a4139e816951678530da70df
 /* Card de acceso rápido integrada */
 .card-container ion-card {
   --background: linear-gradient(145deg, #2a2a2a, #1e1e1e);
