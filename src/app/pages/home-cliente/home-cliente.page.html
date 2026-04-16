@@ -192,14 +192,15 @@
         </ion-button>
 
         <ion-button
+          *ngIf="isRegistrado()"
           expand="block"
           color="tertiary"
           (click)="verJuegos()"
-          [disabled]="!mesaVerificada() || !isDelivery() && (!isRegistrado() && !juegosAccess())"
+          [disabled]="!mesaVerificada() && !isDelivery()"
         >
           <ion-icon name="game-controller-outline" slot="start"></ion-icon>
           Juegos y Descuentos 
-          <ion-icon name="lock-closed" slot="end" *ngIf="!mesaVerificada() || (!isDelivery() && (!isRegistrado() && !juegosAccess()))"></ion-icon>
+          <ion-icon name="lock-closed" slot="end" *ngIf="!mesaVerificada() && !isDelivery()"></ion-icon>
         </ion-button>
 
         <ion-button
@@ -216,10 +217,11 @@
         </ion-button>
 
         <ion-button
+          *ngIf="isRegistrado()"
           expand="block"
           color="secondary"
           (click)="verEncuesta()"
-          [disabled]="!isRegistrado() || (!mesaVerificada() && !isDelivery() && !habilitarEncuesta())"
+          [disabled]="!mesaVerificada() && !isDelivery() && !habilitarEncuesta()"
         >
           <ion-icon name="clipboard-outline" slot="start"></ion-icon>
           Encuesta
