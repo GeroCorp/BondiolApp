@@ -7,8 +7,6 @@ import { ClienteService } from 'src/app/services/cliente.service';
 import { Notification } from 'src/app/services/notification';
 import { TipoClienteService } from 'src/app/services/tipo-cliente.service';
 import { SocialAuthService } from 'src/app/services/social-auth.service';
-import { HapticService } from 'src/app/services/haptic.service';
-import { EmailService } from 'src/app/services/email';
 import { CustomLoaderService } from 'src/app/services/custom-loader.service';
 
 @Component({
@@ -24,14 +22,12 @@ export class LoginPage {
   private notificationService: Notification = inject(Notification);
 
   constructor(
-    private mailService: EmailService,
     private formBuilder: FormBuilder,
     private router: Router,
     private toastController: ToastController,
     private customLoader: CustomLoaderService,
     private authService: AuthService,
     private clienteService: ClienteService,
-    private v: HapticService,
     private tipoClienteService: TipoClienteService,
     private socialAuthService: SocialAuthService 
   ) {

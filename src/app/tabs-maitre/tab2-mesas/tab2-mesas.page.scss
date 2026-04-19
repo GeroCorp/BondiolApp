@@ -1,3 +1,5 @@
+@import "../../../theme/tabs-shared.scss";
+
 ion-header {
   ion-toolbar {
     --background: linear-gradient(135deg, #8b0000, #a52a2a, #b22222);
@@ -14,18 +16,10 @@ ion-header {
   }
 }
 
-.mesas-content {
-  --background: linear-gradient(135deg, #370617 0%, #9D0208 100%);
-  --color: #ffffff;
-  --padding-top: 0;
-  --padding-bottom: 0;
-  --padding-start: 16px;
-  --padding-end: 16px;
-  scroll-snap-type: y mandatory;
-  overflow-y: scroll;
-
-  &[fullscreen="true"] {
-    --offset-top: 60px;
+ion-content {
+&::part(scroll) {
+    padding-top: 5px !important;
+    padding-bottom: 0px !important;
   }
 }
 

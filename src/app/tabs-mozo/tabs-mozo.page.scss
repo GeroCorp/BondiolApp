@@ -66,16 +66,16 @@ ion-content {
   }
 }
 
-// Efecto de línea superior en tab seleccionado
-ion-tab-button.tab-selected::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 60%;
-  height: 3px;
-  background: linear-gradient(90deg, transparent, #ff6b47, transparent);
-  border-radius: 0 0 3px 3px;
-  box-shadow: 0 2px 8px rgba(255, 107, 71, 0.6);
-}
+// // Efecto de línea superior en tab seleccionado
+// ion-tab-button.tab-selected::before {
+//   content: '';
+//   position: absolute;
+//   top: 0;
+//   left: 50%;
+//   transform: translateX(-50%);
+//   width: 60%;
+//   height: 3px;
+//   background: linear-gradient(90deg, transparent, #ff6b47, transparent);
+//   border-radius: 0 0 3px 3px;
+//   box-shadow: 0 2px 8px rgba(255, 107, 71, 0.6);
+// }
