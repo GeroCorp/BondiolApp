@@ -2,16 +2,16 @@
 // Variables del tema oscuro
 :host {
   --color: white;
-  --ion-card-background: #12121212;
-  --background-dark: #1a1a1a;
-  --surface-dark: #2d2d2d;
-  --surface-variant: #3a3a3a;
+  --ion-card-background: #03071E;
+  --background-dark: #370606;
+  --surface-dark: #6a040F;
+  --surface-variant: #9D0208;
   --text-primary: #ffffff;
   --text-secondary: #b3b3b3;
   --text-muted: #808080;
-  --primary-color: #bb86fc;
-  --secondary-color: #03dac6;
-  --accent-color: #ff6b47;
+  --primary-color: #FAA307;
+  --secondary-color: #FAA307;
+  --accent-color: #F48C06;
   --border-color: #404040;
   --shadow-dark: 0 4px 12px rgba(0, 0, 0, 0.4);
   --glass-effect: rgba(45, 45, 45, 0.8);
@@ -19,7 +19,7 @@
 
 // Fondo principal con gradiente oscuro
 ion-content {
-  --background: linear-gradient(180deg, var(--background-dark) 0%, var(--surface-dark) 50%, #1a3a5a 100%);
+  --background: linear-gradient(180deg, var(--background-dark) 0%, var(--surface-dark) 50%, #D00000 100%);
   --padding-bottom: 80px; // Espacio para el total fijo en bottom
   --color: var(--text-primary);
 }
@@ -75,7 +75,7 @@ ion-content {
         justify-content: center;
         gap: 8px;
         padding: 12px 24px;
-        background: linear-gradient(135deg, var(--primary-color), #9d5fff);
+        background: linear-gradient(135deg, var(--primary-color), #FAA307);
         color: var(--background-dark);
         border: none;
         border-radius: 12px;
@@ -83,7 +83,7 @@ ion-content {
         font-size: 16px;
         cursor: pointer;
         transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(187, 134, 252, 0.3);
+        box-shadow: 0 4px 15px #FAA307;
         text-transform: uppercase;
         letter-spacing: 0.5px;
         
@@ -93,8 +93,8 @@ ion-content {
         }
         
         &:hover:not(:disabled) {
-          background: linear-gradient(135deg, #d4a5ff, #b085ff);
-          box-shadow: 0 6px 25px rgba(187, 134, 252, 0.5);
+          background: linear-gradient(135deg, #FFBA08, #FFBA08);
+          box-shadow: 0 6px 25px #FFBA08;
           transform: translateY(-2px);
           
           ion-icon {

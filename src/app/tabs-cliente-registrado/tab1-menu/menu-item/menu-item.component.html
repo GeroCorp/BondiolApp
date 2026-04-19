@@ -1,6 +1,6 @@
 <div class="main-container">
   <ion-card class="ion-padding">
-      <ion-button (click)="onClose()" >
+      <ion-button (click)="onClose()">
         <ion-icon slot="icon-only" name="close-outline"></ion-icon>
       </ion-button>
 
@@ -48,7 +48,7 @@
             <ion-icon name="add-outline"></ion-icon>
           </ion-button>
         </div>
-        <ion-button (click)="onAddItem()" color="primary">
+        <ion-button (click)="onAddItem()" color="secondary">
           <ion-icon slot="start" name="add"></ion-icon>
           Agregar ({{ (itemsArray[currentItemIndex]?.precio * quantity) | currency:'$':'symbol':'1.0-0' }})
         </ion-button>

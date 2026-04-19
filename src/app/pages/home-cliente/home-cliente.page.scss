@@ -1,12 +1,12 @@
 // TEMA OSCURO - Home Cliente
 // Variables del tema oscuro
 :host {
-  --background-dark: #1a1a1a;
-  --surface-dark: #2d2d2d;
+  --background-dark: #370617;
+  --surface-dark: #6A040F;
   --surface-variant: #3a3a3a;
   --text-primary: #ffffff;
   --text-secondary: #b3b3b3;
-  --primary-color: #bb86fc;
+  --primary-color: #F48C06;
   --secondary-color: #8b0000;
   --accent-color: #ff6b47;
   --error-color: #cf6679;
@@ -22,7 +22,7 @@ ion-toolbar{
 
 // Fondo con gradiente oscuro igual al de admin/mozo
 .cliente-content {
-  --background: linear-gradient(180deg, var(--background-dark) 0%, var(--surface-dark) 50%, #1a3a5a 100%);
+  --background: linear-gradient(180deg, var(--background-dark) 0%, var(--surface-dark) 50%, #9D0208 100%);
   --color: var(--text-primary);
   --padding-bottom: 80px; // Espacio extra al final para scroll
 }
@@ -57,7 +57,7 @@ ion-toolbar{
         display: flex;
         align-items: center;
         gap: 15vw;
-        background: linear-gradient(145deg, #2a2a2a, #1e1e1e);
+        background: linear-gradient(145deg, #6A040F, #370617);
         border-radius: 16px;
         padding: 20px;
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1);

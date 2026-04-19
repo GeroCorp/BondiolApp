@@ -1,12 +1,12 @@
 // TEMA OSCURO - Ingreso Anónimo
 // Variables del tema oscuro
 :host {
-  --background-dark: #1a1a1a;
-  --surface-dark: #2d2d2d;
-  --surface-variant: #3a3a3a;
+  --background-dark: #370617;
+  --surface-dark: #6A040F;
+  --surface-variant: #D00000 ;
   --text-primary: #ffffff;
   --text-secondary: #b3b3b3;
-  --primary-color: #bb86fc;
+  --primary-color: #F48C06;
   --secondary-color: #03dac6;
   --accent-color: #ff6b47;
   --error-color: #cf6679;
@@ -35,7 +35,7 @@ ion-header {
 
 // Contenido con gradiente oscuro
 ion-content {
-  --background: linear-gradient(180deg, var(--background-dark) 0%, var(--surface-dark) 50%, #1a3a5a 100%);
+  --background: linear-gradient(180deg, var(--background-dark) 0%, var(--surface-dark) 50%, #9D0208 100%);
   --color: var(--text-primary);
 }
 

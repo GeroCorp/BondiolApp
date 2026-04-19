@@ -72,7 +72,7 @@
           <ion-icon 
             [name]="getIconoTipo(detalle.tipo)" 
             slot="start" 
-            [color]="detalle.tipo === 'bebida' ? 'primary' : detalle.tipo === 'postre' ? 'secondary' : 'tertiary'">
+            [color]="detalle.tipo === 'bebida' ? 'secondary' : detalle.tipo === 'postre' ? 'success' : 'success'">
           </ion-icon>
           
           <ion-label>
@@ -82,7 +82,7 @@
               <span class="precio-unitario">${{ detalle.precio_unitario }} c/u</span>
             </p>
             <p class="tipo">
-              <ion-text [color]="detalle.tipo === 'bebida' ? 'primary' : detalle.tipo === 'postre' ? 'secondary' : 'tertiary'">
+              <ion-text [color]="detalle.tipo === 'bebida' ? 'secondary' : detalle.tipo === 'postre' ? 'success' : 'success'">
                 {{ detalle.tipo | titlecase }}
               </ion-text>
             </p>

@@ -139,7 +139,7 @@
 
         <!-- Información adicional según estado -->
         <div class="info-adicional" *ngIf="pedido.estado === 'en_preparacion'">
-          <ion-chip color="tertiary">
+          <ion-chip color="warning">
             <ion-icon name="time-outline"></ion-icon>
             <ion-label>Tu pedido se está preparando</ion-label>
           </ion-chip>
@@ -153,7 +153,7 @@
         </div>
 
         <div class="info-adicional" *ngIf="pedido.estado === 'entregado'">
-          <ion-chip color="primary">
+          <ion-chip color="secondary">
             <ion-icon name="happy-outline"></ion-icon>
             <ion-label>Pedido entregado - ¡Buen provecho!</ion-label>
           </ion-chip>
