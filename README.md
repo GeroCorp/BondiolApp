@@ -30,6 +30,11 @@ En orden son: Mesa 8, Mesa 7, Mesa 6, Mesa 5\
 Fecha de inicio: 28/03
 Fecha de finalización: 08/04
 
+- Creación de nuevo acceso rapido
+
+Fecha de inicio: 10/04
+Fecha de finalizacion: 15/04
+
 ## Borda Victoria
 - Baja en base de datos de platos
 - Arreglos en UI
@@ -38,9 +43,24 @@ Fecha de finalización: 08/04
 Fecha de inicio: 28/03
 Fecha de finalización: 08/04
 
+- Arreglos de invitado
+- Nueva paleta de colores
+- Arreglos en pagina home
+
+Fecha de inicio: 10/04
+Fecha de finalizacion: 17/04
+
 ## Corpus Geronimo
 - Inicio de sesión
 - Accesos rapido a usuarios
 
 Fecha de inicio: 28/03
 Fecha de finalización: 08/04
+
+- Generación de componentes
+- Optimización de archivos
+- Cambio de estilos
+
+Fecha de inicio: 10/04
+Fecha de finalizacion: 16/04
+

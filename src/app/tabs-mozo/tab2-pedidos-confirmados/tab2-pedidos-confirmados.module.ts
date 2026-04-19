@@ -7,12 +7,17 @@ import { Tab2PedidosConfirmadosPageRoutingModule } from './tab2-pedidos-confirma
 import { Tab2PedidosConfirmadosPage } from './tab2-pedidos-confirmados.page';
 import { DetallePedidoModalComponent } from './detalle-pedido-modal/detalle-pedido-modal.component';
 
+import { MainButtonComponent } from 'src/app/components/main-button/main-button.component';
+import { SecondaryButtonComponent } from 'src/app/components/secondary-button/secondary-button.component';
+
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    Tab2PedidosConfirmadosPageRoutingModule
+    Tab2PedidosConfirmadosPageRoutingModule,
+    MainButtonComponent,
+    SecondaryButtonComponent
   ],
   declarations: [
     Tab2PedidosConfirmadosPage,

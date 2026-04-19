@@ -1,3 +1,5 @@
+@import "../../../theme/tabs-shared.scss";
+
 ion-header {
   ion-toolbar {
     --background: linear-gradient(135deg, #8b0000, #a52a2a, #b22222);
@@ -27,6 +29,15 @@ ion-header {
     }
   }
 }
+
+ion-content {
+  
+  /* Apuntamos a la parte interna del componente para anular el padding */
+  &::part(scroll) {
+    padding-bottom: 85px !important;
+  }
+}
+
 
 // Contenedor del segment scrollable
 .segment-container {
@@ -194,11 +205,6 @@ ion-segment {
     padding: 8px 32px; // Menos padding en móviles
   }
 }
-
-ion-content {
-  --background: linear-gradient(180deg, #370617 0%, #6A040F 40%, #9D0208 100%);
-}
-
 .loading-container {
   display: flex;
   flex-direction: column;

@@ -70,8 +70,9 @@ ion-input {
   flex-direction: column;
   justify-content: center;
   flex: 1;
-  padding: 24px 0 40px;
-  min-height: auto;
+  padding: 24px 16px 40px;
+  min-height: 100%;
+  width: 100%;
 }
 
 /* Card de acceso rápido integrada */

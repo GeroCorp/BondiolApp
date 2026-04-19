@@ -10,9 +10,6 @@
       <ion-button (click)="recargar()">
         <ion-icon name="refresh-outline"></ion-icon>
       </ion-button>
-      <ion-button (click)="test()">
-        <ion-icon name="mail-outline"></ion-icon>
-      </ion-button>
     </ion-buttons>
   </ion-toolbar>
 
@@ -117,14 +114,18 @@
 
         <!-- Acciones según estado LISTO -->
         <div class="botones-accion" *ngIf="pedido.estado === 'listo'">
-          <ion-button
+          <!-- <ion-button
             expand="block"
             color="success"
             (click)="marcarEntregado(pedido)"
           >
             <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
             Marcar como entregado
-          </ion-button>
+          </ion-button> -->
+          <app-main-button
+          (click)="marcarEntregado(pedido)">
+            Marcar como entregado
+          </app-main-button>
         </div>
 
         <!-- Info cuando está ENTREGADO -->
@@ -148,7 +149,7 @@
             </ion-card-content>
           </ion-card>
           
-          <ion-button
+          <!-- <ion-button
             expand="block"
             color="success"
             size="large"
@@ -156,14 +157,20 @@
           >
             <ion-icon name="checkmark-circle" slot="start"></ion-icon>
             Confirmar Pago y Liberar Mesa
-          </ion-button>
+          </ion-button> -->
+          <!-- Ver detalle -->
+          <app-secondary-button (click)="verDetalle(pedido)">
+            <ion-icon name="eye-outline" slot="start"></ion-icon>
+            Ver detalle completo
+          </app-secondary-button>
+
+          <app-main-button
+            (click)="confirmarPago(pedido)">
+            Confirmar Pago y Liberar Mesa
+          </app-main-button>
+
         </div>
 
-        <!-- Ver detalle -->
-        <ion-button expand="block" fill="outline" (click)="verDetalle(pedido)">
-          <ion-icon name="eye-outline" slot="start"></ion-icon>
-          Ver detalle completo
-        </ion-button>
       </ion-card-content>
     </ion-card>
   </div>

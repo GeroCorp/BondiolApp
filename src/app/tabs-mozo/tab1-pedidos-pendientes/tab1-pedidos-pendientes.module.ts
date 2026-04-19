@@ -6,12 +6,17 @@ import { IonicModule } from '@ionic/angular';
 import { Tab1PedidosPendientesPageRoutingModule } from './tab1-pedidos-pendientes-routing.module';
 import { Tab1PedidosPendientesPage } from './tab1-pedidos-pendientes.page';
 
+import { MainButtonComponent } from 'src/app/components/main-button/main-button.component';
+import { SecondaryButtonComponent } from 'src/app/components/secondary-button/secondary-button.component';
+
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    Tab1PedidosPendientesPageRoutingModule
+    Tab1PedidosPendientesPageRoutingModule,
+    MainButtonComponent,
+    SecondaryButtonComponent
   ],
   declarations: [Tab1PedidosPendientesPage]
 })
