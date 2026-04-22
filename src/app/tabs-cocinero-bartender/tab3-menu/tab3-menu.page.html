@@ -43,9 +43,64 @@
           @if (perfil === 'cocinero') {
           @if (platos().length > 0) {
             @for (item of platos(); track $index) {
-              <ion-item class="menu-item">
-                <ion-thumbnail slot="start">
-                  <div class="image-container">
+  <ion-card class="menu-card">
+
+<div class="carousel">
+
+  <div 
+    class="slide"
+    *ngFor="let img of getAllImages(item.imagenes)"
+  >
+    <div class="image-container">
+
+      <ion-spinner 
+        *ngIf="imageLoadingStates[getImageId(img, 'plato')]" 
+        name="crescent" 
+        class="image-spinner">
+      </ion-spinner>
+
+      <img 
+        [src]="img"
+        [alt]="item.nombre"
+        (load)="onImageDidLoad(getImageId(img, 'plato'))"
+        (error)="handleImageError($event, getImageId(img, 'plato'))"
+      />
+
+    </div>
+  </div>
+
+</div>
+
+    <ion-card-header>
+      <ion-card-title>
+        {{ item.nombre }} - ${{ item.precio }}
+      </ion-card-title>
+      <ion-card-subtitle>
+        Tiempo: {{ item.tiempo }} min
+      </ion-card-subtitle>
+    </ion-card-header>
+    <ion-card-content>
+      <p>{{ item.descripcion }}</p>
+      <div class="image-count" *ngIf="getAllImages(item.imagenes).length > 1">
+        <ion-icon name="images-outline"></ion-icon>
+        {{ getAllImages(item.imagenes).length }} fotos
+      </div>
+
+<!-- AREVISAR SI DEJAR O SACAR  -->
+      <ion-button 
+        expand="block"
+        color="danger"
+        (click)="eliminarPlato(item)">
+        <ion-icon name="trash-outline" slot="start"></ion-icon>
+        Eliminar
+      </ion-button>
+
+
+  </ion-card-content>
+
+  </ion-card>
+              <!-- <ion-item class="menu-item ion-text-wrap">
+                  <div class="image-container full-width">
                     <ion-spinner 
                       *ngIf="imageLoadingStates[getImageId(item, 'plato')]" 
                       name="crescent" 
@@ -59,7 +114,7 @@
                       (ionError)="handleImageError($event, getImageId(item, 'plato'))">
                     </ion-img>
                   </div>
-                </ion-thumbnail>
+          
                 <ion-label>
                   <h2>{{ item.nombre }} - ${{ item.precio }}</h2>
                   <p>{{ item.descripcion }}</p>
@@ -76,7 +131,7 @@
                   <ion-icon name="trash-outline"></ion-icon>
                 </ion-button>
               </ion-buttons>
-              </ion-item>
+              </ion-item> -->
             }
           } @else {
             <div class="empty-state">

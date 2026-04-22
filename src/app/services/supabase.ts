@@ -609,6 +609,8 @@ export class AuthService {
       numero: mesa.numero,
       cantidad: mesa.capacidad,
       tipo: mesa.tipo,
+      qr_url: mesa.qr_url,
+      foto: mesa.foto_url
     });
   }
   // Obtener cliente loggeado
@@ -1475,4 +1477,34 @@ static resetAuthListener() {
   AuthService.authListenerInitialized = false;
 }
 
+async subirImagenMesa(numero: number, file: Blob): Promise<string> {
+  try {
+    const filePath = `mesas/mesa_${numero}_${Date.now()}.jpg`;
+
+    const { error } = await this.supabase.storage
+      .from('mesas') // 👈 nombre del bucket
+      .upload(filePath, file, {
+        contentType: 'image/jpeg',
+        upsert: true
+      });
+
+    if (error) {
+      console.error('Error subiendo imagen:', error);
+      throw error;
+    }
+
+    // Obtener URL pública
+    const { data } = this.supabase.storage
+      .from('mesas')
+      .getPublicUrl(filePath);
+
+    return data.publicUrl;
+
+  } catch (err) {
+    console.error('Error en subirImagenMesa:', err);
+    throw err;
+  }
 }
+
+}
+

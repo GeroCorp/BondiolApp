@@ -4,6 +4,7 @@ import { CustomLoaderService } from 'src/app/services/custom-loader.service';
 import { PerfilService } from 'src/app/services/perfilService';
 import { AuthService } from 'src/app/services/supabase';
 
+
 @Component({
   selector: 'app-tab3-menu',
   templateUrl: './tab3-menu.page.html',
@@ -25,7 +26,8 @@ export class Tab3MenuPage implements OnInit {
     private perfilService: PerfilService,
     private authService: AuthService,
     private alertCtrl: AlertController,
-    private customLoaderService: CustomLoaderService
+    private customLoaderService: CustomLoaderService,
+
   ) { 
     this.perfil = this.perfilService.getPerfil();
     console.log('Perfil recibido en Tabs cocinero/bartender:', this.perfil);
