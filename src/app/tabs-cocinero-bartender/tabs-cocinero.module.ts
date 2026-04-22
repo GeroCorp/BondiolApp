@@ -13,7 +13,8 @@ import { TabsCocineroPage } from './tabs-cocinero.page';
     CommonModule,
     FormsModule,
     IonicModule,
-    TabsCocineroPageRoutingModule
+    TabsCocineroPageRoutingModule,
+
   ],
   declarations: [TabsCocineroPage]
 })

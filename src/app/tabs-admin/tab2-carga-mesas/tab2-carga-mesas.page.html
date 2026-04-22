@@ -36,6 +36,13 @@
             <ion-select-option value="movilidad reducida">Movilidad reducida</ion-select-option>
           </ion-select>
         </ion-item>
+        <ion-button expand="block" (click)="tomarFoto()">
+          Tomar foto
+        </ion-button>
+
+        <div *ngIf="mesaForm.get('foto')?.value" class="image-container">
+          <img [src]="mesaForm.get('foto')?.value" alt="Foto mesa" />
+        </div>
 
       <ion-button (click)="generateQR()" expand="block" fill="clear" shape="round">
         Generar QR

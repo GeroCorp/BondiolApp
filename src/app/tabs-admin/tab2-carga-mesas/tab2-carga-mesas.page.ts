@@ -6,6 +6,7 @@ import { SafeUrl } from '@angular/platform-browser';
 import { PerfilService } from 'src/app/services/perfilService';
 import { CustomLoaderService } from 'src/app/services/custom-loader.service';
 import { Router } from '@angular/router';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 
 
 @Component({
@@ -19,9 +20,10 @@ export class Tab2CargaMesasPage {
   @ViewChild('qrContainer', { static: false }) qrCodeCanvas!: ElementRef;
 
   mesaForm: FormGroup;
-
+  
   email: string | null = null;
   perfil: string | null = null;
+
 
   qrData: string = "";
 
@@ -40,7 +42,8 @@ export class Tab2CargaMesasPage {
     this.mesaForm = this.fb.group({
       numero: ['', [Validators.required, Validators.min(1), Validators.max(100)]],
       capacidad: ['', [Validators.required, Validators.min(1), Validators.max(30)]],
-      tipo: ['', Validators.required]
+      tipo: ['', Validators.required],
+      foto: [null, Validators.required]
 
     });
   }
@@ -50,7 +53,8 @@ export class Tab2CargaMesasPage {
   private validatorsMessages: { [key: string]: string } = {
     numero: 'El número de mesa es obligatorio.',
     capacidad: 'La capacidad debe estar entre 1 y 30 personas.',
-    tipo: 'Debe seleccionar tipo de mesa.'
+    tipo: 'Debe seleccionar tipo de mesa.',
+    foto: 'Debe tomar una foto de la mesa.'
 
   };
 
@@ -83,7 +87,7 @@ export class Tab2CargaMesasPage {
 
 
   generateQR () {
-    const {numero, capacidad, tipo } = this.mesaForm.value;
+    const {numero, capacidad, tipo} = this.mesaForm.value;
 
     // Verificar que los campos necesarios estén completos
     if (numero && capacidad && tipo) {
@@ -116,24 +120,28 @@ export class Tab2CargaMesasPage {
       return;
     }
 
-      const { numero, capacidad, tipo } = this.mesaForm.value;
+      const { numero, capacidad, tipo,foto } = this.mesaForm.value;
       if (!this.qrData) {
         this.showToast('Generar el QR antes de crear la mesa', 'danger');
         this.customLoaderService.hide();
         throw new Error('QR no generado');
       }
-
       // Obtener la imagen del QR en base64 desde el canvas
       const qrBlob = this.getQRBlob();
       const qrUrl = await this.authService.subirQRmesa(numero, qrBlob!);
+      
+    
+      const fotoBlob = this.authService.dataURLtoBlob(foto);
+      const fotoUrl = await this.authService.subirImagenMesa(numero, fotoBlob);
 
-
-
+    
+      
       const mesaData ={
         numero,
         capacidad,
         tipo,
-        qr: qrUrl
+        qr_url: qrUrl,
+        foto_url: fotoUrl,
       }
       console.log('Datos de la mesa a crear:', mesaData);
 
@@ -198,4 +206,15 @@ export class Tab2CargaMesasPage {
   return this.authService.dataURLtoBlob(canvas64); // Devuelve la conversion a blob
 }
 
+  async tomarFoto() {
+    const image = await Camera.getPhoto({
+      quality: 80,
+      allowEditing: false,
+      resultType: CameraResultType.DataUrl,
+      source: CameraSource.Camera
+    });
+    this.mesaForm.patchValue({
+    foto: image.dataUrl 
+  })     
+  }
 }
