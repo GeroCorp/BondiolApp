@@ -77,7 +77,7 @@ export class RegistrarClientePage {
 
     try {
       // Registrar cliente en auth
-       const {data: user, error: authError } = await this.authService.registerCliente(email, password)
+       const {data: user, error: authError } = await this.authService.registerCliente(email, password, dni)
 
        if (authError) {
          console.error('Error al crear cuenta Auth:', authError.message);

@@ -82,11 +82,11 @@ export class RegisterPage {
 
     try {
       // 1. Crear usuario en Auth
-      const { data: user, error: authError } = await this.authService.registerCliente(email, password);
+      const { data: user, error: authError } = await this.authService.registerCliente(email, password, dni);
 
       if (authError) {
         await this.customLoader.hide();
-        console.error('Error al crear cuenta Auth:', authError.message);
+        console.error('Error al crear cuenta Auth:', authError.code, authError.message);
         await this.hapticService.vibrateError();
         this.showToast('Error al crear usuario', 'danger');
         return;
@@ -147,11 +147,11 @@ export class RegisterPage {
       this.showToast('Espere la confirmación de registro por mail.', 'success');
       this.router.navigate(['/login'], { replaceUrl: true });
 
-    } catch (error) {
+    } catch (error: any) {
       await this.customLoader.hide();
-      console.error('Error en el registro:', error);
       await this.hapticService.vibrateError();
-      this.showToast('Error en el registro. Intente nuevamente.', 'danger');
+      console.error(error.message);
+      this.authErrorMessage(error);
     }
   }
 
@@ -200,7 +200,10 @@ export class RegisterPage {
       quality: 80,
       allowEditing: false,
       resultType: CameraResultType.DataUrl,
-      source: CameraSource.Camera
+      source: CameraSource.Prompt,
+      promptLabelHeader: 'Elija una opción',
+      promptLabelPhoto: 'Elegir de galería',
+      promptLabelPicture: 'Tomar foto',
     });
     this.foto = image.dataUrl!;       // base64 para subir
   }
@@ -228,5 +231,16 @@ export class RegisterPage {
     }
   }  volverLogin(){
     this.router.navigate(['/login'], { replaceUrl: true });
+  }
+  private async authErrorMessage(error: any) {
+    await this.hapticService.vibrateError();
+
+    if (error.code == "user_already_exists") {
+      this.showToast('El correo ya está re  gistrado.', 'danger');
+    }
+    if (error.message.includes('DNI')) {
+      this.showToast('El DNI ya está registrado.', 'danger');
+    }
+
   }
 }

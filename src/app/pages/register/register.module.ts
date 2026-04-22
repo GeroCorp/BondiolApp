@@ -8,13 +8,18 @@ import { RegisterPageRoutingModule } from './register-routing.module';
 
 import { RegisterPage } from './register.page';
 
+import { MainButtonComponent } from 'src/app/components/main-button/main-button.component';
+import { SecondaryButtonComponent } from 'src/app/components/secondary-button/secondary-button.component';
+
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
     RegisterPageRoutingModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    MainButtonComponent,
+    SecondaryButtonComponent
 ],
   declarations: [RegisterPage]
 })

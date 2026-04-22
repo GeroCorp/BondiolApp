@@ -35,13 +35,6 @@ toolbar-logo-title {
     vertical-align: middle;
   }
 }
-
-ion-input {
-  flex: 1; /* ocupa todo el ancho disponible */   
-  --background: rgba(55, 6, 23, 0.6);
-  --color: #ffffff;
-  --font-size: 2rem; 
-}
 /* contenedor del input + botón */
 .password-container {
   position: relative;

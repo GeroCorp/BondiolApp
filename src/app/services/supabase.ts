@@ -523,13 +523,33 @@ export class AuthService {
     return Array.isArray(data) ? data : [];
   }
   
+// Verificar existencia del DNI en la base de datos
+ async existsDni(dni: number, tabla: 'clientes' | 'empleados') {
+    const { data, error } = await this.supabase.from(tabla)
+    .select('*')
+    .eq('dni', dni)
+
+    if (error){
+      throw new Error('Error al verificar DNI: ' + error.message);
+    }
+    return data && data.length > 0; // Si el array tiene elementos, el DNI existe
+ }
+
   // 🔑 Registro Cliente
-  async registerCliente(email: string, password: string) {
+  async registerCliente(email: string, password: string, dni: number) {
+    const dniExists = await this.existsDni(dni, 'clientes');
+    if (dniExists) {
+      throw new Error('El DNI ya está registrado.');
+    }
     return await this.supabase.auth.signUp({ email, password });
   }
 
-  // 🔑 Registro de nuevo empleado (sólo email y password)
-  async registrarEmpleado(email: string, password: string) {
+  // Primero debe verificar si existe el dni en la tabla clientes
+  async registrarEmpleado(email: string, password: string, dni: number) {
+    const dniExists = await this.existsDni(dni, 'empleados');
+    if (dniExists) {
+      throw new Error('El DNI ya está registrado.');
+    }
     return await this.supabase.auth.signUp({ email, password });
   }
   
@@ -670,7 +690,6 @@ export class AuthService {
     foto?: string | null;
     user_id?: string | null;
   }) {
-    console.log(cliente);
     const { data, error} = await this.supabase.from('clientes').insert([
       {
         nombre: cliente.nombre,
@@ -682,12 +701,10 @@ export class AuthService {
         estado: 'pendiente' // Nuevo cliente siempre inicia como pendiente
       }
     ]).select();
-    console.log("✅ Cliente insertado con exito: ", data);
-    if (error) {
-      console.error('Error al insertar cliente:', error.message);
-      
+    if (error) {      
       throw new Error('Error al insertar cliente: ' + error.message);
     }
+    console.log("✅ Cliente insertado con exito: ", data);
     return data ?? null;
   }
 

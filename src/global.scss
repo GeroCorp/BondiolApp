@@ -86,22 +86,22 @@ ion-card{
 
   ion-card-content {
     padding: 0 20px 30px;
-
-    form {
-      ion-input {
-        --background: rgba(255,255,255,0.05);
-        --color: #ffffff;
-        --placeholder-color: rgba(255,255,255,0.6);
-        --border-color: rgba(255,107,71,0.3);
-        --border-radius: 12px;
-        margin-bottom: 16px;
-
-        &.ion-focused {
-          --border-color: #ff6b47;
-          --background: rgba(255,255,255,0.08);
-        }
+    
+    ion-input {
+      --background: rgba(255,255,255,0.05);
+      --color: #ffffff;
+      --placeholder-color: rgba(255,255,255,0.6);
+      --border-color: rgba(255,107,71,0.3);
+      --border-radius: 12px;
+      margin-bottom: 16px;
+      
+      &.ion-focused {
+        --border-color: #ff6b47;
+        --background: rgba(255,255,255,0.08);
       }
-
+    }
+    form {
+    
       ion-button[fill="clear"] {
         --color: rgba(255,255,255,0.7);
         position: absolute;
@@ -113,16 +113,6 @@ ion-card{
     }
   }
 }
-
-
-// No funciona bien
-// .no-scroll-padding {
-//     --padding-start: 0;
-//     --padding-end: 0;
-//     --padding-top: 10px;
-//     --padding-bottom: 0;
-//     --overflow: hidden auto; /* solo scroll si hace falta */
-// }
 
 :host {
   --background-dark: #370617;

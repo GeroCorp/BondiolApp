@@ -105,7 +105,7 @@ export class Tab1CargaEmpleadoPage {
 
     try {
       // 1️⃣ Crear cuenta en Supabase Auth
-      const { data: user, error: authError } = await this.supabaseService.registrarEmpleado(email, clave);
+      const { data: user, error: authError } = await this.supabaseService.registrarEmpleado(email, clave, resto.dni);
 
       if (authError) {
         console.error('Error al crear cuenta Auth:', authError.message);
