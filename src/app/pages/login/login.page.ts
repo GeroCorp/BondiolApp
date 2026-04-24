@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ToastController } from '@ionic/angular';
@@ -29,7 +29,8 @@ export class LoginPage {
     private authService: AuthService,
     private clienteService: ClienteService,
     private tipoClienteService: TipoClienteService,
-    private socialAuthService: SocialAuthService 
+    private socialAuthService: SocialAuthService,
+    private cdr: ChangeDetectorRef
   ) {
     this.loginForm = this.formBuilder.group({
       email: ['', [Validators.required, Validators.email]],
@@ -41,8 +42,14 @@ export class LoginPage {
     this.passwordVisible = !this.passwordVisible;
   }
 
+  ionViewDidEnter() {
+    this.quickAccessOpen = false;
+    this.cdr.detectChanges();
+  }
+
   toggleQuickAccess() {
     this.quickAccessOpen = !this.quickAccessOpen;
+    this.cdr.detectChanges();
   }
 
   closeQuickAccess() {
