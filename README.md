@@ -29,18 +29,22 @@ En orden son: Mesa 8, Mesa 7, Mesa 6, Mesa 5\
 
 Fecha de inicio: 28/03
 Fecha de finalización: 08/04
-
+#
 - Creación de nuevo acceso rapido
 
 Fecha de inicio: 10/04
 Fecha de finalizacion: 15/04
-
+#
 - Nueva UI en home de cliente
 - Nuevo acceso rapido arreglado
 
 Fecha de inicio: 18/04
 Fecha de finalizacion: 24/04
+#
+- Actualizar UI de perfiles
 
+Fecha de inicio: 27/04
+Fecha de finalizacion:
 
 ## Borda Victoria
 - Baja en base de datos de platos
@@ -49,19 +53,26 @@ Fecha de finalizacion: 24/04
 
 Fecha de inicio: 28/03
 Fecha de finalización: 08/04
-
+#
 - Arreglos de invitado
 - Nueva paleta de colores
 - Arreglos en pagina home
 
 Fecha de inicio: 10/04
 Fecha de finalizacion: 17/04
-
+#
 - Agregado de carrusel
 - Arreglo en cuenta invitado
 
 Fecha de inicio: 20/04
 Fecha de finalizacion: 25/04
+#
+- Arreglos en menús de (Cocinero, Mozo, etc)
+- Nuevo Splash dinamico
+- Nuevo logo
+
+Fecha de inicio: 26/04
+Fecha de finalizacion: 30/04
 
 
 ## Corpus Geronimo
@@ -70,17 +81,22 @@ Fecha de finalizacion: 25/04
 
 Fecha de inicio: 28/03
 Fecha de finalización: 08/04
-
+#
 - Generación de componentes
 - Optimización de archivos
 - Cambio de estilos
 
 Fecha de inicio: 10/04
 Fecha de finalizacion: 16/04
-
+#
 - Actualización a nueva UI
 - Arreglar inserción de cuentas a la BD
 
 Fecha de inicio: 18/04
 Fecha de finalizacion: 24/04
+#
+- Arreglar UI de registro
+- Actualizar pantalla Inicio de Sesión
 
+Fecha de inicio: 27/04
+Fecha de finalizacion: 30/04
