@@ -18,6 +18,7 @@
     "android:build:gradle": "npm run build:optimized && npx cap sync android && cd android && gradlew clean assembleRelease",
     "android:build:debug": "npm run build:optimized && npx cap sync android && cd android && ./gradlew clean assembleDebug",
     "sync": "ionic build && npx cap sync && echo '===========================  ✅  Sync completed  ✅ ==========================='"
+    "build:vercel": "npm uninstall @capacitor/android && ionic build --prod"
   },
   "private": true,
   "dependencies": {
