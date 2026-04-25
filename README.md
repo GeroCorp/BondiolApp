@@ -35,6 +35,13 @@ Fecha de finalización: 08/04
 Fecha de inicio: 10/04
 Fecha de finalizacion: 15/04
 
+- Nueva UI en home de cliente
+- Nuevo acceso rapido arreglado
+
+Fecha de inicio: 18/04
+Fecha de finalizacion: 24/04
+
+
 ## Borda Victoria
 - Baja en base de datos de platos
 - Arreglos en UI
@@ -50,6 +57,13 @@ Fecha de finalización: 08/04
 Fecha de inicio: 10/04
 Fecha de finalizacion: 17/04
 
+- Agregado de carrusel
+- Arreglo en cuenta invitado
+
+Fecha de inicio: 20/04
+Fecha de finalizacion: 25/04
+
+
 ## Corpus Geronimo
 - Inicio de sesión
 - Accesos rapido a usuarios
@@ -63,4 +77,10 @@ Fecha de finalización: 08/04
 
 Fecha de inicio: 10/04
 Fecha de finalizacion: 16/04
+
+- Actualización a nueva UI
+- Arreglar inserción de cuentas a la BD
+
+Fecha de inicio: 18/04
+Fecha de finalizacion: 24/04
 
