@@ -1,146 +1,91 @@
 <ion-header>
   <ion-toolbar>
+    <!-- Espaciador izquierdo del mismo ancho que el botón derecho -->
+    <ion-buttons slot="start">
+      <ion-button class="logout-btn invisible">
+        <ion-icon name="exit-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+
     <ion-title class="ion-text-center">
       <img src="assets/icon/icon-only.png" alt="Logo" width="85">
     </ion-title>
+
+    <ion-buttons slot="end">
+      <ion-button (click)="logout()" class="logout-btn" title="Cerrar sesión">
+        <ion-icon name="exit-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="home-content">
+<ion-content>
   <div class="home-wrapper">
-    <!-- Bienvenida -->
+
     @if (perfil()) {
 
-    <!-- Dueño / Supervisor -->
-    <ion-card *ngIf="perfil() === 'dueño' || perfil() === 'supervisor'" class="main-card">
-      <ion-card-header>
-        <ion-card-title>Gestión General</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <app-secondary-button (btnClick)="agregarEmpleado()" [clase]="'menu-option'">
-           Agregar empleado
-        </app-secondary-button>
-        <app-secondary-button (btnClick)="agregarMesa()" [clase]="'menu-option'">
-           Agregar mesa
-        </app-secondary-button>
-        <app-secondary-button (btnClick)="adminMesa()" [clase]="'menu-option'">
-          Administrar mesas
-        </app-secondary-button>
-        <app-secondary-button (btnClick)="adminCliente()" [clase]="'menu-option'">
-          Administrar clientes
-        </app-secondary-button>
-        <app-secondary-button (btnClick)="gestionarDelivery()" [clase]="'menu-option'">
-          Gestionar Delivery
-        </app-secondary-button>
-        <app-secondary-button (btnClick)="verReservasAdmin()" [clase]="'menu-option'" >
-          Administrar reservas
-        </app-secondary-button>
-      </ion-card-content>
-    </ion-card>
+      <!-- Dueño / Supervisor -->
+      <ion-card *ngIf="perfil() === 'dueño' || perfil() === 'supervisor'">
+        <ion-card-header>
+          <ion-card-title>Gestión General</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <app-secondary-button (btnClick)="agregarEmpleado()" [clase]="'menu-option'">Agregar empleado</app-secondary-button>
+          <app-secondary-button (btnClick)="agregarMesa()" [clase]="'menu-option'">Agregar mesa</app-secondary-button>
+          <app-secondary-button (btnClick)="adminMesa()" [clase]="'menu-option'">Administrar mesas</app-secondary-button>
+          <app-secondary-button (btnClick)="adminCliente()" [clase]="'menu-option'">Administrar clientes</app-secondary-button>
+          <app-secondary-button (btnClick)="gestionarDelivery()" [clase]="'menu-option'">Gestionar Delivery</app-secondary-button>
+          <app-secondary-button (btnClick)="verReservasAdmin()" [clase]="'menu-option'">Administrar reservas</app-secondary-button>
+        </ion-card-content>
+      </ion-card>
 
-    <!-- Cocinero / Bartender -->
-    <ion-card *ngIf="perfil() === 'cocinero' || perfil() === 'bartender'">
+      <!-- Cocinero / Bartender -->
+      <ion-card *ngIf="perfil() === 'cocinero' || perfil() === 'bartender'">
+        <ion-card-content>
+          <app-secondary-button *ngIf="perfil() === 'cocinero'" (btnClick)="agregarProducto()" [clase]="'menu-option'">Agregar plato</app-secondary-button>
+          <app-secondary-button (btnClick)="verMenu()" [clase]="'menu-option'">Ver menú</app-secondary-button>
+          <app-secondary-button *ngIf="perfil() === 'bartender'" (btnClick)="agregarProducto()" [clase]="'menu-option'">Agregar bebida</app-secondary-button>
+          <app-secondary-button (btnClick)="recibirPedidos()" [clase]="'menu-option'">Ver pedidos recibidos</app-secondary-button>
+        </ion-card-content>
+      </ion-card>
 
-      <ion-card-content>
-        <app-secondary-button
-          *ngIf="perfil() === 'cocinero'"
-          (btnClick)="agregarProducto()"
-          [clase]="'menu-option'"
-        >
-           Agregar plato
-        </app-secondary-button>
+      <!-- Maître -->
+      <ion-card *ngIf="perfil() === 'maitre'">
+        <ion-card-header>
+          <ion-card-title>Gestión Maître</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <app-secondary-button (btnClick)="listaEspera()" [clase]="'menu-option'">Lista de espera</app-secondary-button>
+          <app-secondary-button (btnClick)="verMesas()" [clase]="'menu-option'">Mesas</app-secondary-button>
+          <app-secondary-button (btnClick)="clientes()" [clase]="'menu-option'">Registrar Cliente</app-secondary-button>
+        </ion-card-content>
+      </ion-card>
 
-        <app-secondary-button
-          (btnClick)="verMenu()"
-          [clase]="'menu-option'"
-        >
-          Ver menú
-        </app-secondary-button>
+      <!-- Mozo -->
+      <ion-card *ngIf="perfil() === 'mozo'">
+        <ion-card-header>
+          <ion-card-title>Gestión Mozo</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <app-secondary-button (btnClick)="gestionarPedidos()" [clase]="'menu-option'">Gestionar pedidos</app-secondary-button>
+          <app-secondary-button (btnClick)="verPedidosConfirmados()" [clase]="'menu-option'">Pedidos Confirmados</app-secondary-button>
+          <app-secondary-button (btnClick)="verConsultasClientes()" [clase]="'menu-option'">Consultas Clientes</app-secondary-button>
+        </ion-card-content>
+      </ion-card>
 
-        <app-secondary-button
-          *ngIf="perfil() === 'bartender'"
-          (btnClick)="agregarProducto()"
-          [clase]="'menu-option'"
-        >
-           Agregar bebida
-        </app-secondary-button>
+      <!-- Delivery -->
+      <ion-card *ngIf="perfil() === 'delivery'">
+        <ion-card-header>
+          <ion-card-title>Gestión Delivery</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <app-secondary-button (btnClick)="verPedidosDelivery()" [clase]="'menu-option'">Ver pedidos</app-secondary-button>
+          <app-secondary-button (btnClick)="verChatsClientes()" [clase]="'menu-option'">Chat Clientes</app-secondary-button>
+        </ion-card-content>
+      </ion-card>
 
-        <app-secondary-button (btnClick)="recibirPedidos()"
-          [clase]="'menu-option'"
-        >
-          Ver pedidos recibidos
-        </app-secondary-button>
-      </ion-card-content>
-
-      <!-- <ion-card-header>
-        <ion-card-title>Pedidos</ion-card-title>
-      </ion-card-header> -->
-      <!-- <ion-card-content>
-      </ion-card-content> -->
-    </ion-card>
-
-    <!-- Maître -->
-    <!-- Modificar tabs para que queden igual a mozo (eliminar la sección perfil) -->
-    <ion-card *ngIf="perfil() === 'maitre'">
-      <ion-card-header>
-        <ion-card-title>Gestión Maître</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <app-secondary-button (btnClick)="listaEspera()" [clase]="'menu-option'">
-          Lista de espera
-        </app-secondary-button>
-        <app-secondary-button (btnClick)="verMesas()" [clase]="'menu-option'">
-          Mesas
-        </app-secondary-button>
-        <app-secondary-button (btnClick)="clientes()" [clase]="'menu-option'">
-          Registrar Cliente
-        </app-secondary-button>
-      </ion-card-content>
-    </ion-card>
-
-    <!-- Mozo -->
-    <ion-card *ngIf="perfil() === 'mozo'">
-      <ion-card-header>
-        <ion-card-title>Gestión Mozo</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <app-secondary-button (btnClick)="gestionarPedidos()" [clase]="'menu-option'">
-          Gestionar pedidos
-        </app-secondary-button>
-        <app-secondary-button (btnClick)="verPedidosConfirmados()" [clase]="'menu-option'">
-          Pedidos Confirmados
-        </app-secondary-button>
-        <app-secondary-button (btnClick)="verConsultasClientes()" [clase]="'menu-option'">
-          Consultas Clientes
-        </app-secondary-button>
-      </ion-card-content>
-    </ion-card>
-    
-    <!-- Delivery -->
-    <ion-card *ngIf="perfil() === 'delivery'">
-      <ion-card-header>
-        <ion-card-title>Gestión Delivery</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-          
-        <app-secondary-button (btnClick)="verPedidosDelivery()" [clase]="'menu-option'">
-          Ver pedidos
-        </app-secondary-button>
-        <app-secondary-button (btnClick)="verChatsClientes()" [clase]="'menu-option'">
-          Chat Clientes
-        </app-secondary-button>
-      </ion-card-content>
-    </ion-card>
-
-    <!-- Logout -->
-    <div class="container-cerrar-sesion">
-      <app-main-button (btnClick)="logout()">
-        Cerrar sesión
-      </app-main-button>
-    </div>
     } @else if (!perfil && loading()) {
-      <!-- Carga de perfil -->
-      <ion-card>
+      <ion-card class="loading-card">
         <ion-card-header>
           <ion-card-title>Cargando perfil...</ion-card-title>
         </ion-card-header>
@@ -149,5 +94,6 @@
         </ion-card-content>
       </ion-card>
     }
+
   </div>
-</ion-content> 
+</ion-content>

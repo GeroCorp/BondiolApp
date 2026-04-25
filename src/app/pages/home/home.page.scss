@@ -1,186 +1,122 @@
 @import '../../../theme/_tabs-shared.scss';
 
-/* Header rojo oscuro */
+/* ── Header ── */
 ion-header {
   ion-toolbar {
     --background: linear-gradient(135deg, #8b0000, #a52a2a, #b22222);
     --color: #ffffff;
     box-shadow: 0 4px 20px rgba(0,0,0,0.3);
     border-bottom: 1px solid rgba(255,255,255,0.2);
-    --min-height: 60px; /* un poco más alto */
-    
+    --min-height: 60px;
+
     img {
       filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
     }
-    
+
     ion-title {
       font-weight: 700;
-      font-size: 1.3rem; /* más grande */
+      font-size: 1.3rem;
       text-shadow: 0 1px 3px rgba(0,0,0,0.3);
-      
-      ion-icon {
-        color: #ff6b47;
-        margin-right: 10px;
-        font-size: 1.4rem; /* ícono más grande */
-        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-      }
     }
   }
 }
 
+/* ── Botón logout real ── */
+.logout-btn {
+  --color: #ffffff;
+  --padding-end: 12px;
+
+  ion-icon {
+    font-size: 1.7rem;
+    filter: drop-shadow(0 1px 3px rgba(0,0,0,0.4));
+    transition: color 0.2s ease, transform 0.2s ease;
+  }
+
+  &:active ion-icon {
+    color: #ff6b6b;
+    transform: scale(1.15);
+  }
+}
+
+/* ── Botón fantasma: mismo tamaño, invisible, no clickeable ── */
+.logout-btn.invisible {
+  pointer-events: none;
+  opacity: 0;
+}
+
+/* ── Content ── */
 ion-content {
   --background: linear-gradient(180deg, #370617 0%, #6A040F 40%, #9D0208 100%);
   --padding-top: 0;
   --padding-bottom: 0;
-  --padding-start: 16px;
-  --padding-end: 16px;
-  
-  --overflow: hidden;
+  --padding-start: 0;
+  --padding-end: 0;
 }
 
-/* Wrapper centrado */
-.home-content {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-  margin-top: 10 px;
-}
-
+/* ── Wrapper ── */
 .home-wrapper {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
   width: 100%;
   height: 100%;
-  padding: 20px;
+  padding: 12px;
   box-sizing: border-box;
-  overflow-y: auto;
 }
 
-/* Contenedor de bienvenida */
-.container-bienvenida {
-  text-align: center;
-  padding: 20px 14px; /* más padding */
-  background: linear-gradient(145deg, rgba(139,0,0,0.1), rgba(165,42,42,0.1));
-  border-radius: 14px;
-  margin: 0 0 16px 0;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,0.1);
-
-  h1 {
-    font-weight: 800;
-    font-size: 1.6rem; /* más grande */
-    color: #ffffff;
-    text-shadow: 0 2px 8px rgba(0,0,0,0.4);
-    margin: 0 0 10px 0;
-    line-height: 1.3;
-  }
-
-  h2 {
-    margin: 0;
-    font-size: 1.05rem; /* más grande */
-    color: #ff6b47;
-    font-weight: 600;
-    
-    strong {
-      color: #4a9eff;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-  }
-}
-
-/* Cards */
+/* ── Card ── */
 ion-card {
-  margin: 0 auto 25px auto;
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 !important;
+  margin: 0 !important;
+  width: 100% !important;
   overflow: hidden;
-  max-width: 500px;
-  width: 100%;
-  
+  border-radius: 16px;
+
   ion-card-header {
-    background: linear-gradient(135deg, rgba(139,0,0,0.1), rgba(165,42,42,0.1));
-    
+    background: linear-gradient(135deg, rgba(139,0,0,0.15), rgba(165,42,42,0.15));
+    flex-shrink: 0;
+    padding: 12px 16px;
+
     ion-card-title {
       color: #ff6b47;
       font-weight: 700;
-      font-size: 1.5rem; /* más grande */
+      font-size: 1.4rem;
       text-shadow: 0 2px 4px rgba(0,0,0,0.3);
       margin: 0;
-      padding: 10px 0;
     }
   }
-  
+
   ion-card-content {
-    padding: 25px 30px 30px 30px;
-    
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 !important;
+    padding: 14px !important;
+    gap: 12px;
+    box-sizing: border-box;
+
     app-secondary-button {
-      --height: 52px;
-      margin: 12px 0;
-      padding: 15px 20px;
+      flex: 1 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      min-height: 0;
+      margin: 0 !important;
     }
   }
 }
 
-/* Card principal más grande */
-.main-card {
-  max-width: 550px !important;
-  min-height: 500px !important;
-  
-  ion-card-content {
-    padding: 30px 35px !important;
-    
-    app-secondary-button {
-      --height: 56px !important;
-      font-size: 1.1rem !important;
-      margin: 15px 0 !important;
-    }
-  }
+/* ── Loading ── */
+.loading-card {
+  flex: none !important;
+  align-self: center;
 }
 
-/* Botón cerrar sesión */
-.container-cerrar-sesion {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100% !important;
-  max-width: 550px;
-  margin: 20px auto 10px auto;
-  padding: 20px 0 10px;
-  box-sizing: border-box;
-
-  app-main-button {
-    width: 100% !important;
-    min-width: 100% !important;
-    max-width: 100% !important;
-  }
-
-  ion-button {
-    --background: linear-gradient(135deg, #dc3545, #c82333) !important;
-    --background-hover: linear-gradient(135deg, #c82333, #bd2130) !important;
-    --border-radius: 12px !important;
-    --padding-start: 32px !important;
-    --padding-end: 32px !important;
-    font-weight: 700 !important;
-    font-size: 1.05rem !important;
-    height: 46px !important;
-    box-shadow: 0 3px 12px rgba(220,53,69,0.4) !important;
-    transition: all 0.3s ease !important;
-    width: 100% !important;
-    
-    &:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 16px rgba(220,53,69,0.5) !important;
-    }
-  }
-}
-
-/* Animaciones */
+/* ── Animación ── */
 ion-card {
-  animation: fadeInUp 0.6s ease-out;
+  animation: fadeInUp 0.5s ease-out;
 }
 
-.container-bienvenida {
-  animation: fadeInDown 0.6s ease-out;
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
