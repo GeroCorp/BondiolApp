@@ -104,7 +104,7 @@ export class Tab2RecibirPedidoPage implements OnInit {
       case 'pendiente':
         return 'warning';
       case 'confirmado':
-        return 'primary';
+        return 'danger';
       case 'en_preparación':
         return 'secondary';
       case 'listo':

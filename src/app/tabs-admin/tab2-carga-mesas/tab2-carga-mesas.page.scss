@@ -106,7 +106,7 @@ ion-header {
   }
   
   ion-label {
-    color: #ff6b47;
+    color: #F48C06;
     font-weight: 600;
     font-size: 0.9rem;
   }
@@ -134,7 +134,7 @@ ion-header {
   font-size: 0.9rem;
   
   &[expand="block"]:not([fill="clear"]) {
-    --background: linear-gradient(135deg, #ff6b47, #ff4525);
+    --background: linear-gradient(135deg, #F48C06);
     --color: #fff;
     box-shadow: 0 3px 12px rgba(255, 107, 71, 0.4);
     font-weight: 700;

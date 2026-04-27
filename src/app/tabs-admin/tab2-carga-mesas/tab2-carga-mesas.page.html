@@ -36,7 +36,7 @@
             <ion-select-option value="movilidad reducida">Movilidad reducida</ion-select-option>
           </ion-select>
         </ion-item>
-        <ion-button expand="block" (click)="tomarFoto()">
+        <ion-button color="secondary" expand="block" (click)="tomarFoto()">
           Tomar foto
         </ion-button>
 
@@ -44,9 +44,9 @@
           <img [src]="mesaForm.get('foto')?.value" alt="Foto mesa" />
         </div>
 
-      <ion-button (click)="generateQR()" expand="block" fill="clear" shape="round">
+      <app-secondary-button (click)="generateQR()" expand="block" fill="clear" shape="round">
         Generar QR
-      </ion-button>
+      </app-secondary-button>
       
         
       

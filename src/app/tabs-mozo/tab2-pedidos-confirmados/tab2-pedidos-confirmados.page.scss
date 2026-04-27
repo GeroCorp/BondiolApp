@@ -120,7 +120,7 @@ ion-segment {
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: rgba(74, 158, 255, 0.9);
+    background: #F48C06;
     color: white;
     display: flex;
     align-items: center;
@@ -134,7 +134,7 @@ ion-segment {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     
     &:hover {
-      background: rgba(74, 158, 255, 1);
+      background: #FAA307;
       transform: translateY(-50%) scale(1.1);
     }
     
@@ -352,7 +352,7 @@ ion-segment {
   margin: 16px 0;
   text-align: center;
   font-size: 18px;
-  box-shadow: 0 4px 16px rgba(74, 158, 255, 0.4);
+  box-shadow: 0 4px 16px #E85D04;
   text-shadow: 0 2px 4px rgba(0,0,0,0.3);
 
   strong {

@@ -9,6 +9,7 @@ import { IonicModule } from '@ionic/angular';
 import { Tab2CargaMesasPageRoutingModule } from './tab2-carga-mesas-routing.module';
 
 import { Tab2CargaMesasPage } from './tab2-carga-mesas.page';
+import { SecondaryButtonComponent } from 'src/app/components/secondary-button/secondary-button.component';
 
 @NgModule({
   imports: [
@@ -17,7 +18,8 @@ import { Tab2CargaMesasPage } from './tab2-carga-mesas.page';
     ReactiveFormsModule,
     IonicModule,
     Tab2CargaMesasPageRoutingModule,
-    QRCodeComponent
+    QRCodeComponent,
+    SecondaryButtonComponent
      ],
   declarations: [Tab2CargaMesasPage]
 })

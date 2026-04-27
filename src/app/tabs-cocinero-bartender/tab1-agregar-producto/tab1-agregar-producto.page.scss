@@ -73,7 +73,7 @@ ion-content.producto-content {
   min-height: 52px;
   
   ion-label {
-    color: #ff6b47;
+    color: #F48C06;
     font-weight: 600;
     font-size: 1rem;
   }
@@ -96,16 +96,10 @@ ion-content.producto-content {
   &[expand="block"]:not([type="submit"]):not([color="danger"]) {
     --background: linear-gradient(135deg, #4a9eff, #2d7dd2);
     --color: #fff;
-    box-shadow: 0 3px 12px rgba(74, 158, 255, 0.3);
-    
-    &:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 16px rgba(74, 158, 255, 0.4);
-    }
   }
   
   &[type="submit"] {
-    --background: linear-gradient(135deg, #ff6b47, #ff4525);
+    --background: #F48C06;
     --color: #fff;
     font-weight: 700;
     height: 48px;
@@ -141,7 +135,7 @@ ion-content.producto-content {
   min-height: 52px;
   
   ion-label {
-    color: #ff6b47;
+    color: #F48C06;
     font-weight: 600;
     font-size: 1rem;
   }

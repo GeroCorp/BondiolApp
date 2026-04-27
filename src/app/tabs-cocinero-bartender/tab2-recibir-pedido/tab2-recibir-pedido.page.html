@@ -31,9 +31,9 @@
         <ion-card-header>
           <ion-card-title>
             @if (pedidoSector.pedido?.mesa?.numero){
-              <ion-badge color="primary">Mesa {{ pedidoSector.pedido?.mesa?.numero || 'N/A' }}</ion-badge>
+              <ion-badge color="danger">Mesa {{ pedidoSector.pedido?.mesa?.numero || 'N/A' }}</ion-badge>
             } @else {
-              <ion-badge color="primary">Delivery</ion-badge>
+              <ion-badge color="danger">Delivery</ion-badge>
             }
             <ion-badge color="secondary" class="sector-badge">{{ pedidoSector.sector | titlecase }}</ion-badge>
           </ion-card-title>
@@ -73,7 +73,7 @@
           <div class="pedido-actions">
             <ion-button 
               expand="block" 
-              color="success" 
+              color="secondary" 
               (click)="actualizarEstado(pedidoSector, 'en_preparación')"
               >
               <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
@@ -84,7 +84,7 @@
           <div class="pedido-actions">
             <ion-button 
               expand="block" 
-              color="success" 
+              color="secondary" 
               (click)="actualizarEstado(pedidoSector, 'listo')"
               >
               <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
@@ -95,7 +95,7 @@
           <div class="pedido-actions">
             <ion-button 
               expand="block" 
-              color="success"
+              color="secondary"
               disabled 
               >
               <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>

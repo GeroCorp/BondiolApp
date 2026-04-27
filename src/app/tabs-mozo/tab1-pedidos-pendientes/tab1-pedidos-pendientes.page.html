@@ -4,7 +4,7 @@
       <ion-back-button defaultHref="/home" icon="arrow-back"></ion-back-button>
     </ion-buttons>
     <ion-title>
-      <ion-icon name="clipboard-outline"></ion-icon> Pedidos Pendientes
+      <ion-icon name="clipboard-outline" color="secondary"></ion-icon> Pedidos Pendientes
     </ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="recargar()">
@@ -40,7 +40,7 @@
           <div class="header-pedido">
             <div>
               <ion-card-title>
-                <ion-icon name="restaurant-outline"></ion-icon>
+                <ion-icon name="restaurant-outline" color="secondary"></ion-icon>
                 Mesa {{ pedido.mesa?.numero }}
               </ion-card-title>
               <ion-card-subtitle>
@@ -63,7 +63,7 @@
         <ion-card-content>
           <!-- Información del cliente -->
           <div class="info-cliente">
-            <ion-icon name="person-outline"></ion-icon>
+            <ion-icon name="person-outline" color="secondary"></ion-icon>
             <span>{{ pedido.cliente?.nombre || 'Cliente anónimo' }}</span>
           </div>
 

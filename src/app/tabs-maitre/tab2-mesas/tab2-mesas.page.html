@@ -1,7 +1,7 @@
 <ion-header [translucent]="true">
-  <ion-toolbar >
+  <ion-toolbar>
     <ion-title>Gestión de Mesas</ion-title>
-        <ion-buttons slot="start">
+    <ion-buttons slot="start">
       <ion-back-button defaultHref="/home" icon="arrow-back"></ion-back-button>
     </ion-buttons>
   </ion-toolbar>
@@ -13,7 +13,8 @@
     <ion-refresher-content
       pulling-icon="chevron-down-circle-outline"
       pulling-text="Desliza para actualizar"
-      refreshing-spinner="circles">
+      refreshing-spinner="circles"
+    >
     </ion-refresher-content>
   </ion-refresher>
 
@@ -40,8 +41,8 @@
         class="mesa-item"
         [class.disponible]="mesa.disponible && !mesa.cliente_asignado"
         [class.ocupada]="mesa.cliente_asignado"
-        [class.no-disponible]="!mesa.disponible && !mesa.cliente_asignado">
-
+        [class.no-disponible]="!mesa.disponible && !mesa.cliente_asignado"
+      >
         <ion-avatar slot="start" class="mesa-avatar">
           <div class="mesa-number">{{ mesa.numero }}</div>
         </ion-avatar>
@@ -49,14 +50,19 @@
         <div class="mesa-col">
           <ion-label>
             <h2>Mesa {{ mesa.numero }}</h2>
-            <p>{{ mesa.capacidad || mesa.cantidad }} persona{{ (mesa.capacidad || mesa.cantidad) > 1 ? 's' : '' }}</p>
+            <p>
+              {{ mesa.capacidad || mesa.cantidad }} persona{{ (mesa.capacidad ||
+              mesa.cantidad) > 1 ? 's' : '' }}
+            </p>
             <p>
               <ion-badge [color]="getEstadoColor(mesa)">
                 {{ getEstadoTexto(mesa) }}
               </ion-badge>
-              <span *ngIf="mesa.tipo" class="mesa-tipo">- {{ mesa.tipo | titlecase }}</span>
+              <span *ngIf="mesa.tipo" class="mesa-tipo"
+                >- {{ mesa.tipo | titlecase }}</span
+              >
             </p>
-            
+
             <!-- Información del cliente si está asignado -->
             <div *ngIf="mesa.cliente_asignado" class="cliente-info">
               <p class="cliente-nombre">
@@ -72,10 +78,7 @@
 
           <!-- Acciones -->
           <div class="acciones-mesa" *ngIf="mesa.cliente_asignado">
-            <ion-button
-              color="danger"
-              size="small"
-              (click)="liberarMesa(mesa)">
+            <ion-button color="danger" size="small" (click)="liberarMesa(mesa)">
               <ion-icon name="log-out-outline" slot="start"></ion-icon>
               Liberar
             </ion-button>
@@ -86,7 +89,11 @@
 
     <!-- Estado sin mesas -->
     <div *ngIf="!isLoading() && mesas().length === 0" class="empty-state">
-      <ion-icon name="restaurant-outline" size="large" color="medium"></ion-icon>
+      <ion-icon
+        name="restaurant-outline"
+        size="large"
+        color="medium"
+      ></ion-icon>
       <h2>No hay mesas configuradas</h2>
       <p class="ion-text-center">
         Contacte al administrador para configurar las mesas del restaurante
@@ -102,47 +109,33 @@
         </ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        <ion-row>
-          <ion-col size="4">
-            <ion-item lines="none">
-              <ion-icon
-                name="checkmark-circle"
-                slot="start"
-                color="success">
-              </ion-icon>
-              <ion-label>
-                <h3>Disponibles</h3>
-                <p>{{ mesasDisponibles }} mesas</p>
-              </ion-label>
-            </ion-item>
-          </ion-col>
-          <ion-col size="4">
-            <ion-item lines="none">
-              <ion-icon
-                name="people"
-                slot="start"
-                color="danger">
-              </ion-icon>
-              <ion-label>
-                <h3>Ocupadas</h3>
-                <p>{{ mesasOcupadas }} mesas</p>
-              </ion-label>
-            </ion-item>
-          </ion-col>
-          <ion-col size="4">
-            <ion-item lines="none">
-              <ion-icon
-                name="close-circle"
-                slot="start"
-                color="warning">
-              </ion-icon>
-              <ion-label>
-                <h3>No disponibles</h3>
-                <p>{{ mesasNoDisponibles }} mesas</p>
-              </ion-label>
-            </ion-item>
-          </ion-col>
-        </ion-row>
+        <ion-item lines="none">
+          <ion-icon
+            name="checkmark-circle"
+            slot="start"
+            color="success"
+          ></ion-icon>
+          <ion-label>
+            <h3>Disponibles</h3>
+            <p>{{ mesasDisponibles }} mesas</p>
+          </ion-label>
+        </ion-item>
+
+        <ion-item lines="inset">
+          <ion-icon name="people" slot="start" color="danger"></ion-icon>
+          <ion-label>
+            <h3>Ocupadas</h3>
+            <p>{{ mesasOcupadas }} mesas</p>
+          </ion-label>
+        </ion-item>
+
+        <ion-item lines="none">
+          <ion-icon name="close-circle" slot="start" color="warning"></ion-icon>
+          <ion-label>
+            <h3>No disponibles</h3>
+            <p>{{ mesasNoDisponibles }} mesas</p>
+          </ion-label>
+        </ion-item>
       </ion-card-content>
     </ion-card>
   </div>

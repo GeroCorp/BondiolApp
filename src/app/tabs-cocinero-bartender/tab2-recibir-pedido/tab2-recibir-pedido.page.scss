@@ -230,7 +230,7 @@ ion-header {
 }
 
 .pedido-card {
-  background: linear-gradient(145deg, #2a2a2a, #1e1e1e);
+  background: linear-gradient(145deg, #370617, #6a040F);
   border-radius: 14px;
   box-shadow: 0 6px 24px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.1);
   backdrop-filter: blur(10px);
@@ -243,7 +243,7 @@ ion-header {
     border-bottom: 1px solid rgba(255,255,255,0.1);
     
     ion-card-title {
-      color: #ff6b47;
+      color: #F48C06;
       font-size: 1.3rem;
       font-weight: 700;
       margin-bottom: 12px;
@@ -273,7 +273,7 @@ ion-header {
           font-size: 0.9rem;
           
           ion-icon {
-            color: #4a9eff;
+            color: #F48C06;
           }
         }
         
@@ -305,7 +305,7 @@ ion-header {
       margin-bottom: 20px;
       
       .items-title {
-        color: #ff6b47;
+        color: #F48C06;
         font-size: 1.1rem;
         font-weight: 600;
         margin-bottom: 12px;
@@ -314,7 +314,7 @@ ion-header {
         gap: 8px;
         
         ion-icon {
-          color: #4a9eff;
+          color: #F48C06;
         }
       }
       
@@ -326,7 +326,7 @@ ion-header {
           --border-color: transparent;
           margin-bottom: 8px;
           border-radius: 8px;
-          border-left: 3px solid #ff6b47;
+          border-left: 3px solid #F48C06;
           transition: all 0.3s ease;
           
           &:hover {
@@ -335,7 +335,7 @@ ion-header {
           }
           
           ion-icon {
-            color: #4a9eff;
+            color: #F48C06;
           }
           
           ion-label {
@@ -359,7 +359,7 @@ ion-header {
         height: 46px;
         
         &[color="success"] {
-          --background: linear-gradient(135deg, #28a745, #20c997);
+          --background: linear-gradient(135deg, #F48C06);
           --color: #ffffff;
           box-shadow: 0 3px 12px rgba(40,167,69,0.4);
         }
@@ -381,12 +381,12 @@ ion-header {
   
   ion-icon {
     font-size: 4rem;
-    color: #ff6b47;
+    color: #F48C06;
     margin-bottom: 20px;
   }
   
   h3 {
-    color: #ff6b47;
+    color: #F48C06;
     margin-bottom: 10px;
     font-size: 1.3rem;
   }

@@ -137,17 +137,17 @@ ion-content {
 
     // Estados de mesa
     &.disponible {
-      border-left: 4px solid #2dd36f;
+      border-left: 4px solid #FAA307;
       --border-color: rgba(45, 211, 111, 0.3);
     }
 
     &.ocupada {
-      border-left: 4px solid #eb445a;
+      border-left: 4px solid #9D0208;
       --border-color: rgba(235, 68, 90, 0.3);
     }
 
     &.no-disponible {
-      border-left: 4px solid #ffc409;
+      border-left: 4px solid #92949c;
       --border-color: rgba(255, 196, 9, 0.3);
     }
 
@@ -289,40 +289,35 @@ ion-content {
   }
 
   ion-card-content {
-    padding: 12px 20px 20px;
+  padding: 8px 20px 20px;
 
-    ion-row {
-      ion-col {
-        ion-item {
-          --background: transparent;
-          --padding-start: 0;
-          --inner-padding-end: 0;
-          margin: 0;
-          border-radius: 8px;
+  ion-item {
+    --background: transparent;
+    --padding-start: 0;
+    --inner-padding-end: 0;
+    border-radius: 8px;
 
-          ion-icon {
-            margin-right: 10px;
-            font-size: 1.4rem;
-          }
+    ion-icon {
+      margin-right: 10px;
+      font-size: 1.4rem;
+    }
 
-          ion-label {
-            h3 {
-              color: #ffffff;
-              font-weight: 600;
-              margin: 3px 0;
-              font-size: 1.1rem;
-            }
+    ion-label {
+      h3 {
+        color: #ffffff;
+        font-weight: 600;
+        margin: 3px 0;
+        font-size: 1.1rem;
+      }
 
-            p {
-              color: rgba(255, 255, 255, 0.7);
-              margin: 0;
-              font-size: 0.95rem;
-            }
-          }
-        }
+      p {
+        color: rgba(255, 255, 255, 0.7);
+        margin: 0;
+        font-size: 0.95rem;
       }
     }
   }
+}
 }
 
 /* Responsive para lista de mesas */

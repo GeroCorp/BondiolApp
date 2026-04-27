@@ -135,8 +135,8 @@ export class Tab2PedidosConfirmadosPage implements OnInit, AfterViewInit {
   getColorEstado(estado: string): string {
     const colores: any = {
       confirmado: 'warning',
-      en_preparacion: 'tertiary',
-      'en_preparación': 'tertiary',
+      en_preparacion: 'danger',
+      'en_preparación': 'danger',
       listo: 'success',
       entregado: 'medium'
     };
