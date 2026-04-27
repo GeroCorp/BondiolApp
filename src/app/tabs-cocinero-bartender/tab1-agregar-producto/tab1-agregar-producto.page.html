@@ -37,10 +37,10 @@
         <!-- Botón subir imágenes -->
         <ion-item class="producto-item-fotos">
           <ion-label>Fotos</ion-label>
-          <ion-button expand="block" (click)="tomarFoto()" class="producto-button-foto">
+          <ion-button expand="block" color="secondary" (click)="tomarFoto()" class="producto-button-foto">
             Tomar foto
           </ion-button>
-          <ion-button expand="block" (click)="seleccionarDeGaleria()" class="producto-button-foto">
+          <ion-button expand="block" color="secondary" (click)="seleccionarDeGaleria()" class="producto-button-foto">
             Subir desde galería
           </ion-button>
         </ion-item>
@@ -61,9 +61,9 @@
         </ion-button>
 
         <!-- Botón resetear formulario -->
-        <ion-button expand="block" color="medium" (click)="resetFormulario()" class="producto-button">
+        <app-secondary-button expand="block" (click)="resetFormulario()" class="producto-button">
           Limpiar todo
-        </ion-button>
+        </app-secondary-button>
       </form>
     </div>
   </div>

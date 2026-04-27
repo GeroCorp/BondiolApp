@@ -7,6 +7,7 @@ import { IonicModule } from '@ionic/angular';
 import { Tab1AgregarProductoPageRoutingModule } from './tab1-agregar-producto-routing.module';
 
 import { Tab1AgregarProductoPage } from './tab1-agregar-producto.page';
+import { SecondaryButtonComponent } from 'src/app/components/secondary-button/secondary-button.component';
 
 @NgModule({
   imports: [
@@ -14,7 +15,8 @@ import { Tab1AgregarProductoPage } from './tab1-agregar-producto.page';
     FormsModule,
     IonicModule,
     ReactiveFormsModule,
-    Tab1AgregarProductoPageRoutingModule
+    Tab1AgregarProductoPageRoutingModule,
+    SecondaryButtonComponent
   ],
   declarations: [Tab1AgregarProductoPage]
 })

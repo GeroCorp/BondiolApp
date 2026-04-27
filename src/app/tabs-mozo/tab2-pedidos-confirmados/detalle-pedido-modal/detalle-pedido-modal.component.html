@@ -9,7 +9,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content [scrollY]="false" [scrollX]="false">
   <div class="pedido-info">
     <!-- Información general -->
     <ion-card>
@@ -79,7 +79,7 @@
     </ion-card>
 
     <!-- Items del pedido -->
-    <ion-card>
+    <ion-card class="card-items">
       <ion-card-header>
         <ion-card-title>
           <ion-icon name="list-outline"></ion-icon>
@@ -96,7 +96,7 @@
                   <span class="cantidad">{{ item.cantidad }}x</span>
                   <span class="precio-unitario">${{ item.precio_unitario }}</span>
                   <ion-badge 
-                    [color]="item.tipo === 'plato' ? 'warning' : 'tertiary'"
+                    [color]="item.tipo === 'plato' ? 'secondary' : 'danger'"
                     class="tipo-badge">
                     {{ item.tipo === 'plato' ? 'Cocina' : 'Bar' }}
                   </ion-badge>

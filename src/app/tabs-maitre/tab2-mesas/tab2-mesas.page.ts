@@ -69,7 +69,7 @@ export class Tab2MesasPage implements OnInit {
   // Métodos para obtener información de estado
   getEstadoColor(mesa: any): string {
     if (mesa.cliente_asignado) return 'danger';
-    if (mesa.disponible) return 'success';
+    if (mesa.disponible) return 'secondary';
     return 'warning';
   }
 

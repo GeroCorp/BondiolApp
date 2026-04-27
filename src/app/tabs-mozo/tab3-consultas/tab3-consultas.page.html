@@ -4,7 +4,7 @@
       <ion-back-button defaultHref="/home" icon="arrow-back"></ion-back-button>
     </ion-buttons>
     <ion-title>
-      <ion-icon name="chatbubbles-outline"></ion-icon> Consultas de Clientes
+      <ion-icon name="chatbubbles-outline" color="secondary"></ion-icon> Consultas de Clientes
     </ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="recargar()">
@@ -25,7 +25,7 @@
       <!-- Header Section -->
       <div class="header-section">
         <div class="title-container">
-          <ion-icon name="chatbubbles-outline" class="main-icon"></ion-icon>
+          <ion-icon name="chatbubbles-outline" class="main-icon" color="secondary"></ion-icon>
           <div class="title-text">
             <h2>Consultas de Mesas</h2>
             <p>Selecciona una mesa para ver el chat</p>
@@ -58,14 +58,14 @@
           <ion-card class="mesa-card" [class.ocupada]="mesa.cliente_asignado">
             <div class="mesa-card-header">
               <div class="mesa-info">
-                <ion-icon name="restaurant-outline" class="mesa-icon"></ion-icon>
+                <ion-icon name="restaurant-outline" class="mesa-icon" color="secondary"></ion-icon>
                 <div class="mesa-details">
                   <h3 class="mesa-number">Mesa {{ mesa.numero }}</h3>
                   <p class="mesa-type">{{ mesa.tipo || 'Estándar' }}</p>
                 </div>
               </div>
               <div class="mesa-status">
-                <ion-badge [color]="mesa.cliente_asignado ? 'success' : 'medium'">
+                <ion-badge [color]="mesa.cliente_asignado ? 'secondary' : 'medium'">
                   {{ mesa.cliente_asignado ? 'Ocupada' : 'Libre' }}
                 </ion-badge>
               </div>
@@ -85,14 +85,14 @@
             </div>
 
             <div class="mesa-card-actions">
-              <ion-button 
+              <app-secondary-button 
                 fill="clear" 
                 size="small" 
                 [disabled]="!mesa.cliente_asignado"
                 class="chat-button">
                 <ion-icon name="chatbubble-outline" slot="start"></ion-icon>
                 {{ mesa.cliente_asignado ? 'Abrir Chat' : 'Sin Cliente' }}
-              </ion-button>
+              </app-secondary-button>
             </div>
           </ion-card>
         </div>
