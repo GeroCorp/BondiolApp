@@ -6,7 +6,7 @@
   [disabled]="disabled"
   [class]="clase"
   (click)="onClick()"
-  class="custom-secondary-button">
+  class="custom-secondary-button " + clase>
   <ng-content></ng-content>
   @if (icon) {
     <ion-icon slot="end" [name]="icon"></ion-icon>

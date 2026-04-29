@@ -8,7 +8,7 @@
 
     <ion-buttons slot="end">
       <ion-button (click)="volverLogin()">
-        <ion-icon name="log-out-outline" slot="end"></ion-icon>
+        <ion-icon name="arrow-back" slot="end"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -39,20 +39,17 @@
 
           </div>
 
-          <div class="extras-container ion-margin-top ion-text-center">
-            <ion-label>Foto</ion-label>
-            <!-- <ion-button expand="block" (click)="tomarFoto()">Tomar Foto</ion-button> -->
-            <app-secondary-button
-            [clase]="'menu-option'"
-            (click)="tomarFoto()">
-              Subir imagen de perfil
-            </app-secondary-button>
-            <div *ngIf="foto" class="container-img-empleado">
-              <img [src]="foto" id="img-empleado" width="100"/>
+          <div class="extras-container ion-text-center">
+            <div class="photo-upload-container" (click)="tomarFoto()">
+              <img *ngIf="foto" [src]="foto" class="photo-preview" />
+              <div *ngIf="!foto" class="photo-placeholder">
+                <ion-icon name="camera-outline"></ion-icon>
+                <span>Foto</span>
+              </div>
             </div>
 
-            <ion-label class="ion-margin-top">QR DNI</ion-label>
             <app-secondary-button
+            [clase]="'photo-upload-button'"
             (click)="leerQR()">
               Escanear DNI
             </app-secondary-button>

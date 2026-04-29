@@ -15,7 +15,6 @@ ion-header {
   }
 }
 
-
 .header-spacer {
   width: 48px;
   height: 48px;
@@ -40,6 +39,7 @@ toolbar-logo-title {
   position: relative;
   display: flex;
   align-items: center;
+  gap: 8px;
 
 
   .password-toggle {
@@ -63,18 +63,34 @@ toolbar-logo-title {
   flex-direction: column;
   justify-content: center;
   flex: 1;
-  padding: 24px 16px 40px;
+  padding: 40px 0 60px;
   min-height: 100%;
   width: 100%;
+  max-width: 100%;
 }
-
+ion-input{
+    font-size: 1.3rem !important;
+    color: #ffffff;
+    .label-text-wrapper{
+      margin-bottom: 50px;
+    }
+}
 /* Card de acceso rápido integrada */
 .card-container ion-card {
   --background: linear-gradient(145deg, #2a2a2a, #1e1e1e);
-  border-radius: 16px;
-  margin: 16px 0 0 0;
+  border-radius: 0;
+  margin: 0;
   box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
   border: 1px solid rgba(255,255,255,0.05);
+  border-top: none;
+  border-bottom: none;
+  max-width: none;
+  width: 100vw;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
 
   ion-card-header {
     padding: 16px 20px 12px;
@@ -87,21 +103,32 @@ toolbar-logo-title {
   }
 
   ion-card-content {
-    padding: 0 20px 16px !important;
+    padding: 32px 28px 28px !important;
     width: 100% !important;
     display: flex !important;
     flex-direction: column !important;
     box-sizing: border-box !important;
+    gap: 16px !important;
 
     form {
       width: 100% !important;
       display: flex !important;
       flex-direction: column !important;
       box-sizing: border-box !important;
+      gap: 18px !important;
+
+      ion-input {
+        --padding-top: 12px !important;
+        --padding-bottom: 12px !important;
+        --padding-start: 14px !important;
+        --padding-end: 14px !important;
+        color:white;
+      }
 
       app-main-button {
         width: 100% !important;
         min-width: 100% !important;
+        padding: 16px 0 !important;
       }
     }
 
@@ -131,6 +158,10 @@ toolbar-logo-title {
   --background: white;
   --color: #333;
   --border-radius: 8px;
+  --padding-top: 16px !important;
+  --padding-bottom: 16px !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
 }
 
             

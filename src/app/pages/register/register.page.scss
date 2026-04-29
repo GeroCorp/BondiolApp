@@ -12,7 +12,7 @@ ion-header {
       text-align: center;
       font-size: 1.2rem;
       font-weight: 600;
-      color: #faa307;
+      color: #ffffff;
     }
 
     .header-logo {
@@ -37,17 +37,57 @@ ion-label{
   color: #faa307;
 }
 
-.container-img-empleado {
+.extras-container {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
   margin-top: 12px;
+  margin-bottom: 8px;
+}
 
-  img {
-    max-width: 120px;
+.photo-upload-container {
+  width: 30%;
+  aspect-ratio: 1;
+  border: 2px solid #F48C06;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: rgba(250, 131, 7, 0.05);
+  transition: all 0.2s ease;
+  overflow: hidden;
+
+  &:hover {
+    background: rgba(250, 131, 7, 0.1);
+    border-color: #faa307;
+  }
+
+  .photo-preview {
     width: 100%;
-    height: auto;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .photo-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: #F48C06;
+    font-size: 0.9rem;
+
+    ion-icon {
+      font-size: 2.5rem;
+      color: #F48C06;
+    }
+  }
+}
+
+.photo-upload-button {
+  .custom-secondary-button {
+    --height: 44px !important;
   }
 }
 
@@ -61,5 +101,39 @@ ion-label{
 }
 
 ion-input {
-  --color : #ffffff
+  --color : #ffffff;
+  margin-bottom: 0 !important;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+app-main-button {
+  margin-top: 8px !important;
+}
+
+.registro-wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+  min-height: 100%;
+  width: 100%;
+}
+
+ion-card {
+  width: 100%;
+  margin: 0;
+  max-width: 100%;
+  flex-shrink: 0;
+
+  ion-card-content {
+    padding: 5px 16px !important;
+    max-height: 100%;
+    overflow-y: auto;
+  }
 }
