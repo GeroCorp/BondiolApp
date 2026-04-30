@@ -56,6 +56,29 @@ toolbar-logo-title {
   }
 }
 
+/* Separador de cards */
+.separador {
+  display: flex;
+  align-items: center;
+  gap: 23px;
+  margin: 24px 20px;
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 1px;
+  }
+
+  label {
+    font-size: 0.9rem;
+    color: rgba(255,255,255,0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+}
 
 /* Wrapper para centrar contenido cuando hay espacio */
 .login-wrapper {
@@ -71,8 +94,14 @@ toolbar-logo-title {
 ion-input{
     font-size: 1.3rem !important;
     color: #ffffff;
+    
+    // Vertically center the label
+    --label-position: stacked;
+    
     .label-text-wrapper{
-      margin-bottom: 50px;
+      transform: translateY(-50%);
+      top: 50%;
+      position: relative;
     }
 }
 /* Card de acceso rápido integrada */

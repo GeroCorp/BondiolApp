@@ -3,7 +3,7 @@
     <div slot="start" class="header-spacer"></div>
  
     <ion-title class="toolbar-logo-title">
-      <img src="assets/icon/icon-only.png" alt="Logo" width="85" />
+      <img src="assets/icon/icon-only.png" alt="Logo" width="115" />
     </ion-title>
  
     <!-- Botón Acceso Rápido esquina superior derecha -->
@@ -132,6 +132,16 @@
             INICIAR SESIÓN
           </app-main-button>
         </form>
+        
+      </ion-card-content>
+    </ion-card>
+
+    <div class="separador">
+      <label for=""> o </label>
+    </div>
+
+    <ion-card class="ion-padding-vertical">
+      <ion-card-content>
         <app-secondary-button
           (btnClick)="registrar()"
           icon="person-circle-outline"

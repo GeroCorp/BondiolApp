@@ -26,9 +26,7 @@
 
       <!-- Dueño / Supervisor -->
       <ion-card *ngIf="perfil() === 'dueño' || perfil() === 'supervisor'">
-        <ion-card-header>
-          <ion-card-title>Gestión General</ion-card-title>
-        </ion-card-header>
+ 
         <ion-card-content>
           <app-secondary-button (btnClick)="agregarEmpleado()" [clase]="'menu-option'">Agregar empleado</app-secondary-button>
           <app-secondary-button (btnClick)="agregarMesa()" [clase]="'menu-option'">Agregar mesa</app-secondary-button>
@@ -51,9 +49,6 @@
 
       <!-- Maître -->
       <ion-card *ngIf="perfil() === 'maitre'">
-        <ion-card-header>
-          <ion-card-title>Gestión Maître</ion-card-title>
-        </ion-card-header>
         <ion-card-content>
           <app-secondary-button (btnClick)="listaEspera()" [clase]="'menu-option'">Lista de espera</app-secondary-button>
           <app-secondary-button (btnClick)="verMesas()" [clase]="'menu-option'">Mesas</app-secondary-button>
@@ -63,9 +58,6 @@
 
       <!-- Mozo -->
       <ion-card *ngIf="perfil() === 'mozo'">
-        <ion-card-header>
-          <ion-card-title>Gestión Mozo</ion-card-title>
-        </ion-card-header>
         <ion-card-content>
           <app-secondary-button (btnClick)="gestionarPedidos()" [clase]="'menu-option'">Gestionar pedidos</app-secondary-button>
           <app-secondary-button (btnClick)="verPedidosConfirmados()" [clase]="'menu-option'">Pedidos Confirmados</app-secondary-button>
@@ -75,9 +67,6 @@
 
       <!-- Delivery -->
       <ion-card *ngIf="perfil() === 'delivery'">
-        <ion-card-header>
-          <ion-card-title>Gestión Delivery</ion-card-title>
-        </ion-card-header>
         <ion-card-content>
           <app-secondary-button (btnClick)="verPedidosDelivery()" [clase]="'menu-option'">Ver pedidos</app-secondary-button>
           <app-secondary-button (btnClick)="verChatsClientes()" [clase]="'menu-option'">Chat Clientes</app-secondary-button>

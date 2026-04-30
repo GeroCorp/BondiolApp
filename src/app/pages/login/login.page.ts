@@ -237,7 +237,6 @@ export class LoginPage {
     }
 
     this.loginForm.setValue({email, password});
-    this.onLogin();
   }
 
   async irClienteAnonimo() {
