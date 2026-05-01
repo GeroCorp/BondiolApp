@@ -576,6 +576,20 @@ export class AuthService {
 
   return { data, error };
 }
+
+// Eliminar una bebida
+async eliminarBebida(id: number) {
+  const { data, error } = await this.supabase
+    .from('bebidas') // Asegúrate de que el nombre de la tabla sea 'bebidas'
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    throw new Error('Error al eliminar bebida: ' + error.message);
+  }
+
+  return { data, error };
+}
   // 🔑 Insertar nueva bebida
   async insertarBebida(producto: any) {
     return await this.supabase.from('bebidas').insert([producto]);
