@@ -1,64 +1,79 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar>
     <ion-title>Recibir pedidos</ion-title>
-        <ion-buttons slot="start">
-      <ion-back-button defaultHref="/home" icon="arrow-back"></ion-back-button>
-    </ion-buttons>
   </ion-toolbar>
+
+  <ion-segment [(ngModel)]="tabSeleccionado">
+    <ion-segment-button value="pendientes">
+      <ion-label>Pendientes</ion-label>
+    </ion-segment-button>
+
+    <ion-segment-button value="preparacion">
+      <ion-label>En preparación</ion-label>
+    </ion-segment-button>
+  </ion-segment>
 </ion-header>
 
 <ion-content [fullscreen]="true" class="pedido-content">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Recibir pedidos</ion-title>
-    </ion-toolbar>
-  </ion-header>
+  <div *ngIf="isLoading" class="loading-container">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Cargando pedidos...</p>
+  </div>
 
-  <div class="pedido-wrapper">
-    <div *ngIf="isLoading" class="loading-container">
-      <ion-spinner name="crescent"></ion-spinner>
-      <p>Cargando pedidos...</p>
-    </div>
+  <!-- VACÍO -->
+  <div *ngIf="!isLoading && pedidos.length === 0" class="pedido-empty-state">
+    <ion-icon name="restaurant-outline"></ion-icon>
+    <h3>No hay pedidos</h3>
+    <p>Los pedidos aparecerán aquí</p>
+  </div>
 
-    <div *ngIf="!isLoading && pedidos.length === 0" class="pedido-empty-state">
-      <ion-icon name="restaurant-outline"></ion-icon>
-      <h3>No hay pedidos pendientes</h3>
-      <p>Los pedidos aparecerán aquí cuando lleguen de los clientes</p>
-    </div>
+    <!-- CONTENIDO -->
+    <div *ngIf="!isLoading && pedidos.length > 0" class="pedido-wrapper">
 
-    <div *ngIf="!isLoading && pedidos.length > 0" class="pedidos-list">
-      <ion-card *ngFor="let pedidoSector of pedidos" class="pedido-card">
+    <div *ngIf="tabSeleccionado === 'pendientes'" class="pedidos-list">
+      <ion-card *ngFor="let pedidoSector of pedidosPendientes" class="pedido-card">
+
         <ion-card-header>
           <ion-card-title>
-            @if (pedidoSector.pedido?.mesa?.numero){
-              <ion-badge color="danger">Mesa {{ pedidoSector.pedido?.mesa?.numero || 'N/A' }}</ion-badge>
-            } @else {
-              <ion-badge color="danger">Delivery</ion-badge>
-            }
-            <ion-badge color="secondary" class="sector-badge">{{ pedidoSector.sector | titlecase }}</ion-badge>
+            <ion-badge color="danger">
+              {{ pedidoSector.pedido?.mesa?.numero 
+                ? ('Mesa ' + pedidoSector.pedido?.mesa?.numero) 
+                : 'Delivery' }}
+            </ion-badge>
+
+            <ion-badge color="secondary" class="sector-badge">
+              {{ pedidoSector.sector | titlecase }}
+            </ion-badge>
           </ion-card-title>
+
           <ion-card-subtitle>
             <div class="pedido-info">
               <div class="fecha-info">
                 <ion-icon name="time-outline"></ion-icon>
                 {{ pedidoSector.created_at | date:'dd/MM/yyyy HH:mm' }}
               </div>
+
               <div class="pedido-details">
                 <span class="pedido-id">Pedido #{{ pedidoSector.pedido_id }}</span>
-                <ion-badge [color]="getEstadoColor(pedidoSector.estadoItem)" class="estado-badge">
+
+                <ion-badge 
+                  [color]="getEstadoColor(pedidoSector.estadoItem)" 
+                  class="estado-badge">
                   {{ pedidoSector.estadoItem | uppercase }}
                 </ion-badge>
               </div>
             </div>
           </ion-card-subtitle>
         </ion-card-header>
-        
+
         <ion-card-content>
+
           <div class="items-section">
             <h4 class="items-title">
               <ion-icon name="restaurant-outline"></ion-icon>
-              Items para {{ pedidoSector.sector }}:
+              Items:
             </h4>
+
             <ion-list class="items-list">
               <ion-item *ngFor="let item of pedidoSector.items" class="item-pedido">
                 <ion-icon name="checkbox-outline" slot="start"></ion-icon>
@@ -68,45 +83,85 @@
               </ion-item>
             </ion-list>
           </div>
-          
-          @if (pedidoSector.estadoItem === 'confirmado') {
+
           <div class="pedido-actions">
             <ion-button 
               expand="block" 
-              color="secondary" 
-              (click)="actualizarEstado(pedidoSector, 'en_preparación')"
-              >
+              (click)="actualizarEstado(pedidoSector, 'en_preparación')">
               <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
               Marcar en preparación
             </ion-button>
           </div>
-        } @else if (pedidoSector.estadoItem === 'en_preparación') {
-          <div class="pedido-actions">
-            <ion-button 
-              expand="block" 
-              color="secondary" 
-              (click)="actualizarEstado(pedidoSector, 'listo')"
-              >
-              <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
-              Marcar Completo
-            </ion-button>
-          </div>
-        } @else {
-          <div class="pedido-actions">
-            <ion-button 
-              expand="block" 
-              color="secondary"
-              disabled 
-              >
-              <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
-              Pedido Listo
-            </ion-button>
-          </div>
-
-        }
-
+          
         </ion-card-content>
       </ion-card>
     </div>
   </div>
+
+    <!-- 🟠 EN PREPARACIÓN -->
+    <div *ngIf="tabSeleccionado === 'preparacion'" class="pedidos-list">
+      <ion-card *ngFor="let pedidoSector of pedidosPreparacion" class="pedido-card">
+
+        <ion-card-header>
+          <ion-card-title>
+            <ion-badge color="warning">
+              {{ pedidoSector.pedido?.mesa?.numero 
+                ? ('Mesa ' + pedidoSector.pedido?.mesa?.numero) 
+                : 'Delivery' }}
+            </ion-badge>
+
+            <ion-badge color="secondary" class="sector-badge">
+              {{ pedidoSector.sector | titlecase }}
+            </ion-badge>
+          </ion-card-title>
+
+          <ion-card-subtitle>
+            <div class="pedido-info">
+              <div class="fecha-info">
+                <ion-icon name="time-outline"></ion-icon>
+                {{ pedidoSector.created_at | date:'dd/MM/yyyy HH:mm' }}
+              </div>
+
+              <div class="pedido-details">
+                <span class="pedido-id">Pedido #{{ pedidoSector.pedido_id }}</span>
+
+                <ion-badge 
+                  [color]="getEstadoColor(pedidoSector.estadoItem)" 
+                  class="estado-badge">
+                  {{ pedidoSector.estadoItem | uppercase }}
+                </ion-badge>
+              </div>
+            </div>
+          </ion-card-subtitle>
+        </ion-card-header>
+
+        <ion-card-content>
+
+          <div class="items-section">
+            <h4 class="items-title">
+              <ion-icon name="restaurant-outline"></ion-icon>
+              Items:
+            </h4>
+
+            <ion-list class="items-list">
+              <ion-item *ngFor="let item of pedidoSector.items" class="item-pedido">
+                <ion-icon name="checkbox-outline" slot="start"></ion-icon>
+                <ion-label>
+                  <h3>{{ item }}</h3>
+                </ion-label>
+              </ion-item>
+            </ion-list>
+          </div>
+
+          <div class="pedido-actions">
+            <ion-button 
+              expand="block" 
+              (click)="actualizarEstado(pedidoSector, 'listo')">
+              <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
+              Marcar completo
+            </ion-button>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
 </ion-content>

@@ -12,6 +12,7 @@ export class Tab2RecibirPedidoPage implements OnInit {
   perfil: string | null = null;
   pedidos: any[] = [];
   isLoading = true;
+  tabSeleccionado: 'pendientes' | 'preparacion' = 'pendientes';
 
   constructor(
     private supabaseService: AuthService,
@@ -40,16 +41,7 @@ export class Tab2RecibirPedidoPage implements OnInit {
             }
             //aca viene una funcion que te ordena los pedidos para que el listo se vaya al finaal , no estoy segura que ande super bien por el async
           })
-          pedidos.sort((a, b) => {
-            const estadoOrder: { [key: string]: number } = {
-              'pendiente': 1,
-              'confirmado': 2,
-              'en_preparación': 3,
-              'listo': 4,
-              'pagado': 5
-            };
-            return estadoOrder[a.estadoItem] - estadoOrder[b.estadoItem];
-          })  ;
+          
         } catch (error) {
           console.error('Error al cargar pedidos pendientes:', error);
         }
@@ -59,7 +51,7 @@ export class Tab2RecibirPedidoPage implements OnInit {
       this.isLoading = false;
     }
 
-  async handleItems(){
+  handleItems(){
     this.pedidos.forEach(pedido => {
       try {
         // Si items es un string, procesarlo
@@ -133,4 +125,12 @@ export class Tab2RecibirPedidoPage implements OnInit {
       console.error('Error al marcar pedido como listo:', error);
     }
   }
+
+get pedidosPendientes() {
+  return this.pedidos.filter(p => p.estadoItem === 'confirmado');
+}
+
+get pedidosPreparacion() {
+  return this.pedidos.filter(p => p.estadoItem === 'en_preparación');
+}
 }
