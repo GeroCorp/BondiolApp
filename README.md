@@ -44,7 +44,13 @@ Fecha de finalizacion: 24/04
 - Actualizar UI de perfiles
 
 Fecha de inicio: 27/04
-Fecha de finalizacion:
+Fecha de finalizacion: 30/04
+#
+- Cambiar ingreso de cliente anonimo (UI)
+- Arreglar rechazo de pedido (Lado del cliente)
+
+Fecha de inicio: 7/05
+Fecha de finalizacion: 15/05
 
 ## Borda Victoria
 - Baja en base de datos de platos
@@ -73,6 +79,12 @@ Fecha de finalizacion: 25/04
 
 Fecha de inicio: 26/04
 Fecha de finalizacion: 30/04
+#
+- Cambiar menú de cliente
+- Arreglo de imagenes en la BD
+
+Fecha de inicio: 7/05
+Fecha de finalizacion: 16/05
 
 
 ## Corpus Geronimo
@@ -100,3 +112,10 @@ Fecha de finalizacion: 24/04
 
 Fecha de inicio: 27/04
 Fecha de finalizacion: 30/04
+#
+- Adaptar UI a distintos viewports
+- Modificar screen "Registro en revisión"
+- Arreglar insert de empleado en la BD
+
+Fecha de inicio: 7/05
+Fecha de finalizacion: 18/05
