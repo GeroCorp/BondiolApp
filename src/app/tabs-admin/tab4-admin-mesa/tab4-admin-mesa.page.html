@@ -15,16 +15,36 @@
       <ion-card-content>
         <ion-list class="mesa-admin-list">
           @for (mesa of mesas(); track $index) {
-            <ion-item class="mesa-admin-item">
-              <ion-label>
-                <h2>Mesa {{ mesa.numero }} - {{ mesa.tipo }}</h2>
-                <p>Capacidad: {{ mesa.cantidad }}</p>
-              </ion-label>
-              <ion-button color="secondary" (click)="eliminarMesa(mesa.id)" fill="clear" slot="end">
-                <ion-icon name="trash-outline"></ion-icon>
-              </ion-button>
-            </ion-item>
-          }
+              <ion-card class="mesa-card">
+                <img 
+                [src]="mesa.foto" 
+                (error)="handleImageError($event)" />
+
+                <ion-card-header>
+                  <ion-card-title>
+                    Mesa {{ mesa.numero }} - {{ mesa.tipo }}
+                  </ion-card-title>
+                  <ion-card-subtitle>
+                    Capacidad: {{ mesa.cantidad }}
+                  </ion-card-subtitle>
+                  <ion-card-subtitle>
+                    Estado: 
+                    <ion-badge [color]="mesa.disponible ? 'success' : 'danger'">
+                      {{ mesa.disponible ? 'Disponible' : 'Ocupada' }}
+                    </ion-badge> 
+                  </ion-card-subtitle>
+                </ion-card-header>
+
+                <ion-card-content>
+                  <ion-button 
+                    color="danger" 
+                    expand="block"
+                    (click)="eliminarMesa(mesa.id)">
+                    Eliminar mesa
+                  </ion-button>
+                </ion-card-content>
+              </ion-card>
+            }
         </ion-list> 
       </ion-card-content>
     </ion-card>

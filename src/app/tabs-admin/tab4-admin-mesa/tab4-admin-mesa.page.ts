@@ -31,7 +31,7 @@ export class Tab4AdminMesaPage implements OnInit {
   // 🔹 Cargar todas las mesas con estado
   async cargarMesas() {
     try {
-      const data = await this.authService.getMesasConEstado(); // ✅ método correcto
+      const data = await this.authService.getMesasConEstado(); // me traje la foto tambien 
       this.mesas.set(data ?? []);
       console.log('Mesas cargadas:', data);
     } catch (error) {
@@ -74,4 +74,13 @@ export class Tab4AdminMesaPage implements OnInit {
       console.error('Error liberando mesa:', e);
     }
   }
+
+  handleImageError(event: any) {
+  const img = event.target;
+
+  if (!img.dataset.errorHandled) {
+    img.src = 'assets/images/placeholder.png';
+    img.dataset.errorHandled = true;
+  }
+}
 }

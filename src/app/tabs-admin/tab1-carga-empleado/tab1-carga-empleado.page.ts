@@ -121,6 +121,7 @@ export class Tab1CargaEmpleadoPage {
         foto: this.foto,
         user_id: user.user?.id, // relacionar con Auth
       };
+      console.log('Datos del nuevo empleado a insertar:', nuevoEmpleado);
 
       const { data, error } = await this.supabaseService.insertarEmpleado(nuevoEmpleado);
 
