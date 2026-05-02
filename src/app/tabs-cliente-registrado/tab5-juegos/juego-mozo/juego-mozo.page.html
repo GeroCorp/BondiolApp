@@ -19,7 +19,7 @@
   <ion-card-content>
     <!-- Instrucciones -->
     <div *ngIf="!juegoIniciado && !juegoTerminado_" class="instrucciones">
-      <ion-icon name="information-circle" color="primary" style="font-size: 64px;"></ion-icon>
+      <ion-icon name="information-circle" color="secondary" style="font-size: 64px;"></ion-icon>
       <h3>¿Cómo jugar?</h3>
       <ion-list lines="none">
         <ion-item>
@@ -52,7 +52,7 @@
         expand="block" 
         size="large" 
         (click)="iniciarJuego()"
-        color="primary">
+        color="secondary">
         <ion-icon name="play" slot="start"></ion-icon>
         Iniciar Juego
       </ion-button>

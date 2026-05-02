@@ -1,7 +1,7 @@
 
 ion-header {
   ion-toolbar {
-    --background: linear-gradient(135deg, #8b0000, #a52a2a, #b22222);
+    --background: linear-gradient(135deg, #6a040F, #8b0000, #9D0208);
     --color: #fff;
     box-shadow: 0 2px 8px rgba(0,0,0,0.3);
     border-bottom: 1px solid rgba(255,255,255,0.2);
@@ -31,7 +31,7 @@ ion-header {
 }
 
 ion-card{
-    --background: #1e1e1e;
+    --background: #6a040F;
     border-radius: 12px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
     margin: 20px auto;
@@ -40,7 +40,7 @@ ion-card{
     width: 90%;
     
     ion-card-header {
-        background: #2c2c2c;
+        background: #9D0208;
         padding: 16px 20px;
     
         ion-card-title {

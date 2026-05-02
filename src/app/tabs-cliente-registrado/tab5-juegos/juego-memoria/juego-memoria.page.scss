@@ -1,13 +1,13 @@
 // TEMA OSCURO - Juego Memoria
 // Variables del tema oscuro
 :host {
-  --background-dark: #1a1a1a;
-  --surface-dark: #2d2d2d;
-  --surface-variant: #3a3a3a;
+  --background-dark: #370606;
+  --surface-dark: #6a040F;
+  --surface-variant: #9D0208;
   --text-primary: #ffffff;
   --text-secondary: #b3b3b3;
-  --primary-color: #bb86fc;
-  --secondary-color: #03dac6;
+  --primary-color: #F48C06;
+  --secondary-color: #FAA307;
   --accent-color: #ff6b47;
   --success-color: #4caf50;
   --border-color: #404040;
@@ -16,7 +16,7 @@
 
 // Fondo principal
 ion-content {
-  --background: linear-gradient(180deg, var(--background-dark) 0%, var(--surface-dark) 50%, #1a3a5a 100%);
+  --background: linear-gradient(180deg, var(--background-dark) 0%, var(--surface-dark) 50%, #9D0208 100%);
   --color: var(--text-primary);
 }
 
@@ -173,7 +173,7 @@ ion-header {
 
   &.found {
     .card-back {
-      background: linear-gradient(135deg, var(--success-color) 0%, var(--secondary-color) 100%);
+      background: linear-gradient(135deg, var(--success-color) 0%, var(--success-color) 100%);
       animation: pulse 0.5s;
       border-color: var(--success-color);
       box-shadow: 0 0 20px rgba(76, 175, 80, 0.4);
