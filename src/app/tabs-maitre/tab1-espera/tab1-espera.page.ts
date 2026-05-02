@@ -243,8 +243,8 @@ export class Tab1Espera implements OnInit {
   getColorEstado(estado: string): string {
     switch (estado) {
       case 'esperando': return 'warning';
-      case 'llamado': return 'success';
-      case 'asignado': return 'primary';
+      case 'llamado': return 'medium';
+      case 'asignado': return 'secondary';
       case 'ausente': return 'medium';
       case 'cancelado': return 'danger';
       default: return 'medium';

@@ -6,7 +6,7 @@
         <ion-card-subtitle>Descuento: 15%</ion-card-subtitle>
       </div>
       <ion-button fill="clear" (click)="cerrarJuego()">
-        <ion-icon name="close" slot="icon-only"></ion-icon>
+        <ion-icon color="secondary" name="close" slot="icon-only"></ion-icon>
       </ion-button>
     </div>
   </ion-card-header>
@@ -16,7 +16,7 @@
     <!-- Información del juego -->
     <div style="display: flex; justify-content: space-around; margin-bottom: 20px;">
       <div style="text-align: center;">
-        <ion-badge color="primary">Intento: {{ intentosRealizados }}/{{ maxIntentos }}</ion-badge>
+        <ion-badge color="secondary">Intento: {{ intentosRealizados }}/{{ maxIntentos }}</ion-badge>
       </div>
       @if (primerIntentoDisponible && esPrimerIntento) {
         <div style="text-align: center;">
@@ -54,7 +54,7 @@
           style="flex: 1;"
           (keyup.enter)="verificarNumero()">
         </ion-input>
-        <ion-button (click)="verificarNumero()" [disabled]="intentoUsuario === null">
+        <ion-button color="secondary" (click)="verificarNumero()" [disabled]="intentoUsuario === null">
           Verificar
         </ion-button>
       </div>
@@ -82,7 +82,7 @@
     }
 
     <!-- Botón reiniciar -->
-    <ion-button expand="block" (click)="reiniciarJuego()" style="margin-top: 20px;">
+    <ion-button color="secondary" expand="block" (click)="reiniciarJuego()" style="margin-top: 20px;">
       <ion-icon name="refresh" slot="start"></ion-icon>
       Reiniciar Juego
     </ion-button>
