@@ -109,22 +109,27 @@ export class Tab1MenuPage implements OnInit {
     }, 300);
   }
 
-  getFirstImage(imagenes: string | string[] | undefined): string {
-    if (!imagenes) {
-      return 'assets/placeholder.png';
-    }
-    
+getFirstImage(imagenes: any): string {
+  try {
+    if (!imagenes) return 'assets/images/placeholder.png';
+    let lista: string[] = [];
+
     if (typeof imagenes === 'string') {
-      const images = imagenes.split(',');
-      return images[0]?.trim() || 'assets/placeholder.png';
+      lista = imagenes
+        .split(',')
+        .map((url: string) => url.trim())
+        .filter((url: string) => url.length > 0);
+    } else if (Array.isArray(imagenes)) {
+      lista = imagenes;
     }
-    
-    if (Array.isArray(imagenes) && imagenes.length > 0) {
-      return imagenes[0]?.trim() || 'assets/placeholder.png';
-    }
-    
-    return 'assets/placeholder.png';
+    const valida = lista.find(url => url.startsWith('http'));
+
+    return valida || 'assets/images/placeholder.png';
+
+  } catch {
+    return 'assets/images/placeholder.png';
   }
+}
 
   async onAddItem(item: Item){
     this.clienteService.addItem(item);

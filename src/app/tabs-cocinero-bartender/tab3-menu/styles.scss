@@ -1,6 +1,6 @@
 ion-header {
   ion-toolbar {
-    --background: linear-gradient(135deg, #8b0000, #a52a2a, #b22222);
+    --background: linear-gradient(135deg, #6a040F, #8b0000, #9D0208);
     --color: #ffffff;
     box-shadow: 0 4px 20px rgba(0,0,0,0.3);
     border-bottom: 1px solid rgba(255,255,255,0.2);
@@ -17,51 +17,58 @@ ion-header {
 ion-content {
   --background: linear-gradient(135deg, #370606 0%, #6a040F 100%);
   --color: #ffffff;
-  --padding-top: 40px;
+  --padding-top: 0px;
   --padding-bottom: 0;
   --padding-start: 16px;
   --padding-end: 16px;
   
   &[fullscreen="true"] {
-    --offset-top: 60px;
+    --offset-top: 65px;
   }
 }
 
 ion-card {
   margin: 20px auto 80px auto;
   max-width: 800px;
-  background: rgba(255, 255, 255, 0.05);
+  background: #9d0208;
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 107, 71, 0.2);
-  border-radius: 14px;
+  border: 5px solid rgba(255, 107, 71, 0.2);
+  border-radius: 15px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
   color: #fff; 
-
+  max-height: 80vh;
 
   ion-card-header {
     padding: 24px 20px 16px;
     background: rgba(255, 107, 71, 0.1);
     border-bottom: 1px solid rgba(255, 107, 71, 0.2);
     
-    ion-card-title {
-      color: #F48C06;
-      font-weight: 700;
-      font-size: 1.6rem;
-      text-align: center;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    }
+ion-card-title {
+  color: #F48C06;
+  font-weight: 700;
+  font-size: 1.5rem; /* Bajamos un pelín el tamaño para dar espacio */
+  text-align: center;
+  
+  display: -webkit-box;
+  -webkit-line-clamp: 2;    /* Número máximo de líneas antes de los puntos */
+  -webkit-box-orient: vertical;  
+  overflow: hidden;
+  text-overflow: ellipsis;
+  
+  line-height: 1.2;         /* Ajusta el espacio entre las dos líneas */
+  max-height: 3.6rem;       /* (font-size * line-height * 2) aprox */
+}
 
     ion-card-subtitle {
       color: #fff; 
+      background: transparent;
     }
   }
   
-  ion-card-content {
-    padding: 20px;
-    
     ion-list {
       background: transparent;
       padding: 0;
+      margin-top: 5px;
       
       ion-item {
         --background: rgba(255, 255, 255, 0.05);
@@ -94,7 +101,7 @@ ion-card {
             width: 100%;
             max-width: 300px;
             height: auto;
-            max-height: 200px;
+            max-height: 250px;
             border-radius: 10px;
             margin-bottom: 12px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
@@ -113,7 +120,7 @@ ion-card {
           
           p {
             color: rgba(255, 255, 255, 0.7);
-            font-size: 1rem;
+            font-size: 3rem;
             margin: 6px 0;
             line-height: 1.5;
           }
@@ -133,7 +140,7 @@ ion-card {
       }
     }
   }
-}
+
 
 // Estado vacío
 .empty-state {
@@ -167,9 +174,7 @@ ion-card {
 }
 
 // Animaciones
-ion-list {
-  animation: fadeInUp 0.6s ease-out;
-}
+
 
 ion-card {
   animation: fadeInDown 0.6s ease-out;
@@ -215,7 +220,7 @@ ion-card {
 .image-container {
   position: relative;
   width: 100%;
-  height: 210px;
+  height: 40vh;
 }
 
 .image-spinner {
@@ -231,3 +236,29 @@ img {
   object-fit: cover;
   border-radius: 10px;
 }
+
+.snap-list {
+  height: 100%;           
+  overflow-y: scroll;       
+  scroll-snap-type: y mandatory; 
+  scroll-behavior: smooth;
+  background-color: transparent !important;
+  -webkit-overflow-scrolling: touch; 
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+
+.menu-card {
+  scroll-snap-align: start;  
+  scroll-snap-stop: always; 
+  margin-bottom: 40px;       
+  min-height: 80vh;          
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 5px;
+  flex: 1; 
+  display: flex;
+}
+

@@ -183,18 +183,31 @@ export class Tab3MenuPage implements OnInit {
 
   /**
    * Manejar errores de carga de imágenes
+   *OJO CON ESTO ME GENERABA UN LOOP DE CARGA DE IMG - PLACE-IMG PLACE
    */
-  handleImageError(event: any, imageId?: string) {
-    // URL de imagen por defecto cuando falla la carga
-    event.target.src = 'assets/images/placeholder.png';
-    console.warn('Error cargando imagen, usando placeholder');
+  // handleImageError(event: any, imageId?: string) {
+  //   // URL de imagen por defecto cuando falla la carga
+  //   event.target.src = 'assets/images/placeholder.png';
+  //   console.warn('Error cargando imagen, usando placeholder');
     
-    // Marcar como cargada (aunque haya fallado)
-    if (imageId) {
-      this.imageLoadingStates[imageId] = false;
-    }
-  }
+  //   // Marcar como cargada (aunque haya fallado)
+  //   if (imageId) {
+  //     this.imageLoadingStates[imageId] = false;
+  //   }
+  // }
+handleImageError(event: any, imageId?: string) {
+  const img = event.target;
 
+  if (img.src.includes('placeholder.png')) return;
+
+  console.warn('Error REAL cargando:', img.src);
+
+  img.src = 'assets/images/placeholder.png';
+
+  if (imageId) {
+    this.imageLoadingStates[imageId] = false;
+  }
+}
   /**
    * Generar ID único para cada imagen
    */
@@ -239,7 +252,38 @@ async eliminarPlato(plato: any) {
 
   await alert.present();
 }
+async eliminarBebida(bebida: any) {
+  const alert = await this.alertCtrl.create({
+    header: 'Eliminar bebida',
+    message: `¿Eliminar ${bebida.nombre}?`,
+    buttons: [
+      { 
+        text: 'Cancelar', 
+        role: 'cancel' 
+      },
+      {
+        text: 'Eliminar',
+        role: 'destructive',
+        handler: async () => {
+          try {
+            // Llama al servicio para eliminar de la base de datos
+            await this.authService.eliminarBebida(bebida.id);
 
+            // Actualiza el estado local de la Signal para que desaparezca de la vista
+            this.bebidas.update(lista =>
+              lista.filter(b => b.id !== bebida.id)
+            );
+          } catch (error) {
+            console.error('Error al eliminar la bebida:', error);
+            // Aquí podrías agregar un toast de error si falla la eliminación
+          }
+        }
+      }
+    ]
+  });
+
+  await alert.present();
+}
 async recargarMenu(event: any) {
   try {
     this.isLoadingData = true;

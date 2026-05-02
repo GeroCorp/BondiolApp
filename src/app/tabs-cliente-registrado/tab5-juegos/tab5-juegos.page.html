@@ -1,6 +1,6 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-button (click)="volverHome()" fill="clear" shape="round" slot="end">
+    <ion-button color="secondary" (click)="volverHome()" fill="clear" shape="round" slot="end">
       Volver
       <ion-icon slot="start" name="home-outline"></ion-icon>
     </ion-button>
@@ -17,7 +17,7 @@
 
   @if (!juegoActivo) {
     <!-- Tarjeta de estado de descuento -->
-    <ion-card [color]="descuentoObtenido > 0 ? 'success' : (primerIntentoUsado ? 'warning' : 'primary')">
+    <ion-card [color]="descuentoObtenido > 0 ? 'success' : (primerIntentoUsado ? 'warning' : 'secondary')">
       <ion-card-content>
         <div style="text-align: center; padding: 20px;">
           @if (descuentoObtenido > 0) {

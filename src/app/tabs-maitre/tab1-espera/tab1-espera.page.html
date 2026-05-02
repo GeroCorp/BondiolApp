@@ -91,7 +91,7 @@
 
             <ion-button
               *ngIf="cliente.estado === 'llamado'"
-              color="primary"
+              color="secondary"
               [disabled]="mesas.length === 0"
               (click)="asignarMesaListaEspera(cliente)">
               <ion-icon name="restaurant-outline" slot="start"></ion-icon>
@@ -136,7 +136,7 @@
               <ion-icon
                 name="ticket-outline"
                 slot="start"
-                color="tertiary"
+                color="medium"
               ></ion-icon>
               <ion-label>
                 <h3>En Espera</h3>

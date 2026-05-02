@@ -1,13 +1,13 @@
 .style-card {
   background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-  border: 2px solid #ff6b6b;
+  border: 2px solid #F48C06;
   border-radius: 16px;
   overflow: hidden;
 }
 
 ion-card-header {
-  background: rgba(255, 107, 107, 0.1);
-  border-bottom: 2px solid #ff6b6b;
+  background: #6a040F;
+  border-bottom: 2px solid #F48C06;
   padding: 16px;
 }
 
@@ -26,7 +26,7 @@ ion-card-subtitle {
 
 ion-card-content {
   padding: 20px;
-  background: linear-gradient(to bottom, #2d2d2d, #1a1a1a);
+  background: linear-gradient(to bottom, #6a040F, #370606);
 }
 
 /* Estilos de badges e información */

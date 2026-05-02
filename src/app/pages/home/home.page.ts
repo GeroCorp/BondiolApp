@@ -43,7 +43,7 @@ export class HomePage implements OnInit {
         if (this.perfil()) {
           this.perfilService.setPerfil(this.perfil());
           this.notificationService.setUserTag(this.perfil());
-          this.mostrarBienvenidaToast();
+
         }
     } catch (error) {
       console.error('Error al cargar el perfil:', error);
@@ -187,22 +187,6 @@ async logout() {
     this.router.navigate(['/tabs-delivery/tab2-menu-chats'], { replaceUrl: true });
   }
 
-  async mostrarBienvenidaToast() {
-  const toast = await this.toastCtrl.create({
-    message: `👋 Bienvenido/a ingresaste con perfil: ${this.perfil()}`,
-    duration: 3000,
-    position: 'top',
-    icon: 'person-circle-outline',
-    color: 'dark',
-    buttons: [
-      {
-        icon: 'close',
-        role: 'cancel'
-      }
-    ]
-  });
 
-  await toast.present();
-}
 
 }

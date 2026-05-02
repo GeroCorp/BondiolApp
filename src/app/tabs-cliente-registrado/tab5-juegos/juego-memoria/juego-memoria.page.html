@@ -6,7 +6,7 @@
         <ion-card-subtitle>Descuento: 10%</ion-card-subtitle>
       </div>
       <ion-button fill="clear" (click)="cerrarJuego()">
-        <ion-icon name="close" slot="icon-only"></ion-icon>
+        <ion-icon color="secondary" name="close" slot="icon-only"></ion-icon>
       </ion-button>
     </div>
   </ion-card-header>
@@ -16,10 +16,10 @@
     <!-- Información del juego -->
     <div style="display: flex; justify-content: space-around; margin-bottom: 20px;">
       <div style="text-align: center;">
-        <ion-badge color="primary">Movimientos: {{ movimientos }}</ion-badge>
+        <ion-badge color="danger">Movimientos: {{ movimientos }}</ion-badge>
       </div>
       <div style="text-align: center;">
-        <ion-badge color="success">Pares: {{ paresEncontrados }}/{{ iconos.length }}</ion-badge>
+        <ion-badge color="secondary">Pares: {{ paresEncontrados }}/{{ iconos.length }}</ion-badge>
       </div>
       @if (primerIntentoDisponible && esPrimerIntento) {
         <div style="text-align: center;">
@@ -61,7 +61,7 @@
     </div>
 
     <!-- Botón reiniciar -->
-    <ion-button expand="block" (click)="reiniciarJuego()" style="margin-top: 20px;">
+    <ion-button color="secondary" expand="block" (click)="reiniciarJuego()" style="margin-top: 20px;">
       <ion-icon name="refresh" slot="start"></ion-icon>
       Reiniciar Juego
     </ion-button>
