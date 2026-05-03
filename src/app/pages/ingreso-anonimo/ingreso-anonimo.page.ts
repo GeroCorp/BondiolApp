@@ -223,4 +223,8 @@ export class IngresoAnonimoPage {
     const t = await this.toastController.create({ message, duration: 2000, color, position: 'top' });
     await t.present();
   }
+
+  irARegistro() {
+    this.router.navigate(['/register']);
+  }
 }

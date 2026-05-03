@@ -40,7 +40,7 @@ export class Tab1MenuPage implements OnInit {
   
   constructor(
     private authService: AuthService,
-    private clienteService: ClienteService,
+    public clienteService: ClienteService,
     private toastController: ToastController,
     private router: Router,
     private customLoader: CustomLoaderService
@@ -56,6 +56,17 @@ export class Tab1MenuPage implements OnInit {
       this.cargarBebidas()
     ]);
     this.allProds.set([...this.platos, ...this.bebidas]);
+
+    // Cargar pedido rechazado si existe — así el botón "Hacer Pedido"
+    // se habilita de inmediato sin necesidad de agregar otro item
+    const rechazado = await this.clienteService.getRejectedOrder();
+    if (rechazado) {
+      await this.showToast(
+        '⚠️ Tu pedido fue rechazado. Podés modificarlo desde "Hacer Pedido".',
+        'danger'
+      );
+    }
+
     this.customLoader.hide();
   }
 

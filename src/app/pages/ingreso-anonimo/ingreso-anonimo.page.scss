@@ -1,90 +1,236 @@
-// TEMA OSCURO - Ingreso Anónimo
-// Variables del tema oscuro
 :host {
   --background-dark: #370617;
-  --surface-dark: #6A040F;
-  --surface-variant: #D00000 ;
-  --text-primary: #ffffff;
-  --text-secondary: #b3b3b3;
-  --primary-color: #F48C06;
-  --secondary-color: #03dac6;
-  --accent-color: #ff6b47;
-  --error-color: #cf6679;
-  --success-color: #4caf50;
-  --border-color: #404040;
-  --shadow-dark: 0 8px 24px rgba(0, 0, 0, 0.6);
+  --surface-dark:    #6A040F;
+  --surface-variant: #D00000;
+  --text-primary:    #ffffff;
+  --text-secondary:  #b3b3b3;
+  --primary-color:   #F48C06;
+  --secondary-color: #F48C06;
+  --accent-color:    #ff6b47;
+  --border-color:    #F48C06;
+  --shadow-dark:     0 8px 24px rgba(0,0,0,0.6);
 }
 
-// Header personalizado
-ion-header {
-  ion-toolbar {
-    --background: linear-gradient(135deg, var(--surface-dark) 0%, var(--surface-variant) 100%);
-    --color: var(--text-primary);
-    border-bottom: 1px solid var(--border-color);
-    box-shadow: var(--shadow-dark);
+ion-header ion-toolbar {
+  --background: linear-gradient(135deg, #6a040F, #9D0208);
+  --color: var(--text-primary);
+  box-shadow: var(--shadow-dark);
 
-    ion-title {
-      font-size: 22px;
-      font-weight: 600;
-      text-align: center;
-      color: var(--primary-color);
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-    }
+  ion-title {
+    font-size: 22px;
+    font-weight: 600;
+    text-align: center;
+    color: var(--primary-color);
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
   }
+  ion-back-button { --color: var(--primary-color); }
 }
 
-// Contenido con gradiente oscuro
 ion-content {
   --background: linear-gradient(180deg, var(--background-dark) 0%, var(--surface-dark) 50%, #9D0208 100%);
   --color: var(--text-primary);
 }
 
-// Wrapper del contenido
-.ion-padding {
-  max-width: 500px;
-  margin: 0 auto;
-  padding: 30px 20px !important;
+// Hace que el scroll interno sea flex para que page-layout llene todo
+ion-content::part(scroll) {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
 }
 
-// Estilo del item de entrada
+.page-layout {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 20px 20px;
+  box-sizing: border-box;
+}
+
+// ── INFO BLOCK ──
+.anon-info-block {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+}
+
+.anon-info-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  padding: 5px 14px;
+  border-radius: 20px;
+  background: rgba(244, 140, 6, 0.13);
+  border: 1px solid rgba(244, 140, 6, 0.45);
+  color: var(--primary-color);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  ion-icon { font-size: 14px; }
+}
+
+.anon-info-desc {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.anon-features {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.anon-feat {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 13px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  ion-icon { font-size: 18px; flex-shrink: 0; }
+
+  &.ok {
+    background: rgba(45, 211, 111, 0.09);
+    border: 1px solid rgba(45, 211, 111, 0.2);
+    ion-icon { color: #2dd36f; }
+    span     { color: var(--text-primary); }
+  }
+  &.no {
+    background: rgba(255, 107, 107, 0.07);
+    border: 1px solid rgba(255, 107, 107, 0.15);
+    ion-icon { color: #ff6b6b; }
+    span     { color: var(--text-secondary); text-decoration: line-through; }
+  }
+}
+
+.anon-register-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 20px;
+  border: 1.5px solid var(--primary-color);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--primary-color);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  ion-icon { font-size: 17px; }
+  &:active { background: rgba(244, 140, 6, 0.12); }
+}
+
+// ── DIVISOR ──
+.anon-divider {
+  flex-shrink: 0;
+  height: 1px;
+  background: rgba(244, 140, 6, 0.25);
+  margin: 14px 0;
+}
+
+// ── FORM BLOCK ──
+.form-block {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;   // centra horizontalmente
+  gap: 14px;
+}
+
+// ── CAMPO NOMBRE ──
 ion-item {
+  width: 100%;
   --background: var(--surface-dark);
   --border-color: var(--border-color);
   --color: var(--text-primary);
   --placeholder-color: var(--text-secondary);
   --highlight-color-focused: var(--primary-color);
+  --inner-padding-end: 15px;
   border-radius: 12px;
-  margin-bottom: 20px;
   box-shadow: var(--shadow-dark);
   border: 1px solid var(--border-color);
-  transition: all 0.3s ease;
-  overflow: hidden;
 
-  &::part(native) {
-    padding: 15px;
-  }
-
-  &.item-has-focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 8px 24px rgba(187, 134, 252, 0.4);
-    transform: translateY(-2px);
-  }
+  &::part(native) { padding: 10px 15px; }
 
   ion-label {
     --color: var(--primary-color) !important;
     font-weight: 500;
     font-size: 14px;
-    margin-bottom: 8px;
   }
-
   ion-input {
     --color: var(--text-primary);
-    --placeholder-color: var(--text-secondary);
     font-size: 16px;
   }
 }
 
-// Botones principales
+// ── FOTO: cuadrado tipo avatar ──
+.foto-zone {
+  position: relative;
+  cursor: pointer;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 2px solid var(--border-color);
+  box-shadow: var(--shadow-dark);
+  background: rgba(0,0,0,0.4);
+  // Cuadrado fijo
+  width: 160px;
+  height: 160px;
+  flex-shrink: 0;
+}
+
+.foto-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+}
+
+.foto-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 8px;
+  ion-icon { font-size: 44px; color: var(--primary-color); opacity: 0.75; }
+  p { margin: 0; font-size: 12px; font-weight: 500; color: var(--text-secondary); text-align: center; padding: 0 8px; }
+}
+
+.foto-retake-badge {
+  position: absolute;
+  bottom: 8px; right: 8px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(0,0,0,0.65);
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  backdrop-filter: blur(4px);
+  ion-icon { font-size: 14px; }
+}
+
+// ── BOTONES ──
+.actions {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 ion-button {
   --border-radius: 12px;
   --box-shadow: var(--shadow-dark);
@@ -92,171 +238,28 @@ ion-button {
   font-size: 16px;
   text-transform: none;
   letter-spacing: 0.5px;
-  margin: 10px 0;
-  height: 50px;
-  transition: all 0.3s ease;
+  height: 52px;
+  margin: 0;
+  ion-icon { font-size: 22px; margin-right: 8px; }
 
-  ion-icon {
-    font-size: 24px;
-    margin-right: 8px;
-  }
-
-  // Botón primario (tomar foto e ingresar)
   &:not([color]) {
     --background: var(--primary-color);
-    --background-hover: color-mix(in srgb, var(--primary-color) 85%, white);
-    --background-activated: color-mix(in srgb, var(--primary-color) 75%, white);
     --color: var(--background-dark);
-
-    &:hover {
-      box-shadow: 0 12px 30px rgba(187, 134, 252, 0.5);
-      transform: translateY(-2px);
-    }
-
-    &:active {
-      transform: translateY(0);
-    }
   }
-
-  // Botón secundario
   &[color="secondary"] {
     --background: var(--secondary-color);
-    --background-hover: color-mix(in srgb, var(--secondary-color) 85%, white);
-    --background-activated: color-mix(in srgb, var(--secondary-color) 75%, white);
     --color: var(--background-dark);
-
-    &:hover {
-      box-shadow: 0 12px 30px rgba(3, 218, 198, 0.5);
-      transform: translateY(-2px);
-    }
   }
-
-  // Botón deshabilitado
   &[disabled] {
     --background: var(--surface-variant);
     --color: var(--text-secondary);
     opacity: 0.6;
-    cursor: not-allowed;
-
-    &:hover {
-      box-shadow: var(--shadow-dark);
-      transform: none;
-    }
   }
 }
 
-// Contenedor de preview de foto
-.foto-preview {
-  width: 100%;
-  max-width: 400px;
-  margin: 20px auto;
-  padding: 15px;
-  background: var(--surface-dark);
-  border-radius: 15px;
-  box-shadow: var(--shadow-dark);
-  border: 2px solid var(--border-color);
-  overflow: hidden;
-  transition: all 0.3s ease;
-  position: relative;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color), var(--accent-color));
-    border-radius: 15px 15px 0 0;
-  }
-
-  &:hover {
-    border-color: var(--primary-color);
-    box-shadow: 0 12px 30px rgba(187, 134, 252, 0.4);
-    transform: scale(1.02);
-  }
-
-  img {
-    width: 100%;
-    height: auto;
-    max-height: 400px;
-    object-fit: cover;
-    border-radius: 10px;
-    display: block;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  }
-}
-
-// Animaciones de entrada
 @keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-
-ion-item,
-ion-button,
-.foto-preview {
-  animation: fadeInUp 0.5s ease-out backwards;
-}
-
-ion-item {
-  animation-delay: 0.1s;
-}
-
-ion-button:nth-of-type(1) {
-  animation-delay: 0.2s;
-}
-
-.foto-preview {
-  animation-delay: 0.3s;
-}
-
-ion-button:nth-of-type(2) {
-  animation-delay: 0.4s;
-}
-
-ion-button:nth-of-type(3) {
-  animation-delay: 0.5s;
-}
-
-// Efectos de resplandor para botones activos
-@keyframes pulse {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(187, 134, 252, 0.7);
-  }
-  50% {
-    box-shadow: 0 0 0 10px rgba(187, 134, 252, 0);
-  }
-}
-
-ion-button:not([disabled]):active {
-  animation: pulse 0.6s ease-out;
-}
-
-// Responsive
-@media (max-width: 576px) {
-  .ion-padding {
-    padding: 20px 15px !important;
-  }
-
-  ion-button {
-    height: 48px;
-    font-size: 15px;
-
-    ion-icon {
-      font-size: 22px;
-    }
-  }
-
-  .foto-preview {
-    img {
-      max-height: 300px;
-    }
-  }
-}
+.anon-info-block { animation: fadeInUp 0.35s ease-out 0.05s both; }
+.form-block      { animation: fadeInUp 0.35s ease-out 0.15s both; }
