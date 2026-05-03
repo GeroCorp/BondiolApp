@@ -27,7 +27,6 @@ export class Tab2PedidoPage implements OnInit {
   async ngOnInit() {
     this.setIsDelivery();
     await this.calcularTotales();
-    await this.clienteService.getRejectedOrder();
   }
 
   setIsDelivery() {

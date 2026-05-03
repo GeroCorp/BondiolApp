@@ -101,6 +101,9 @@ export class ClienteService {
 
   // Metodos para manejo del pedido
 
+  // Flag para evitar que getRejectedOrder se ejecute más de una vez por sesión
+  private _rejectedOrderChecked = false;
+
   async checkRejected(){
     const clienteId = await this.getClientId();
     const { data, error } = await this.supabase
@@ -115,28 +118,29 @@ export class ClienteService {
   }
 
   async getRejectedOrder(){
+    if (this._rejectedOrderChecked) {
+      return null;
+    }
+    this._rejectedOrderChecked = true;
+
     const rejectedOrders = await this.checkRejected();
     if (rejectedOrders.length === 0) {
-      console.log("✅ No se obtuvieron pedidos rechazados");
       return null;
     }
 
-    // Tomar el pedido rechazado más reciente
     const pedidoRechazado = rejectedOrders[0];
-    console.log("📋 Pedido rechazado encontrado:", pedidoRechazado);
 
     try {
-      // Obtener los detalles del pedido rechazado
       const detalles = await this.getDetallesPedido(pedidoRechazado.id);
-      
+
       if (detalles.length === 0) {
-        console.log("⚠️ No se encontraron detalles para el pedido rechazado");
+        await this.eliminarPedidoRechazado(pedidoRechazado.id);
         return null;
       }
 
-      // Convertir los detalles al formato esperado por _pedido
+      // Cargar items en el carrito PRIMERO
       const itemsParaPedido = detalles.map(detalle => ({
-        id: `${detalle.nombre_prod}_${Date.now()}`, // ID único temporal
+        id: detalle.id_item ?? detalle.id,
         nombre: detalle.nombre_prod,
         precio: detalle.precio_unitario,
         quantity: detalle.cantidad,
@@ -144,14 +148,12 @@ export class ClienteService {
         tipo: detalle.tipo
       }));
 
-      // Limpiar el pedido actual y cargar los items del pedido rechazado
       this._pedido.set(itemsParaPedido);
-      
-      console.log("✅ Detalles del pedido rechazado cargados en _pedido:", itemsParaPedido);
-      return {
-        pedido: pedidoRechazado,
-        detalles: itemsParaPedido
-      };
+
+      // Eliminar de la BD DESPUÉS de tener los items en memoria
+      await this.eliminarPedidoRechazado(pedidoRechazado.id);
+
+      return { pedido: pedidoRechazado, detalles: itemsParaPedido };
 
     } catch (error) {
       console.error("❌ Error al obtener detalles del pedido rechazado:", error);
@@ -281,6 +283,7 @@ export class ClienteService {
   // Limpiar el pedido
   clearPedido() {
     this._pedido.set([]);
+    this._rejectedOrderChecked = false;
   }
 
   // Obtener el total del pedido CON descuento aplicado
@@ -1495,6 +1498,7 @@ async getHistorialPedidos() {
         `)
         .eq('mesa', mesaId)
         .is('id_cliente', null)
+        .neq('estado', 'rechazado')
         .order('fecha', { ascending: false });
 
       if (error) {
@@ -1514,6 +1518,7 @@ async getHistorialPedidos() {
           mesa:mesas(numero, id)
         `)
         .eq('id_cliente', clienteId)
+        .neq('estado', 'rechazado')
         .order('fecha', { ascending: false });
 
       if (error) {
