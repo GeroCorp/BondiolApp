@@ -36,9 +36,11 @@
         <ion-card-header>
           <ion-card-title>
             <ion-badge color="danger">
-              {{ pedidoSector.pedido?.mesa?.numero 
-                ? ('Mesa ' + pedidoSector.pedido?.mesa?.numero) 
-                : 'Delivery' }}
+              @if(pedidoSector.es_delivery){
+                Delivery
+              }@else{
+                Mesa {{pedidoSector.pedido.ubicacion}}
+              }
             </ion-badge>
 
             <ion-badge color="secondary" class="sector-badge">
@@ -98,16 +100,17 @@
     </div>
   </div>
 
-    <!-- 🟠 EN PREPARACIÓN -->
     <div *ngIf="tabSeleccionado === 'preparacion'" class="pedidos-list">
       <ion-card *ngFor="let pedidoSector of pedidosPreparacion" class="pedido-card">
 
         <ion-card-header>
           <ion-card-title>
-            <ion-badge color="warning">
-              {{ pedidoSector.pedido?.mesa?.numero 
-                ? ('Mesa ' + pedidoSector.pedido?.mesa?.numero) 
-                : 'Delivery' }}
+            <ion-badge color="danger">
+              @if(pedidoSector.es_delivery){
+                Delivery
+              }@else{
+                Mesa {{pedidoSector.pedido.ubicacion}}
+              }
             </ion-badge>
 
             <ion-badge color="secondary" class="sector-badge">

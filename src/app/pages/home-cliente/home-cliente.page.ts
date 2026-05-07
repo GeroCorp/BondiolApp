@@ -127,7 +127,6 @@ export class HomeClientePage implements OnInit {
       fechaLocaleString: ahora.toLocaleString('es-AR'),
       timeZoneOffset: ahora.getTimezoneOffset()
     });
-    
     try {
 
       const { data: { session }, error } = await this.authService.client.auth.getSession();
