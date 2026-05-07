@@ -44,7 +44,7 @@ export class Tab1PedidosPendientesPage implements OnInit {
     private toastController: ToastController,
     private modalController: ModalController,
     private customLoader: CustomLoaderService,
-    private vibration: Vibration,
+//    private vibration: Vibration,
     private notificationService: Notification,
     private hapticService: HapticService
   ) {}
@@ -86,7 +86,7 @@ export class Tab1PedidosPendientesPage implements OnInit {
       console.error('Error al cargar pedidos:', error);
       await this.hapticService.vibrateError();
       this.showToast('Error al cargar los pedidos pendientes', 'danger');
-      this.vibration.vibrate(500);
+      this.hapticService.vibrate(500);
     } finally {
       this.cargando = false;
     }
@@ -178,7 +178,7 @@ export class Tab1PedidosPendientesPage implements OnInit {
 
       await this.customLoader.hide();
       this.showToast('Pedido rechazado. El cliente podrá modificarlo.', 'warning');
-      this.vibration.vibrate([100, 50, 100]);
+      this.hapticService.vibrate(1000);
 
       await this.cargarPedidosPendientes();
     } catch (error) {
@@ -186,7 +186,7 @@ export class Tab1PedidosPendientesPage implements OnInit {
       console.error('Error al rechazar pedido:', error);
       await this.hapticService.vibrateError();
       this.showToast('Error al rechazar el pedido', 'danger');
-      this.vibration.vibrate(1000);
+      this.hapticService.vibrate(1000);
     }
   }
 
@@ -253,7 +253,7 @@ export class Tab1PedidosPendientesPage implements OnInit {
       console.error('Error al confirmar pedido:', error);
       await this.hapticService.vibrateError();
       this.showToast('Error al confirmar el pedido', 'danger');
-      this.vibration.vibrate(1000);
+      this.hapticService.vibrate(1000);
     }
   }
 

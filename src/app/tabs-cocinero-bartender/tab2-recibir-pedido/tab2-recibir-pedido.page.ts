@@ -26,7 +26,8 @@ export class Tab2RecibirPedidoPage implements OnInit {
     await this.cargarPedidosPendientes();
   }
 
-   async cargarPedidosPendientes() {
+  async cargarPedidosPendientes() {
+    //REVISAR PORQUE CREO QUE HAY ALGO QUE SE PISA
       this.isLoading = true;
       let sector: 'cocina' | 'bar' | null = null;
       if (this.perfil === 'cocinero') sector = 'cocina';
