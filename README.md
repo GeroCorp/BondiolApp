@@ -4,22 +4,57 @@
 ### Borda Victoria - Pagés Valentino - Corpus Gerónimo
 
 ## Icono del local
+
 <img width="250" height="250" alt="icon-only" src="https://github.com/user-attachments/assets/4d4fd8bd-d805-4616-9ab4-af32eeee228c" />
 
 ## Screens de la app
-<img width="60" height="100" alt="Login" src="https://github.com/user-attachments/assets/7a0599fd-8ecd-4b1b-bc6a-8495e0b94d90" />
-<img width="58" height="100" alt="Registro" src="https://github.com/user-attachments/assets/9751c098-17e3-4444-9eb2-9fa89dc45e75" />
-<img width="60" height="100" alt="Duenio_1" src="https://github.com/user-attachments/assets/e5647ba2-a2c1-4e74-9697-9b5ec3d775b0" />
-<img width="60" height="100" alt="Duenio_2" src="https://github.com/user-attachments/assets/00a86e85-c0f6-41e5-bdfb-5d84aaeaf925" />
-<img width="60" height="100" alt="Duenio_3" src="https://github.com/user-attachments/assets/73b09670-b13d-4de4-b916-6eb14c44f99a" />
-<img width="60" height="100" alt="Maitre_1" src="https://github.com/user-attachments/assets/8a30b401-7a2d-4a4d-83ca-ea4f272c221e" />
-<img width="60" height="100" alt="Maitre_2" src="https://github.com/user-attachments/assets/e5a17284-2f38-4543-98f4-ab3a1902b344" />
-<img width="60" height="100" alt="Maitre_3" src="https://github.com/user-attachments/assets/275ba047-b6d9-4c4d-9518-b8b32a871199" />
-<img width="60" height="100" alt="Mozo_2" src="https://github.com/user-attachments/assets/60b3af53-05a8-4937-8d33-4caf262236a3" />
-<img width="60" height="100" alt="Mozo_3" src="https://github.com/user-attachments/assets/0edc7e97-7732-4ec7-a67f-0f137f946980" />
-<img width="60" height="100" alt="Cocinero_1" src="https://github.com/user-attachments/assets/4b207ae4-19fc-49e6-aa12-8aa85f97110a" />
-<img width="60" height="100" alt="Cocinero 3" src="https://github.com/user-attachments/assets/4d4e5ba4-f350-4aa1-82df-597a0141ca11" />
-<img width="60" height="100" alt="Mozo_1" src="https://github.com/user-attachments/assets/90759b4e-fd0a-4449-ba3e-b50fc7ac4b94" />
+
+<table style="width: 100%;">
+    <tr>
+        <th>Inicio</th>
+    </tr>
+    <tr>
+        <td><img alt="Splash" width="25%" src="https://github.com/user-attachments/assets/facf7c03-24f1-45bd-acc1-1220a15ab278" /></td>
+        <td><img alt="Login" width="25%" src="https://github.com/user-attachments/assets/7a0599fd-8ecd-4b1b-bc6a-8495e0b94d90" /></td>
+        <td><img alt="Registro" width="25%" src="https://github.com/user-attachments/assets/9751c098-17e3-4444-9eb2-9fa89dc45e75" /></td>
+    </tr>
+    <tr>
+        <th>Dueño</th>
+    </tr>
+    <tr>
+        <td><img alt="Duenio_1" width="25%" src="https://github.com/user-attachments/assets/e5647ba2-a2c1-4e74-9697-9b5ec3d775b0" /></td>
+        <td><img alt="Duenio_2" width="25%" src="https://github.com/user-attachments/assets/00a86e85-c0f6-41e5-bdfb-5d84aaeaf925" /></td>
+        <td><img alt="Duenio_3" width="25%" src="https://github.com/user-attachments/assets/73b09670-b13d-4de4-b916-6eb14c44f99a" /></td>
+    </tr>
+    <tr>
+        <th>Maître</th>
+    </tr>
+    <tr>
+        <td><img alt="Maitre_2" width="25%" src="https://github.com/user-attachments/assets/e5a17284-2f38-4543-98f4-ab3a1902b344" /></td>
+        <td><img alt="Maitre_3" width="25%" src="https://github.com/user-attachments/assets/275ba047-b6d9-4c4d-9518-b8b32a871199" /></td>
+        <td><img alt="Maitre_1" width="25%" src="https://github.com/user-attachments/assets/8a30b401-7a2d-4a4d-83ca-ea4f272c221e" /></td>
+    </tr>
+    <tr>
+        <th>Mozo</th>
+        <td><img alt="Mozo_1" width="25%" src="https://github.com/user-attachments/assets/90759b4e-fd0a-4449-ba3e-b50fc7ac4b94" /></td>
+        <td><img alt="Mozo_2" width="25%" src="https://github.com/user-attachments/assets/60b3af53-05a8-4937-8d33-4caf262236a3" /></td>
+        <td><img alt="Mozo_3" width="25%" src="https://github.com/user-attachments/assets/0edc7e97-7732-4ec7-a67f-0f137f946980" /></td>
+    </tr>
+    <tr>
+        <th>Cociner / Bartender</th>
+        <td><img alt="Cocinero_1" width="25%" src="https://github.com/user-attachments/assets/4b207ae4-19fc-49e6-aa12-8aa85f97110a" /></td>
+        <td><img alt="Cocinero 3" width="25%" src="https://github.com/user-attachments/assets/4d4e5ba4-f350-4aa1-82df-597a0141ca11" /></td>
+    </tr>
+</table>
+
+
+
+
+
+
+
+
+
 
 
 ### Ingreso al local (Lista de espera)
@@ -34,7 +69,7 @@ En orden son: Mesa 8, Mesa 7, Mesa 6, Mesa 5\
 <img width="100" height="100" alt="Mesa_5" src="https://github.com/user-attachments/assets/bfd73ea9-190a-4725-858b-171cc83342b8" />
 
 # Splash Screen
-<img width="413" height="892" alt="image" src="https://github.com/user-attachments/assets/facf7c03-24f1-45bd-acc1-1220a15ab278" />
+
 
 
 ## Pagés Valentino

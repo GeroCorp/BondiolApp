@@ -62,13 +62,4 @@ export class SplashPage implements OnInit, OnDestroy {
   ngOnDestroy() {
     // Limpiar cualquier referencia si es necesario
   }
-
-  // ✅ Stringify seguro para evitar circular references
-  private safeStringify(obj: any): string {
-    try {
-      return JSON.stringify(obj);
-    } catch (error) {
-      return String(obj);
-    }
-  }
 }
