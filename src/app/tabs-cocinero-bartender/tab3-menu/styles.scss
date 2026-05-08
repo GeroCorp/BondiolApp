@@ -238,8 +238,10 @@ img {
 }
 
 .snap-list {
-  height: 100%;           
-  overflow-y: scroll;       
+  height: 90%;           
+  overflow-y: scroll;  
+  margin-top: 5px;
+  margin-bottom: 10px;     
   scroll-snap-type: y mandatory; 
   scroll-behavior: smooth;
   background-color: transparent !important;
@@ -253,8 +255,8 @@ img {
 .menu-card {
   scroll-snap-align: start;  
   scroll-snap-stop: always; 
-  margin-bottom: 40px;       
-  min-height: 80vh;          
+  margin-bottom: 50px;       
+  min-height: 70vh;          
   flex-direction: column;
   justify-content: space-between;
   padding: 5px;

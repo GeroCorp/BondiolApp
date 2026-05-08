@@ -30,7 +30,7 @@
         <div class="cart">
           <button type="button"
             (click)="hacerPedido()"
-            [disabled]="getCantidadItemsPedido() < 1">
+            [disabled]="clienteService.pedido().length < 1">
             <ion-icon name="cart-outline"></ion-icon>
             Hacer Pedido
           </button>

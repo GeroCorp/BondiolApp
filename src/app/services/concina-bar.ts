@@ -48,9 +48,14 @@ export class ConcinaBar {
     ? this.supabase
         .from('pedidos')
         .select(`
-          id, estado, fecha, total,
-          mesa:mesas!id(numero)
-        `)
+              id,
+              estado,
+              fecha,
+              total,
+              mesa:mesa (
+                numero
+              )
+            `)
         .in('id', pedidoIdsMesa)
         .in('estado', estadosActivos)
     : Promise.resolve({ data: [], error: null });
