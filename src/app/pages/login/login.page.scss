@@ -80,13 +80,19 @@ toolbar-logo-title {
   }
 }
 
+@media screen and (max-height: 800px) {
+  .separador {
+    display: none;
+  }
+  
+}
+
 /* Wrapper para centrar contenido cuando hay espacio */
 .login-wrapper {
   display: flex;
   flex-direction: column;
   justify-content: center;
   flex: 1;
-  padding: 40px 0 60px;
   min-height: 100%;
   width: 100%;
   max-width: 100%;

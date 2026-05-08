@@ -1,14 +1,11 @@
-.presala-content {
-    --background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
+
 
 .presala-container {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 30px 20px;
-    min-height: 100%;
+    padding: 30px 0px;
     text-align: center;
 }
 
@@ -17,18 +14,22 @@
     
     ion-icon {
         font-size: 120px;
-        animation: pulse 2s infinite;
+        animation: rotation 2s infinite;
     }
 }
 
-@keyframes pulse {
-    0%, 100% {
+@keyframes rotation {
+    0% {
         opacity: 1;
-        transform: scale(1);
+        transform: rotate(0deg);
     }
     50% {
-        opacity: 0.7;
-        transform: scale(1.1);
+        opacity: 0.5;
+        transform: rotate(180deg);
+    }
+    100% {
+        opacity: 1;
+        transform: rotate(360deg);
     }
 }
 
@@ -41,7 +42,6 @@ h1 {
 }
 
 .message-box {
-    background: rgba(255, 255, 255, 0.95);
     border-radius: 15px;
     padding: 25px;
     margin-bottom: 20px;
@@ -51,16 +51,15 @@ h1 {
 
     .main-message {
         font-size: 18px;
-        color: #333;
         margin-bottom: 15px;
         
         strong {
-        color: #667eea;
+        color: #E85D04;
         }
     }
 
     p {
-        color: #666;
+        color: #ffffff;
         font-size: 16px;
         line-height: 1.6;
         margin-bottom: 12px;
@@ -70,13 +69,12 @@ h1 {
         }
 
         strong {
-        color: #333;
+        color: #FAA307;
         }
     }
 }
 
 .info-box {
-    background: rgba(255, 255, 255, 0.9);
     border-radius: 10px;
     padding: 15px 20px;
     margin-bottom: 20px;
@@ -92,13 +90,13 @@ h1 {
     }
 
     p {
-        color: #555;
+        color: #ffffff;
         font-size: 14px;
         margin: 0;
         text-align: left;
 
         strong {
-        color: #333;
+        color: #FAA307;
         }
     }
 }

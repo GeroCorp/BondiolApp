@@ -199,46 +199,6 @@ ion-card{
   }
 }
 
-// ✅ MEJORAR VISUALIZACIÓN DE CARDS - EVITAR CORTES
-// Aplicar scroll-snap a contenedores de cards
-// .wrap,
-// ion-content {
-//   scroll-behavior: smooth;
-// }
-
-// // Cards dentro de listas verticales
-// ion-card {
-//   margin: 12px;
-//   scroll-snap-align: start;
-//   scroll-snap-stop: always;
-// }
-
-// // Contenedores con multiple cards (pedidos, mesas, etc.)
-// .pedido-card,
-// .card-container,
-// [class*="list"],
-// [class*="cards"] {
-//   scroll-snap-align: center;
-//   scroll-snap-stop: always;
-// }
-
-// // Ajustar altura de contenedores para mostrar 1-2 cards máximo
-// ion-content.pedidos-content,
-// ion-content.mesas-content,
-// ion-content.consultas-content {
-//   --padding-bottom: 80px;
-// }
-
-// // Asegurar que cada card tenga tamaño consistente
-// .pedido-card,
-// .mesa-card,
-// .consulta-card,
-// ion-card {
-//   min-height: 250px;
-//   max-height: 500px;
-//   width: 100%;
-// }
-
 // ACTION SHEET (menu del ion-select) , no veia nada perdon
 
 .action-sheet-group {

@@ -68,13 +68,13 @@ export class RegisterPage {
     if (!this.foto) {
       await this.hapticService.vibrateError();
       this.showToast('Debe tomarse una foto para completar el registro.', 'danger');
-      return;
+      throw new Error('Debe tomarse una foto para completar el registro.');
     }
 
     if (password !== password2) {
       await this.hapticService.vibrateError();
       this.showToast('Las contraseñas no coinciden.', 'danger');
-      return;
+      throw new Error('Las contraseñas no coinciden.');
     }
 
     // Mostrar loading
@@ -89,7 +89,7 @@ export class RegisterPage {
         console.error('Error al crear cuenta Auth:', authError.code, authError.message);
         await this.hapticService.vibrateError();
         this.showToast('Error al crear usuario', 'danger');
-        return;
+        throw new Error(`Error al crear cuenta Auth: ${authError.message}`);
       }
 
       // 2. Subir foto a storage
@@ -100,18 +100,16 @@ export class RegisterPage {
         await this.customLoader.hide();
         await this.hapticService.vibrateError();
         this.showToast('Error al subir la foto.', 'danger');
-        return;
+        throw new Error('Error al subir la foto.');
       }
       this.foto = publicUrlData;
-
-      const publicUrl = await this.authService.subirImagenCliente(user.user?.id || '', blob);
 
       const nuevoCliente = {
         nombre: name,
         apellido: surname,
         dni,
         email,
-        foto: publicUrl,   // 👉 guardás la URL pública
+        foto: publicUrlData,   // 👉 guardás la URL pública
         user_id: user.user?.id || null
       };
 
@@ -122,8 +120,10 @@ export class RegisterPage {
         console.log(data);
         await this.hapticService.vibrateError();
         this.showToast('Error al crear el perfil de cliente.', 'danger');
-        return;
+        throw new Error('Error al crear el perfil de cliente.');
       }
+
+      console.log("=============== CLIENTe REGISTRADO =================");
 
       // 4. Enviar notificación push a dueños y supervisores
       try {
@@ -144,6 +144,7 @@ export class RegisterPage {
       }
 
       await this.customLoader.hide();
+      
       this.showToast('Espere la confirmación de registro por mail.', 'success');
       this.router.navigate(['/login'], { replaceUrl: true });
 
@@ -152,6 +153,7 @@ export class RegisterPage {
       await this.hapticService.vibrateError();
       console.error(error.message);
       this.authErrorMessage(error);
+      
     }
   }
 
