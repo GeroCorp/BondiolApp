@@ -24,8 +24,6 @@
     </tr>
     <tr>
         <th>Maître</th>
-    </tr>
-    <tr>
         <td><img alt="Maitre_2" width="25%" src="https://github.com/user-attachments/assets/e5a17284-2f38-4543-98f4-ab3a1902b344" /></td>
         <td><img alt="Maitre_3" width="25%" src="https://github.com/user-attachments/assets/275ba047-b6d9-4c4d-9518-b8b32a871199" /></td>
         <td><img alt="Maitre_1" width="25%" src="https://github.com/user-attachments/assets/8a30b401-7a2d-4a4d-83ca-ea4f272c221e" /></td>
