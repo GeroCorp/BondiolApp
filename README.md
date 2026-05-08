@@ -12,16 +12,12 @@
 <table style="width: 100%;">
     <tr>
         <th>Inicio</th>
-    </tr>
-    <tr>
         <td><img alt="Splash" width="25%" src="https://github.com/user-attachments/assets/facf7c03-24f1-45bd-acc1-1220a15ab278" /></td>
         <td><img alt="Login" width="25%" src="https://github.com/user-attachments/assets/7a0599fd-8ecd-4b1b-bc6a-8495e0b94d90" /></td>
         <td><img alt="Registro" width="25%" src="https://github.com/user-attachments/assets/9751c098-17e3-4444-9eb2-9fa89dc45e75" /></td>
     </tr>
     <tr>
         <th>Dueño</th>
-    </tr>
-    <tr>
         <td><img alt="Duenio_1" width="25%" src="https://github.com/user-attachments/assets/e5647ba2-a2c1-4e74-9697-9b5ec3d775b0" /></td>
         <td><img alt="Duenio_2" width="25%" src="https://github.com/user-attachments/assets/00a86e85-c0f6-41e5-bdfb-5d84aaeaf925" /></td>
         <td><img alt="Duenio_3" width="25%" src="https://github.com/user-attachments/assets/73b09670-b13d-4de4-b916-6eb14c44f99a" /></td>
