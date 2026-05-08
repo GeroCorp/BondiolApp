@@ -3,7 +3,7 @@
     <div slot="start" class="header-spacer"></div>
  
     <ion-title class="toolbar-logo-title">
-      <img src="assets/icon/icon-only.png" alt="Logo" width="115" />
+      <img src="assets/icon/icon-only.png" alt="Logo" width="70" />
     </ion-title>
   </ion-toolbar>
 </ion-header>
@@ -34,19 +34,12 @@
         <p>Te notificaremos a: <strong>{{ clienteEmail }}</strong></p>
       </div>
 
-      <div class="time-estimate">
-        <ion-icon name="time-outline"></ion-icon>
-        <span>Tiempo estimado: 24-48 horas</span>
-      </div>
-    </ion-card-content>
-    
-
-    
+      <app-main-button
+      (btnClick)="volverAlLogin()"
+      >
+      <ion-icon name="home-outline" slot="start"></ion-icon>
+      Ir a Inicio
+    </app-main-button>
+  </ion-card-content>
   </ion-card>
-  <app-main-button
-  (btnClick)="volverAlLogin()"
-  >
-    <ion-icon name="home-outline" slot="start"></ion-icon>
-    Ir a Inicio
-  </app-main-button>
 </ion-content>
