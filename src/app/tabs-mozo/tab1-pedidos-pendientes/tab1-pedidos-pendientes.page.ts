@@ -237,12 +237,14 @@ export class Tab1PedidosPendientesPage implements OnInit {
         await this.mozoService.enviarPedidoSector(pedido.id, 'bar', nombresBar);
       }
 
-      await this.notificationService.sendNotificationToCliente(
-        'Pedido Aprobado',
-        `Tu pedido de la mesa ${pedido.mesa?.numero} fue aprobado.`,
-        '',
-        pedido.id_cliente
-      );
+      if (pedido.id_cliente){
+        await this.notificationService.sendNotificationToCliente(
+          'Pedido Aprobado',
+          `Tu pedido de la mesa ${pedido.mesa?.numero} fue aprobado.`,
+          '',
+          pedido.id_cliente
+        );
+      }
 
       await this.customLoader.hide();
       this.showToast('Pedido confirmado y enviado a cocina/bar', 'success');

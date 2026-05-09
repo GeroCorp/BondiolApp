@@ -19,13 +19,13 @@ export class MenuItemComponent implements OnInit, OnChanges, OnDestroy {
   public currentItemIndex: number = 0;
   
   // Variables para detectar movimiento
-  private ZDirection: 'left' | 'right' | null = null;
-  private XDirection: 'forward' | 'backward' | null = null;
-  private ZCount: number = 0;
-  private XCount: number = 0;
-  private lastActionTime: number = 0;
-  private actionCooldown: number = 1000; // ✅ Cambié a 1500ms (1.5 segundos)
-  private lastProductChangeTime: number = 0;
+  // private ZDirection: 'left' | 'right' | null = null;
+  // private XDirection: 'forward' | 'backward' | null = null;
+  // private ZCount: number = 0;
+  // private XCount: number = 0;
+  // private lastActionTime: number = 0;
+  // private actionCooldown: number = 1000; // ✅ Cambié a 1500ms (1.5 segundos)
+  // private lastProductChangeTime: number = 0;
   
   constructor() { }
 
@@ -55,7 +55,7 @@ export class MenuItemComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnDestroy() {
-    window.removeEventListener('deviceorientation', this.orientationHandler);
+    // window.removeEventListener('deviceorientation', this.orientationHandler);
   }
 
   private searchForItemIndex() {
@@ -70,9 +70,9 @@ export class MenuItemComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
-  private orientationHandler = (event: DeviceOrientationEvent) => {
-    this.handleDeviceOrientation(event);
-  };
+  // private orientationHandler = (event: DeviceOrientationEvent) => {
+  //   this.handleDeviceOrientation(event);
+  // };
 
 
 
@@ -80,89 +80,89 @@ export class MenuItemComponent implements OnInit, OnChanges, OnDestroy {
   console.log('📱 InicialiZando DeviceOrientation...');
   
   // ✅ Delay de 2 segundos para evitar que se dispare al abrir el modal
-  setTimeout(() => {
-    window.addEventListener('deviceorientation', this.orientationHandler);
-    console.log('✅ DeviceOrientation listener registrado');
-  }, 2000);
+  // setTimeout(() => {
+  //   window.addEventListener('deviceorientation', this.orientationHandler);
+  //   console.log('✅ DeviceOrientation listener registrado');
+  // }, 2000);
 }
 
-  private handleDeviceOrientation(event: DeviceOrientationEvent) {
-    const Y = event.alpha || 0;
-    const X = event.beta || 0;
-    const Z = event.gamma || 0;
+  // private handleDeviceOrientation(event: DeviceOrientationEvent) {
+  //   const Y = event.alpha || 0;
+  //   const X = event.beta || 0;
+  //   const Z = event.gamma || 0;
 
-    const now = Date.now();
-    const canAct = (now - this.lastActionTime) > this.actionCooldown;
+  //   const now = Date.now();
+  //   const canAct = (now - this.lastActionTime) > this.actionCooldown;
 
-    console.log(`Rotación Y: ${Y.toFixed(1)} X: ${X.toFixed(1)} Z: ${Z.toFixed(1)} | canAct: ${canAct}`);
-    // Si está bloqueado, no hacer nada
+  //   console.log(`Rotación Y: ${Y.toFixed(1)} X: ${X.toFixed(1)} Z: ${Z.toFixed(1)} | canAct: ${canAct}`);
+  //   // Si está bloqueado, no hacer nada
 
 
-    // ===== DETECCIÓN IZQUIERDA/DERECHA (Z) =====
-    if (Z > 55) {
-      if (this.ZDirection !== 'right' && canAct) {
-        console.log('➡️ DERECHA detectada - Click en botón prevImage');
-        this.simulateButtonClick('btn-prev-image');
-        this.ZDirection = 'right';
-        this.lastActionTime = now;
-        this.ZCount = 0;
-      }
-    } else if (Z < -55) {
-      if (this.ZDirection !== 'left' && canAct) {
-        console.log('⬅️ IZQUIERDA detectada - Click en botón nextImage');
-        this.simulateButtonClick('btn-next-image');
-        this.ZDirection = 'left';
-        this.lastActionTime = now;
-        this.ZCount++;
+  //   // ===== DETECCIÓN IZQUIERDA/DERECHA (Z) =====
+  //   if (Z > 55) {
+  //     if (this.ZDirection !== 'right' && canAct) {
+  //       console.log('➡️ DERECHA detectada - Click en botón prevImage');
+  //       this.simulateButtonClick('btn-prev-image');
+  //       this.ZDirection = 'right';
+  //       this.lastActionTime = now;
+  //       this.ZCount = 0;
+  //     }
+  //   } else if (Z < -55) {
+  //     if (this.ZDirection !== 'left' && canAct) {
+  //       console.log('⬅️ IZQUIERDA detectada - Click en botón nextImage');
+  //       this.simulateButtonClick('btn-next-image');
+  //       this.ZDirection = 'left';
+  //       this.lastActionTime = now;
+  //       this.ZCount++;
         
-        if (this.ZCount >= 5) {
-          console.log('🔄 COMBO IZQUIERDA DETECTADO - Volviendo al inicio');
-          this.currentItemIndex = 0;
-          this.currentImageIndex = 0;
-          this.ZCount = 0;
-        }
-      }
-    } else if ( Z > -5 && Z < 5) {
-      this.ZDirection = null;
-      console.log('↔️ Zona neutral Z - reset');
-    }
+  //       if (this.ZCount >= 5) {
+  //         console.log('🔄 COMBO IZQUIERDA DETECTADO - Volviendo al inicio');
+  //         this.currentItemIndex = 0;
+  //         this.currentImageIndex = 0;
+  //         this.ZCount = 0;
+  //       }
+  //     }
+  //   } else if ( Z > -5 && Z < 5) {
+  //     this.ZDirection = null;
+  //     console.log('↔️ Zona neutral Z - reset');
+  //   }
 
-    // ===== DETECCIÓN ADELANTE/ATRÁS (Y - ALPHA) =====
+  //   // ===== DETECCIÓN ADELANTE/ATRÁS (Y - ALPHA) =====
 
-    const canChangeProduct = (now - this.lastProductChangeTime) > this.actionCooldown;
+  //   const canChangeProduct = (now - this.lastProductChangeTime) > this.actionCooldown;
 
 
-    if (X < 30) {
-      if (this.XDirection !== 'forward' && canAct && canChangeProduct) {
-        console.log('⬇️ ADELANTE detectada - Click en botón nextProduct');
-        this.simulateButtonClick('btn-next-product');
-        this.XDirection = 'forward';
-        this.lastActionTime = now;
-        this.lastProductChangeTime = now; // 🔒 Bloquea cambios de producto
+  //   if (X < 30) {
+  //     if (this.XDirection !== 'forward' && canAct && canChangeProduct) {
+  //       console.log('⬇️ ADELANTE detectada - Click en botón nextProduct');
+  //       this.simulateButtonClick('btn-next-product');
+  //       this.XDirection = 'forward';
+  //       this.lastActionTime = now;
+  //       this.lastProductChangeTime = now; // 🔒 Bloquea cambios de producto
 
-        this.XCount = 0;
-      }
-    } else if (X > 100) {
-      if (this.XDirection !== 'backward' && canAct && canChangeProduct) {
-        console.log('⬆️ ATRÁS detectada - Click en botón prevProduct');
-        this.simulateButtonClick('btn-prev-product');
-        this.XDirection = 'backward';
-        this.lastActionTime = now;
-        this.lastProductChangeTime = now; // 🔒 Bloquea cambios de producto
+  //       this.XCount = 0;
+  //     }
+  //   } else if (X > 100) {
+  //     if (this.XDirection !== 'backward' && canAct && canChangeProduct) {
+  //       console.log('⬆️ ATRÁS detectada - Click en botón prevProduct');
+  //       this.simulateButtonClick('btn-prev-product');
+  //       this.XDirection = 'backward';
+  //       this.lastActionTime = now;
+  //       this.lastProductChangeTime = now; // 🔒 Bloquea cambios de producto
 
-        this.XCount++;
+  //       this.XCount++;
         
-        if (this.XCount >= 5) {
-          console.log('🔄 COMBO ATRÁS DETECTADO - Volviendo al inicio');
-          this.currentItemIndex = 0;
-          this.currentImageIndex = 0;
-          this.XCount = 0;
-        }
-      }
-    } else if ((Y > 170 && Y < 190) || (Y > 350 || Y < 10)) {
-      console.log('⬆️⬇️ Zona neutral Y - reset');
-    }
-  }
+  //       if (this.XCount >= 5) {
+  //         console.log('🔄 COMBO ATRÁS DETECTADO - Volviendo al inicio');
+  //         this.currentItemIndex = 0;
+  //         this.currentImageIndex = 0;
+  //         this.XCount = 0;
+  //       }
+  //     }
+  //   } else if ((Y > 170 && Y < 190) || (Y > 350 || Y < 10)) {
+  //     console.log('⬆️⬇️ Zona neutral Y - reset');
+  //   }
+  // }
 
   private simulateButtonClick(buttonId: string) {
     const button = document.getElementById(buttonId);
@@ -213,7 +213,7 @@ export class MenuItemComponent implements OnInit, OnChanges, OnDestroy {
     if (this.itemsArray && this.currentItemIndex < this.itemsArray.length - 1) {
       this.item = this.itemsArray[this.currentItemIndex + 1];
       this.currentItemIndex++;
-      this.XDirection = null;
+      // this.XDirection = null;
 
       this.currentImageIndex = 0;
       this.handleImages();
@@ -226,7 +226,7 @@ export class MenuItemComponent implements OnInit, OnChanges, OnDestroy {
       this.currentItemIndex--;
       this.item = this.itemsArray[this.currentItemIndex];
 
-      this.XDirection = null;
+      // this.XDirection = null;
 
       this.currentImageIndex = 0;
       this.handleImages();
