@@ -803,7 +803,7 @@ async eliminarBebida(id: number) {
 
     // Obtener la URL pública de la imagen
     const { data: publicUrlData } = this.supabase.storage
-      .from('clientes-registrados')
+      .from('mesas')
       .getPublicUrl(fileName);
 
     // La URL pública es lo que guardarás en la base de datos

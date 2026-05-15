@@ -27,21 +27,18 @@
 
         <ion-item lines="none" class="mesa-item">
           <ion-label position="fixed">Tipo de Mesa</ion-label>  
-        <!-- </ion-item>
-        
-        <ion-item lines="none" class="mesa-item"> -->
           <ion-select formControlName="tipo" interface="action-sheet" placeholder="Seleccionar Tipo">
             <ion-select-option value="VIP">VIP</ion-select-option>
             <ion-select-option value="estandar">Estándar</ion-select-option>
             <ion-select-option value="movilidad reducida">Movilidad reducida</ion-select-option>
           </ion-select>
         </ion-item>
-        <ion-button color="secondary" expand="block" (click)="tomarFoto()">
-          Tomar foto
-        </ion-button>
-
-        <div *ngIf="mesaForm.get('foto')?.value" class="image-container">
-          <img [src]="mesaForm.get('foto')?.value" alt="Foto mesa" />
+        <div class="foto-zone" (click)="tomarFoto()">
+          <img [src]="mesaForm.get('foto')?.value" alt="Foto mesa" class="foto-img"/>
+          <div *ngIf="mesaForm.get('foto')?.value" class="foto-placeholder">
+            <p>Tomar foto</p>
+          </div>
+        
         </div>
 
       <app-secondary-button (click)="generateQR()" expand="block" fill="clear" shape="round">
