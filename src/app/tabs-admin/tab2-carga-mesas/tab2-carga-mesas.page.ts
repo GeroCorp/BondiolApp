@@ -23,8 +23,7 @@ export class Tab2CargaMesasPage {
   
   email: string | null = null;
   perfil: string | null = null;
-
-
+  foto: string | null = null;
   qrData: string = "";
 
   qrCodeDownloadLink: SafeUrl = '';
@@ -213,6 +212,7 @@ export class Tab2CargaMesasPage {
       resultType: CameraResultType.DataUrl,
       source: CameraSource.Camera
     });
+
     this.mesaForm.patchValue({
     foto: image.dataUrl 
   })     

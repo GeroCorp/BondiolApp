@@ -13,12 +13,15 @@
   <div class="mesa-admin-wrapper">
     <ion-card class="mesa-admin-card">
       <ion-card-content>
-        <ion-list class="mesa-admin-list">
+        <ion-list class="snap-list">
           @for (mesa of mesas(); track $index) {
               <ion-card class="mesa-card">
-                <img 
-                [src]="mesa.foto" 
-                (error)="handleImageError($event)" />
+                
+                <div class="image-container">
+                  <img 
+                  [src]="mesa.foto" 
+                  (error)="handleImageError($event)" />
+                </div>
 
                 <ion-card-header>
                   <ion-card-title>
