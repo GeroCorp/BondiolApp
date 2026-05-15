@@ -9,7 +9,6 @@
 
 <ion-content>
   <div class="page-layout">
-
     <div class="anon-info-block">
       <div class="anon-info-badge">
         <ion-icon name="person-outline"></ion-icon>
@@ -51,7 +50,12 @@
       </ion-item>
 
       <div class="foto-zone" (click)="tomarFoto()">
-        <img *ngIf="foto" [src]="foto" alt="Foto del cliente" class="foto-img">
+        <img
+          *ngIf="foto"
+          [src]="foto"
+          alt="Foto del cliente"
+          class="foto-img"
+        />
         <div *ngIf="!foto" class="foto-placeholder">
           <ion-icon name="camera-outline"></ion-icon>
           <p>Presioná para tomar una foto</p>
@@ -63,15 +67,22 @@
       </div>
 
       <div class="actions">
-        <ion-button expand="block" (click)="ingresar()" [disabled]="!nombre || !foto">
+        <ion-button
+          expand="block"
+          (click)="ingresar()"
+          [disabled]="!nombre || !foto"
+        >
           Ingresar
         </ion-button>
-        <ion-button expand="block" (click)="accederComoExistente()" color="secondary">
+        <ion-button
+          expand="block"
+          (click)="accederComoExistente()"
+          color="secondary"
+        >
           <ion-icon name="people-circle-outline" slot="start"></ion-icon>
           Acceder como Cliente Existente
         </ion-button>
       </div>
     </div>
-
   </div>
 </ion-content>
