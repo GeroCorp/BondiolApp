@@ -192,7 +192,7 @@ export class Tab8CuentaPage implements OnInit {
 
   async confirmarPropina() {
   this.propinaSeleccionada = true;
-  
+  console.log(this.esDelivery);
   if (this.esDelivery){
     await this.propinaService.updatePropinaDelivery(
       this.pedidoActual.id,
@@ -305,8 +305,8 @@ export class Tab8CuentaPage implements OnInit {
         await this.customLoader.hide();
         this.router.navigate(['/home-cliente']);
       } catch(e: any) {
-        throw new Error('No se pudo procesar el pago de delivery: ' + e.message);
         await this.customLoader.hide();
+        throw new Error('No se pudo procesar el pago de delivery: ' + e.message);
       }
     }
   }
@@ -340,6 +340,7 @@ export class Tab8CuentaPage implements OnInit {
       this.showToast(`QR escaneado. Propina escaneada: ${propina}%`, 'success');
 
       this.propinaPorcentaje = propina;
+      this.seleccionarPropina(propina);
       this.confirmarPropina();
 
     } catch (error: any) {

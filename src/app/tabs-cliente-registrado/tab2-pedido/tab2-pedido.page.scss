@@ -1,24 +1,8 @@
 // TEMA OSCURO - Tab2 Pedido
 // Variables del tema oscuro
-:host {
-  --background-dark: #370606;
-  --surface-dark: #6a040F;
-  --surface-variant: #9D0208;
-  --text-primary: #ffffff;
-  --text-secondary: #b3b3b3;
-  --text-muted: #808080;
-  --primary-color: #F48C06;
-  --secondary-color: #F48C06;
-  --accent-color: #ff6b47;
-  --error-color: #cf6679;
-  --border-color: #404040;
-  --shadow-dark: 0 4px 12px #370606;
-  --glass-effect: rgba(45, 45, 45, 0.8);
-}
 
 // Fondo principal con gradiente oscuro
 ion-content {
-  --background: linear-gradient(180deg, var(--background-dark) 0%, var(--surface-dark) 50%, #D00000 100%);
   --color: var(--text-primary);
 }
 
@@ -96,7 +80,6 @@ ion-header {
 
 // Cards de items del pedido
 ion-card {
-  --background: var(--surface-dark);
   --color: var(--text-primary);
   border-radius: 15px;
   margin-bottom: 16px;
