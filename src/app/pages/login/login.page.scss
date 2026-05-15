@@ -238,7 +238,6 @@ ion-input{
   top: 56px;
   right: 12px;
   width: 300px;
-  max-height: 520px;
   background: #370606;
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -297,21 +296,8 @@ ion-input{
 }
 
 .quick-access-list {
-  overflow-y: auto;
-  max-height: 460px;
+  overflow-y: hidden;
   padding: 6px 0;
-
-  /* Scrollbar sutil */
-  &::-webkit-scrollbar {
-    width: 4px;
-  }
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  &::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 2px;
-  }
 }
 
 .qa-item {
