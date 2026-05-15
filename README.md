@@ -57,10 +57,10 @@
 
 ### QR para test mesa
 En orden son: Mesa 8, Mesa 7, Mesa 6, Mesa 5\
-<img width="100" height="100" alt="mesa 8" src="https://github.com/user-attachments/assets/9ec937cb-5bb6-46f4-8c64-5710f0be8217" />
-<img width="100" height="100" alt="mesa_7" src="https://github.com/user-attachments/assets/d67ce351-fc04-4e73-80d0-75c773a8d171" />
-<img width="100" height="100" alt="mesa_6" src="https://github.com/user-attachments/assets/d14b144e-f794-4e74-83f2-eb34a3729546" />
-<img width="100" height="100" alt="Mesa_5" src="https://github.com/user-attachments/assets/bfd73ea9-190a-4725-858b-171cc83342b8" />
+<img width="100" height="100" alt="mesa 1" src="https://zqcgzuszxljgbbwbriph.supabase.co/storage/v1/object/public/mesas/mesa_1/qr.jpeg" />
+<img width="100" height="100" alt="mesa 2" src="https://zqcgzuszxljgbbwbriph.supabase.co/storage/v1/object/public/mesas/mesa_2/qr.jpeg" />
+<img width="100" height="100" alt="mesa 3" src="https://zqcgzuszxljgbbwbriph.supabase.co/storage/v1/object/public/mesas/mesa_3/qr.jpeg" />
+<img width="100" height="100" alt="Mesa 4" src="https://zqcgzuszxljgbbwbriph.supabase.co/storage/v1/object/public/mesas/mesa_4/qr.jpeg" />
 
 # Splash Screen
 
