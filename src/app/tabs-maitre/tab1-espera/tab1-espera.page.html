@@ -1,164 +1,117 @@
 <ion-header [translucent]="true">
   <ion-toolbar color="">
     <ion-title>Lista de Espera</ion-title>
-        <ion-buttons slot="start">
+    <ion-buttons slot="start">
       <ion-back-button defaultHref="/home" icon="arrow-back"></ion-back-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="llamarSiguienteCliente()" [disabled]="clientesFiltrados.length === 0">
+        <ion-icon name="megaphone-outline" slot="icon-only"></ion-icon>
+      </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true" class="espera-content">
-  <!-- Refresher -->
   <ion-refresher slot="fixed" (ionRefresh)="refrescarDatos($event)">
     <ion-refresher-content
       pulling-icon="chevron-down-circle-outline"
       pulling-text="Desliza para actualizar"
       refreshing-spinner="circles"
-    >
-    </ion-refresher-content>
+    ></ion-refresher-content>
   </ion-refresher>
 
-  <div class="espera-wrapper">
-    <!-- Loading Spinner -->
-    <div *ngIf="isLoading" class="loading-container">
-      <ion-spinner name="circles" color="primary"></ion-spinner>
-      <p class="ion-text-center ion-margin-top">Cargando clientes...</p>
-    </div>
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="loading-container">
+    <ion-spinner name="circles" color="primary"></ion-spinner>
+    <p>Cargando clientes...</p>
+  </div>
 
-    <!-- Lista de espera formal (únicos clientes a mostrar) -->
-    <ion-list *ngIf="!isLoading && clientesFiltrados.length > 0" class="espera-list">
-      <ion-list-header>
-        <ion-label>
-          <h2>{{ mostrarTodos ? 'Todos los Clientes' : 'Lista de Espera' }} ({{ clientesFiltrados.length }})</h2>
-          <p>{{ mostrarTodos ? 'Historial completo' : 'Clientes en espera de mesa' }}</p>
-        </ion-label>
-        <div class="header-buttons">
-          <ion-button 
-            fill="outline" 
-            color="secondary" 
-            size="small"
-            (click)="toggleMostrarTodos()">
-            <ion-icon [name]="mostrarTodos ? 'eye-off-outline' : 'eye-outline'" slot="start"></ion-icon>
-            {{ mostrarTodos ? 'Solo Espera' : 'Ver Todos' }}
-          </ion-button>
-          <ion-button 
-            fill="clear" 
-            color="primary" 
-            (click)="llamarSiguienteCliente()"
-            [disabled]="clientesFiltrados.length === 0">
-            <ion-icon name="megaphone-outline" slot="start"></ion-icon>
-            Llamar Siguiente
-          </ion-button>
-        </div>
-      </ion-list-header>
+  <!-- Cards con snap vertical de 2 en 2 -->
+  <div *ngIf="!isLoading && clientesFiltrados.length > 0" class="snap-feed">
+    <ng-container *ngFor="let cliente of clientesFiltrados; let i = index">
+      <!-- Abrir página snap en índice par (0, 2, 4...) -->
+      <div *ngIf="i % 2 === 0" class="snap-page">
 
-      <ion-item
-        *ngFor="let cliente of clientesFiltrados; let i = index"
-        lines="inset"
-        [button]="false"
-        class="espera-item"
-      >
-        <ion-avatar slot="start" class="position-avatar">
-          <div class="position-number">{{ i + 1 }}</div>
-        </ion-avatar>
-
-        <div class="cliente-col">
-          <ion-label>
-            <h2>{{ cliente.nombre_cliente }}</h2>
-            <p>{{ cliente.cantidad_personas }} persona{{ cliente.cantidad_personas > 1 ? 's' : '' }}</p>
-            <p>
-              <ion-badge [color]="getColorEstado(cliente.estado)">
-                {{ getEstadoTexto(cliente.estado) }}
-              </ion-badge>
-              - {{ formatearFecha(cliente.created_at) }}
+        <!-- Card del cliente en posición par (i) -->
+        <div class="cliente-card">
+          <div class="card-avatar">
+            <img *ngIf="clientesFiltrados[i].foto" [src]="clientesFiltrados[i].foto" alt="foto" />
+            <div *ngIf="!clientesFiltrados[i].foto" class="avatar-placeholder">
+              {{ clientesFiltrados[i].nombre_cliente?.charAt(0)?.toUpperCase() }}
+            </div>
+          </div>
+          <div class="card-info">
+            <h2>{{ clientesFiltrados[i].nombre_cliente }}</h2>
+            <p class="personas">
+              <ion-icon name="people-outline"></ion-icon>
+              {{ clientesFiltrados[i].cantidad_personas }} persona{{ clientesFiltrados[i].cantidad_personas > 1 ? 's' : '' }}
             </p>
-            <p class="cliente-id">
-              <ion-icon name="person-outline" size="small"></ion-icon>
-              ID: {{ cliente.id }}
+            <p class="estado-row">
+              <ion-badge [color]="getColorEstado(clientesFiltrados[i].estado)">{{ getEstadoTexto(clientesFiltrados[i].estado) }}</ion-badge>
+              <span class="tiempo">{{ formatearFecha(clientesFiltrados[i].created_at) }}</span>
             </p>
-          </ion-label>
-
-          <div class="acciones-cliente">
-            <ion-button
-              *ngIf="cliente.estado === 'esperando'"
-              color="secondary"
-              size="small"
-              (click)="llamarSiguienteCliente()"
-              [disabled]="i !== 0">
+          </div>
+          <div class="card-actions">
+            <ion-button *ngIf="clientesFiltrados[i].estado === 'esperando'" expand="block" class="btn-llamar" [disabled]="i !== 0" (click)="llamarSiguienteCliente()">
               <ion-icon name="megaphone-outline" slot="start"></ion-icon>
               {{ i === 0 ? 'Llamar' : 'En cola' }}
             </ion-button>
-
-            <ion-button
-              *ngIf="cliente.estado === 'llamado'"
-              color="secondary"
-              [disabled]="mesas.length === 0"
-              (click)="asignarMesaListaEspera(cliente)">
+            <ion-button *ngIf="clientesFiltrados[i].estado === 'llamado'" expand="block" class="btn-asignar" [disabled]="mesas.length === 0" (click)="asignarMesaListaEspera(clientesFiltrados[i])">
               <ion-icon name="restaurant-outline" slot="start"></ion-icon>
               Asignar Mesa
             </ion-button>
-
-            <ion-button
-              *ngIf="cliente.estado === 'esperando' || cliente.estado === 'llamado'"
-              color="warning"
-              size="small"
-              fill="outline"
-              (click)="marcarClienteAusente(cliente)">
+            <ion-button *ngIf="clientesFiltrados[i].estado === 'esperando' || clientesFiltrados[i].estado === 'llamado'" expand="block" fill="outline" class="btn-ausente" (click)="marcarClienteAusente(clientesFiltrados[i])">
               <ion-icon name="close-outline" slot="start"></ion-icon>
               Ausente
             </ion-button>
           </div>
         </div>
-      </ion-item>
-    </ion-list>
 
-    <!-- Estado sin clientes -->
-    <div *ngIf="!isLoading && clientesFiltrados.length === 0" class="empty-state">
-      <ion-icon name="people-outline" size="large" color="medium"></ion-icon>
-      <h2>No hay clientes en espera</h2>
-      <p class="ion-text-center">
-        Los clientes que se unan a la lista aparecerán aquí
-      </p>
-    </div>
+        <!-- Card del cliente en posición impar (i+1), si existe -->
+        <div *ngIf="clientesFiltrados[i + 1] as clienteSiguiente" class="cliente-card">
+          <div class="card-avatar">
+            <img *ngIf="clienteSiguiente.foto" [src]="clienteSiguiente.foto" alt="foto" />
+            <div *ngIf="!clienteSiguiente.foto" class="avatar-placeholder">
+              {{ clienteSiguiente.nombre_cliente?.charAt(0)?.toUpperCase() }}
+            </div>
+          </div>
+          <div class="card-info">
+            <h2>{{ clienteSiguiente.nombre_cliente }}</h2>
+            <p class="personas">
+              <ion-icon name="people-outline"></ion-icon>
+              {{ clienteSiguiente.cantidad_personas }} persona{{ clienteSiguiente.cantidad_personas > 1 ? 's' : '' }}
+            </p>
+            <p class="estado-row">
+              <ion-badge [color]="getColorEstado(clienteSiguiente.estado)">{{ getEstadoTexto(clienteSiguiente.estado) }}</ion-badge>
+              <span class="tiempo">{{ formatearFecha(clienteSiguiente.created_at) }}</span>
+            </p>
+          </div>
+          <div class="card-actions">
+            <ion-button *ngIf="clienteSiguiente.estado === 'esperando'" expand="block" class="btn-llamar" [disabled]="i + 1 !== 0" (click)="llamarSiguienteCliente()">
+              <ion-icon name="megaphone-outline" slot="start"></ion-icon>
+              En cola
+            </ion-button>
+            <ion-button *ngIf="clienteSiguiente.estado === 'llamado'" expand="block" class="btn-asignar" [disabled]="mesas.length === 0" (click)="asignarMesaListaEspera(clienteSiguiente)">
+              <ion-icon name="restaurant-outline" slot="start"></ion-icon>
+              Asignar Mesa
+            </ion-button>
+            <ion-button *ngIf="clienteSiguiente.estado === 'esperando' || clienteSiguiente.estado === 'llamado'" expand="block" fill="outline" class="btn-ausente" (click)="marcarClienteAusente(clienteSiguiente)">
+              <ion-icon name="close-outline" slot="start"></ion-icon>
+              Ausente
+            </ion-button>
+          </div>
+        </div>
 
-    <!-- Info de mesas disponibles -->
-    <ion-card *ngIf="!isLoading" class="info-card">
-      <ion-card-header>
-        <ion-card-title color="primary">
-          <ion-icon name="information-circle-outline"></ion-icon>
-          Estado del Restaurante
-        </ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <ion-row>
-          <ion-col size="6">
-            <ion-item lines="none">
-              <ion-icon
-                name="ticket-outline"
-                slot="start"
-                color="medium"
-              ></ion-icon>
-              <ion-label>
-                <h3>En Espera</h3>
-                <p>{{ contarClientesPorEstado('esperando') }} clientes</p>
-              </ion-label>
-            </ion-item>
-          </ion-col>
-          <ion-col size="6">
-            <ion-item lines="none">
-              <ion-icon
-                name="restaurant-outline"
-                slot="start"
-                color="success"
-              ></ion-icon>
-              <ion-label>
-                <h3>Mesas libres</h3>
-                <p>{{ mesas.length }} disponibles</p>
-              </ion-label>
-            </ion-item>
-          </ion-col>
-        </ion-row>
-      </ion-card-content>
-    </ion-card>
+      </div>
+    </ng-container>
   </div>
+
+  <!-- Empty state -->
+  <div *ngIf="!isLoading && clientesFiltrados.length === 0" class="empty-state">
+    <ion-icon name="people-outline"></ion-icon>
+    <h2>No hay clientes en espera</h2>
+    <p>Los clientes que se unan a la lista aparecerán aquí</p>
+  </div>
+
 </ion-content>

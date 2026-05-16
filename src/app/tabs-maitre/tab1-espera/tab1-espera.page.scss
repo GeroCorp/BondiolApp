@@ -1,346 +1,245 @@
 @import '../../../theme/_tabs-shared.scss';
 
-ion-header {
-  ion-toolbar {
-    --background: linear-gradient(135deg, #6a040F, #8b0000, #9D0208);
-    --color: #ffffff;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-    --min-height: 60px;
+$accent:      #ff6b47;
+$accent-dark: #ff4525;
+$accent-blue: #4a9eff;
 
-    ion-title {
-      font-weight: 700;
-      font-size: 1.3rem;
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-    }
+// ─── Header ──────────────────────────────────────────────────────────────────
+ion-header ion-toolbar {
+  --background: linear-gradient(135deg, #6a040f, #8b0000, #9d0208);
+  --color: #ffffff;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  --min-height: 60px;
+
+  ion-title {
+    font-weight: 700;
+    font-size: 1.3rem;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+
+  ion-button {
+    --color: rgba(255, 255, 255, 0.85);
+    font-size: 1.3rem;
   }
 }
 
+// ─── Content: el scroll nativo hace el snap ──────────────────────────────────
 .espera-content {
-  
-
-  &[fullscreen="true"] {
-    --offset-top: 60px;
-  }
   &::part(scroll) {
-    padding-bottom: 85px !important;
+    scroll-snap-type: y mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding: 0;
   }
 }
 
-/* Wrapper centrado como en home */
-.espera-content-wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-}
+// ─── Página snap ──────────────────────────────────────────────────────────────
+// ion-content con [fullscreen]="true" expone --ion-safe-area-top y gestiona
+// el offset del header internamente. El scroll de ion-content comienza
+// justo debajo del header. Su alto nativo es exactamente el espacio visible.
+// Usamos 100svh (small viewport height, descuenta barras del navegador en iOS)
+ // menos la altura del toolbar. Si svh no está soportado, fallback con dvh.
+ .snap-page {
+   scroll-snap-align: start;
+   scroll-snap-stop: always;
 
-.espera-wrapper {
+   height: calc(100svh - var(--offset-top, 60px));
+   height: calc(100dvh - var(--offset-top, 60px));
+
+   display: flex;
+   flex-direction: column;
+   gap: 10px;
+   padding: 10px 12px;
+   box-sizing: border-box;
+ }
+
+// ─── Card individual ──────────────────────────────────────────────────────────
+.cliente-card {
+  flex: 1;
+  min-height: 0;
+
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  width: 100%;
-  height: 100%;
-  padding: 20px;
-  padding-bottom: 80px;
+  justify-content: center;
+  gap: 10px;
+
+  background: rgba(120, 0, 0, 0.55);
+  border: 1px solid rgba(255, 107, 71, 0.25);
+  border-radius: 20px;
+  padding: 16px 20px;
+  backdrop-filter: blur(14px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
   box-sizing: border-box;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
-/* Loading container */
-.loading-container {
-  @extend %tabs-loading-container-compact;
-}
+// ─── Avatar ───────────────────────────────────────────────────────────────────
+.card-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid rgba(255, 107, 71, 0.6);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+  flex-shrink: 0;
 
-/* Empty state */
-.empty-state {
-  @extend %tabs-empty-state-compact;
-}
-
-/* Lista de clientes */
-.espera-list {
-  background: transparent;
-  width: 100%;
-  max-width: 500px;
-  margin-top: 60px;
-
-  ion-list-header {
-    background: rgba(255, 107, 71, 0.1);
-    border-radius: 12px;
-    margin: 0 0 16px 0;
-    padding: 16px 20px;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 107, 71, 0.2);
-
-    ion-label {
-      h2 {
-        color: #ff6b47;
-        font-weight: 600;
-        margin-bottom: 6px;
-        font-size: 1.3rem;
-      }
-
-      p {
-        color: rgba(255, 255, 255, 0.7);
-        margin: 0;
-        font-size: 1rem;
-      }
-    }
-  }
-
-  .espera-item {
-    @extend %tabs-list-item;
-
-    ion-avatar {
-      width: 55px;
-      height: 55px;
-      margin-right: 12px;
-
-      img {
-        border-radius: 50%;
-        object-fit: cover;
-      }
-    }
-
-    ion-label {
-      h2 {
-        color: #ffffff;
-        font-weight: 600;
-        margin-bottom: 4px;
-        font-size: 1.2rem;
-      }
-
-      p {
-        color: rgba(255, 255, 255, 0.7);
-        margin: 2px 0;
-        font-size: 1rem;
-      }
-    }
-
-    ion-button {
-      --background: linear-gradient(135deg, #ff6b47 0%, #ff8c42 100%);
-      --color: #ffffff;
-      --border-radius: 10px;
-      --box-shadow: 0 4px 12px rgba(255, 107, 71, 0.3);
-      font-weight: 600;
-      font-size: 0.9rem;
-      height: 40px;
-      transition: all 0.3s ease;
-
-      &:hover {
-        --box-shadow: 0 6px 20px rgba(255, 107, 71, 0.4);
-        transform: translateY(-2px);
-      }
-
-      &[disabled] {
-        --background: rgba(255, 255, 255, 0.1);
-        --color: rgba(255, 255, 255, 0.4);
-        --box-shadow: none;
-      }
-    }
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 }
 
 .avatar-placeholder {
   width: 100%;
   height: 100%;
+  background: linear-gradient(135deg, $accent, $accent-dark);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #ff6b47 0%, #ff8c42 100%);
-  color: white;
-  font-weight: bold;
-  font-size: 1.2rem;
-  border-radius: 50%;
-  box-shadow: 0 4px 12px rgba(255, 107, 71, 0.3);
+  color: #fff;
+  font-size: 1.9rem;
+  font-weight: 700;
 }
 
-/* Info card */
-.info-card {
-  margin: 20px 0 24px 0;
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 107, 71, 0.2);
-  border-radius: 14px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-  width: 100%;
-  max-width: 500px;
-
-  ion-card-header {
-    padding: 20px 20px 12px;
-
-    ion-card-title {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      color: #ff6b47;
-      font-weight: 600;
-      font-size: 1.3rem;
-
-      ion-icon {
-        color: #ff6b47;
-      }
-    }
-  }
-
-  ion-card-content {
-    padding: 12px 20px 20px;
-
-    ion-row {
-      ion-col {
-        ion-item {
-          --background: transparent;
-          --padding-start: 0;
-          --inner-padding-end: 0;
-          margin: 0;
-          border-radius: 8px;
-
-          ion-icon {
-            margin-right: 10px;
-            font-size: 1.4rem;
-          }
-
-          ion-label {
-            h3 {
-              color: #ffffff;
-              font-weight: 600;
-              margin: 3px 0;
-              font-size: 1.1rem;
-            }
-
-            p {
-              color: rgba(255, 255, 255, 0.7);
-              margin: 0;
-              font-size: 0.95rem;
-            }
-          }
-        }
-      }
-    }
-  }
-}
-.cliente-col {
+// ─── Info ─────────────────────────────────────────────────────────────────────
+.card-info {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 8px;
-  width: 100%;
-}
-
-/* Estilos específicos para lista de espera formal */
-.turno-badge {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #4a9eff 0%, #0066cc 100%);
-  color: white;
-  font-weight: bold;
-  font-size: 1.1rem;
-  border-radius: 50%;
-  box-shadow: 0 4px 12px rgba(74, 158, 255, 0.4);
-}
-
-.acciones-cliente {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  
-  ion-button {
-    height: 36px;
-    font-size: 0.85rem;
-    
-    &[color="secondary"] {
-      --background: linear-gradient(135deg, #4a9eff 0%, #0066cc 100%);
-      --box-shadow: 0 3px 10px rgba(74, 158, 255, 0.3);
-    }
-    
-    &[color="primary"] {
-      --background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-      --box-shadow: 0 3px 10px rgba(40, 167, 69, 0.3);
-    }
-  }
-}
-
-/* Responsive para lista de espera */
-@media (max-width: 768px) {
-  .espera-wrapper {
-    padding: 16px;
-  }
-  
-  .espera-list {
-    margin-top: 40px;
-    max-width: 100%;
-  }
-  
-  .info-card {
-    max-width: 100%;
-    
-    ion-card-content {
-      ion-row {
-        ion-col {
-          padding: 4px;
-        }
-      }
-    }
-  }
-}
-
-// Estilos para posición en lista
-.position-avatar {
-  --background: linear-gradient(135deg, #ff6b47, #ff4525);
-  --color: #ffffff;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 1.1rem;
-  box-shadow: 0 2px 8px rgba(255, 107, 71, 0.3);
-}
-
-.position-number {
-  color: #ffffff;
-  font-weight: 700;
-  font-size: 1.1rem;
-}
-
-.cliente-id {
-  display: flex;
   align-items: center;
   gap: 4px;
-  color: rgba(255, 255, 255, 0.7) !important;
-  font-size: 0.9rem;
-  margin-top: 4px;
-  
-  ion-icon {
-    color: #ff6b47;
+  text-align: center;
+
+  h2 {
+    color: $accent;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.2;
+  }
+
+  .personas {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.95rem;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+
+    ion-icon {
+      font-size: 0.95rem;
+    }
+  }
+
+  .estado-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+
+    ion-badge {
+      font-size: 0.8rem;
+      padding: 3px 8px;
+    }
+
+    .tiempo {
+      color: rgba(255, 255, 255, 0.55);
+      font-size: 0.85rem;
+    }
   }
 }
 
-// Estilos para header de lista
-.header-buttons {
+// ─── Acciones ─────────────────────────────────────────────────────────────────
+.card-actions {
+  width: 100%;
   display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  align-items: center;
-  
+  flex-direction: column;
+  gap: 6px;
+
   ion-button {
-    --padding-start: 8px;
-    --padding-end: 8px;
-    height: 36px;
-    
-    &[fill="outline"] {
-      --border-width: 1px;
-      --border-color: #ff6b47;
-      --color: #ff6b47;
-      
-      &:hover {
-        --background: rgba(255, 107, 71, 0.1);
-      }
-    }
+    margin: 0;
+    height: 42px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+    --border-radius: 12px;
+    text-transform: uppercase;
+    --padding-start: 10px;
+    --padding-end: 10px;
+  }
+
+  .btn-llamar {
+    --background: linear-gradient(135deg, #ff8c00, #ff6b00);
+    --color: #fff;
+    --box-shadow: 0 4px 14px rgba(255, 140, 0, 0.45);
+  }
+
+  .btn-asignar {
+    --background: linear-gradient(135deg, $accent-blue, #0055bb);
+    --color: #fff;
+    --box-shadow: 0 4px 14px rgba(74, 158, 255, 0.35);
+  }
+
+  .btn-ausente {
+    --border-width: 2px;
+    --border-color: #c5000a;
+    --color: #ff3a3a;
+    --background: rgba(197, 0, 10, 0.12);
+    --border-radius: 12px;
+  }
+
+  ion-button[disabled] {
+    --background: rgba(255, 255, 255, 0.07) !important;
+    --color: rgba(255, 255, 255, 0.28) !important;
+    --box-shadow: none !important;
+  }
+}
+
+// ─── Loading ──────────────────────────────────────────────────────────────────
+.loading-container {
+  height: calc(100vh - 60px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+
+  p {
+    color: rgba(255, 255, 255, 0.65);
+    font-size: 1rem;
+    margin: 0;
+  }
+}
+
+// ─── Empty state ──────────────────────────────────────────────────────────────
+.empty-state {
+  height: calc(100vh - 60px - 32px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  padding: 24px;
+  text-align: center;
+
+  ion-icon {
+    font-size: 150px;
+    color: rgba(255, 107, 71, 0.35);
+  }
+
+  h2 {
+    color: #ffffff;
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  p {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 1.15rem;
+    margin: 0;
+    max-width: 300px;
+    line-height: 1.5;
   }
 }
