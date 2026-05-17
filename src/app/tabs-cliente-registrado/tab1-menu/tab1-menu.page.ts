@@ -163,7 +163,14 @@ getFirstImage(imagenes: any): string {
   volverHome(){
     this.router.navigate(["/home-cliente"])
   }
-  hacerPedido() {
+  async hacerPedido() {
+    const rechazado = await this.clienteService.getRejectedOrder();
+    if (rechazado) {
+      await this.showToast(
+        '⚠️ Tu pedido anterior fue rechazado. Podés modificarlo.',
+        'medium'
+      );
+    }
     this.router.navigate(["/tabs-cliente-registrado/tab2-pedido"]);
   }
 
