@@ -1,220 +1,203 @@
-ion-header {
-  ion-toolbar {
-    --background: linear-gradient(135deg, #6a040F, #8b0000, #9D0208);
-    --color: #fff;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-    border-bottom: 1px solid rgba(255,255,255,0.2);
-    --min-height: 60px;
-    
-    ion-title {
-      font-weight: 700;
-      font-size: 1.3rem;
-      text-shadow: 0 1px 3px rgba(0,0,0,0.3);
-      
-      ion-icon {
-        color: #ff6b47;
-        margin-right: 8px;
-        font-size: 1.4rem;
-        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-      }
-    }
+$accent:      #ff6b47;
+$accent-dark: #ff4525;
 
-    ion-button {
-      --color: #fff;
-    }
+// ─── Header ──────────────────────────────────────────────────────────────────
+ion-header ion-toolbar {
+  --background: linear-gradient(135deg, #6a040f, #8b0000, #9d0208);
+  --color: #fff;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  --min-height: 60px;
 
-    ion-back-button {
-      --color: #fff;
+  ion-title {
+    font-weight: 700;
+    font-size: 1.3rem;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+
+    ion-icon {
+      color: $accent;
+      margin-right: 8px;
+      font-size: 1.4rem;
     }
+  }
+
+  ion-back-button { --color: #fff; }
+}
+
+// ─── Content ─────────────────────────────────────────────────────────────────
+ion-content.container {
+  --background: linear-gradient(180deg, #370617 0%, #6a040f 40%, #9d0208 100%);
+
+  &::part(scroll) {
+    scroll-snap-type: y mandatory;
+    scroll-padding-top: var(--offset-top, 60px);
+    -webkit-overflow-scrolling: touch;
   }
 }
 
-ion-content.container {
-  --background: linear-gradient(180deg, #370617 0%, #6A040F 40%, #9D0208 100%);
-  --padding-top: 10px;
-  --padding-bottom: 20px;
-  --padding-start: 30px;
-  --padding-end: 30px;
-  
-  --overflow: hidden; 
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
+// ─── Página snap ─────────────────────────────────────────────────────────────
+.snap-page {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
 
-.cliente-title {
-  color: #ff6b47;
-  font-weight: 700;
-  font-size: 1.6rem;
-  margin-bottom: 20px;
-  text-align: center;
-}
+  height: calc(100dvh - var(--offset-top, 60px) - 56px);
 
-.mesa-admin-wrapper {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: center;
-  width: 100%;
-  max-height: calc(100vh - 150px);
-  max-width: 400px;
 
+  gap: 16px;
+  padding: 12px;
   box-sizing: border-box;
-  overflow-y: auto;
 }
 
+// ─── Card de mesa ─────────────────────────────────────────────────────────────
+.mesa-card {
+  flex: 1;
+  min-height: 0;
+  max-width: 90%;
+  width: 90%;
+  max-height: 42vh;
+  margin: 0 auto;
 
-
-
-
-.menu-card {
-  scroll-snap-align: start;  
-  scroll-snap-stop: always; 
-  margin-bottom: 50px;       
-  min-height: 70vh;          
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 5px;
-  flex: 1; 
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(120, 0, 0, 0.55);
+  border: 1px solid rgba(255, 107, 71, 0.25);
+  border-radius: 24px;
+  padding: 14px 16px;
+  backdrop-filter: blur(14px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  box-sizing: border-box;
+  overflow: hidden;
+
+  &:only-child { max-height: none; }
+
+
 }
+
+// ─── Imagen ───────────────────────────────────────────────────────────────────
 .image-container {
-  position: relative;
-  width: 100%;
-  height: 40vh;
+  width: 200px;
+  height: 200px;
+  flex-shrink: 0;
+  border-radius: 16px;
+  overflow: hidden;
+  align-self: center;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 }
 
-
-
-img {
+// ─── Info ─────────────────────────────────────────────────────────────────────
+.card-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 10px;
 }
 
-
-
-// desde aca no va nada 
-
-.mesa-admin-card {
-  /* Card igual que en home */
-  background: rgba(255,255,255,0.08);
-  border-radius: 14px;
-  box-shadow: 0 6px 24px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.1);
-  margin: 0 0 16px 0;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,0.05);
-  overflow: auto;
+.card-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
   width: 100%;
-  max-width: 500px;
 
-  ion-card-header {
-    /* Header igual que en home */
-    padding: 18px 18px 10px;
-    background: linear-gradient(135deg, rgba(139,0,0,0.1), rgba(165,42,42,0.1));
-    
-    ion-card-title {
-      color: #ff6b47;
-      font-weight: 700;
-      font-size: 1.25rem;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-      margin: 0;
-      text-align: center;
+  h2 {
+    color: $accent;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.2;
+
+    .tipo {
+      color: rgba(255, 255, 255, 0.65);
+      font-size: 1.1rem;
+      font-weight: 400;
     }
   }
-  
-  ion-card-content {
-    padding: 12px 18px 14px;
+
+  .personas {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 1.1rem;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+
+    ion-icon { font-size: 1.1rem; }
+  }
+
+  .estado-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+
+    ion-badge {
+      font-size: 1rem;
+      padding: 4px 10px;
+    }
   }
 }
 
-.mesa-admin-list {
-  background: transparent;
-  padding: 0;
-  
-  .mesa-admin-item {
-    --background: rgba(255,255,255,0.08);
+// ─── Acciones ─────────────────────────────────────────────────────────────────
+.card-actions {
+  width: 100%;
+  padding: 0 10px 0;
+  margin-top: auto;
+
+  .btn-liberar {
+    --background: linear-gradient(135deg, #eb445a, #dc3545);
+    --color: #fff;
     --border-radius: 12px;
-    margin-bottom: 16px;
-    color: #fff;
-    border: 1px solid rgba(255,255,255,0.1);
-    transition: all 0.3s ease;
-    padding: 16px;
-    backdrop-filter: blur(10px);
-    
-    &:hover {
-      --background: rgba(255,255,255,0.15);
-      transform: translateY(-1px);
-    }
-    
-    ion-label {
-      h2 {
-        font-size: 1.2rem;
-        font-weight: 700;
-        color: #F48C06;
-        margin-bottom: 6px;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-      }
-
-      p {
-        font-size: 1rem;
-        color: #ffffff;
-        margin: 0;
-      }
-    }
-
-    ion-button {
-      --border-radius: 12px;
-      font-weight: 600;
-      transition: all 0.3s ease;
-      width: 44px;
-      height: 44px;
-      
-      &[color="danger"] {
-        --background: linear-gradient(135deg, #dc3545, #c82333);
-        --color: #fff;
-        box-shadow: 0 3px 12px rgba(220,53,69,0.4);
-
-        &:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 4px 16px rgba(220,53,69,0.5);
-        }
-
-        ion-icon {
-          font-size: 1.3rem;
-        }
-      }
-    }
+    --box-shadow: 0 4px 14px rgba(235, 68, 90, 0.35);
+    font-weight: 700;
+    font-size: 1rem;
+    height: 42px;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
 }
 
-.snap-list {
-  height: 90%;           
-  overflow-y: scroll;  
-  margin-top: 5px;
-  margin-bottom: 10px;     
-  scroll-snap-type: y mandatory; 
-  scroll-behavior: smooth;
-  background-color: transparent !important;
-  -webkit-overflow-scrolling: touch; 
-  &::-webkit-scrollbar {
-    display: none;
-  }
-}
+// ─── Empty state ──────────────────────────────────────────────────────────────
+.empty-state {
+  height: calc(100dvh - var(--offset-top, 60px) - 56px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 24px;
+  text-align: center;
 
-/* Animaciones igual que en home */
-.snap-list {
-  animation: fadeInUp 0.6s ease-out;
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
+  ion-icon {
+    font-size: 100px;
+    color: rgba(255, 107, 71, 0.35);
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  h2 {
+    color: #ffffff;
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  p {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 1.1rem;
+    margin: 0;
+    max-width: 300px;
+    line-height: 1.5;
   }
 }

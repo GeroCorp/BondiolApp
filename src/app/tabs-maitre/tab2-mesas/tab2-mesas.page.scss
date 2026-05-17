@@ -1,345 +1,240 @@
 @import "../../../theme/tabs-shared.scss";
 
-ion-header {
-  ion-toolbar {
-    --background: linear-gradient(135deg, #6a040F, #8b0000, #9D0208);
-    --color: #ffffff;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-    --min-height: 60px;
+$accent:      #ff6b47;
+$accent-dark: #ff4525;
 
-    ion-title {
-      font-weight: 700;
-      font-size: 1.3rem;
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-    }
-  }
-}
-
-ion-content {
-&::part(scroll) {
-    padding-top: 5px !important;
-    padding-bottom: 0px !important;
-  }
-}
-
-.mesas-wrapper {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  padding: 58px !important;
-  box-sizing: border-box;
-  overflow-y: auto;
-}
-
-/* Loading container */
-.loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 40px 20px;
-
-  ion-spinner {
-    --color: #ff6b47;
-    transform: scale(1.2);
-  }
-
-  p {
-    color: rgba(255, 255, 255, 0.7);
-    margin-top: 20px;
-    font-size: 1.1rem;
-  }
-}
-
-/* Empty state */
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 60px 20px;
-  text-align: center;
-
-  ion-icon {
-    font-size: 4rem;
-    margin-bottom: 20px;
-    opacity: 0.6;
-    color: #ff6b47;
-  }
-
-  h2 {
-    margin: 0 0 12px 0;
-    color: rgba(255, 255, 255, 0.9);
-    font-weight: 600;
-    font-size: 1.4rem;
-  }
-
-  p {
-    color: rgba(255, 255, 255, 0.6);
-    margin: 0;
-    line-height: 1.5;
-    font-size: 1.1rem;
-  }
-}
-
-/* Lista de mesas */
-.mesas-list {
-  background: transparent;
-  width: 100%;
-  max-width: 500px;
-  margin-top: 60px;
-
-  ion-list-header {
-    background: rgba(255, 107, 71, 0.1);
-    border-radius: 12px;
-    margin: 0 0 16px 0;
-    padding: 16px 20px;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 107, 71, 0.2);
-
-    ion-label {
-      h2 {
-        color: #ff6b47;
-        font-weight: 600;
-        margin-bottom: 6px;
-        font-size: 1.3rem;
-      }
-
-      p {
-        color: rgba(255, 255, 255, 0.7);
-        margin: 0;
-        font-size: 1rem;
-      }
-    }
-  }
-
-  .mesa-item {
-    --background: rgba(255, 255, 255, 0.05);
-    --border-color: rgba(255, 107, 71, 0.2);
-    --color: #ffffff;
-    margin: 0 0 12px 0;
-    border-radius: 12px;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    transition: all 0.3s ease;
-    min-height: 70px;
-    scroll-snap-align: start;
-    scroll-snap-stop: always;
-
-    &:hover {
-      --background: rgba(255, 255, 255, 0.08);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-    }
-
-    // Estados de mesa
-    &.disponible {
-      border-left: 4px solid #FAA307;
-      --border-color: rgba(45, 211, 111, 0.3);
-    }
-
-    &.ocupada {
-      border-left: 4px solid #9D0208;
-      --border-color: rgba(235, 68, 90, 0.3);
-    }
-
-    &.no-disponible {
-      border-left: 4px solid #92949c;
-      --border-color: rgba(255, 196, 9, 0.3);
-    }
-
-    ion-label {
-      h2 {
-        color: #ffffff;
-        font-weight: 600;
-        margin-bottom: 4px;
-        font-size: 1.2rem;
-      }
-
-      p {
-        color: rgba(255, 255, 255, 0.7);
-        margin: 2px 0;
-        font-size: 1rem;
-      }
-    }
-  }
-}
-
-/* Avatar de mesa */
-.mesa-avatar {
-  --background: linear-gradient(135deg, #ff6b47, #ff4525);
+// ─── Header ──────────────────────────────────────────────────────────────────
+ion-header ion-toolbar {
+  --background: linear-gradient(135deg, #6a040f, #8b0000, #9d0208);
   --color: #ffffff;
-  width: 50px;
-  height: 50px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  --min-height: 60px;
+
+  ion-title {
+    font-weight: 700;
+    font-size: 1.3rem;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+}
+
+// ─── Content: snap nativo ────────────────────────────────────────────────────
+.mesas-content {
+  &::part(scroll) {
+    scroll-snap-type: y mandatory;
+    scroll-padding-top: var(--offset-top, 60px);
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+// ─── Página snap ─────────────────────────────────────────────────────────────
+.snap-page {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+
+  // Espacio visible = viewport - header - tab-bar (~56px)
+  height: calc(100dvh - var(--offset-top, 60px) - 56px);
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  gap: 16px;
+  padding: 12px;
+  box-sizing: border-box;
+}
+
+// ─── Card de mesa ─────────────────────────────────────────────────────────────
+.mesa-card {
+  flex: 1;
+  min-height: 0;
+  max-width: 90%;
+  width: 90%;
+  max-height: 40vh;
+  margin: 0 auto;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+
+  background: rgba(120, 0, 0, 0.55);
+  border: 1px solid rgba(255, 107, 71, 0.25);
+  border-radius: 24px;
+  padding: 16px 10px;
+  backdrop-filter: blur(14px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  box-sizing: border-box;
+  overflow: hidden;
+
+  // Única card: sin límite de altura, centrada
+  &:only-child {
+    max-height: none;
+  }
+
+  // Borde izquierdo según estado
+  &.disponible  { border-left: 4px solid #FAA307; }
+  &.ocupada     { border-left: 4px solid #9D0208; }
+  &.no-disponible { border-left: 4px solid #92949c; }
+}
+
+// ─── Avatar número ────────────────────────────────────────────────────────────
+.card-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, $accent, $accent-dark);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
-  font-size: 1.1rem;
-  box-shadow: 0 2px 8px rgba(255, 107, 71, 0.3);
+  border: 3px solid rgba(255, 107, 71, 0.6);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+  flex-shrink: 0;
 }
 
 .mesa-number {
-  color: #ffffff;
+  color: #fff;
   font-weight: 700;
-  font-size: 1.1rem;
+  font-size: 2rem;
 }
 
-.mesa-col {
+// ─── Info ─────────────────────────────────────────────────────────────────────
+.card-info {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 8px;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
   width: 100%;
+
+  h2 {
+    color: $accent;
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.2;
+  }
+
+  .personas {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 1.15rem;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+
+    ion-icon { font-size: 1.15rem; }
+  }
+
+  .estado-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+
+    ion-badge {
+      font-size: 1rem;
+      padding: 4px 10px;
+    }
+  }
+
+  .mesa-tipo {
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 1.05rem;
+  }
 }
 
-/* Información del cliente */
+// ─── Info cliente ─────────────────────────────────────────────────────────────
 .cliente-info {
-  margin-top: 8px;
-  padding: 8px 12px;
+  padding: 6px 10px;
   background: rgba(255, 107, 71, 0.1);
   border-radius: 8px;
-  border-left: 3px solid #ff6b47;
-  width: 100%;
+  border-left: 3px solid $accent;
+  width: 90%;
 
   .cliente-nombre, .cliente-email {
     display: flex;
     align-items: center;
     gap: 6px;
     margin: 2px 0;
-    font-size: 0.9rem;
-    color: rgba(255, 255, 255, 0.9) !important;
+    font-size: 1.05rem;
+    color: rgba(255, 255, 255, 0.9);
 
-    ion-icon {
-      color: #ff6b47;
-      font-size: 1rem;
-    }
+    ion-icon { color: $accent; font-size: 1.05rem; }
   }
 
   .cliente-email {
     font-style: italic;
-    font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.7) !important;
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.65);
   }
 }
 
-.mesa-tipo {
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 0.9rem;
-}
+// ─── Acciones ─────────────────────────────────────────────────────────────────
+.card-actions {
+  width: 90%;
 
-/* Acciones de mesa */
-.acciones-mesa {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  
-  ion-button {
-    --background: linear-gradient(135deg, #eb445a 0%, #dc3545 100%);
-    --color: #ffffff;
-    --border-radius: 10px;
-    --box-shadow: 0 4px 12px rgba(235, 68, 90, 0.3);
-    font-weight: 600;
+  .btn-liberar {
+    --background: linear-gradient(135deg, #eb445a, #dc3545);
+    --color: #fff;
+    --border-radius: 12px;
+    --box-shadow: 0 4px 14px rgba(235, 68, 90, 0.35);
+    font-weight: 700;
     font-size: 0.9rem;
-    height: 36px;
-    transition: all 0.3s ease;
-
-    &:hover {
-      --box-shadow: 0 6px 20px rgba(235, 68, 90, 0.4);
-      transform: translateY(-2px);
-    }
-
-    &[disabled] {
-      --background: rgba(255, 255, 255, 0.1);
-      --color: rgba(255, 255, 255, 0.4);
-      --box-shadow: none;
-    }
+    height: 42px;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
 }
 
-/* Info card de estadísticas */
-.info-card {
-  margin: 20px 0 24px 0;
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 107, 71, 0.2);
-  border-radius: 14px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-  width: 100%;
-  max-width: 500px;
+// ─── Loading ──────────────────────────────────────────────────────────────────
+.loading-container {
+  height: calc(100dvh - var(--offset-top, 60px) - 56px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
 
-  ion-card-header {
-    padding: 20px 20px 12px;
+  ion-spinner { --color: $accent; }
 
-    ion-card-title {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      color: #ff6b47;
-      font-weight: 600;
-      font-size: 1.3rem;
-
-      ion-icon {
-        color: #ff6b47;
-      }
-    }
-  }
-
-  ion-card-content {
-  padding: 8px 20px 20px;
-
-  ion-item {
-    --background: transparent;
-    --padding-start: 0;
-    --inner-padding-end: 0;
-    border-radius: 8px;
-
-    ion-icon {
-      margin-right: 10px;
-      font-size: 1.4rem;
-    }
-
-    ion-label {
-      h3 {
-        color: #ffffff;
-        font-weight: 600;
-        margin: 3px 0;
-        font-size: 1.1rem;
-      }
-
-      p {
-        color: rgba(255, 255, 255, 0.7);
-        margin: 0;
-        font-size: 0.95rem;
-      }
-    }
+  p {
+    color: rgba(255, 255, 255, 0.65);
+    font-size: 1rem;
+    margin: 0;
   }
 }
-}
 
-/* Responsive para lista de mesas */
-@media (max-width: 768px) {
-  .mesas-wrapper {
-    padding: 16px;
+// ─── Empty state ──────────────────────────────────────────────────────────────
+.empty-state {
+  height: calc(100dvh - var(--offset-top, 60px) - 56px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 24px;
+  text-align: center;
+
+  ion-icon {
+    font-size: 100px;
+    color: rgba(255, 107, 71, 0.35);
   }
-  
-  .mesas-list {
-    margin-top: 40px;
-    max-width: 100%;
+
+  h2 {
+    color: #ffffff;
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 0;
   }
-  
-  .info-card {
-    max-width: 100%;
-    
-    ion-card-content {
-      ion-row {
-        ion-col {
-          padding: 4px;
-        }
-      }
-    }
+
+  p {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 1.1rem;
+    margin: 0;
+    max-width: 300px;
+    line-height: 1.5;
   }
 }

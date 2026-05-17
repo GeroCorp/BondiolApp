@@ -28,46 +28,47 @@ ion-header ion-toolbar {
 .espera-content {
   &::part(scroll) {
     scroll-snap-type: y mandatory;
+    // scroll-padding-top empuja el snap point hacia abajo exactamente
+    // la altura del header, así la primera card nunca queda tapada
+    scroll-padding-top: var(--offset-top, 60px);
     -webkit-overflow-scrolling: touch;
-    padding: 0;
   }
 }
 
 // ─── Página snap ──────────────────────────────────────────────────────────────
-// ion-content con [fullscreen]="true" expone --ion-safe-area-top y gestiona
-// el offset del header internamente. El scroll de ion-content comienza
-// justo debajo del header. Su alto nativo es exactamente el espacio visible.
-// Usamos 100svh (small viewport height, descuenta barras del navegador en iOS)
- // menos la altura del toolbar. Si svh no está soportado, fallback con dvh.
- .snap-page {
-   scroll-snap-align: start;
-   scroll-snap-stop: always;
+.snap-page {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
 
-   height: calc(100svh - var(--offset-top, 60px));
-   height: calc(100dvh - var(--offset-top, 60px));
+  // Cada página ocupa exactamente el espacio visible bajo el header
+  height: calc(100dvh - var(--offset-top, 60px));
 
-   display: flex;
-   flex-direction: column;
-   gap: 10px;
-   padding: 10px 12px;
-   box-sizing: border-box;
- }
+  display: flex;
+  flex-direction: column;
 
-// ─── Card individual ──────────────────────────────────────────────────────────
+  gap: 16px;
+  padding: 12px;
+  box-sizing: border-box;
+}
+
 .cliente-card {
   flex: 1;
   min-height: 0;
+  max-width: 90%;
+  width: 90%;
+  max-height:40vh;
+  margin: 0 auto;
 
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 16px;
 
   background: rgba(120, 0, 0, 0.55);
   border: 1px solid rgba(255, 107, 71, 0.25);
-  border-radius: 20px;
-  padding: 16px 20px;
+  border-radius: 24px;
+  padding: 0 10px 0;
   backdrop-filter: blur(14px);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
   box-sizing: border-box;
@@ -155,7 +156,7 @@ ion-header ion-toolbar {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 16px;
 
   ion-button {
     margin: 0;
