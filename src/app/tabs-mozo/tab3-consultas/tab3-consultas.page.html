@@ -19,143 +19,110 @@
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
 
-  <div class="consultas-wrapper">
-    <div class="consultas-content">
-      
-      <!-- Header Section -->
-      <div class="header-section">
-        <div class="title-container">
-          <ion-icon name="chatbubbles-outline" class="main-icon" color="secondary"></ion-icon>
-          <div class="title-text">
-            <h2>Consultas de Mesas</h2>
-            <p>Selecciona una mesa para ver el chat</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Loading State -->
-      <div *ngIf="cargando" class="loading-container">
-        <ion-spinner name="crescent" color="primary"></ion-spinner>
-        <p>Cargando mesas...</p>
-      </div>
-
-      <!-- Empty State -->
-      <div *ngIf="!cargando && (!mesas || mesas.length === 0)" class="empty-state">
-        <ion-icon name="restaurant-outline" color="medium"></ion-icon>
-        <h3>No hay mesas disponibles</h3>
-        <p>Las mesas aparecerán aquí cuando estén ocupadas</p>
-        <ion-button fill="outline" color="primary" (click)="recargar()">
-          <ion-icon name="refresh-outline" slot="start"></ion-icon>
-          Recargar
-        </ion-button>
-      </div>
-
-      <!-- Mesas Grid -->
-      <div *ngIf="!cargando && mesas && mesas.length > 0" class="mesas-grid">
-        <div *ngFor="let mesa of mesas; let i = index; trackBy: trackByIndex" 
-             class="mesa-card-wrapper" 
-             (click)="test(mesa)">
-          <ion-card class="mesa-card" [class.ocupada]="mesa.cliente_asignado">
-            <div class="mesa-card-header">
-              <div class="mesa-info">
-                <ion-icon name="restaurant-outline" class="mesa-icon" color="secondary"></ion-icon>
-                <div class="mesa-details">
-                  <h3 class="mesa-number">Mesa {{ mesa.numero }}</h3>
-                  <p class="mesa-type">{{ mesa.tipo || 'Estándar' }}</p>
-                </div>
-              </div>
-              <div class="mesa-status">
-                <ion-badge [color]="mesa.cliente_asignado ? 'secondary' : 'medium'">
-                  {{ mesa.cliente_asignado ? 'Ocupada' : 'Libre' }}
-                </ion-badge>
-              </div>
-            </div>
-            
-            <div class="mesa-card-content" *ngIf="mesa.cliente_asignado">
-              <div class="cliente-info">
-                <ion-icon name="person-outline"></ion-icon>
-                <span>{{ mesa.clientes?.nombre || 'Cliente' }}</span>
-              </div>
-              
-              <!-- Indicador de mensajes nuevos -->
-              <div class="new-messages-indicator" *ngIf="hasNewMessages(mesa.numero)">
-                <ion-icon name="chatbubbles"></ion-icon>
-                <span>Mensajes nuevos</span>
-              </div>
-            </div>
-
-            <div class="mesa-card-actions">
-              <app-secondary-button 
-                fill="clear" 
-                size="small" 
-                [disabled]="!mesa.cliente_asignado"
-                class="chat-button">
-                <ion-icon name="chatbubble-outline" slot="start"></ion-icon>
-                {{ mesa.cliente_asignado ? 'Abrir Chat' : 'Sin Cliente' }}
-              </app-secondary-button>
-            </div>
-          </ion-card>
-        </div>
-      </div>
-
-    </div>
+  <!-- Loading -->
+  <div *ngIf="cargando" class="loading-container">
+    <ion-spinner name="crescent" color="primary"></ion-spinner>
+    <p>Cargando mesas...</p>
   </div>
 
-  <!-- Lista de consultas 
-  <div *ngIf="!cargando && consultas.length > 0">
-    <ion-card *ngFor="let consulta of consultas" class="consulta-card">
-      <ion-card-header>
-        <div class="header-consulta">
-          <div>
-            <ion-card-title>
-              <ion-icon name="restaurant-outline"></ion-icon>
-              Mesa {{ consulta.mesa?.numero }}
-            </ion-card-title>
-            <ion-card-subtitle>
-              <ion-icon name="time-outline"></ion-icon>
-              {{ formatearFecha(consulta.created_at) }}
-            </ion-card-subtitle>
+  <!-- Snap feed: páginas de 2 mesas -->
+  <div *ngIf="!cargando && mesas && mesas.length > 0" class="snap-feed">
+    <ng-container *ngFor="let mesa of mesas; let i = index; trackBy: trackByIndex">
+      <div *ngIf="i % 2 === 0" class="snap-page">
+
+        <!-- Card mesa par (i) -->
+        <div class="mesa-card"
+          [class.ocupada]="mesas[i].cliente_asignado"
+          [class.libre]="!mesas[i].cliente_asignado"
+          (click)="test(mesas[i])">
+
+          <ion-icon name="restaurant-outline" class="card-icon"></ion-icon>
+
+          <div class="card-info">
+            <h2>Mesa {{ mesas[i].numero }}</h2>
+            <p class="mesa-tipo-text">{{ mesas[i].tipo || 'Estándar' }}</p>
+            <p class="estado-row">
+              <ion-badge [color]="mesas[i].cliente_asignado ? 'secondary' : 'medium'">
+                {{ mesas[i].cliente_asignado ? 'Ocupada' : 'Libre' }}
+              </ion-badge>
+            </p>
+
+            <div *ngIf="mesas[i].cliente_asignado" class="cliente-info">
+              <p class="cliente-nombre">
+                <ion-icon name="person-outline"></ion-icon>
+                {{ mesas[i].clientes?.nombre || 'Cliente' }}
+              </p>
+            </div>
+
+            <div class="new-messages-indicator" *ngIf="hasNewMessages(mesas[i].numero)">
+              <ion-icon name="chatbubbles"></ion-icon>
+              <span>Mensajes nuevos</span>
+            </div>
           </div>
-          <ion-badge color="warning">Pendiente</ion-badge>
-        </div>
-      </ion-card-header>
 
-      <ion-card-content>
-        Cliente 
-        <div class="info-cliente">
-          <ion-icon name="person-outline"></ion-icon>
-          <span>{{ consulta.cliente?.nombre }} {{ consulta.cliente?.apellido }}</span>
-        </div>
-
-         Mensaje del cliente 
-        <div class="mensaje-cliente">
-          <h4>
-            <ion-icon name="chatbox-ellipses-outline"></ion-icon>
-            Consulta del cliente:
-          </h4>
-          <p>{{ consulta.mensaje }}</p>
+          <div class="card-actions">
+            <ion-button expand="block" class="btn-chat"
+              [disabled]="!mesas[i].cliente_asignado"
+              [class.btn-chat-active]="mesas[i].cliente_asignado">
+              <ion-icon [name]="mesas[i].cliente_asignado ? 'chatbubble-outline' : 'remove-circle-outline'" slot="start"></ion-icon>
+              {{ mesas[i].cliente_asignado ? 'Abrir Chat' : 'Sin Cliente' }}
+            </ion-button>
+          </div>
         </div>
 
-        Formulario de respuesta 
-        <div class="respuesta-container">
-          <ion-textarea
-            [(ngModel)]="consulta.respuestaTemp"
-            placeholder="Escribe tu respuesta aquí..."
-            rows="3"
-            fill="outline"
-          ></ion-textarea>
+        <!-- Card mesa impar (i+1), si existe -->
+        <div *ngIf="mesas[i + 1] as mesaSiguiente" class="mesa-card"
+          [class.ocupada]="mesaSiguiente.cliente_asignado"
+          [class.libre]="!mesaSiguiente.cliente_asignado"
+          (click)="test(mesaSiguiente)">
 
-          <ion-button 
-            expand="block" 
-            color="success" 
-            (click)="responderConsulta(consulta)"
-            [disabled]="!consulta.respuestaTemp || consulta.respuestaTemp.trim() === ''"
-          >
-            <ion-icon name="send-outline" slot="start"></ion-icon>
-            Enviar respuesta
-          </ion-button>
+          <ion-icon name="restaurant-outline" class="card-icon"></ion-icon>
+
+          <div class="card-info">
+            <h2>Mesa {{ mesaSiguiente.numero }}</h2>
+            <p class="mesa-tipo-text">{{ mesaSiguiente.tipo || 'Estándar' }}</p>
+            <p class="estado-row">
+              <ion-badge [color]="mesaSiguiente.cliente_asignado ? 'secondary' : 'medium'">
+                {{ mesaSiguiente.cliente_asignado ? 'Ocupada' : 'Libre' }}
+              </ion-badge>
+            </p>
+
+            <div *ngIf="mesaSiguiente.cliente_asignado" class="cliente-info">
+              <p class="cliente-nombre">
+                <ion-icon name="person-outline"></ion-icon>
+                {{ mesaSiguiente.clientes?.nombre || 'Cliente' }}
+              </p>
+            </div>
+
+            <div class="new-messages-indicator" *ngIf="hasNewMessages(mesaSiguiente.numero)">
+              <ion-icon name="chatbubbles"></ion-icon>
+              <span>Mensajes nuevos</span>
+            </div>
+          </div>
+
+          <div class="card-actions">
+            <ion-button expand="block" class="btn-chat"
+              [disabled]="!mesaSiguiente.cliente_asignado"
+              [class.btn-chat-active]="mesaSiguiente.cliente_asignado">
+              <ion-icon [name]="mesaSiguiente.cliente_asignado ? 'chatbubble-outline' : 'remove-circle-outline'" slot="start"></ion-icon>
+              {{ mesaSiguiente.cliente_asignado ? 'Abrir Chat' : 'Sin Cliente' }}
+            </ion-button>
+          </div>
         </div>
-      </ion-card-content>
-    </ion-card>
-  </div> -->
+
+      </div>
+    </ng-container>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!cargando && (!mesas || mesas.length === 0)" class="empty-state">
+    <ion-icon name="restaurant-outline"></ion-icon>
+    <h2>No hay mesas disponibles</h2>
+    <p>Las mesas aparecerán aquí cuando estén configuradas</p>
+    <ion-button fill="outline" color="primary" (click)="recargar()">
+      <ion-icon name="refresh-outline" slot="start"></ion-icon>
+      Recargar
+    </ion-button>
+  </div>
+
 </ion-content>
