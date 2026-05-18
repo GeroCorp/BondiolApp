@@ -68,11 +68,8 @@
               <span>{{ pedido.cliente?.nombre || 'Cliente anónimo' }}</span>
             </div>
 
-            <!-- Items del pedido -->
-
             <!-- Total con descuento -->
             <div class="total-container">
-              <!-- Mostrar subtotal si hay descuento -->
               <div *ngIf="pedido.descuento_porcentaje && pedido.descuento_porcentaje > 0" style="margin-bottom: 10px;">
                 <p style="margin: 0; color: #666;">
                   <small>Subtotal: <span style="text-decoration: line-through;">${{ pedido.subtotal }}</span></small>
@@ -85,18 +82,14 @@
                 </p>
               </div>
               
-              <h3>TOTAL: <span class="total-monto">${{ pedido.total }}</span></h3>
-              <p class="tiempo-estimado">
-                <ion-icon name="alarm-outline"></ion-icon>
-              </p>
+              <h3>TOTAL <span class="total-monto">${{ pedido.total }}</span></h3>
             </div>
-            <!-- Detalles -->
 
             <!-- Botones de acción -->
             <div class="botones-accion">
               <app-secondary-button 
                 expand="block" 
-                (click)="verDetalle(pedido)">
+                (click)="pedidoActual = pedido; pedidoItems = pedido.items || []; modalDetalle.present()">
                 Ver detalles del pedido
               </app-secondary-button>
 
@@ -116,4 +109,74 @@
       </div>
     </ng-container>
   </div>
+
+  <!-- Modal Detalle Pedido -->
+  <ion-modal #modalDetalle [initialBreakpoint]="1" [breakpoints]="[0, 1]">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Detalle del Pedido - Mesa {{ pedidoActual?.mesa?.numero }}</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="modalDetalle.dismiss()">
+              <ion-icon name="close"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content [scrollY]="false" [scrollX]="false" class="modal-detalle-content">
+        <div class="pedido-info">
+          <ion-card class="card-items">
+            <ion-card-header>
+              <ion-card-title>
+                <ion-icon name="list-outline"></ion-icon>
+                Items del Pedido
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-list>
+                <ion-item *ngFor="let item of pedidoItems">
+                  <div class="item-content">
+                    <div class="item-info">
+                      <h3>{{ item.nombre_prod }}</h3>
+                      <p class="item-details">
+                        <span class="cantidad">{{ item.cantidad }}x</span>
+                        <span class="precio-unitario">${{ item.precio_unitario }}</span>
+                        <ion-badge 
+                          [color]="item.tipo === 'plato' ? 'secondary' : 'danger'"
+                          class="tipo-badge">
+                          {{ item.tipo === 'plato' ? 'Cocina' : 'Bar' }}
+                        </ion-badge>
+                      </p>
+                    </div>
+                    <div class="item-subtotal">
+                      <strong>${{ item.precio_unitario * item.cantidad }}</strong>
+                    </div>
+                  </div>
+                </ion-item>
+              </ion-list>
+              <div class="total-section">
+                <ion-item lines="none" class="total-item">
+                  <ion-label slot="start">
+                    <h2><strong>Total del Pedido</strong></h2>
+                  </ion-label>
+                  <ion-label slot="end">
+                    <h2><strong>${{ pedidoActual?.total }}</strong></h2>
+                  </ion-label>
+                </ion-item>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </div>
+      </ion-content>
+      <ion-footer>
+        <ion-toolbar>
+          <ion-buttons slot="end">
+            <ion-button expand="block" fill="clear" (click)="modalDetalle.dismiss()">
+              Cerrar
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-footer>
+    </ng-template>
+  </ion-modal>
 </ion-content>
