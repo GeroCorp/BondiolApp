@@ -59,6 +59,7 @@ ion-content.cliente-content {
   height: calc(100dvh - var(--offset-top, 60px));
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: 16px;
   padding: 12px;
   box-sizing: border-box;
@@ -84,10 +85,6 @@ ion-content.cliente-content {
   gap: 10px;
   box-sizing: border-box;
   overflow: hidden;
-
-  &:only-child {
-    max-height: none;
-  }
 
   .cliente-avatar {
     width: 150px;

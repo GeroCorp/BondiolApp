@@ -5,12 +5,55 @@
 
 :host {
   @extend %shared-tab-header;
-  @extend %shared-tab-bar-base;
-  @extend %shared-tab-bar-extended;
 }
 
 ion-tabs {
   --background: transparent;
+}
+
+ion-tab-bar {
+  --background: #8b0000;
+  --color: rgba(255, 255, 255, 0.6);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
+  height: 60px;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+
+  ion-tab-button {
+    --color: rgba(255, 255, 255, 0.6);
+    --color-selected: #ff6b47;
+    --ripple-color: rgba(255, 107, 71, 0.3);
+
+    ion-icon {
+      font-size: 1.3rem;
+      margin-bottom: 4px;
+      transition: all 0.3s ease;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+    }
+
+    ion-label {
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    &.tab-selected {
+      --color: #ff6b47;
+
+      ion-icon {
+        color: #ff6b47;
+        transform: scale(1.1);
+        filter: drop-shadow(0 3px 6px rgba(255, 107, 71, 0.5));
+      }
+
+      ion-label {
+        font-weight: 600;
+      }
+    }
+  }
 }
 
 ion-content {

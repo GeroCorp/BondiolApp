@@ -120,7 +120,15 @@ export class Tab1MenuPage implements OnInit {
     }, 300);
   }
 
-getFirstImage(imagenes: any): string {
+getChunks(array: any[], size: number): any[][] {
+    const chunks: any[][] = [];
+    for (let i = 0; i < array.length; i += size) {
+      chunks.push(array.slice(i, i + size));
+    }
+    return chunks;
+  }
+
+  getFirstImage(imagenes: any): string {
   try {
     if (!imagenes) return 'assets/images/placeholder.png';
     let lista: string[] = [];

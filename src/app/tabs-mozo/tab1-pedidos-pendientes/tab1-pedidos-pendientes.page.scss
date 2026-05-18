@@ -43,6 +43,31 @@ ion-header {
   }
 }
 
+ion-content.pendientes-content {
+  &::part(scroll) {
+    scroll-snap-type: y mandatory;
+    scroll-padding-top: var(--offset-top, 60px);
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+// ─── Snap feed ─────────────────────────────────────────────────────────────────
+.snap-feed {
+  width: 100%;
+  height: 100%;
+}
+
+.snap-page {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  height: calc(100dvh - var(--offset-top, 60px));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 6px;
+  box-sizing: border-box;
+}
+
 ion-content {
   --background: linear-gradient(180deg, #370617 0%, #6A040F 40%, #9D0208 100%);
 }
@@ -57,7 +82,37 @@ ion-content {
 
 .pedido-card {
   @extend %tabs-card-item;
-  margin: 16px;
+  margin: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  margin-bottom: 70px;
+
+  // El ion-card-content debe crecer y distribuir sus hijos verticalmente
+  ion-card-content {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+
+    // El contenedor de info-cliente no crece
+    .info-cliente {
+      flex-shrink: 0;
+    }
+
+    // El total tampoco crece
+    .total-container {
+      flex-shrink: 0;
+    }
+
+    // Los botones se empujan al fondo
+    .botones-accion {
+      flex-shrink: 0;
+      margin-top: auto;
+      padding-top: 16px;
+    }
+  }
 }
 
 .header-pedido {
@@ -249,7 +304,7 @@ ion-content {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin-top: 20px;
+  margin-top: auto;
 
   ion-button {
     font-weight: 700;
