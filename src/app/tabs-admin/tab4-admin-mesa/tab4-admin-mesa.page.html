@@ -6,50 +6,83 @@
     <ion-title>
       <ion-icon name="list"></ion-icon> Lista de mesas
     </ion-title>
-    
   </ion-toolbar>
 </ion-header>
+
 <ion-content [fullscreen]="true" class="container">
-  <div class="mesa-admin-wrapper">
-    <ion-card class="mesa-admin-card">
-      <ion-card-content>
-        <ion-list class="snap-list">
-          @for (mesa of mesas(); track $index) {
-              <ion-card class="mesa-card">
-                
-                <div class="image-container">
-                  <img 
-                  [src]="mesa.foto" 
-                  (error)="handleImageError($event)" />
-                </div>
 
-                <ion-card-header>
-                  <ion-card-title>
-                    Mesa {{ mesa.numero }} - {{ mesa.tipo }}
-                  </ion-card-title>
-                  <ion-card-subtitle>
-                    Capacidad: {{ mesa.cantidad }}
-                  </ion-card-subtitle>
-                  <ion-card-subtitle>
-                    Estado: 
-                    <ion-badge [color]="mesa.disponible ? 'success' : 'danger'">
-                      {{ mesa.disponible ? 'Disponible' : 'Ocupada' }}
-                    </ion-badge> 
-                  </ion-card-subtitle>
-                </ion-card-header>
+  <!-- Snap feed: páginas de 2 mesas -->
+  <div *ngIf="mesas().length > 0" class="snap-feed">
+    <ng-container *ngFor="let mesa of mesas(); let i = index">
+      <div *ngIf="i % 2 === 0" class="snap-page">
 
-                <ion-card-content>
-                  <ion-button 
-                    color="danger" 
-                    expand="block"
-                    (click)="eliminarMesa(mesa.id)">
-                    Liberar mesa
-                  </ion-button>
-                </ion-card-content>
-              </ion-card>
-            }
-        </ion-list> 
-      </ion-card-content>
-    </ion-card>
+        <!-- Card mesa par (i) -->
+        <div class="mesa-card"
+          [class.disponible]="mesas()[i].disponible"
+          [class.ocupada]="!mesas()[i].disponible">
+          <div class="card-body">
+            <div class="image-container">
+              <img [src]="mesas()[i].foto" (error)="handleImageError($event)" />
+            </div>
+            <div class="card-info">
+              <h2>Mesa {{ mesas()[i].numero }} <span class="tipo">- {{ mesas()[i].tipo }}</span></h2>
+              <p class="personas">
+                <ion-icon name="people-outline"></ion-icon>
+                Capacidad: {{ mesas()[i].cantidad }}
+              </p>
+              <p class="estado-row">
+                <ion-badge [color]="mesas()[i].disponible ? 'success' : 'danger'">
+                  {{ mesas()[i].disponible ? 'Disponible' : 'Ocupada' }}
+                </ion-badge>
+              </p>
+            </div>
+          </div>
+          <div class="card-actions">
+            <ion-button expand="block" class="btn-liberar" (click)="eliminarMesa(mesas()[i].id)">
+              <ion-icon name="log-out-outline" slot="start"></ion-icon>
+              Liberar Mesa
+            </ion-button>
+          </div>
+        </div>
+
+        <!-- Card mesa impar (i+1), si existe -->
+        <div *ngIf="mesas()[i + 1] as mesaSiguiente" class="mesa-card"
+          [class.disponible]="mesaSiguiente.disponible"
+          [class.ocupada]="!mesaSiguiente.disponible">
+          <div class="card-body">
+            <div class="image-container">
+              <img [src]="mesaSiguiente.foto" (error)="handleImageError($event)" />
+            </div>
+            <div class="card-info">
+              <h2>Mesa {{ mesaSiguiente.numero }} <span class="tipo">- {{ mesaSiguiente.tipo }}</span></h2>
+              <p class="personas">
+                <ion-icon name="people-outline"></ion-icon>
+                Capacidad: {{ mesaSiguiente.cantidad }}
+              </p>
+              <p class="estado-row">
+                <ion-badge [color]="mesaSiguiente.disponible ? 'success' : 'danger'">
+                  {{ mesaSiguiente.disponible ? 'Disponible' : 'Ocupada' }}
+                </ion-badge>
+              </p>
+            </div>
+          </div>
+          <div class="card-actions">
+            <ion-button expand="block" class="btn-liberar" (click)="eliminarMesa(mesaSiguiente.id)">
+              <ion-icon name="log-out-outline" slot="start"></ion-icon>
+              Liberar Mesa
+            </ion-button>
+          </div>
+        </div>
+
+      </div>
+    </ng-container>
   </div>
+
+  <!-- Empty state -->
+  <div *ngIf="mesas().length === 0" class="empty-state">
+    <ion-icon name="restaurant-outline"></ion-icon>
+    <h2>No hay mesas</h2>
+    <p>No se encontraron mesas configuradas</p>
+  </div>
+
 </ion-content>

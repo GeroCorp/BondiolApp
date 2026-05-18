@@ -1,9 +1,7 @@
 ﻿import { Component, OnInit } from '@angular/core';
-import { AlertController, ToastController, ModalController } from '@ionic/angular';
-import { Vibration } from '@awesome-cordova-plugins/vibration/ngx';
+import { AlertController, ToastController } from '@ionic/angular';
 import { ESTADO, Mozo } from 'src/app/services/mozo';
 import { Notification } from 'src/app/services/notification';
-import { DetallePedidoModalComponent } from '../tab2-pedidos-confirmados/detalle-pedido-modal/detalle-pedido-modal.component';
 import { HapticService } from 'src/app/services/haptic.service';
 import { CustomLoaderService } from 'src/app/services/custom-loader.service';
 interface Pedido {
@@ -37,14 +35,14 @@ interface ItemPedido {
 export class Tab1PedidosPendientesPage implements OnInit {
   pedidosPendientes: Pedido[] = [];
   cargando = true;
+  pedidoActual: Pedido | null = null;
+  pedidoItems: ItemPedido[] = [];
 
   constructor(
     private mozoService: Mozo,
     private alertController: AlertController,
     private toastController: ToastController,
-    private modalController: ModalController,
     private customLoader: CustomLoaderService,
-//    private vibration: Vibration,
     private notificationService: Notification,
     private hapticService: HapticService
   ) {}
@@ -256,29 +254,6 @@ export class Tab1PedidosPendientesPage implements OnInit {
       await this.hapticService.vibrateError();
       this.showToast('Error al confirmar el pedido', 'danger');
       this.hapticService.vibrate(1000);
-    }
-  }
-
-  async verDetalle(pedido: Pedido) {
-    try {
-      // Cargar los items del pedido
-      const items = await this.mozoService.getDetallesPedido(pedido.id);
-      
-      // Crear y presentar el modal
-      const modal = await this.modalController.create({
-        component: DetallePedidoModalComponent,
-        componentProps: {
-          pedido: pedido,
-          items: items || []
-        },
-        cssClass: 'detalle-pedido-modal'
-      });
-      
-      await modal.present();
-    } catch (error) {
-      console.error('Error al cargar detalle del pedido:', error);
-      await this.hapticService.vibrateError();
-      this.showToast('Error al cargar el detalle del pedido', 'danger');
     }
   }
 

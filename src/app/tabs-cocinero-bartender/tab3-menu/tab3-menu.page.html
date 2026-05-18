@@ -7,7 +7,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true"  >
+<ion-content [fullscreen]="true">
   <ion-refresher slot="fixed" (ionRefresh)="recargarMenu($event)">
   <ion-refresher-content
     pullingIcon="chevron-down-circle-outline"
@@ -16,79 +16,75 @@
     refreshingText="Actualizando menú...">
   </ion-refresher-content>
   </ion-refresher>
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">tab3-menu</ion-title>
-    </ion-toolbar>
-  </ion-header>
-      @if (isLoadingData) {
-        <div class="loading-state">
-          <ion-spinner name="crescent" color="primary"></ion-spinner>
-          <p>Cargando menú...</p>
-        </div>
-      } @else {
-<ion-list class="snap-list">
-          @if (perfil === 'cocinero') {
-          @if (platos().length > 0) {
-            @for (item of platos(); track $index) {
-        <ion-card class="menu-card">
-          <div class="carousel">
-            <div 
-              class="slide"
-              *ngFor="let img of getAllImages(item.imagenes)"
-            >
-              <div class="image-container">
-                <ion-spinner 
-                  *ngIf="imageLoadingStates[getImageId(img, 'plato')]" 
-                  name="crescent" 
-                  class="image-spinner">
-                </ion-spinner>
-                <img 
-                  [src]="img"
-                  [alt]="item.nombre"
-                  (load)="onImageDidLoad(getImageId(img, 'plato'))"
-                  (error)="handleImageError($event, getImageId(img, 'plato'))"
-                />
-              </div>
+  @if (isLoadingData) {
+    <div class="loading-state">
+      <ion-spinner name="crescent" color="primary"></ion-spinner>
+      <p>Cargando menú...</p>
+    </div>
+  } @else {
+    <div class="snap-list">
+      @if (perfil === 'cocinero') {
+        @if (platos().length > 0) {
+          @for (item of platos(); track $index) {
+            <div class="snap-page">
+              <ion-card class="menu-card">
+                <div class="carousel">
+                  <div 
+                    class="slide"
+                    *ngFor="let img of getAllImages(item.imagenes)"
+                  >
+                    <div class="image-container">
+                      <ion-spinner 
+                        *ngIf="imageLoadingStates[getImageId(img, 'plato')]" 
+                        name="crescent" 
+                        class="image-spinner">
+                      </ion-spinner>
+                      <img 
+                        [src]="img"
+                        [alt]="item.nombre"
+                        (load)="onImageDidLoad(getImageId(img, 'plato'))"
+                        (error)="handleImageError($event, getImageId(img, 'plato'))"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <ion-card-header>
+                  <ion-card-title>
+                    {{ item.nombre }}
+                  </ion-card-title>
+                  <ion-card-subtitle>
+                    ${{ item.precio }}
+                  </ion-card-subtitle>
+                  <ion-card-subtitle class="tiempo-subtitle">
+                    {{ item.tiempo }} min
+                  </ion-card-subtitle>
+                </ion-card-header>
+                <ion-card-content>
+                  <p>{{ item.descripcion }}</p>
+                  <ion-button 
+                    expand="block"
+                    color="danger"
+                    (click)="eliminarPlato(item)">
+                    <ion-icon name="trash-outline" slot="start"></ion-icon>
+                    Eliminar
+                  </ion-button>
+                </ion-card-content>
+              </ion-card>
             </div>
+          }
+        } @else {
+          <div class="empty-state">
+            <ion-icon name="restaurant-outline" size="large" color="medium"></ion-icon>
+            <h2>No hay platos disponibles</h2>
+            <p class="ion-text-center">Los platos que se agreguen aparecerán aquí</p>
           </div>
-    <ion-card-header>
-      <ion-card-title>
-        {{ item.nombre }}
-      </ion-card-title>
-      <ion-card-title>
-      ${{ item.precio }}
-      </ion-card-title>
-      <ion-card-subtitle>
-        Tiempo de Preparacion: {{ item.tiempo }} min
-      </ion-card-subtitle>
-    </ion-card-header>
-    <ion-card-content>
-      <p>{{ item.descripcion }}</p>
-
-<!-- AREVISAR SI DEJAR O SACAR  -->
-      <ion-button 
-        expand="block"
-        color="danger"
-        (click)="eliminarPlato(item)">
-        <ion-icon name="trash-outline" slot="start"></ion-icon>
-        Eliminar
-      </ion-button>
-  </ion-card-content>
-  </ion-card>
-          }
-          } @else {
-            <div class="empty-state">
-              <ion-icon name="restaurant-outline" size="large" color="medium"></ion-icon>
-              <h2>No hay platos disponibles</h2>
-              <p class="ion-text-center">Los platos que se agreguen aparecerán aquí</p>
-            </div>
-          }
         }
-        
-        @if (perfil === 'bartender') {
-          @if (bebidas().length > 0) {
-            @for (item of bebidas(); track $index) {
+      }
+      
+      @if (perfil === 'bartender') {
+        @if (bebidas().length > 0) {
+          @for (item of bebidas(); track $index) {
+            <div class="snap-page">
               <ion-card class="menu-card">
                 <div class="carousel">
                   <div 
@@ -114,21 +110,15 @@
                   <ion-card-title>
                     {{ item.nombre }} 
                   </ion-card-title>
-                  <ion-card-title>
-                  ${{ item.precio }}
-                  </ion-card-title>
                   <ion-card-subtitle>
-                    Tiempo: {{ item.tiempo }} min
+                    ${{ item.precio }}
+                  </ion-card-subtitle>
+                  <ion-card-subtitle class="tiempo-subtitle">
+                    {{ item.tiempo }} min
                   </ion-card-subtitle>
                 </ion-card-header>
                 <ion-card-content>
                   <p>{{ item.descripcion }}</p>
-                 
-                  <!-- <div class="image-count" *ngIf="getAllImages(item.imagenes).length > 1">
-                    <ion-icon name="images-outline"></ion-icon>
-                    {{ getAllImages(item.imagenes).length }} fotos
-                  </div> -->
-
                   <ion-button 
                     expand="block"
                     color="danger"
@@ -138,16 +128,16 @@
                   </ion-button>
                 </ion-card-content>
               </ion-card>
-            }
-                  } @else {
-            <div class="empty-state">
-              <ion-icon name="beer-outline" size="large" color="medium"></ion-icon>
-              <h2>No hay bebidas disponibles</h2>
-              <p class="ion-text-center">Las bebidas que se agreguen aparecerán aquí</p>
             </div>
           }
+        } @else {
+          <div class="empty-state">
+            <ion-icon name="beer-outline" size="large" color="medium"></ion-icon>
+            <h2>No hay bebidas disponibles</h2>
+            <p class="ion-text-center">Las bebidas que se agreguen aparecerán aquí</p>
+          </div>
         }
-        </ion-list>
       }
-
+    </div>
+  }
 </ion-content>

@@ -32,113 +32,151 @@
     <p>Todos los pedidos han sido procesados</p>
   </div>
 
-  <!-- Lista de pedidos pendientes -->
-  <div *ngIf="!cargando && pedidosPendientes.length > 0">
-    <div class="wrap">
-      <ion-card *ngFor="let pedido of pedidosPendientes" class="pedido-card">
-        <ion-card-header [class.pedido-nuevo]="esPedidoNuevo(pedido.fecha)">
-          <div class="header-pedido">
-            <div>
-              <ion-card-title>
-                <ion-icon name="restaurant-outline" color="secondary"></ion-icon>
-                Mesa {{ pedido.mesa?.numero }}
-              </ion-card-title>
-              <ion-card-subtitle>
-                <ion-icon name="time-outline"></ion-icon>
-                {{ formatearFecha(pedido.fecha) }}
-              </ion-card-subtitle>
+  <!-- Lista de pedidos pendientes con scroll snap -->
+  <div *ngIf="!cargando && pedidosPendientes.length > 0" class="snap-feed">
+    <ng-container *ngFor="let pedido of pedidosPendientes; let i = index">
+      <div *ngIf="i % 1 === 0" class="snap-page">
+        <ion-card class="pedido-card">
+          <ion-card-header [class.pedido-nuevo]="esPedidoNuevo(pedido.fecha)">
+            <div class="header-pedido">
+              <div>
+                <ion-card-title>
+                  <ion-icon name="restaurant-outline" color="secondary"></ion-icon>
+                  Mesa {{ pedido.mesa?.numero }}
+                </ion-card-title>
+                <ion-card-subtitle>
+                  <ion-icon name="time-outline"></ion-icon>
+                  {{ formatearFecha(pedido.fecha) }}
+                </ion-card-subtitle>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 5px; align-items: flex-end;">
+                <ion-badge *ngIf="esPedidoNuevo(pedido.fecha)" color="danger">
+                  ¡NUEVO!
+                </ion-badge>
+                <ion-badge *ngIf="pedido.descuento_porcentaje && pedido.descuento_porcentaje > 0" color="success">
+                  <ion-icon name="trophy" style="margin-right: 3px;"></ion-icon>
+                  -{{ pedido.descuento_porcentaje }}%
+                </ion-badge>
+              </div>
             </div>
-            <div style="display: flex; flex-direction: column; gap: 5px; align-items: flex-end;">
-              <ion-badge *ngIf="esPedidoNuevo(pedido.fecha)" color="danger">
-                ¡NUEVO!
-              </ion-badge>
-              <ion-badge *ngIf="pedido.descuento_porcentaje && pedido.descuento_porcentaje > 0" color="success">
-                <ion-icon name="trophy" style="margin-right: 3px;"></ion-icon>
-                -{{ pedido.descuento_porcentaje }}%
-              </ion-badge>
+          </ion-card-header>
+
+          <ion-card-content>
+            <!-- Información del cliente -->
+            <div class="info-cliente">
+              <ion-icon name="person-outline" color="secondary"></ion-icon>
+              <span>{{ pedido.cliente?.nombre || 'Cliente anónimo' }}</span>
             </div>
-          </div>
-        </ion-card-header>
 
-        <ion-card-content>
-          <!-- Información del cliente -->
-          <div class="info-cliente">
-            <ion-icon name="person-outline" color="secondary"></ion-icon>
-            <span>{{ pedido.cliente?.nombre || 'Cliente anónimo' }}</span>
-          </div>
-
-          <!-- Items del pedido -->
-
-          <!-- Total con descuento -->
-          <div class="total-container">
-            <!-- Mostrar subtotal si hay descuento -->
-            <div *ngIf="pedido.descuento_porcentaje && pedido.descuento_porcentaje > 0" style="margin-bottom: 10px;">
-              <p style="margin: 0; color: #666;">
-                <small>Subtotal: <span style="text-decoration: line-through;">${{ pedido.subtotal }}</span></small>
-              </p>
-              <p style="margin: 0; color: #2dd36f;">
-                <small>
-                  <ion-icon name="trophy" style="font-size: 14px; vertical-align: middle;"></ion-icon>
-                  Descuento ({{ pedido.descuento_porcentaje }}%): -${{ pedido.subtotal! - pedido.total }}
-                </small>
-              </p>
+            <!-- Total con descuento -->
+            <div class="total-container">
+              <div *ngIf="pedido.descuento_porcentaje && pedido.descuento_porcentaje > 0" style="margin-bottom: 10px;">
+                <p style="margin: 0; color: #666;">
+                  <small>Subtotal: <span style="text-decoration: line-through;">${{ pedido.subtotal }}</span></small>
+                </p>
+                <p style="margin: 0; color: #2dd36f;">
+                  <small>
+                    <ion-icon name="trophy" style="font-size: 14px; vertical-align: middle;"></ion-icon>
+                    Descuento ({{ pedido.descuento_porcentaje }}%): -${{ pedido.subtotal! - pedido.total }}
+                  </small>
+                </p>
+              </div>
+              
+              <h3>TOTAL <span class="total-monto">${{ pedido.total }}</span></h3>
             </div>
-            
-            <h3>TOTAL: <span class="total-monto">${{ pedido.total }}</span></h3>
-            <p class="tiempo-estimado">
-              <ion-icon name="alarm-outline"></ion-icon>
-            </p>
-          </div>
-          <!-- Detalles -->
 
-          <!-- Botones de acción -->
-          <div class="botones-accion">
-            <!-- <ion-button 
-              expand="block" 
-              fill="outline"
-              (click)="verDetalle(pedido)"
-            >
-              <ion-icon name="eye-outline" slot="start"></ion-icon>
-              Ver detalle completo
-            </ion-button>
+            <!-- Botones de acción -->
+            <div class="botones-accion">
+              <app-secondary-button 
+                expand="block" 
+                (click)="pedidoActual = pedido; pedidoItems = pedido.items || []; modalDetalle.present()">
+                Ver detalles del pedido
+              </app-secondary-button>
 
-            <ion-button 
-              expand="block" 
-              color="danger" 
-              (click)="rechazarPedido(pedido)"
-            >
-              <ion-icon name="close-circle-outline" slot="start"></ion-icon>
-              Rechazar para modificación
-            </ion-button>
-            
-            <ion-button 
-              expand="block" 
-              color="success" 
-              (click)="confirmarPedido(pedido)"
-            >
-              <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
-              Confirmar y enviar a cocina/bar
-            </ion-button> -->
+              <app-secondary-button
+               (click)="rechazarPedido(pedido)">
+                <ion-icon name="close-circle-outline" slot="start"></ion-icon>
+                Rechazar para modificación
+              </app-secondary-button>
 
-            <app-secondary-button 
-              expand="block" 
-              (click)="verDetalle(pedido)">
-              Ver detalles del pedido
-            </app-secondary-button>
-
-            <app-secondary-button
-             (click)="rechazarPedido(pedido)">
-              <ion-icon name="close-circle-outline" slot="start"></ion-icon>
-              Rechazar para modificación
-            </app-secondary-button>
-
-            <app-main-button 
-              (click)="confirmarPedido(pedido)">
-              Confirmar y enviar a cocina/bar
-            </app-main-button>
-          </div>
-        </ion-card-content>
-      </ion-card>
-    </div>
+              <app-main-button 
+                (click)="confirmarPedido(pedido)">
+                Confirmar y enviar a cocina/bar
+              </app-main-button>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </div>
+    </ng-container>
   </div>
+
+  <!-- Modal Detalle Pedido -->
+  <ion-modal #modalDetalle [initialBreakpoint]="1" [breakpoints]="[0, 1]">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Detalle del Pedido - Mesa {{ pedidoActual?.mesa?.numero }}</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="modalDetalle.dismiss()">
+              <ion-icon name="close"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content [scrollY]="false" [scrollX]="false" class="modal-detalle-content">
+        <div class="pedido-info">
+          <ion-card class="card-items">
+            <ion-card-header>
+              <ion-card-title>
+                <ion-icon name="list-outline"></ion-icon>
+                Items del Pedido
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-list>
+                <ion-item *ngFor="let item of pedidoItems">
+                  <div class="item-content">
+                    <div class="item-info">
+                      <h3>{{ item.nombre_prod }}</h3>
+                      <p class="item-details">
+                        <span class="cantidad">{{ item.cantidad }}x</span>
+                        <span class="precio-unitario">${{ item.precio_unitario }}</span>
+                        <ion-badge 
+                          [color]="item.tipo === 'plato' ? 'secondary' : 'danger'"
+                          class="tipo-badge">
+                          {{ item.tipo === 'plato' ? 'Cocina' : 'Bar' }}
+                        </ion-badge>
+                      </p>
+                    </div>
+                    <div class="item-subtotal">
+                      <strong>${{ item.precio_unitario * item.cantidad }}</strong>
+                    </div>
+                  </div>
+                </ion-item>
+              </ion-list>
+              <div class="total-section">
+                <ion-item lines="none" class="total-item">
+                  <ion-label slot="start">
+                    <h2><strong>Total del Pedido</strong></h2>
+                  </ion-label>
+                  <ion-label slot="end">
+                    <h2><strong>${{ pedidoActual?.total }}</strong></h2>
+                  </ion-label>
+                </ion-item>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </div>
+      </ion-content>
+      <ion-footer>
+        <ion-toolbar>
+          <ion-buttons slot="end">
+            <ion-button expand="block" fill="clear" (click)="modalDetalle.dismiss()">
+              Cerrar
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-footer>
+    </ng-template>
+  </ion-modal>
 </ion-content>

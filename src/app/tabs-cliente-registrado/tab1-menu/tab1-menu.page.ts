@@ -120,7 +120,15 @@ export class Tab1MenuPage implements OnInit {
     }, 300);
   }
 
-getFirstImage(imagenes: any): string {
+getChunks(array: any[], size: number): any[][] {
+    const chunks: any[][] = [];
+    for (let i = 0; i < array.length; i += size) {
+      chunks.push(array.slice(i, i + size));
+    }
+    return chunks;
+  }
+
+  getFirstImage(imagenes: any): string {
   try {
     if (!imagenes) return 'assets/images/placeholder.png';
     let lista: string[] = [];
@@ -163,7 +171,14 @@ getFirstImage(imagenes: any): string {
   volverHome(){
     this.router.navigate(["/home-cliente"])
   }
-  hacerPedido() {
+  async hacerPedido() {
+    const rechazado = await this.clienteService.getRejectedOrder();
+    if (rechazado) {
+      await this.showToast(
+        '⚠️ Tu pedido anterior fue rechazado. Podés modificarlo.',
+        'medium'
+      );
+    }
     this.router.navigate(["/tabs-cliente-registrado/tab2-pedido"]);
   }
 
