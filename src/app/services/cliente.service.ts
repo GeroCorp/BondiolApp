@@ -104,6 +104,20 @@ export class ClienteService {
   // Flag para evitar que getRejectedOrder se ejecute más de una vez por sesión
   private _rejectedOrderChecked = false;
 
+  async getCliente(userId: any) {
+    const { data, error } = await this.supabase
+      .from('clientes')
+      .select('*')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (error) {
+      throw new Error('Error al obtener cliente: ' + error.message);
+    }
+    console.log("Usuario encontrado: ", data);
+    return data;
+  }
+
   async checkRejected(){
     const clienteId = await this.getClientId();
     const { data, error } = await this.supabase
@@ -606,6 +620,38 @@ getSubtotal(): number {
     return idPedido;
   }
 
+  async estadoUltimoPedido() {
+    let pedido = null;
+    const clienteId = await this.getClientId();
+    try {
+      const { data, error} = await this.supabase
+        .from('pedidos')
+        .select('*')
+        .eq('id_cliente', clienteId)
+        .order('fecha', { ascending: false })
+      
+        if (data?.length === 0 || !data) {
+          console.log('No hay pedidos para este cliente');
+          return null;
+        }
+        // Verificar que sea del mismo día
+        const hoy = new Date();
+        const fechaPedido = new Date(data[0].fecha);
+        const esMismoDia = hoy.toDateString() === fechaPedido.toDateString();
+
+        if (esMismoDia){
+          pedido = data;
+        }else{
+          console.log('No hay pedidos activos del día para este cliente');
+        }
+
+      }catch ( e ){
+        console.error('Error al verificar pedidos activos: ' + e);
+      }
+      return pedido ? pedido[0].estado : null;
+  }
+
+
   // Metodos del chat de consultas
 
   get client() {
@@ -1032,55 +1078,103 @@ async sendMessage(contenido: string): Promise<void> {
     console.error('❌ Error obteniendo sesión:', sessionError);
     return false;
   }
-
+  const cliente = await this.getCliente(sessionData.session.user.id);
   const { data, error } = await this.supabase
-    .from('clientes')
-    .select('mesa_asignada')
-    .eq('user_id', sessionData.session.user.id)
-    .single();
+    .from('lista_espera')
+    .select('*')
+    .eq('estado', 'esperando')
 
   if (error) {
     console.error('❌ Error al verificar cliente en espera:', error);
     return false;
   }
-
-  // Si mesa_asignada es null, el cliente está en espera
-  const bool = data?.mesa_asignada === null;
-
+  // Inicialmente asumir que no está en espera
+  let bool = false;
+  // Si hay datos verificar que el cliente esté en la lista de espera
+  if (data && data.length > 0) {
+    // Si encuentra un item con el nombre del cliente, entonces está en espera
+    bool = data.some((item) => item.nombre_cliente === `${cliente.nombre} ${cliente.apellido}`);
+  }
   console.log('👤 Cliente registrado en espera:', bool);
+  this._clienteEnEspera.set(bool);
+
   return bool;
 }
 
-  async subscribeToClienteEnEspera(signal: any ) {
+  async subscribeToClienteEnEspera(signal: any) {
+    // ✅ VERIFICAR: Solo para clientes registrados
+    if (this.tipoClienteService.isAnonimo()) {
+      console.log('🎭 Cliente anónimo - subscribeToClienteEnEspera no necesario');
+      return null;
+    }
+
     try {
       const { data: { session }, error: sessionError } = await this.supabase.auth.getSession();
       if (sessionError || !session?.user?.id) {
         console.error('❌ No se pudo obtener sesión para suscripción de cliente en espera:', sessionError);
-        return;
+        return null;
       }
 
-      const userId = session.user.id;
-      const channels = this.supabase.channel(`cliente-en-espera-${userId}`)
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'clientes', filter: `user_id=eq.${userId}` },
-        (payload) => {
-          console.log('🔄 Update detectado en clientes para clienteEnEspera:', payload);
-          const mesaAsignada = payload.new?.['mesa_asignada'];
-          const enEspera = mesaAsignada === null;
-
-          if (signal && typeof signal.set === 'function') {
+      const cliente = await this.getCliente(session.user.id);
+      const nombreCompleto = `${cliente.nombre} ${cliente.apellido}`;
+      
+      // ✅ Crear filter con nombre correctamente escapado
+      const filtro = `nombre_cliente=eq.${encodeURIComponent(nombreCompleto)}`;
+      
+      const channel = this.supabase
+        .channel(`cliente-en-espera-${cliente.id_cliente}`)
+        // ✅ ESCUCHAR INSERT: Cuando se agrega a la lista de espera
+        .on(
+          'postgres_changes',
+          { 
+            event: 'INSERT', 
+            schema: 'public', 
+            table: 'lista_espera', 
+            // filter: filtro
+          },
+          (payload) => {
+            console.log('✅ INSERT detectado en lista_espera - Cliente agregado a la lista:', payload);
+            const estado = payload.new?.['estado'];
+            // Cuando se inserta, asumir que está en espera
+            const enEspera = estado === 'esperando' || true;
+            console.log('🎯 Cliente en espera actualizado a:', enEspera);
             signal.set(enEspera);
-          } else {
-            console.warn('⚠️ subscribeToClienteEnEspera recibió un valor inválido:', signal);
           }
-        }
-      ).subscribe();
+        )
+        // ✅ ESCUCHAR UPDATE: Cuando cambia el estado
+        .on(
+          'postgres_changes',
+          { 
+            event: 'UPDATE', 
+            schema: 'public', 
+            table: 'lista_espera', 
+            // filter: filtro
+          },
+          (payload) => {
+            console.log('🔄 UPDATE detectado en lista_espera - Estado cambiado:', payload);
+            const estadoAnterior = payload.old?.['estado'];
+            const estadoNuevo = payload.new?.['estado'];
+            const enEspera = estadoNuevo === 'esperando';
+            
+            console.log('📊 Cambio de estado:', {
+              anterior: estadoAnterior,
+              nuevo: estadoNuevo,
+              enEsperaAhora: enEspera
+            });
+            
+            signal.set(enEspera);
+          }
+        )
+        .subscribe();
+      
+      console.log('✅ Suscripción a cliente en espera iniciada para:', nombreCompleto);
+      console.log('📡 Escuchando: INSERT y UPDATE en tabla lista_espera');
+      return channel;
     } catch (error) {
       console.error('❌ Error subscribing to cliente en espera:', error);
+      return null;
     }
   }
-
 
   // Metodos para manejo de mesas
 
@@ -1234,69 +1328,6 @@ async sendMessage(contenido: string): Promise<void> {
     } catch (error: any) {
       console.error('❌ Error en setMesa:', error);
       throw error;
-    }
-  }
-
-  /**
-   * Verifica que el QR escaneado corresponda a la mesa del cliente
-   */
-  async verificarQRMesa(
-    numeroMesaQR: number
-  ): Promise<{ valido: boolean; mensaje: string }> {
-    try {
-      const clienteId = await this.getClientId();
-      const mesaAsignada = await this.getNroMesa(clienteId);
-
-      // Verificar que el cliente tenga mesa asignada
-      if (!mesaAsignada) {
-        return {
-          valido: false,
-          mensaje:
-            'No tienes una mesa asignada. Espera a que el maître te asigne una.',
-        };
-      }
-
-      // Verificar que el QR coincida con la mesa asignada
-      if (numeroMesaQR !== mesaAsignada) {
-        return {
-          valido: false,
-          mensaje: `Este es el QR de la Mesa ${numeroMesaQR}, pero tu mesa asignada es la ${mesaAsignada}.`,
-        };
-      }
-
-      // Verificar en la BD que todo esté correcto
-      const { data: mesa, error } = await this.supabase
-        .from('mesas')
-        .select('*')
-        .eq('numero', numeroMesaQR)
-        .eq('cliente_asignado', clienteId)
-        .maybeSingle();
-
-      if (error || !mesa) {
-        return {
-          valido: false,
-          mensaje: 'Error al verificar la mesa en la base de datos.',
-        };
-      }
-
-      // Verificar que la mesa no esté disponible (debe estar ocupada por este cliente)
-      if (mesa.disponible) {
-        return {
-          valido: false,
-          mensaje: 'Inconsistencia: la mesa aparece como disponible.',
-        };
-      }
-
-      return {
-        valido: true,
-        mensaje: `Mesa ${numeroMesaQR} verificada correctamente.`,
-      };
-    } catch (error) {
-      console.error('Error verificando QR de mesa:', error);
-      return {
-        valido: false,
-        mensaje: 'Error al verificar el código QR.',
-      };
     }
   }
   async liberarMesaCliente(nroMesa?: number, clientId?: number) {
@@ -1571,8 +1602,9 @@ async getHistorialPedidos() {
 
 /**
  * Suscripción en tiempo real a cambios en los pedidos del cliente
+ * @param onPedidosChanged Callback a ejecutar cuando hay cambios en pedidos
  */
-async subscribeToHistorialPedidos() {
+async subscribeToHistorialPedidos(onPedidosChanged?: () => Promise<void>) {
   try {
     const isAnonimo = this.tipoClienteService.isAnonimo();
     const clienteData = this.tipoClienteService.getClienteData();
@@ -1643,6 +1675,25 @@ async subscribeToHistorialPedidos() {
           
           // Recargar historial
           await this.getHistorialPedidos();
+          
+          // ✅ Ejecutar callback si se proporciona para recalcular accesos
+          if (onPedidosChanged) {
+            try {
+              await onPedidosChanged();
+              console.log('✅ Callback de cambio de pedidos ejecutado');
+            } catch (error) {
+              console.error('❌ Error en callback de cambio de pedidos:', error);
+            }
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'pedidos', filter:filtro },
+        async (payload) => {
+          console.log('🆕 Nuevo pedido detectado:', payload);
+          // Recargar historial
+          
         }
       )
       .subscribe();

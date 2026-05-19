@@ -13,17 +13,6 @@ import { supabase } from '../../services/supabase';
 import { ReservasService } from 'src/app/services/reservas.service';
 import { environment } from 'src/environments/environment.prod';
 
-interface Cliente {
-  id_cliente?: number;
-  nombre: string;
-  apellido: string;
-  dni?: string;
-  email?: string | null;
-  foto?: string | null;
-  estado?: string;
-  created_at?: string;
-}
-
 @Component({
   selector: 'app-home-cliente',
   templateUrl: './home-cliente.page.html',
@@ -31,22 +20,26 @@ interface Cliente {
   standalone: false,
 })
 export class HomeClientePage implements OnInit {
-  habilitarEncuesta = signal<boolean>(true);
   cliente: any = null;
-  enEspera = signal<boolean>(true);
+  enListaEspera = signal<boolean>(false);
   mesaAsignada = signal<number | null>(null);
   mesaVerificada = signal<boolean>(false);
   pedidosHistorial: any[] = [];
   private pedidosSubscription: any = null;
   private mesaSubscription: any = null;
+  private clienteEnEsperaSubscription: any = null;
   isRegistrado = signal<boolean>(true);
   perfil = "cliente";
   private notificationService: Notification = inject(Notification);
   reservaActivaHoy: any = null;
   cargandoReserva: boolean = false;
   cargandoRecarga = signal<boolean>(false);
+
   juegosAccess = signal<boolean>(false);
+  opinionesAccess = signal<boolean>(true);
+  menuAccess = signal<boolean>(false);
   canPay = signal<boolean>(false);
+
 
   isDelivery = signal<boolean>(false);
   direccionDelivery: string = '';
@@ -69,23 +62,19 @@ export class HomeClientePage implements OnInit {
     // ✅ EFECTO: Actualizar estado de espera para registrados
     effect(() => {
       if (!this.tipoClienteService.isAnonimo()) {
-        this.enEspera.set(this.clienteService.clienteEnEspera());
         this.setDireccion();
-        this.clienteService.setMesaAsignada(this.mesaAsignada());
         console.log("Entro a afterView");
         if(this.isDelivery() && this.direccionDelivery === ''){
           this.isDelivery.set(false)
         }
-        const access = localStorage.getItem('juegosAccess');
-        this.juegosAccess.set(access === 'true');
-        if (this.juegosAccess()){
-          console.log("Acceso a juegos habilitado");
-          this.showToast('¡Acceso a juegos habilitado!', 'success');
-        }
+        // const access = localStorage.getItem('juegosAccess');
+        // this.juegosAccess.set(access === 'true');
+        // if (this.juegosAccess()){
+        //   console.log("Acceso a juegos habilitado");
+        //   this.showToast('¡Acceso a juegos habilitado!', 'success');
+        // }
         const canPayStorage = localStorage.getItem('canPay');
         this.canPay.set(canPayStorage === 'true');
-        
-        // console.log('📊 Estado del cliente en espera (registrado):', this.enEspera()); // ⚠️ LOG DESHABILITADO
       }
     });
 
@@ -138,10 +127,6 @@ export class HomeClientePage implements OnInit {
         return;
       }
 
-      if (hasSession) {
-        console.log('✅ Sesión activa:', session.user.email);
-      }
-
       const storageDelivery = localStorage.getItem('esDelivery');
       if (storageDelivery !== null) {
         this.clienteService.setIsDelivery(true);
@@ -149,19 +134,37 @@ export class HomeClientePage implements OnInit {
         this.direccionDelivery = localStorage.getItem('direccionDelivery')!;
         this.clienteService.setDireccionDelivery(this.direccionDelivery);
       }
-      if (this.tipoClienteService.isRegistrado()) {
-        await Promise.all([
-          this.clienteService.subscribeToClienteEnEspera(this.mesaAsignada()),
-          this.cargarDatosCliente(),
+
+      if (session?.user.id && !this.tipoClienteService.isAnonimo()) {
+        // Cargar datos del cliente (dependencia para los otros)
+        await this.cargarDatosCliente(session.user.id);
+        
+        // Ejecutar en paralelo los que dependen de this.cliente
+        const [, , suscripcion] = await Promise.all([
           this.verificarReservaActiva(),
-          this.verificarMesaAsignada()
+          this.verificarMesaAsignada(),
+          this.clienteService.subscribeToClienteEnEspera(this.enListaEspera),
+          
         ]);
+        
+        // Guardar suscripción para limpiar después
+        this.clienteEnEsperaSubscription = suscripcion;
+
+        // Suscribirse a cambios en historial de pedidos con callback
+        await this.clienteService.subscribeToHistorialPedidos(() => this.actualizarAccesosSegunPedidos());
+
+        // Verificacion de accesos INICIALES
+        await this.actualizarAccesosSegunPedidos();
+        this.clienteService.isCLienteEnEspera(); // Verificar estado de espera al cargar la página
+
+        this.enListaEspera.set(this.clienteService.clienteEnEspera());
+        
       } else if (this.tipoClienteService.isAnonimo()) {
         const clienteData = this.tipoClienteService.getClienteData();
         if (clienteData) {
           this.cliente = clienteData;
           this.mesaAsignada.set(clienteData.mesa_asignada || null);
-          this.enEspera.set(clienteData.en_espera !== false);
+          this.enListaEspera.set(clienteData.en_espera !== false);
           this.mesaVerificada.set(false);
         } else {
           console.warn('⚠️ Cliente anónimo sin datos locales; redirigiendo a ingreso-anonimo');
@@ -173,7 +176,6 @@ export class HomeClientePage implements OnInit {
     } catch (error) {
       console.error('❌ Error en ngOnInit:', error);
       this.showToast('Error al cargar la página', 'danger');
-    }finally{
     }
     
   }
@@ -191,40 +193,11 @@ export class HomeClientePage implements OnInit {
   if (this.mesaSubscription) {
     this.mesaSubscription.unsubscribe();
   }
-}
-
-
-private async procesarIngresoAnonimo(nombre: string) {
-    try {
-      const fotoDefault: string | null = '';
-
-      // Crea o carga el cliente anónimo en el servicio (retorna objeto con flags)
-      const clienteCreado = await this.tipoClienteService.setClienteAnonimo(nombre, fotoDefault);
-
-      // Normalizar y asignar propiedades necesarias para la UI
-      this.cliente = {
-        id_clienteanonimo: clienteCreado.id_clienteanonimo ?? clienteCreado.id_cliente,
-        nombre: clienteCreado.nombre,
-        apellido: clienteCreado.apellido ?? '',
-        foto: clienteCreado.foto ?? fotoDefault,
-        estado: (clienteCreado.estado ?? (clienteCreado.en_espera ? 'pendiente' : 'aprobado')),
-        created_at: clienteCreado.created_at ?? new Date().toISOString()
-      };
-
-      // Inicializar flags específicos para la UI (forzar enEspera true si la BD lo indica o por defecto)
-      this.enEspera.set(clienteCreado.en_espera === undefined ? true : !!clienteCreado.en_espera);
-      this.mesaAsignada.set(clienteCreado.mesa_asignada ?? null);
-      this.mesaVerificada.set(false); // siempre false hasta escaneo
-
-      // Forzar detección para que la plantilla actualice inmediatamente
-      this.cd.detectChanges();
-
-      this.showToast('Bienvenido ' + nombre, 'success');
-    } catch (error) {
-      console.error('Error:', error);
-      this.showToast('Error al ingresar como anónimo', 'danger');
-    }
+  
+  if (this.clienteEnEsperaSubscription) {
+    this.clienteEnEsperaSubscription.unsubscribe();
   }
+}
 
  async seleccionarClienteExistenteYContinuar(clienteSeleccionado: any) {
   console.log('🔍 Seleccionando cliente existente:', clienteSeleccionado);
@@ -244,11 +217,11 @@ private async procesarIngresoAnonimo(nombre: string) {
   // ✅ CORRECCIÓN: Normalizar flags correctamente
   if (clienteSeleccionado.mesa_asignada) {
     this.mesaAsignada.set(clienteSeleccionado.mesa_asignada);
-    this.enEspera.set(false);
+    this.enListaEspera.set(false);
     this.mesaVerificada.set(false);
   } else {
     this.mesaAsignada.set(null);
-    this.enEspera.set(true);
+    this.enListaEspera.set(true);
     this.mesaVerificada.set(false);
   }
   
@@ -265,135 +238,80 @@ private async procesarIngresoAnonimo(nombre: string) {
   this.router.navigate(['/home-cliente']);
 }
 
-  async checkMesaAsignada() {
-    if (!this.cliente) return;
-
-    try {
-      const isAnon = this.tipoClienteService.isAnonimo();
-
-      if (isAnon) {
-        const idAnon = this.cliente.id_clienteanonimo ?? this.cliente.id_cliente;
-        if (!idAnon) return;
-
-        const { data, error } = await this.authService.client
-          .from('clientes_anonimos')
-          .select('mesa_asignada, en_espera, nombre')
-          .eq('id_clienteanonimo', idAnon)
-          .single();
-
-        if (error) throw error;
-
-        this.mesaAsignada.set(data?.mesa_asignada ?? null);
-        this.enEspera.set(!this.mesaAsignada()); // si hay mesa, ya no está en espera
-        // reset de verificación hasta que escanee
-        this.mesaVerificada.set(false);
-
-        if (this.mesaAsignada()) {
-          
-        }
-      } else {
-        const id = this.cliente.id_cliente ?? this.tipoClienteService.getClienteId();
-        if (!id) return;
-
-        const { data, error } = await this.authService.client
-          .from('clientes')
-          .select('mesa_asignada')
-          .eq('id_cliente', id)
-          .single();
-
-        if (error) throw error;
-
-        const mesaData = data?.mesa_asignada ?? null;
-        this.mesaAsignada.set(mesaData);
-        this.enEspera.set(!mesaData);
-        this.mesaVerificada.set(false);
-
-        if (this.mesaAsignada()) {
-          
-        }
-      }
-
-      // Forzar actualización de la vista
-      this.cd.detectChanges();
-    } catch (err) {
-      console.error('checkMesaAsignada error', err);
-    }
-  }
-
   // Métodos para verificar acceso a funcionalidades
-  puedeAccederJuegos(): boolean {
-    return this.isRegistrado() && !!this.mesaAsignada();
+  async puedeAccederJuegos(): Promise<boolean> {
+    // TODO: Verificar que el cliente tenga un pedido activo (no pagado)
+    let estado = await this.clienteService.estadoUltimoPedido();
+    console.log("ACCESO A JUEGOS: ", estado !== 'pagado');
+    return estado && estado !== 'pagado';
   }
 
-  puedeAccederEncuestas(): boolean {
-    return this.isRegistrado() && !!this.mesaAsignada();
+  async puedeAccederAmenu(): Promise<boolean> {
+    // Si tiene un pedido activo no podrá visualizar el menú para agregar un pedido nuevo
+    let estado = await this.clienteService.estadoUltimoPedido();
+    return estado !== 'pagado' || estado == null;
   }
 
-  async cargarDatosCliente() {
+  async puedeAccederEncuestas(): Promise<boolean> {
+    // Verificar que el cliente tenga un pedido entregado 
+    return await this.clienteService.estadoUltimoPedido() == 'entregado';
+  }
+
+  async accesoAOpiniones(): Promise<boolean> {
+    // AND: Mostrar botón SOLO si cumple AMBAS condiciones
+    const notEnEspera = !this.enListaEspera();
+    const estadoPedido = await this.clienteService.estadoUltimoPedido();
+    const tienePagado = estadoPedido === 'pagado' || estadoPedido === null;
+    const access = notEnEspera && tienePagado; // AND: true solo si ambas son verdaderas
+    console.log("Acceso a opiniones (AND): ", access, " (notEnEspera:", notEnEspera, ", tienePagado:", tienePagado, ")");
+    return access;
+  }
+
+  async puedePedirCuenta() {
+    // Solo si tiene un pedido activo entregado (no pagado)
+    let estado = await this.clienteService.estadoUltimoPedido();
+    return estado === 'entregado';
+  }
+
+  /**
+   * ✅ NUEVO: Recalcular accesos cuando hay cambios en pedidos
+   * Se ejecuta cada vez que se detecta un cambio en la tabla pedidos
+   */
+  async actualizarAccesosSegunPedidos(): Promise<void> {
+    try {
+      console.log('🔄 Recalculando accesos según cambios en pedidos...');
+      
+      const [puedoEncuestas, puedoJuegos, puedoOpiniones, puedoMenu] = await Promise.all([
+        this.puedeAccederEncuestas(),
+        this.puedeAccederJuegos(),
+        this.accesoAOpiniones(),
+        this.puedeAccederAmenu()
+      ]);
+
+      this.opinionesAccess.set(puedoOpiniones);
+      this.juegosAccess.set(puedoJuegos);
+      this.menuAccess.set(puedoMenu);
+      // Nota: opinionesAccess se usa para ambos, puedes ajustar si necesitas otro signal
+
+      console.log('✅ Accesos actualizados:', {
+        encuestas: puedoEncuestas,
+        juegos: puedoJuegos,
+        opiniones: puedoOpiniones,
+        menu: puedoMenu
+      });
+    } catch (error) {
+      console.error('❌ Error actualizando accesos:', error);
+    }
+  }
+
+  async cargarDatosCliente(userId: any) {
   try {
-    const { data: { session } } = await this.authService.client.auth.getSession();
-    
-    if (!session) {
-      await this.router.navigate(['/login'], { replaceUrl: true });
-      return;
-    }
 
-    // Buscar cliente con reintentos
-    let cliente = null;
-    for (let i = 0; i < 3; i++) {
-      const { data } = await this.authService.client
-        .from('clientes')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .maybeSingle();
-
-      if (data) {
-        cliente = data;
-        break;
-      }
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-
-    if (!cliente) {
-      this.showToast('No se pudo cargar tu perfil', 'warning');
-      setTimeout(async () => {
-        await this.authService.logout();
-        await this.router.navigate(['/login'], { replaceUrl: true });
-      }, 2000);
-      return;
-    }
-
-    if (cliente.estado === 'rechazado') {
-      this.showToast('Tu cuenta ha sido rechazada', 'danger');
-      await this.authService.logout();
-      await this.router.navigate(['/login'], { replaceUrl: true });
-      return;
-    }
-
-    if (cliente.estado === 'pendiente') {
-      await this.router.navigate(['/pre-sala'], { replaceUrl: true });
-      return;
-    }
-
-    this.cliente = cliente;
+    this.cliente = await this.clienteService.getCliente(userId);
     this.tipoClienteService['tipoClienteSubject'].next('registrado');
-    this.tipoClienteService['clienteData'].next(cliente);
+    this.tipoClienteService['clienteData'].next(this.cliente);
     this.notificationsInit();
 
-    if (!this.cliente.email && session.user.email) {
-      this.cliente.email = session.user.email;
-    }
-
-    if (cliente.mesa_asignada) {
-      this.mesaAsignada.set(cliente.mesa_asignada);
-      this.enEspera.set(false);
-    } else {
-      this.mesaAsignada.set(null);
-      this.enEspera.set(true);
-    }
-
-    this.cd.detectChanges();
-    
   } catch (error) {
     console.error('❌ Error:', error);
     this.showToast('Error al cargar datos', 'danger');
@@ -413,21 +331,20 @@ private async procesarIngresoAnonimo(nombre: string) {
       id = this.cliente.id_cliente.toString();
     };
     this.notificationService.setExternalUserId( id || '');
-    this.clienteService.subscribeToHistorialPedidos();
   }
 
   async verificarMesaAsignada() {
     try {
-      if (this.cliente?.id_cliente) {
+
         const mesa = await this.clienteService.getNroMesa(this.cliente.id_cliente);
         this.mesaAsignada.set(mesa);
         console.log('🏠 Mesa asignada al cliente registrado:', mesa);
         
         if (mesa) {
-          this.enEspera.set(false);
+          this.enListaEspera.set(false);
           // ✅ NO cambiar mesaVerificada aquí
         }
-      }
+      
     } catch (error) {
       console.error('❌ Error verificando mesa asignada:', error);
     }
@@ -522,6 +439,7 @@ private async procesarIngresoAnonimo(nombre: string) {
       }
 
       const qrData = result.barcodes[0].displayValue;
+      this.opinionesAccess.set(false);
       this.router.navigate([qrData]);
       
     } catch (err: any) {
@@ -555,7 +473,6 @@ private async procesarIngresoAnonimo(nombre: string) {
     }
 
     this.showToast('¡Ya puedes ver los resultados de las encuestas!.', 'success');
-    this.habilitarEncuesta.set(true);
 
     return true;
   }
@@ -652,7 +569,7 @@ private async procesarIngresoAnonimo(nombre: string) {
 
       // ✅ MARCAR COMO VERIFICADA
       this.mesaVerificada.set(true);
-      this.enEspera.set(false);
+      this.enListaEspera.set(false);
 
       console.log(`✅ Mesa ${numeroMesa} verificada correctamente`);
 
@@ -670,76 +587,6 @@ private async procesarIngresoAnonimo(nombre: string) {
     }
   }
 
-  async liberarMesaActual() {
-    try {
-      if (!this.cliente?.id_cliente || !this.mesaAsignada()) return;
-
-      await this.authService.client
-        .from('mesas')
-        .update({
-          cliente_asignado: null,
-          disponible: true
-        })
-        .eq('numero', this.mesaAsignada());
-
-      console.log('Mesa anterior liberada');
-    } catch (error) {
-      console.error('Error liberando mesa actual:', error);
-    }
-  }
-
-  async asignarMesa(numeroMesa: number) {
-    try {
-      if (!this.cliente?.id_cliente) {
-        await this.hapticService.vibrateError();
-        this.showToast('Error: No se pudo obtener tu ID de cliente', 'danger');
-        return;
-      }
-
-      if (this.mesaAsignada()) {
-        this.showToast('Ya tienes una mesa asignada. Escanea el QR de tu mesa para verificarla.', 'warning');
-        return;
-      }
-
-      const { data: mesa, error: errorMesa } = await this.authService.client
-        .from('mesas')
-        .select('*')
-        .eq('numero', numeroMesa)
-        .maybeSingle();
-
-      if (errorMesa || !mesa) {
-        await this.hapticService.vibrateError();
-        this.showToast(`La Mesa ${numeroMesa} no existe`, 'danger');
-        return;
-      }
-
-      if (mesa.cliente_asignado && mesa.cliente_asignado !== this.cliente.id_cliente) {
-        await this.hapticService.vibrateError();
-        this.showToast(`La Mesa ${numeroMesa} está ocupada por otro cliente`, 'danger');
-        return;
-      }
-
-      const resultado = await this.clienteService.setMesa(this.cliente.id_cliente, numeroMesa);
-
-      if (resultado) {
-        this.mesaAsignada.set(numeroMesa);
-        this.mesaVerificada.set(true);
-        this.enEspera.set(false);
-        this.showToast(`✅ Mesa ${numeroMesa} asignada y verificada correctamente`, 'success');
-      }
-
-    } catch (error: any) {
-      console.error('Error asignando mesa:', error);
-      if (error.message.includes('ocupada')) {
-        await this.hapticService.vibrateError();
-        this.showToast(error.message, 'danger');
-      } else {
-        await this.hapticService.vibrateError();
-        this.showToast('Error al asignar la mesa', 'danger');
-      }
-    }
-  }
-
   async recargarDatos() {
     try {
       this.cargandoRecarga.set(true);
@@ -752,7 +599,7 @@ private async procesarIngresoAnonimo(nombre: string) {
       if (clienteData) {
         this.cliente = clienteData;
         this.mesaAsignada.set(clienteData.mesa_asignada || null);
-        this.enEspera.set(clienteData.en_espera !== false);
+        this.enListaEspera.set(clienteData.en_espera !== false);
       }
       
       // Recargar reservas si es registrado
@@ -820,9 +667,7 @@ private async procesarIngresoAnonimo(nombre: string) {
   }
 
   verHistorial(){
-
-
-    this.loadHistorialPedidos();
+    // this.loadHistorialPedidos();
     this.router.navigate(["/tabs-cliente-registrado/tab4-historial"]);
   }
 
@@ -898,83 +743,6 @@ async verMisReservas() {
     this.showToast('No tienes reservas registradas', 'medium');
   }
 }
-
- async loadHistorialPedidos() {
-    if (!this.cliente || !this.mesaAsignada()) return;
-
-    try {
-      console.log('📋 Cargando historial para:', {
-        isRegistrado: this.isRegistrado(),
-        clienteId: this.cliente.id_cliente || this.cliente.id_clienteanonimo,
-        mesaId: this.mesaAsignada()
-      });
-
-      // ✅ BUSCAR POR MESA (funciona para registrados y anónimos)
-      const { data: pedidos, error } = await this.authService.client
-        .from('pedidos')
-        .select('*')
-        .eq('mesa', this.mesaAsignada())
-        .order('fecha', { ascending: false });
-
-      if (error) throw error;
-
-      const pedidosConDetalles = pedidos || [];
-      if (pedidosConDetalles.length > 0) {
-        await Promise.all(pedidosConDetalles.map(async (pedido: any) => {
-          const detalles = await this.clienteService.getDetallesPedido(pedido.id);
-          pedido.detalles_pedido = detalles;
-          return pedido;
-        }));
-      }
-
-      this.pedidosHistorial = pedidosConDetalles;
-      
-      console.log('✅ Historial cargado:', this.pedidosHistorial.length, 'pedidos');
-      
-      this.setupPedidosSubscription();
-      this.cd.detectChanges();
-    } catch (error) {
-      console.error('❌ Error cargando historial:', error);
-    }
-  }
-
-private setupPedidosSubscription() {
-    try {
-      // Limpiar suscripción anterior
-      if (this.pedidosSubscription) {
-        console.log('🧹 Limpiando suscripción de pedidos anterior...');
-        this.pedidosSubscription.unsubscribe();
-        this.pedidosSubscription = null;
-      }
-
-      if (!this.mesaAsignada()) {
-        console.log('⚠️ No hay mesa asignada, saltando setupPedidosSubscription');
-        return;
-      }
-
-      console.log('🔄 Configurando nueva suscripción de pedidos para mesa:', this.mesaAsignada());
-
-      this.pedidosSubscription = supabase
-        .channel(`pedidos-mesa-${this.mesaAsignada()}`)
-        .on('postgres_changes', 
-          {
-            event: '*',
-            schema: 'public',
-            table: 'pedidos',
-            filter: `mesa=eq.${this.mesaAsignada()}`
-          },
-          async () => {
-            console.log('🔄 Actualización de pedidos detectada');
-            await this.loadHistorialPedidos();
-          }
-        )
-        .subscribe();
-
-    } catch (error) {
-      console.error('Error en suscripción de pedidos:', error);
-    }
-  }
-
   /**
    * 🧪 [TESTING] Simular unirse a lista de espera sin escanear QR
    * Agrega al cliente directamente a la tabla lista_espera
@@ -1046,6 +814,7 @@ private setupPedidosSubscription() {
       });
 
       if (resultado.success) {
+        
         console.log('✅ Cliente agregado a lista de espera:', resultado.data);
         
         // Asegurar que el cliente no tenga mesa asignada
@@ -1063,7 +832,7 @@ private setupPedidosSubscription() {
         // Actualizar estado local
         this.mesaAsignada.set(null);
         this.mesaVerificada.set(false);
-        this.enEspera.set(true);
+        this.enListaEspera.set(true);
 
         this.showToast(
           `✅ ¡Agregado a la lista de espera!\n` +
@@ -1321,7 +1090,7 @@ private async procesarActivacionReserva() {
     if (resultado.success) {
       // ✅ ACTUALIZAR DATOS LOCALES
       this.mesaAsignada.set(resultado.data.mesa_id);
-      this.enEspera.set(false);
+      this.enListaEspera.set(false);
       
       // 🔑 CLAVE: Mesa auto-verificada sin escanear QR
       this.mesaVerificada.set(resultado.data.mesa_verificada || true);

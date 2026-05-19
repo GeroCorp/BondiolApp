@@ -156,15 +156,9 @@ export class Tab1Espera implements OnInit {
         mesaId 
       });
 
-      if (isAnonimo){
-      await this.supabaseService.asignarMesaAClienteAnonimo(
-        cliente.id_clienteanonimo, 
-        mesaId
-      );}
-      else await this.clienteService.setMesa(cliente.id_cliente, mesaId)
-
+      
       await loading.dismiss();
-
+      
       const mesaAsignada = this.mesas.find(m => m.id === mesaId);
       const toast = await this.toastCtrl.create({
         message: `Mesa ${mesaAsignada?.numero} asignada a ${cliente.nombre}`,
@@ -172,6 +166,12 @@ export class Tab1Espera implements OnInit {
         color: 'success'
       });
       await toast.present();
+      if (isAnonimo){
+      await this.supabaseService.asignarMesaAClienteAnonimo(
+        cliente.id_clienteanonimo, 
+        mesaAsignada.numero
+      );}
+      else await this.clienteService.setMesa(cliente.id_cliente, mesaAsignada.numero)
 
       // Recargar datos
       await this.cargarDatos();
