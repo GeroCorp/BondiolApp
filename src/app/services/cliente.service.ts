@@ -132,11 +132,6 @@ export class ClienteService {
   }
 
   async getRejectedOrder(){
-    if (this._rejectedOrderChecked) {
-      return null;
-    }
-    this._rejectedOrderChecked = true;
-
     const rejectedOrders = await this.checkRejected();
     if (rejectedOrders.length === 0) {
       return null;
@@ -297,7 +292,6 @@ export class ClienteService {
   // Limpiar el pedido
   clearPedido() {
     this._pedido.set([]);
-    this._rejectedOrderChecked = false;
   }
 
   // Obtener el total del pedido CON descuento aplicado

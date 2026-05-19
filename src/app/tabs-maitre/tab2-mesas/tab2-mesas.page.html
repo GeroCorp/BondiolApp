@@ -14,129 +14,103 @@
       pulling-icon="chevron-down-circle-outline"
       pulling-text="Desliza para actualizar"
       refreshing-spinner="circles"
-    >
-    </ion-refresher-content>
+    ></ion-refresher-content>
   </ion-refresher>
 
-  <div class="mesas-wrapper">
-    <!-- Loading Spinner -->
-    <div *ngIf="isLoading()" class="loading-container">
-      <ion-spinner name="circles" color="primary"></ion-spinner>
-      <p class="ion-text-center ion-margin-top">Cargando mesas...</p>
-    </div>
+  <!-- Loading -->
+  <div *ngIf="isLoading()" class="loading-container">
+    <ion-spinner name="circles" color="primary"></ion-spinner>
+    <p>Cargando mesas...</p>
+  </div>
 
-    <!-- Lista de mesas -->
-    <ion-list *ngIf="!isLoading() && mesas().length > 0" class="mesas-list">
-      <ion-list-header>
-        <ion-label>
-          <h2>Estado de Mesas ({{ mesas().length }})</h2>
-          <p>Gestión de mesas del restaurante</p>
-        </ion-label>
-      </ion-list-header>
+  <!-- Snap feed: páginas de 2 mesas -->
+  <div *ngIf="!isLoading() && mesas().length > 0" class="snap-feed">
+    <ng-container *ngFor="let mesa of mesas(); let i = index; trackBy: trackByMesa">
+      <div *ngIf="i % 2 === 0" class="snap-page">
 
-      <ion-item
-        *ngFor="let mesa of mesas(); trackBy: trackByMesa"
-        lines="inset"
-        [button]="false"
-        class="mesa-item"
-        [class.disponible]="mesa.disponible && !mesa.cliente_asignado"
-        [class.ocupada]="mesa.cliente_asignado"
-        [class.no-disponible]="!mesa.disponible && !mesa.cliente_asignado"
-      >
-        <ion-avatar slot="start" class="mesa-avatar">
-          <div class="mesa-number">{{ mesa.numero }}</div>
-        </ion-avatar>
-
-        <div class="mesa-col">
-          <ion-label>
-            <h2>Mesa {{ mesa.numero }}</h2>
-            <p>
-              {{ mesa.capacidad || mesa.cantidad }} persona{{ (mesa.capacidad ||
-              mesa.cantidad) > 1 ? 's' : '' }}
+        <!-- Card mesa par (i) -->
+        <div class="mesa-card"
+          [class.disponible]="mesas()[i].disponible && !mesas()[i].cliente_asignado"
+          [class.ocupada]="mesas()[i].cliente_asignado"
+          [class.no-disponible]="!mesas()[i].disponible && !mesas()[i].cliente_asignado">
+          <div class="card-avatar">
+            <div class="mesa-number">{{ mesas()[i].numero }}</div>
+          </div>
+          <div class="card-info">
+            <h2>Mesa {{ mesas()[i].numero }}</h2>
+            <p class="personas">
+              <ion-icon name="people-outline"></ion-icon>
+              {{ mesas()[i].capacidad || mesas()[i].cantidad }} persona{{ (mesas()[i].capacidad || mesas()[i].cantidad) > 1 ? 's' : '' }}
             </p>
-            <p>
-              <ion-badge [color]="getEstadoColor(mesa)">
-                {{ getEstadoTexto(mesa) }}
-              </ion-badge>
-              <span *ngIf="mesa.tipo" class="mesa-tipo"
-                >- {{ mesa.tipo | titlecase }}</span
-              >
+            <p class="estado-row">
+              <ion-badge [color]="getEstadoColor(mesas()[i])">{{ getEstadoTexto(mesas()[i]) }}</ion-badge>
+              <span *ngIf="mesas()[i].tipo" class="mesa-tipo">{{ mesas()[i].tipo | titlecase }}</span>
             </p>
-
-            <!-- Información del cliente si está asignado -->
-            <div *ngIf="mesa.cliente_asignado" class="cliente-info">
+            <div *ngIf="mesas()[i].cliente_asignado" class="cliente-info">
               <p class="cliente-nombre">
-                <ion-icon name="person-outline" size="small"></ion-icon>
-                {{ getClienteNombre(mesa) }}
+                <ion-icon name="person-outline"></ion-icon>
+                {{ getClienteNombre(mesas()[i]) }}
               </p>
-              <p *ngIf="getClienteEmail(mesa)" class="cliente-email">
-                <ion-icon name="mail-outline" size="small"></ion-icon>
-                {{ getClienteEmail(mesa) }}
+              <p *ngIf="getClienteEmail(mesas()[i])" class="cliente-email">
+                <ion-icon name="mail-outline"></ion-icon>
+                {{ getClienteEmail(mesas()[i]) }}
               </p>
             </div>
-          </ion-label>
-
-          <!-- Acciones -->
-          <div class="acciones-mesa" *ngIf="mesa.cliente_asignado">
-            <ion-button color="danger" size="small" (click)="liberarMesa(mesa)">
+          </div>
+          <div class="card-actions" *ngIf="mesas()[i].cliente_asignado">
+            <ion-button expand="block" class="btn-liberar" (click)="liberarMesa(mesas()[i])">
               <ion-icon name="log-out-outline" slot="start"></ion-icon>
-              Liberar
+              Liberar Mesa
             </ion-button>
           </div>
         </div>
-      </ion-item>
-    </ion-list>
 
-    <!-- Estado sin mesas -->
-    <div *ngIf="!isLoading() && mesas().length === 0" class="empty-state">
-      <ion-icon
-        name="restaurant-outline"
-        size="large"
-        color="medium"
-      ></ion-icon>
-      <h2>No hay mesas configuradas</h2>
-      <p class="ion-text-center">
-        Contacte al administrador para configurar las mesas del restaurante
-      </p>
-    </div>
+        <!-- Card mesa impar (i+1), si existe -->
+        <div *ngIf="mesas()[i + 1] as mesaSiguiente" class="mesa-card"
+          [class.disponible]="mesaSiguiente.disponible && !mesaSiguiente.cliente_asignado"
+          [class.ocupada]="mesaSiguiente.cliente_asignado"
+          [class.no-disponible]="!mesaSiguiente.disponible && !mesaSiguiente.cliente_asignado">
+          <div class="card-avatar">
+            <div class="mesa-number">{{ mesaSiguiente.numero }}</div>
+          </div>
+          <div class="card-info">
+            <h2>Mesa {{ mesaSiguiente.numero }}</h2>
+            <p class="personas">
+              <ion-icon name="people-outline"></ion-icon>
+              {{ mesaSiguiente.capacidad || mesaSiguiente.cantidad }} persona{{ (mesaSiguiente.capacidad || mesaSiguiente.cantidad) > 1 ? 's' : '' }}
+            </p>
+            <p class="estado-row">
+              <ion-badge [color]="getEstadoColor(mesaSiguiente)">{{ getEstadoTexto(mesaSiguiente) }}</ion-badge>
+              <span *ngIf="mesaSiguiente.tipo" class="mesa-tipo">{{ mesaSiguiente.tipo | titlecase }}</span>
+            </p>
+            <div *ngIf="mesaSiguiente.cliente_asignado" class="cliente-info">
+              <p class="cliente-nombre">
+                <ion-icon name="person-outline"></ion-icon>
+                {{ getClienteNombre(mesaSiguiente) }}
+              </p>
+              <p *ngIf="getClienteEmail(mesaSiguiente)" class="cliente-email">
+                <ion-icon name="mail-outline"></ion-icon>
+                {{ getClienteEmail(mesaSiguiente) }}
+              </p>
+            </div>
+          </div>
+          <div class="card-actions" *ngIf="mesaSiguiente.cliente_asignado">
+            <ion-button expand="block" class="btn-liberar" (click)="liberarMesa(mesaSiguiente)">
+              <ion-icon name="log-out-outline" slot="start"></ion-icon>
+              Liberar Mesa
+            </ion-button>
+          </div>
+        </div>
 
-    <!-- Info de estadísticas -->
-    <ion-card *ngIf="!isLoading()" class="info-card">
-      <ion-card-header>
-        <ion-card-title color="primary">
-          <ion-icon name="analytics-outline"></ion-icon>
-          Estado del Restaurante
-        </ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <ion-item lines="none">
-          <ion-icon
-            name="checkmark-circle"
-            slot="start"
-            color="success"
-          ></ion-icon>
-          <ion-label>
-            <h3>Disponibles</h3>
-            <p>{{ mesasDisponibles }} mesas</p>
-          </ion-label>
-        </ion-item>
-
-        <ion-item lines="inset">
-          <ion-icon name="people" slot="start" color="danger"></ion-icon>
-          <ion-label>
-            <h3>Ocupadas</h3>
-            <p>{{ mesasOcupadas }} mesas</p>
-          </ion-label>
-        </ion-item>
-
-        <ion-item lines="none">
-          <ion-icon name="close-circle" slot="start" color="warning"></ion-icon>
-          <ion-label>
-            <h3>No disponibles</h3>
-            <p>{{ mesasNoDisponibles }} mesas</p>
-          </ion-label>
-        </ion-item>
-      </ion-card-content>
-    </ion-card>
+      </div>
+    </ng-container>
   </div>
+
+  <!-- Empty state -->
+  <div *ngIf="!isLoading() && mesas().length === 0" class="empty-state">
+    <ion-icon name="restaurant-outline"></ion-icon>
+    <h2>No hay mesas configuradas</h2>
+    <p>Contacte al administrador para configurar las mesas del restaurante</p>
+  </div>
+
 </ion-content>

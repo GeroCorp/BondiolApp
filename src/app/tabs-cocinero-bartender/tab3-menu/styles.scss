@@ -1,3 +1,12 @@
+ion-content {
+  --background: linear-gradient(135deg, #370606 0%, #6a040F 100%);
+  --color: #ffffff;
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 0;
+  --padding-bottom: 0;
+}
+
 ion-header {
   ion-toolbar {
     --background: linear-gradient(135deg, #6a040F, #8b0000, #9D0208);
@@ -14,135 +23,150 @@ ion-header {
   }
 }
 
-ion-content {
-  --background: linear-gradient(135deg, #370606 0%, #6a040F 100%);
-  --color: #ffffff;
-  --padding-top: 0px;
-  --padding-bottom: 0;
-  --padding-start: 16px;
-  --padding-end: 16px;
-  
-  &[fullscreen="true"] {
-    --offset-top: 65px;
+// ─── Snap list ──────────────────────────────────────────────────────────────
+.snap-list {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  scroll-padding-top: 0;
+  background-color: transparent !important;
+  -webkit-overflow-scrolling: touch;
+
+  &::-webkit-scrollbar {
+    display: none;
   }
 }
 
-ion-card {
-  margin: 20px auto 80px auto;
-  max-width: 800px;
-  background: #9d0208;
-  backdrop-filter: blur(10px);
-  border: 5px solid rgba(255, 107, 71, 0.2);
-  border-radius: 15px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-  color: #fff; 
-  max-height: 80vh;
+// ─── Snap page (cada card) ──────────────────────────────────────────────────
+.snap-page {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  height: 100%;
+  min-height: -webkit-fill-available;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  box-sizing: border-box;
+}
 
-  ion-card-header {
-    padding: 24px 20px 16px;
-    background: rgba(255, 107, 71, 0.1);
-    border-bottom: 1px solid rgba(255, 107, 71, 0.2);
-    
-ion-card-title {
-  color: #F48C06;
-  font-weight: 700;
-  font-size: 1.5rem; /* Bajamos un pelín el tamaño para dar espacio */
-  text-align: center;
-  
-  display: -webkit-box;
-  -webkit-line-clamp: 2;    /* Número máximo de líneas antes de los puntos */
-  -webkit-box-orient: vertical;  
+// ─── Menu card ──────────────────────────────────────────────────────────────
+.menu-card {
+  display: flex;
+  flex-direction: column;
+  background: rgba(154, 2, 8, 0.6);
+  border: 1px solid rgba(244, 140, 6, 0.2);
+  border-radius: 24px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
   overflow: hidden;
-  text-overflow: ellipsis;
-  
-  line-height: 1.2;         /* Ajusta el espacio entre las dos líneas */
-  max-height: 3.6rem;       /* (font-size * line-height * 2) aprox */
-}
+  width: 100%;
+  max-width: 420px;
+  max-height: 98vh;
 
-    ion-card-subtitle {
-      color: #fff; 
-      background: transparent;
+  .carousel {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    gap: 0;
+    padding: 0;
+    background: rgba(0, 0, 0, 0.2);
+    -webkit-overflow-scrolling: touch;
+    flex-shrink: 0;
+
+    &::-webkit-scrollbar {
+      display: none;
     }
-  }
-  
-    ion-list {
-      background: transparent;
-      padding: 0;
-      margin-top: 5px;
-      
-      ion-item {
-        --background: rgba(255, 255, 255, 0.05);
-        --border-color: rgba(255, 107, 71, 0.2);
-        --color: #ffffff;
-        --padding-start: 16px;
-        --padding-end: 16px;
-        --inner-padding-end: 16px;
-        margin-bottom: 16px;
-        border-radius: 12px;
-        backdrop-filter: blur(10px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        transition: all 0.3s ease;
-        min-height: 80px;
-        
-        &:hover {
-          --background: rgba(255, 255, 255, 0.08);
-          transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-        }
-        
-        &:last-child {
-          margin-bottom: 0;
-        }
-        
-        ion-label {
-          margin: 12px 0;
-          
-          ion-img {
-            width: 100%;
-            max-width: 300px;
-            height: auto;
-            max-height: 250px;
-            border-radius: 10px;
-            margin-bottom: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            display: block;
-          }
-          
-          h2 {
-            color: #ffffff;
-            font-weight: 600;
-            font-size: 1.2rem;
-            margin: 8px 0;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-          }
-          
-          p {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 3rem;
-            margin: 6px 0;
-            line-height: 1.5;
-          }
-          
-          small {
-            color: #F48C06;
-            font-size: 0.9rem;
-            font-weight: 600;
-            display: inline-block;
-            margin-top: 8px;
-            padding: 4px 10px;
-            background: rgba(255, 107, 71, 0.15);
-            border-radius: 6px;
-            border: 1px solid rgba(255, 107, 71, 0.3);
-          }
-        }
+
+    .slide {
+      flex: 0 0 100%;
+      scroll-snap-align: start;
+    }
+
+    .image-container {
+      position: relative;
+      width: 100%;
+      height: 300px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      .image-spinner {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1;
+      }
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
       }
     }
   }
 
+  ion-card-header {
+    padding: 16px 16px 12px;
+    text-align: center;
+    background: rgba(244, 140, 6, 0.08);
+    border-bottom: 1px solid rgba(244, 140, 6, 0.15);
+    flex-shrink: 0;
 
-// Estado vacío
+    ion-card-title {
+      color: #F48C06;
+      font-weight: 800;
+      font-size: 1.5rem;
+      margin-bottom: 6px;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    ion-card-subtitle {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 1rem;
+      margin-top: 8px;
+
+      &.tiempo-subtitle {
+        color: #ff6b47;
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin-top: 6px;
+      }
+    }
+  }
+
+  ion-card-content {
+    display: flex;
+    flex-direction: column;
+    padding: 14px 16px 16px;
+    text-align: center;
+    flex: 1;
+    overflow-y: auto;
+
+    p {
+      color: rgba(255, 255, 255, 0.85);
+      font-size: 0.95rem;
+      line-height: 1.5;
+      margin: 0 0 14px 0;
+    }
+
+    ion-button {
+      --border-radius: 12px;
+      font-weight: 700;
+      font-size: 1rem;
+      height: 48px;
+      --box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+    }
+  }
+}
+
+// ─── Estado vacío ───────────────────────────────────────────────────────────
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -173,94 +197,17 @@ ion-card-title {
   }
 }
 
-// Animaciones
-
-
-ion-card {
-  animation: fadeInDown 0.6s ease-out;
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-// carousel 
-
-.carousel {
+// ─── Loading ────────────────────────────────────────────────────────────────
+.loading-state {
   display: flex;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory; // esto es para que encaje en el centro cuando se desplaza
-  gap: 10px;
-  padding: 5px;
-}
-
-.slide {
-  flex: 0 0 100%;
-  scroll-snap-align: center;
-}
-
-.image-container {
-  position: relative;
-  width: 100%;
-  height: 40vh;
-}
-
-.image-spinner {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 10px;
-}
-
-.snap-list {
-  height: 90%;           
-  overflow-y: scroll;  
-  margin-top: 5px;
-  margin-bottom: 10px;     
-  scroll-snap-type: y mandatory; 
-  scroll-behavior: smooth;
-  background-color: transparent !important;
-  -webkit-overflow-scrolling: touch; 
-  &::-webkit-scrollbar {
-    display: none;
-  }
-}
-
-
-.menu-card {
-  scroll-snap-align: start;  
-  scroll-snap-stop: always; 
-  margin-bottom: 50px;       
-  min-height: 70vh;          
   flex-direction: column;
-  justify-content: space-between;
-  padding: 5px;
-  flex: 1; 
-  display: flex;
-}
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 16px;
 
+  p {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1rem;
+  }
+}
