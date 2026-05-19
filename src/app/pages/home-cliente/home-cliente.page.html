@@ -161,7 +161,7 @@
           color="secondary"
           (click)="verMenu()"
           [disabled]="(!mesaVerificada() && !isDelivery())"
-          *ngIf="menuAccess() || isDelivery()"
+          *ngIf="(menuAccess() && mesaVerificada()) || isDelivery()"
           class="boton-grid"
         >
           <div class="boton-content">
