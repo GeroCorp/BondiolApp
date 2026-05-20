@@ -8,10 +8,6 @@
   --padding-end: 0;
 }
 
-.wrap {
-  @extend .tabs-wrapper;
-}
-
 ion-header {
   ion-toolbar {
     --background: linear-gradient(135deg, #6a040F, #8b0000, #9D0208);
@@ -43,38 +39,41 @@ ion-header {
   }
 }
 
-// ─── Snap feed ─────────────────────────────────────────────────────────────────
+// Snap feed
 .snap-feed {
-  width: 100%;
+  display: flex;
+  flex-direction: column;
+  scroll-snap-type: y mandatory;
   height: 100%;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
 }
 
 .snap-page {
   scroll-snap-align: start;
-  scroll-snap-stop: always;
-  height: 100%;
-  min-height: -webkit-fill-available;
+  flex-shrink: 0;
   display: flex;
-  align-items: center;
   justify-content: center;
-  padding: 8px 16px;
+  align-items: flex-start;
+  min-height: 100%;
+  padding: 16px 16px 40px;
   box-sizing: border-box;
 }
 
-// ─── Pedido card ─────────────────────────────────────────────────────────────
 .pedido-card {
-  display: flex;
-  flex-direction: column;
   background: rgba(154, 2, 8, 0.6);
   border: 1px solid rgba(244, 140, 6, 0.2);
   border-radius: 24px;
   backdrop-filter: blur(12px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-  overflow: hidden;
   width: 100%;
   max-width: 420px;
-  max-height: 98vh;
   margin: 0;
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  min-height: 55dvh;
 
   ion-card-header {
     padding: 18px 16px 14px;
@@ -123,11 +122,9 @@ ion-header {
   }
 
   ion-card-content {
-    display: flex;
-    flex-direction: column;
-    padding: 14px 16px 18px;
+    padding: 14px 16px 20px;
     flex: 1;
-    overflow-y: auto;
+    overflow: visible;
 
     .info-cliente {
       display: flex;
@@ -173,51 +170,34 @@ ion-header {
           color: #fff;
         }
       }
-
-      .tiempo-estimado {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        font-size: 0.9rem;
-        opacity: 0.9;
-        margin: 6px 0 0;
-
-        ion-icon {
-          font-size: 16px;
-        }
-      }
     }
 
     .botones-accion {
       display: flex;
       flex-direction: column;
       gap: 10px;
-      margin-top: auto;
-      padding-top: 12px;
+      margin-top: 14px;
 
       app-secondary-button,
       app-main-button {
         --border-radius: 12px;
         font-weight: 700;
-        height: 46px;
+        height: 48px;
         font-size: 0.95rem;
       }
     }
   }
 }
 
-// ─── Loading ────────────────────────────────────────────────────────────────
 .loading-container {
   @extend %tabs-loading-container;
 }
 
-// ─── Empty state ────────────────────────────────────────────────────────────
 .empty-state {
   @extend %tabs-empty-state;
 }
 
-// ─── Modal Detalle Pedido ─────────────────────────────────────────────────────
+// Modal Detalle Pedido
 .modal-detalle-content {
   --background: linear-gradient(180deg, #370617 0%, #6A040F 40%, #9D0208 100%);
 }
