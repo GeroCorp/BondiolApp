@@ -19,16 +19,15 @@ ion-toolbar{
     --color: var(--text-primary);
 }
 
-
 // Fondo con gradiente oscuro igual al de admin/mozo
 .cliente-content {
   --background: linear-gradient(180deg, var(--background-dark) 0%, var(--surface-dark) 50%, #9D0208 100%);
   --color: var(--text-primary);
-  --padding-bottom: 80px; // Espacio extra al final para scroll
+  --padding-bottom: 0; // Espacio extra al final para scroll
 }
 
 .cliente-wrapper {
-    padding: 16px;
+    padding: 5px 10px;
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
@@ -41,7 +40,7 @@ ion-toolbar{
 .bienvenida-header {
     text-align: center;
     color: var(--text-primary);
-    margin-bottom: 20px;
+    margin-top: 5px;
     width: 100%;
     box-sizing: border-box;
 
@@ -99,7 +98,7 @@ ion-card {
     --background: var(--surface-dark);
     --color: var(--text-primary);
     border-radius: 15px;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     box-shadow: var(--shadow-dark);
     background: var(--surface-dark) !important;
     backdrop-filter: blur(10px);
@@ -135,14 +134,40 @@ ion-card {
     ion-card-content {
         background: transparent !important;
         color: var(--text-primary) !important;
+
+        &.botones-grid {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            width: 100%;
+        }
     }
 
     ion-button {
-        margin-top: 10px;
         --border-radius: 10px;
         font-weight: 500;
         --background: var(--primary-color);
         --color: var(--background-dark);
+        --padding-start: 12px;
+        --padding-end: 12px;
+        --padding-top: 16px;
+        --padding-bottom: 16px;
+        height: auto;
+        min-height: 100px;
+        width: 100%;
+
+        &.boton-grid {
+            margin: 0 !important;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+
+            // Si es el último botón y está en posición impar, ocupa todo el ancho
+            &:nth-child(odd):last-child {
+                grid-column: 1 / -1;
+            }
+        }
 
         &:hover {
             --background: color-mix(in srgb, var(--primary-color) 80%, var(--surface-dark));
@@ -153,6 +178,41 @@ ion-card {
             --background: var(--surface-variant);
             --color: var(--text-secondary);
         }
+
+        .boton-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            text-align: center;
+
+            ion-icon:not(.lock-icon) {
+                font-size: 28px;
+            }
+
+            span {
+                font-size: 18px;
+                line-height: 1.2;
+                word-break: break-word;
+            }
+
+            .lock-icon {
+                font-size: 16px;
+                position: absolute;
+                top: 8px;
+                right: 8px;
+            }
+        }
+    }
+}
+
+.mainOptions {
+    ion-button{
+        height: 70px;
+        font-size: 1.2rem;
+        font-weight: 600;
     }
 }
 

@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.restoapp.mobile', // ✅ App ID único y profesional
-  appName: 'RestoApp',          // ✅ Nombre más corto
+  appId: 'com.bondiolapp.mobile', // ✅ App ID único y profesional
+  appName: 'BondiolApp',          // ✅ Nombre más corto
   webDir: 'www',
   android: {
     allowMixedContent: true,
@@ -11,8 +11,8 @@ const config: CapacitorConfig = {
     useLegacyBridge: false,
     backgroundColor: '#ffffff',
     // ✅ Configuraciones adicionales para evitar errores del sistema
-    appendUserAgent: 'RestoAppMobile/1.0',
-    overrideUserAgent: 'Mozilla/5.0 (Linux; Android 10; Mobile) AppleWebKit/537.36 RestoApp/1.0'
+    appendUserAgent: 'BondiolAppMobile/1.0',
+    overrideUserAgent: 'Mozilla/5.0 (Linux; Android 10; Mobile) AppleWebKit/537.36 BondiolApp/1.0'
   },
   plugins: {
     SocialLogin: {
