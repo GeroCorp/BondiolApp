@@ -83,4 +83,17 @@ export class Tab4AdminMesaPage implements OnInit {
     img.dataset.errorHandled = true;
   }
 }
+
+mesaSeleccionada: any = null;
+modalAbierto = false;
+
+abrirModal(mesa: any) {
+  this.mesaSeleccionada = mesa;
+  this.modalAbierto = true;
+}
+
+cerrarModal() {
+  this.modalAbierto = false;
+  this.mesaSeleccionada = null;
+}
 }

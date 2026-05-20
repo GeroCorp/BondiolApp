@@ -103,6 +103,7 @@ export class Tab2CargaMesasPage {
 
 
   async onSubmit(){
+    this.generateQR()
     await this.customLoaderService.show('Creando mesa...');
     if (!this.mesaForm.valid) {
       this.mesaForm.markAllAsTouched();
@@ -143,8 +144,6 @@ export class Tab2CargaMesasPage {
         foto_url: fotoUrl,
       }
       console.log('Datos de la mesa a crear:', mesaData);
-
-
 
     try {
       const { data, error } = await this.authService.
