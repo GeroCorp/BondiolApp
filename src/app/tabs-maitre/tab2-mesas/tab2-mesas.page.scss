@@ -42,6 +42,11 @@ ion-header ion-toolbar {
   gap: 16px;
   padding: 12px;
   box-sizing: border-box;
+
+  // Una sola mesa: card centrada y de tamaño fijo
+  &:has(.mesa-card:only-child) {
+    align-items: center;
+  }
 }
 
 // ─── Card de mesa ─────────────────────────────────────────────────────────────
@@ -68,9 +73,13 @@ ion-header ion-toolbar {
   box-sizing: border-box;
   overflow: hidden;
 
-  // Única card: sin límite de altura, centrada
-  &:only-child {
-    max-height: none;
+  // Única card: mismo tamaño que cuando hay dos
+  &:only-of-type {
+    flex: 1;
+    width: 90%;
+    max-width: 400px;
+    min-height: 0;
+    max-height: 40vh;
   }
 
   // Borde izquierdo según estado

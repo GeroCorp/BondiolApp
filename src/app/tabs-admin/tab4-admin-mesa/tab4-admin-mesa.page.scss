@@ -1,4 +1,4 @@
-$accent:      #ff6b47;
+$accent: #ff6b47;
 $accent-dark: #ff4525;
 
 // ─── Header ──────────────────────────────────────────────────────────────────
@@ -21,7 +21,9 @@ ion-header ion-toolbar {
     }
   }
 
-  ion-back-button { --color: #fff; }
+  ion-back-button {
+    --color: #fff;
+  }
 }
 
 // ─── Content ─────────────────────────────────────────────────────────────────
@@ -74,9 +76,13 @@ ion-content.container {
   box-sizing: border-box;
   overflow: hidden;
 
-  &:only-child { max-height: none; }
-
-
+  &:only-child {
+    flex: 1;
+    min-height: 0;
+    max-width: 90%;
+    width: 90%;
+    max-height: 42vh;
+  }
 }
 
 // ─── Imagen ───────────────────────────────────────────────────────────────────
@@ -134,7 +140,9 @@ ion-content.container {
     align-items: center;
     gap: 5px;
 
-    ion-icon { font-size: 1.1rem; }
+    ion-icon {
+      font-size: 1.1rem;
+    }
   }
 
   .estado-row {
@@ -201,7 +209,7 @@ ion-content.container {
     line-height: 1.5;
   }
 
-//------------modal
+  //------------modal
   .qr-modal-container {
     display: flex;
     flex-direction: column;
@@ -233,5 +241,4 @@ ion-content.container {
       margin: 0;
     }
   }
-
 }
