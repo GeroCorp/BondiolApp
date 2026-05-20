@@ -28,10 +28,13 @@ ion-header ion-toolbar {
 .espera-content {
   &::part(scroll) {
     scroll-snap-type: y mandatory;
-    // scroll-padding-top empuja el snap point hacia abajo exactamente
-    // la altura del header, así la primera card nunca queda tapada
     scroll-padding-top: var(--offset-top, 60px);
     -webkit-overflow-scrolling: touch;
+    overflow: auto;
+  }
+
+  &.no-scroll::part(scroll) {
+    overflow: hidden;
   }
 }
 

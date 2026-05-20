@@ -12,7 +12,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="espera-content">
+<ion-content [fullscreen]="true" class="espera-content" [class.no-scroll]="!isLoading && clientesFiltrados.length === 0">
   <ion-refresher slot="fixed" (ionRefresh)="refrescarDatos($event)">
     <ion-refresher-content
       pulling-icon="chevron-down-circle-outline"
