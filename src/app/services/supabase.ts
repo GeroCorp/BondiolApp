@@ -854,6 +854,7 @@ async eliminarBebida(id: number) {
           cantidad,
           tipo,
           foto,
+          qr_url,
           disponible,
           cliente_asignado,
           clientes:cliente_asignado (

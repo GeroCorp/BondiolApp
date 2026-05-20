@@ -9,6 +9,30 @@
   </ion-toolbar>
 </ion-header>
 
+<!-- modal -->
+<ion-modal [isOpen]="modalAbierto" (didDismiss)="cerrarModal()">
+<ng-template>
+  <ion-header>
+    <ion-toolbar>
+      <ion-title>QR Mesa {{ mesaSeleccionada?.numero }}</ion-title>
+      <ion-buttons slot="end">
+        <ion-button (click)="cerrarModal()">Cerrar</ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+  <ion-content class="ion-padding ion-text-center">
+    <div class="qr-modal-container">
+      <h3>Código QR </h3>
+        <h3>  Mesa {{ mesaSeleccionada?.numero }}</h3>
+      <img 
+        [src]="mesaSeleccionada?.qr_url"
+        style="width: 250px; height: 250px; object-fit: contain; align-self: center;"
+      />
+      <p>Escaneá para asociar el cliente a la mesa.</p>
+    </div>
+  </ion-content>
+</ng-template>
+</ion-modal>
 <ion-content [fullscreen]="true" class="container">
 
   <!-- Snap feed: páginas de 2 mesas -->
@@ -22,7 +46,10 @@
           [class.ocupada]="!mesas()[i].disponible">
           <div class="card-body">
             <div class="image-container">
-              <img [src]="mesas()[i].foto" (error)="handleImageError($event)" />
+              <img 
+              (click)="abrirModal(mesas()[i])"
+              [src]="mesas()[i].foto" 
+              (error)="handleImageError($event)" />
             </div>
             <div class="card-info">
               <h2>Mesa {{ mesas()[i].numero }} <span class="tipo">- {{ mesas()[i].tipo }}</span></h2>
@@ -51,7 +78,10 @@
           [class.ocupada]="!mesaSiguiente.disponible">
           <div class="card-body">
             <div class="image-container">
-              <img [src]="mesaSiguiente.foto" (error)="handleImageError($event)" />
+              <img
+              (click)="abrirModal(mesaSiguiente)" 
+              [src]="mesaSiguiente.foto" 
+              (error)="handleImageError($event)" />
             </div>
             <div class="card-info">
               <h2>Mesa {{ mesaSiguiente.numero }} <span class="tipo">- {{ mesaSiguiente.tipo }}</span></h2>

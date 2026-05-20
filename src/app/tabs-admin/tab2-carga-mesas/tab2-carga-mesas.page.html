@@ -33,23 +33,33 @@
             <ion-select-option value="movilidad reducida">Movilidad reducida</ion-select-option>
           </ion-select>
         </ion-item>
-        <div class="foto-zone" (click)="tomarFoto()">
-          <img [src]="mesaForm.get('foto')?.value" alt="Foto mesa" class="foto-img"/>
-          <div *ngIf="mesaForm.get('foto')?.value" class="foto-placeholder">
-            <p>Tomar foto</p>
-          </div>
-        
-        </div>
 
+    <div class="foto-zone" (click)="tomarFoto()">
+      <img
+        *ngIf="mesaForm.get('foto')?.value"
+        [src]="mesaForm.get('foto')?.value"
+        alt="Foto de la mesa"
+        class="foto-img"
+      />
+      <div *ngIf="!mesaForm.get('foto')?.value" class="foto-placeholder">
+        <ion-icon name="camera-outline"></ion-icon>
+        <p>Presioná para tomar una foto</p>
+      </div>
+      <div *ngIf="mesaForm.get('foto')?.value" class="foto-retake-badge">
+        <ion-icon name="camera-outline"></ion-icon>
+        Presioná para cambiar
+      </div>
+    </div>
+<!-- 
       <app-secondary-button (click)="generateQR()" expand="block" fill="clear" shape="round">
         Generar QR
       </app-secondary-button>
       
-        
-      
+         -->
+<!--       
         <div *ngIf="qrData" class="ion-text-center ion-margin-top" #qrContainer>
           <qrcode [qrdata]="qrData" [width]="200" [errorCorrectionLevel]="'M'"></qrcode>
-        </div>
+        </div> -->
       
         <ion-button class="ion-margin-top mesa-button" expand="block" type="submit" [disabled]="mesaForm.invalid">
           Crear Mesa
