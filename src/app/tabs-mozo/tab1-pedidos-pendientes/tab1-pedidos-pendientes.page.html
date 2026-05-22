@@ -111,10 +111,10 @@
   </div>
 
   <!-- Modal Detalle Pedido -->
-  <ion-modal #modalDetalle [initialBreakpoint]="1" [breakpoints]="[0, 1]">
+  <ion-modal #modalDetalle class="detalle-pedido-modal">
     <ng-template>
-      <ion-header>
-        <ion-toolbar>
+      <ion-header class="ion-no-border">
+        <ion-toolbar style="--min-height: 44px;">
           <ion-title>Detalle del Pedido - Mesa {{ pedidoActual?.mesa?.numero }}</ion-title>
           <ion-buttons slot="end">
             <ion-button (click)="modalDetalle.dismiss()">
@@ -123,7 +123,7 @@
           </ion-buttons>
         </ion-toolbar>
       </ion-header>
-      <ion-content [scrollY]="false" [scrollX]="false" class="modal-detalle-content">
+      <div class="detalle-scroll">
         <div class="pedido-info">
           <ion-card class="card-items">
             <ion-card-header>
@@ -167,16 +167,7 @@
             </ion-card-content>
           </ion-card>
         </div>
-      </ion-content>
-      <ion-footer>
-        <ion-toolbar>
-          <ion-buttons slot="end">
-            <ion-button expand="block" fill="clear" (click)="modalDetalle.dismiss()">
-              Cerrar
-            </ion-button>
-          </ion-buttons>
-        </ion-toolbar>
-      </ion-footer>
+      </div>
     </ng-template>
   </ion-modal>
 </ion-content>
