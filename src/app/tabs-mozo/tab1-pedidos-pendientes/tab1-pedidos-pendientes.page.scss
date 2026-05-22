@@ -200,66 +200,55 @@ ion-header {
   @extend %tabs-empty-state;
 }
 
-// Modal Detalle Pedido
-.modal-detalle-content {
-  --background: linear-gradient(180deg, #370617 0%, #6A040F 40%, #9D0208 100%);
+// Modal Detalle Pedido - centrado y compacto
+.detalle-scroll {
+  background: linear-gradient(180deg, #370617 0%, #6A040F 40%, #9D0208 100%);
+  overflow-y: auto;
+  max-height: 70vh;
 }
 
 .pedido-info {
-  padding: 12px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  height: 100%;
   box-sizing: border-box;
   width: 100%;
-  max-width: 500px;
 
   ion-card {
     margin: 0;
     border-radius: 14px;
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
-    flex: 1;
-    display: flex;
-    flex-direction: column;
     overflow: hidden;
 
     ion-card-header {
-      padding: 14px 16px 6px;
+      padding: 10px 14px 4px;
     }
 
     ion-card-title {
       display: flex;
       align-items: center;
       gap: 10px;
-      font-size: 18px;
+      font-size: 16px;
       font-weight: 700;
       color: #F48C06;
 
       ion-icon {
         color: #F48C06;
-        font-size: 20px;
+        font-size: 18px;
         flex-shrink: 0;
       }
     }
 
     ion-card-content {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      padding: 4px 16px 14px;
-      overflow: hidden;
-      min-height: 0;
+      padding: 2px 14px 10px;
     }
   }
 }
 
 .card-items {
   ion-list {
-    flex: 1;
+    max-height: 50vh;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    min-height: 0;
     padding: 0;
   }
 }
@@ -281,7 +270,7 @@ ion-item {
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  padding: 10px 0;
+  padding: 6px 0;
 
   .item-info {
     flex: 1;
@@ -339,41 +328,23 @@ ion-item {
 }
 
 .total-section {
-  margin-top: auto;
-  padding-top: 10px;
+  padding-top: 8px;
   border-top: 1.5px solid rgba(255, 255, 255, 0.5);
-  flex-shrink: 0;
 
   .total-item {
     background-color: #F48C06;
     border-radius: 10px;
     margin: 0;
-    --min-height: 54px;
-    --padding-start: 14px;
-    --inner-padding-end: 14px;
+    --min-height: 44px;
+    --padding-start: 12px;
+    --inner-padding-end: 12px;
 
     h2 {
       margin: 0;
       color: #370617;
-      font-size: 1.1rem;
+      font-size: 1rem;
       font-weight: 700;
     }
-  }
-}
-
-ion-footer ion-toolbar {
-  --background: linear-gradient(135deg, #6a040F, #8b0000, #9D0208);
-  --padding-start: 20px;
-  --padding-end: 20px;
-  --padding-top: 8px;
-  --padding-bottom: 8px;
-
-  ion-button {
-    font-size: 1rem;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    height: 44px;
-    --color: white;
   }
 }
 

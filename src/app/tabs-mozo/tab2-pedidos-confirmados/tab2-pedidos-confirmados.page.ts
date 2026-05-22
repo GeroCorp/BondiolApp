@@ -203,7 +203,8 @@ export class Tab2PedidosConfirmadosPage implements OnInit, AfterViewInit {
           pedido: pedido,
           items: items || []
         },
-        cssClass: 'detalle-pedido-modal'
+        cssClass: 'detalle-pedido-modal',
+        animated: false
       });
       
       await modal.present();
