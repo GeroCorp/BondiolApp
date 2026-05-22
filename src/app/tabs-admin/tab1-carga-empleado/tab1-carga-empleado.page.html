@@ -4,7 +4,7 @@
       <ion-back-button defaultHref="/home" icon="arrow-back"></ion-back-button>
     </ion-buttons>
     <ion-title>
-      <ion-icon name="people"></ion-icon> Agregar nuevo empleado
+      <ion-icon name="people"></ion-icon>Agregar empleado
     </ion-title>
   </ion-toolbar>
 </ion-header>
@@ -13,34 +13,31 @@
   <div class="empleado-wrapper">
     <ion-card class="empleado-card-content ion-padding">
       <form [formGroup]="empleadoForm" (ngSubmit)="crearEmpleado()">
-        <ion-item class="empleado-item">
-          <ion-label position="floating">Nombre</ion-label>
-          <ion-input formControlName="nombre"></ion-input>
-        </ion-item>
+        <div class="producto-row">
 
-        <ion-item class="empleado-item">
-          <ion-label position="floating">Apellido</ion-label>
-          <ion-input formControlName="apellido"></ion-input>
-        </ion-item>
-
-        <ion-item class="empleado-item">
-          <ion-label position="floating">DNI</ion-label>
-          <ion-input type="text" inputmode="numeric" formControlName="dni"></ion-input>
-        </ion-item>
-
+          <ion-item class="empleado-item half">
+            <ion-label position="floating">Nombre</ion-label>
+            <ion-input formControlName="nombre"></ion-input>
+          </ion-item>
+          
+          <ion-item class="empleado-item half">
+            <ion-label position="floating">Apellido</ion-label>
+            <ion-input formControlName="apellido"></ion-input>
+          </ion-item>
+        </div>
+        <div class="producto-row">
+          <ion-item class="empleado-item tres-cuartos">
+            <ion-label position="floating">DNI</ion-label>
+            <ion-input type="text" inputmode="numeric" formControlName="dni"></ion-input>
+          </ion-item>
+          <app-secondary-button  (click)="leerQR()" class="un-cuarto">
+            <ion-icon name="barcode-outline" style="font-size: 24px; vertical-align: middle;"></ion-icon>
+          </app-secondary-button>
+        </div>
+        
         <ion-item class="empleado-item">
           <ion-label position="floating">CUIL</ion-label>
           <ion-input type="text" inputmode="numeric" formControlName="cuil"></ion-input>
-        </ion-item>
-
-        <ion-item class="empleado-item">
-          <ion-label position="floating">Email</ion-label>
-          <ion-input type="email" formControlName="email"></ion-input>
-        </ion-item>
-
-        <ion-item class="empleado-item">
-          <ion-label position="floating">Contraseña</ion-label>
-          <ion-input type="password" formControlName="clave"></ion-input>
         </ion-item>
 
         <ion-item class="empleado-item">
@@ -53,25 +50,47 @@
             <ion-select-option value="delivery">Delivery</ion-select-option>
           </ion-select>
         </ion-item>
+        
+        <div class="producto-row"> 
 
-        <ion-item class="empleado-item">
-          <ion-label>Foto</ion-label>
-          <ion-button expand="block" (click)="tomarFoto()" class="empleado-button">Tomar Foto</ion-button>
+          <ion-item class="empleado-item half">
+            <ion-label position="floating">Email</ion-label>
+          <ion-input type="email" formControlName="email"></ion-input>
         </ion-item>
+        
+        <ion-item class="empleado-item half">
+          <ion-label position="floating">Contraseña</ion-label>
+          <ion-input type="password" formControlName="clave"></ion-input>
+        </ion-item>
+        
+      </div>
 
-        <div *ngIf="foto" class="container-img-empleado">
-          <div class="img-borrar">
-            <img [src]="foto" id="img-empleado"/>
-            <ion-button fill="clear" color="danger" size="small" (click)="borrarImagen()">
-              <ion-icon name="trash"></ion-icon>
-            </ion-button>
+
+      <div class="foto-zone" (click)="tomarFoto()">
+          <img
+            *ngIf="foto"
+            [src]="foto"
+            alt="Foto del empleado"
+            class="foto-img"
+          />
+          <div *ngIf="!foto" class="foto-placeholder">
+            <ion-icon name="camera-outline"></ion-icon>
+            <p>Presioná para tomar una foto</p>
           </div>
-        </div>
-
-        <ion-item class="empleado-item">
-          <ion-label>Escanear QR del DNI</ion-label>
-          <ion-button expand="block" (click)="leerQR()" class="empleado-button">Leer QR</ion-button>
-        </ion-item>
+              <div *ngIf="foto" class="foto-retake-badge">
+                <ion-icon name="camera-outline"></ion-icon>
+                Presioná para cambiar
+              </div>
+          <ion-button
+            *ngIf="foto"
+            fill="clear"
+            color="danger"
+            size="small"
+            class="foto-delete-btn"
+            (click)="borrarImagen(); $event.stopPropagation()">
+              <ion-icon name="trash"></ion-icon>
+          </ion-button>
+      </div>
 
         <ion-button expand="block" type="submit" class="empleado-button">
           Crear Empleado
