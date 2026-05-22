@@ -3,6 +3,7 @@ import { createClient, SupabaseClient, AuthError } from '@supabase/supabase-js';
 import { environment } from 'src/environments/environment';
 import { Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
+import { Notification } from './notification'
 
 let supabaseInstance: SupabaseClient | null = null;
 
@@ -39,7 +40,10 @@ export class AuthService {
   private lastProcessedEvent: string = ''; // ✅ Para evitar procesar el mismo evento múltiples veces
   private lastProcessedUserId: string = ''; // ✅ Para evitar guardar sesión múltiples veces para el mismo usuario
 
-  constructor(private router: Router) {
+  constructor(
+    private router: Router,
+    private notificationService: Notification
+  ) {
     this.supabase = supabase; // Usa la instancia única
     this.initAuthListener(); // ✅ Inicializa el listener de autenticación
   }
@@ -461,6 +465,7 @@ export class AuthService {
   // 🔑 Cerrar sesión
   async logout() {
     try {
+      this.notificationService.clearUserTags();
       const { error } = await this.supabase.auth.signOut();
       if (error) throw new Error(this.mapAuthError(error));
       
@@ -1273,118 +1278,6 @@ async enviarPedidoSector(pedidoId: number, sector: 'cocina' | 'bar', items: any[
   } catch (error) {
     console.error(`Error al enviar pedido a ${sector}:`, error);
     throw error;
-  }
-}
-
-/**
- * Envía notificación push al cliente
- */
-async enviarNotificacionCliente(clienteId: number, titulo: string, mensaje: string) {
-  try {
-    // Obtener el token FCM del cliente
-    const { data: cliente, error: clienteError } = await this.supabase
-      .from('clientes')
-      .select('fcm_token, user_id')
-      .eq('id_cliente', clienteId)
-      .single();
-
-    if (clienteError) throw clienteError;
-
-    if (!cliente?.fcm_token) {
-      console.warn('Cliente sin token FCM');
-      return null;
-    }
-
-    // Guardar notificación en la base de datos
-    const { data, error } = await this.supabase
-      .from('notificaciones')
-      .insert({
-        user_id: cliente.user_id,
-        titulo: titulo,
-        mensaje: mensaje,
-        tipo: 'pedido',
-        leida: false,
-        created_at: new Date().toISOString()
-      })
-      .select();
-
-    if (error) throw error;
-
-    // TODO: Aquí deberías implementar el envío real de push notification
-    // usando Firebase Cloud Messaging (FCM) o similar
-    console.log('Notificación enviada al cliente:', titulo, mensaje);
-
-    return data;
-  } catch (error) {
-    console.error('Error al enviar notificación al cliente:', error);
-    throw error;
-  }
-}
-
-/**
- * Envía notificación push a un sector (cocinero/bartender)
- */
-async enviarNotificacionSector(perfil: string, titulo: string, mensaje: string) {
-  try {
-    // Obtener todos los empleados de ese perfil
-    const { data: empleados, error: empleadosError } = await this.supabase
-      .from('empleados')
-      .select('user_id, fcm_token')
-      .eq('perfil', perfil);
-
-    if (empleadosError) throw empleadosError;
-
-    if (!empleados || empleados.length === 0) {
-      console.warn(`No se encontraron empleados con perfil ${perfil}`);
-      return null;
-    }
-
-    // Crear notificaciones para todos los empleados del sector
-    const notificaciones = empleados.map(emp => ({
-      user_id: emp.user_id,
-      titulo: titulo,
-      mensaje: mensaje,
-      tipo: 'pedido_sector',
-      leida: false,
-      created_at: new Date().toISOString()
-    }));
-
-    const { data, error } = await this.supabase
-      .from('notificaciones')
-      .insert(notificaciones)
-      .select();
-
-    if (error) throw error;
-
-    // TODO: Implementar envío real de push notifications
-    console.log(`Notificaciones enviadas al sector ${perfil}:`, titulo, mensaje);
-
-    return data;
-  } catch (error) {
-    console.error('Error al enviar notificación al sector:', error);
-    throw error;
-  }
-}
-
-async enviarNotificacionPagoConfirmado(idPedido: number) {
-  const { data: empleados } = await this.supabase
-    .from('empleados')
-    .select('user_id, perfil')
-    .in('perfil', ['dueño', 'supervisor']);
-
-  if (empleados && Array.isArray(empleados)) {
-    for (const emp of empleados) {
-      await this.supabase
-        .from('notificaciones')
-        .insert({
-          destinatario_id: emp.user_id,
-          tipo_destinatario: 'empleado',
-          titulo: 'Pago confirmado',
-          mensaje: `El pedido #${idPedido} fue pagado y la mesa está libre.`,
-          tipo_notificacion: 'pago_confirmado',
-          enviada: false
-        });
-    }
   }
 }
 
