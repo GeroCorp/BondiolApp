@@ -544,15 +544,38 @@ export class AuthService {
     return await this.supabase.auth.signUp({ email, password });
   }
 
-  // Primero debe verificar si existe el dni en la tabla clientes
-  async registrarEmpleado(email: string, password: string, dni: number) {
-    const dniExists = await this.existsDni(dni, 'empleados');
-    if (dniExists) {
-      throw new Error('El DNI ya está registrado.');
-    }
-    return await this.supabase.auth.signUp({ email, password });
+  // Primero debe verificar si existe el dni en la tabla empleados
+async registrarEmpleado(email: string, password: string, dni: number) {
+
+  const dniExists = await this.existsDni(dni, 'empleados');
+
+  if (dniExists) {
+    throw new Error('El DNI ya está registrado.');
   }
+
+  // guardar sesión actual
+  const sesionActual = await this.supabase.auth.getSession();
+
+  // crea el empleado
+  const resultado = await this.supabase.auth.signUp({
+    email,
+    password
+  });
+
+  // restaurar sesión admin
+  if (sesionActual.data.session) {
+
+    await this.supabase.auth.setSession({
+      access_token: sesionActual.data.session.access_token,
+      refresh_token: sesionActual.data.session.refresh_token
+    });
+
+  }
+
+  return resultado;
+}
   
+
   // 🔑 Insertar nuevo empleado
   async insertarEmpleado(empleado: any) {
     return await this.supabase.from('empleados').insert([empleado]);
