@@ -10,6 +10,8 @@ import { HapticService } from 'src/app/services/haptic.service';
 //Implementar loadingController
 
 //Implementar loadingController
+
+// precio nombre y tiempo  hacer mas grande la letra 
  
 @Component({
   selector: 'app-tab1-agregar-producto',

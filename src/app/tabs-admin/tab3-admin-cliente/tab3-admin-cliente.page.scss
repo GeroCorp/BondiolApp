@@ -56,7 +56,7 @@ ion-content.cliente-content {
 .snap-page {
   scroll-snap-align: start;
   scroll-snap-stop: always;
-  height: calc(100dvh - var(--offset-top, 60px));
+  height: calc(100dvh - var(--offset-top, 60px) - 56px);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -71,7 +71,6 @@ ion-content.cliente-content {
   min-height: 0;
   max-width: 92%;
   width: 92%;
-  max-height: 40vh;
   margin: 0 auto;
   background: rgba(120, 0, 0, 0.55);
   border: 1px solid rgba(255, 107, 71, 0.25);
@@ -87,8 +86,8 @@ ion-content.cliente-content {
   overflow: hidden;
 
   .cliente-avatar {
-    width: 150px;
-    height: 150px;
+    width: 100px;
+    height: 100px;
     flex-shrink: 0;
 
     img {
@@ -106,19 +105,19 @@ ion-content.cliente-content {
     h3 {
       color: #ff6b47;
       font-weight: 700;
-      font-size: 1.3rem;
+      font-size: 1.1rem;
       margin: 0;
     }
 
     p {
       color: rgba(255, 255, 255, 0.8);
-      margin: 4px 0;
-      font-size: 0.95rem;
+      margin: 2px 0;
+      font-size: 0.85rem;
       word-wrap: break-word;
     }
 
     small {
-      font-size: 0.85rem;
+      font-size: 0.7rem;
       color: #ccc;
     }
   }
@@ -132,8 +131,8 @@ ion-content.cliente-content {
     ion-button {
       --border-radius: 10px;
       font-weight: 600;
-      font-size: 0.85rem;
-      height: 32px;
+      font-size: 0.75rem;
+      height: 28px;
 
       &[color="secondary"] {
         --background: linear-gradient(135deg, #28a745, #218838);
@@ -148,6 +147,14 @@ ion-content.cliente-content {
   }
 
   animation: fadeInUp 0.6s ease-out;
+
+  &:only-child {
+    flex: 1;
+    min-height: 0;
+    max-height: calc((100% - 40px) / 2);
+    max-width: 80%;
+    width: 80%;
+  }
 }
 
 .sin-clientes {
@@ -156,7 +163,7 @@ ion-content.cliente-content {
   align-items: center;
   justify-content: center;
   width: 100%;
-  height: calc(100vh - 150px);
+  height: calc(100dvh - 150px);
   color: #888;
   text-align: center;
 
@@ -180,4 +187,49 @@ ion-content.cliente-content {
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+@media screen and (max-height: 800px) {
+  .snap-page {
+    height: calc(100dvh - var(--offset-top, 60px) - 56px);
+    gap: 8px;
+    padding: 8px;
+  }
+
+  .cliente-item {
+    max-height: 35vh;
+    padding: 8px 10px;
+    gap: 6px;
+  }
+
+  .cliente-avatar {
+    width: 80px;
+    height: 80px;
+  }
+
+  .cliente-label {
+    h3 {
+      font-size: 1rem;
+    }
+
+    p {
+      font-size: 0.8rem;
+    }
+
+    small {
+      font-size: 0.7rem;
+    }
+  }
+
+  .acciones ion-button {
+    height: 28px;
+    font-size: 0.7rem;
+  }
+
+  .snap-page .cliente-item:only-child {
+    flex: 1;
+    max-height: calc((100% - 24px) / 2);
+    max-width: 80%;
+    width: 80%;
+  }
 }

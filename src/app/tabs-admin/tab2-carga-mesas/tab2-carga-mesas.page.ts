@@ -7,7 +7,7 @@ import { PerfilService } from 'src/app/services/perfilService';
 import { CustomLoaderService } from 'src/app/services/custom-loader.service';
 import { Router } from '@angular/router';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
-
+import QRCode from 'qrcode';
 
 @Component({
   selector: 'app-tab2-carga-mesas',
@@ -97,13 +97,14 @@ export class Tab2CargaMesasPage {
       throw new Error('Faltan campos para generar el QR');
     }
     console.log('Datos de la mesa para QR:', this.qrData);
-
   }
 
 
 
   async onSubmit(){
+
     this.generateQR()
+
     await this.customLoaderService.show('Creando mesa...');
     if (!this.mesaForm.valid) {
       this.mesaForm.markAllAsTouched();
@@ -126,8 +127,13 @@ export class Tab2CargaMesasPage {
         this.customLoaderService.hide();
         throw new Error('QR no generado');
       }
-      // Obtener la imagen del QR en base64 desde el canvas
-      const qrBlob = this.getQRBlob();
+      // Obtener la imagen del QR en base64 desde la bd
+      const qrBlob = await this.getQRBlob();
+        if (!qrBlob) {
+          this.showToast('Error generando el QR', 'danger');
+          this.customLoaderService.hide();
+          return;
+        }
       const qrUrl = await this.authService.subirQRmesa(numero, qrBlob!);
       
     
@@ -173,8 +179,8 @@ export class Tab2CargaMesasPage {
     
   }
 
-  downloadQRCode() {
-    const qrBlob = this.getQRBlob();
+  async downloadQRCode() {
+    const qrBlob = await  this.getQRBlob();
     if (!qrBlob) {
       this.showToast('No se pudo descargar el QR', 'danger');
       return;
@@ -188,20 +194,22 @@ export class Tab2CargaMesasPage {
     URL.revokeObjectURL(url);
   }
 
-  getQRBlob(): Blob | null {
-  // Busca el elemento canvas dentro del contenedor
-  const canvasElement: HTMLCanvasElement = this.qrCodeCanvas.nativeElement.querySelector('canvas');
-  let canvas64 = "";
+  async getQRBlob(): Promise<Blob | null> {
+  if (!this.qrData) return null;
 
-  if (!canvasElement) {
+  try {
+    // Genera el QR como Data URL (base64 PNG)
+    const dataUrl = await QRCode.toDataURL(this.qrData, {
+      type: 'image/png',
+      width: 300,
+      margin: 2,
+    });
+
+    return this.authService.dataURLtoBlob(dataUrl);
+  } catch (e) {
+    console.error('Error generando QR:', e);
     return null;
   }
-
-  // Extrae la imagen como una cadena Base64 (Data URL)
-  // formato 'image/jpeg' para supabase storage
-  canvas64 = canvasElement.toDataURL('image/jpeg', 0.9); // 0.9 es la calidad
-  
-  return this.authService.dataURLtoBlob(canvas64); // Devuelve la conversion a blob
 }
 
   async tomarFoto() {
