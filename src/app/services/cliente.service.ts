@@ -295,16 +295,14 @@ export class ClienteService {
   }
 
   // Obtener el total del pedido CON descuento aplicado
-async getTotal(): Promise<number> {
+async getTotal(id_pedido: number): Promise<number> {
   const subtotal = this._pedido().reduce((total, item) => {
     const itemTotal = item.subtotal || item.precio * (item.quantity || 1);
     return total + itemTotal;
   }, 0);
 
   try {
-    const clienteId = await this.getClientId();
-    const mesaId = await this.getMesaID(clienteId);
-    const descuento = await this.getDescuentoCliente(clienteId, mesaId);
+    const descuento = await this.getDescuentoCliente(id_pedido);
     
     if (descuento > 0) {
       const montoDescuento = subtotal * (descuento / 100);
@@ -326,13 +324,11 @@ getSubtotal(): number {
   }, 0);
 }
 
-  async getMontoDescuento(): Promise<number> {
+  async getMontoDescuento(id_pedido: number): Promise<number> {
     const subtotal = this.getSubtotal();
 
     try {
-      const clienteId = await this.getClientId();
-      const mesaId = await this.getMesaID(clienteId);
-      const descuento = await this.getDescuentoCliente(clienteId, mesaId);
+      const descuento = await this.getDescuentoCliente(id_pedido);
 
       if (descuento > 0) {
         return subtotal * (descuento / 100);
@@ -345,16 +341,7 @@ getSubtotal(): number {
     }
   }
 
-  async getPorcentajeDescuento(): Promise<number> {
-    try {
-      const clienteId = await this.getClientId();
-      const mesaId = await this.getMesaID(clienteId);
-      return await this.getDescuentoCliente(clienteId, mesaId);
-    } catch (error) {
-      console.error('Error obteniendo porcentaje descuento:', error);
-      return 0;
-    }
-  }
+
 
   // Obtener la cantidad total de items en el pedido
   getItemCount(): number {
@@ -500,7 +487,6 @@ getSubtotal(): number {
       
       idCliente = await this.getClientId();
       const subtotal = this.getSubtotal();
-      const totalConDescuento = await this.getTotal();
 
       // Obtener número de mesa
       const { data: mesaData } = await this.supabase
@@ -516,7 +502,7 @@ getSubtotal(): number {
         id_cliente: idCliente,
         fecha: new Date().toISOString(),
         estado: 'pendiente',
-        total: Math.round(totalConDescuento)
+        total: Math.round(subtotal)
       };
       
       const { data, error } = await this.supabase
@@ -614,7 +600,7 @@ getSubtotal(): number {
     return idPedido;
   }
 
-  async estadoUltimoPedido() {
+  async   estadoUltimoPedido() {
     let pedido = null;
     const clienteId = await this.getClientId();
     try {
@@ -629,20 +615,21 @@ getSubtotal(): number {
           return null;
         }
         // Verificar que sea del mismo día
-        const hoy = new Date();
-        const fechaPedido = new Date(data[0].fecha);
-        const esMismoDia = hoy.toDateString() === fechaPedido.toDateString();
+        // const hoy = new Date();
+        // const fechaPedido = new Date(data[0].fecha);
+        // const esMismoDia = hoy.toDateString() === fechaPedido.toDateString();
 
-        if (esMismoDia){
-          pedido = data;
-        }else{
-          console.log('No hay pedidos activos del día para este cliente');
-        }
+        // if (esMismoDia){
+
+        pedido = data[0];
+        // }else{
+        //   console.log('No hay pedidos activos del día para este cliente');
+        // }
 
       }catch ( e ){
         console.error('Error al verificar pedidos activos: ' + e);
       }
-      return pedido ? pedido[0].estado : null;
+      return pedido ? pedido.estado : null;
   }
 
 
@@ -1460,16 +1447,13 @@ async sendMessage(contenido: string): Promise<void> {
     }
   }
 
-  async getDescuentoCliente(
-    clienteId: number,
-    mesaId: number | null
-  ): Promise<number> {
+  // Buscar descuento por PEDIDO (para aplicar al total del pedido)
+  async getDescuentoCliente(pedido_id: number): Promise<number> {
     try {
       const { data, error } = await this.supabase
         .from('juegos_descuentos')
         .select('descuento_obtenido')
-        .eq('mesa_id', mesaId)
-        .eq('cliente_id', clienteId)
+        .eq('id_pedido', pedido_id)
         .maybeSingle();
 
       if (error && error.code !== 'PGRST116') {
@@ -1569,6 +1553,111 @@ async getHistorialPedidos() {
   } catch (error) {
     console.error('❌ Error en getHistorialPedidos:', error);
     throw error;
+  }
+}
+
+async getPedidoActivo(){
+  try {
+    const isAnonimo = this.tipoClienteService.isAnonimo();
+    const clienteData = this.tipoClienteService.getClienteData();
+    let pedido: any = null;
+
+    if (isAnonimo) {
+      const mesaId = clienteData?.mesa_asignada || null;
+      if (!mesaId) {
+        console.warn('⚠️ Cliente anónimo sin mesa asignada');
+        return null;
+      }
+    }
+      const clienteId = await this.getClientId();
+      const { data, error } = await this.supabase
+        .from('pedidos')
+        .select(
+          `id, estado, fecha, total, tiempo_estimado,
+            detalles_pedido:detalles_pedido(nombre_prod, cantidad, precio_unitario, tipo)
+          `)
+        .eq('id_cliente', clienteId)
+        .neq('estado', 'rechazado')
+        .order('fecha', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (error) {
+        throw new Error('Error al obtener pedido activo: ' + error.message);
+      }
+      if (!data) {
+        console.log('⚠️ No se encontró pedido activo para el cliente');
+        return null;
+      }
+
+      pedido = data || null;
+      console.log("Pedido recuperado: ", pedido);
+
+      // Agregar las imagenes a detalles del pedido
+      if (pedido.detalles_pedido && pedido.detalles_pedido.length > 0) {
+        await Promise.all(pedido.detalles_pedido.map(async (detalle: any) => {
+          detalle.imagen = await this.getImagenDetalles(detalle.tipo, detalle.nombre_prod);
+        }));
+      }
+      return pedido;
+    }catch ( e ){
+      console.error('❌ Error en getPedidoActivo:', e);
+      return null;
+    }
+
+}
+
+async confirmarPedido(){
+  try {
+    const pedido = await this.getPedidoActivo();
+
+    if (!pedido) {
+      console.warn('⚠️ No hay pedido activo para confirmar');
+      return;
+    }
+
+    if (pedido.estado == 'entregado') {
+      const { data, error } = await this.supabase
+        .from('pedidos')
+        .update({ estado: 'entrega_confirmada' })
+        .eq('id', pedido.id)
+        .select();
+      if (error) {
+        throw new Error('Error al confirmar entrega: ' + error.message);
+      }
+      console.log('✅ Pedido', data[0].id, ' confirmado:', data[0].estado);
+    }
+
+  } catch (e) {
+    console.error('❌ Error en confirmarPedido:', e);
+  }
+}
+
+async getImagenDetalles(tipo: 'plato' | 'bebida', nombre_prod: string) {
+  try {
+    const sector = tipo === 'plato' ? 'platos' : 'bebidas';
+    const { data, error } = await this.supabase
+      .from(sector)
+      .select('imagenes')
+      .eq('nombre', nombre_prod)
+
+    if (error) {
+      console.error(`❌ Error obteniendo imagen para ${tipo} "${nombre_prod}":`, error);
+      return null;
+    }
+    if (!data || data.length === 0) {
+      console.warn(`⚠️ No se encontró ${tipo} con nombre "${nombre_prod}"`);
+      return null;
+    }
+    let imagenes = data;
+
+    imagenes = imagenes[0]?.imagenes.split(',')[0].trim() || null; 
+
+    console.log(`✅ Imagen obtenida para ${tipo} "${nombre_prod}":`, imagenes[0]);
+    return imagenes;
+  } catch (e) {
+    console.error('❌ Error en getImagenDetalles:', e);
+    return null;
   }
 }
 

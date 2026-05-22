@@ -42,7 +42,7 @@ ion-content.container {
   scroll-snap-align: start;
   scroll-snap-stop: always;
 
-  height: calc(100dvh - var(--offset-top, 60px) - 56px);
+  height: calc(100vh - var(--offset-top, 60px) - 56px);
 
   display: flex;
   flex-direction: column;
@@ -179,7 +179,7 @@ ion-content.container {
 
 // ─── Empty state ──────────────────────────────────────────────────────────────
 .empty-state {
-  height: calc(100dvh - var(--offset-top, 60px) - 56px);
+  height: calc(100vh - var(--offset-top, 60px) - 56px);
   display: flex;
   flex-direction: column;
   align-items: center;

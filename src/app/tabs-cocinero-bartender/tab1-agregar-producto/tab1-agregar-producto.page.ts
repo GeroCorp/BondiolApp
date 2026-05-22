@@ -143,14 +143,20 @@ export class Tab1AgregarProductoPage {
     let imagenes_posta: string[] = [];
     const bucketType = this.perfil === 'cocinero' ? 'platos' : 'bebidas';
     console.log('🔍 Perfil detectado:', this.perfil, '| Bucket:', bucketType);
-    for (let img of this.imagenes) {
-      const fileName = `${nombre.replace(/\s+/g, '_')}_${new Date().getTime()}.jpeg`;
-      const blob = this.supabaseService.dataURLtoBlob(img);
-      const publicUrl = await this.supabaseService.subirImagenPlatos(blob, fileName, bucketType);
-      imagenes_posta.push(publicUrl);
-    }
+
+    imagenes_posta = await Promise.all(
+      this.imagenes.map(async (img, index) => {
+        const fileName = `${nombre.replace(/\s+/g, '_')}_${index}.jpeg`;
+        const blob = this.supabaseService.dataURLtoBlob(img);
+        const publicUrl = await this.supabaseService.subirImagenPlatos(blob, fileName, bucketType);
+        console.log("URL de la imagen subida: ", publicUrl);
+        return publicUrl;
+      })
+    );
+    
     try {
       // Insertar producto en Supabase Auth
+      console.log(imagenes_posta); // Verificar que las URLs de las imágenes se hayan generado correctamente antes de crear el producto
       const nuevoProducto = {
         nombre: nombre,
         descripcion: descripcion,
@@ -159,7 +165,7 @@ export class Tab1AgregarProductoPage {
         imagenes: imagenes_posta.join(','),
       };
 
-
+      console.log(nuevoProducto);
       if (this.perfil === 'cocinero') {
 
         // Verificar existencia del plato en el menú

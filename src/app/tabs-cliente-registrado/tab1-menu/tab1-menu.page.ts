@@ -71,7 +71,7 @@ export class Tab1MenuPage implements OnInit {
   }
 
   async actualizarTotal() {
-    this.totalConDescuento = await this.clienteService.getTotal();
+    this.totalConDescuento = await this.clienteService.getSubtotal();
   }
   getCantidadItemsPedido(): number {
     return this.clienteService.pedido().length;
@@ -165,7 +165,7 @@ getChunks(array: any[], size: number): any[][] {
 
   // ✅ MODIFICADO: Ahora es async para obtener el total con descuento
   async calcularMonto() {
-    return await this.clienteService.getTotal();
+    return await this.clienteService.getSubtotal();
   }
 
   volverHome(){

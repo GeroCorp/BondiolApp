@@ -56,7 +56,7 @@ ion-content.cliente-content {
 .snap-page {
   scroll-snap-align: start;
   scroll-snap-stop: always;
-  height: calc(100dvh - var(--offset-top, 60px) - 56px);
+  height: calc(100vh - var(--offset-top, 60px) - 56px);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -163,7 +163,7 @@ ion-content.cliente-content {
   align-items: center;
   justify-content: center;
   width: 100%;
-  height: calc(100dvh - 150px);
+  height: calc(100vh - 150px);
   color: #888;
   text-align: center;
 
@@ -191,7 +191,7 @@ ion-content.cliente-content {
 
 @media screen and (max-height: 800px) {
   .snap-page {
-    height: calc(100dvh - var(--offset-top, 60px) - 56px);
+    height: calc(100vh - var(--offset-top, 60px) - 56px);
     gap: 8px;
     padding: 8px;
   }

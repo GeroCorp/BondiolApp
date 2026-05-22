@@ -2,6 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { ClienteService } from '../../services/cliente.service';
 import { Router } from '@angular/router';
 import { ToastController } from '@ionic/angular';
+import { CustomLoaderService } from '../../services/custom-loader.service';
 
 @Component({
   selector: 'app-tab2-pedido',
@@ -21,7 +22,8 @@ export class Tab2PedidoPage implements OnInit {
   constructor(
     public clienteService: ClienteService, 
     private router: Router,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private customLoader: CustomLoaderService
   ) { }
 
   async ngOnInit() {
@@ -37,9 +39,6 @@ export class Tab2PedidoPage implements OnInit {
   // ✅ Calcular todos los totales con descuento
   async calcularTotales() {
     this.subtotal = this.clienteService.getSubtotal();
-    this.porcentajeDescuento = await this.clienteService.getPorcentajeDescuento();
-    this.montoDescuento = await this.clienteService.getMontoDescuento();
-    this.totalFinal = await this.clienteService.getTotal();
   }
 
   // Getter para acceder al pedido desde el template
@@ -64,12 +63,10 @@ export class Tab2PedidoPage implements OnInit {
 
   // Confirmar el pedido
   async confirmarPedido() {
+    await this.customLoader.show();
     try {
       console.log('Confirmando pedido...');
-      console.log('Subtotal:', this.subtotal);
-      console.log('Descuento:', this.porcentajeDescuento + '%');
-      console.log('Monto descuento:', this.montoDescuento);
-      console.log('Total final:', this.totalFinal);
+      console.log('Total:', this.subtotal);
       
       await this.clienteService.insertPedido();
       
@@ -88,9 +85,11 @@ export class Tab2PedidoPage implements OnInit {
         this.router.navigate(['/home-cliente']);
       }, 1500);
     } catch (error) {
+      this.customLoader.hide();
       console.error('Error al confirmar pedido:', error);
       await this.showToast('Error al confirmar el pedido', 'danger');
     }
+    this.customLoader.hide();
   }
 
 

@@ -1,149 +1,70 @@
-// Estilos para el historial de pedidos del cliente - TEMA OSCURO
-// Variables del tema oscuro
-:host {
-  --background-dark: #370606;
-  --surface-dark: #6a040F;
-  --surface-variant: #9D0208;
-  --text-primary: #ffffff;
-  --text-secondary: #b3b3b3;
-  --text-muted: #808080;
-  --primary-color: #F48C06;
-  --secondary-color: #03dac6;
-  --error-color: #cf6679;
-  --success-color: #4caf50;
-  --warning-color: #ff9800;
-  --border-color: #404040;
-  --shadow-dark: 0 4px 12px rgba(0, 0, 0, 0.4);
-}
+@import "../../../theme/tabs-shared.scss";
 
-// Estilos para scroll horizontal de filtros
-.scroll-arrows {
-  position: relative;
-  display: flex;
-  align-items: center;
-  width: 100%;
-  
-  .arrow-left,
-  .arrow-right {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: rgba(187, 134, 252, 0.9);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    cursor: pointer;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-    z-index: 15;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    
-    &:hover {
-      background: rgba(187, 134, 252, 1);
-      transform: translateY(-50%) scale(1.1);
-    }
-    
-    &:active {
-      transform: translateY(-50%) scale(0.95);
-    }
-  }
-  
-  .arrow-left {
-    left: 4px;
-    
-    &.visible {
-      opacity: 1;
-      visibility: visible;
-    }
-  }
-  
-  .arrow-right {
-    right: 4px;
-    
-    &.visible {
-      opacity: 1;
-      visibility: visible;
-    }
-  }
-}
-
-// Animación suave para el scroll
-.segment-container {
-  scroll-behavior: smooth;
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding: 8px 48px;
-  flex: 1;
-  
-  &::-webkit-scrollbar {
-    height: 4px;
-  }
-  
-  &::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
-  }
-  
-  &::-webkit-scrollbar-thumb {
-    background: rgba(187, 134, 252, 0.5);
-    border-radius: 2px;
-    
-    &:hover {
-      background: rgba(187, 134, 252, 0.8);
-    }
-  }
-}
-
-// Animaciones adicionales para las flechas
-@keyframes arrowPulse {
-  0% { transform: translateY(-50%) scale(1); }
-  50% { transform: translateY(-50%) scale(1.05); }
-  100% { transform: translateY(-50%) scale(1); }
-}
-
-.scroll-arrows .arrow-left.visible,
-.scroll-arrows .arrow-right.visible {
-  animation: arrowPulse 2s ease-in-out infinite;
-  
-  &:hover {
-    animation: none;
-  }
-}
-
-// Responsive adjustments para las flechas
-@media (max-width: 576px) {
-  .scroll-arrows {
-    .arrow-left,
-    .arrow-right {
-      width: 28px;
-      height: 28px;
-      font-size: 14px;
-    }
-    
-    .arrow-left {
-      left: 2px;
-    }
-    
-    .arrow-right {
-      right: 2px;
-    }
-  }
-  
-  .segment-container {
-    padding: 8px 32px;
-  }
-}
 
 ion-content {
-  --background: var(--background-dark);
-  --color: var(--text-primary);
   scroll-snap-type: y mandatory;
   overflow-y: scroll;
+}
+
+#estado-pedido {
+  background-color: rgba($color: #000000, $alpha: 0.15);
+  padding: 2px;
+  border-radius: 4px;
+  font-weight: 800;
+  color: #FFBA08;
+}
+
+.image-container {
+  max-height: 30vh;
+  overflow: hidden;
+  position: relative;
+}
+
+.imagen{
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  object-position: center;
+  transition: transform 0.3s ease;
+}
+
+.detalles-pedido {
+  padding: 0;
+  margin: 10px 0;
+ 
+  .detalles-subtitle {
+    color: #E85D04;
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 5px 10px;
+  }
+  
+  .nombre_prod {
+    font-size: 16px;
+    font-weight: 500;
+    color: #FFBA08;
+  }
+  
+  .sub-total {
+    font-size: 14px;
+  }
+
+  .lista-prod {
+    max-height: 155px;
+    overflow-y: auto;
+
+  }
+
+}
+
+.precio-total {
+  margin: 10px 0;
+  h3 {
+    color: #FFBA08;
+    font-weight: 800;
+    font-size: 1.5rem;
+    padding: 5px 10px;
+  }
 }
 
 .loading-container {
@@ -193,344 +114,45 @@ ion-content {
   }
 }
 
+.carrusel {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.slide {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  max-width: 100%;
+  width: 100%;
+
+  button {
+    background: none;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    color: #E85D04;
+    padding: 10px 5px;
+    transition: color 0.3s ease;
+    flex-shrink: 0;
+
+    &:hover {
+      color: #FFBA08;
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+
+  .image-container {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
 .pedidos-container {
   padding: 10px;
   background: var(--background-dark);
-}
-
-.pedido-card {
-  margin-bottom: 15px;
-  border-radius: 12px;
-  box-shadow: var(--shadow-dark);
-  background: var(--surface-dark) !important;
-  border: 1px solid var(--border-color);
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
-  min-height: 300px;
-  max-height: 550px;
-  display: flex;
-  flex-direction: column;
-  
-  ion-card-header,
-  ion-card-content {
-    background: transparent !important;
-  }
-  
-  .header-pedido {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 15px;
-    
-    .info-pedido {
-      flex: 1;
-      
-      ion-card-title {
-        font-size: 18px;
-        font-weight: 600;
-        margin-bottom: 5px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        color: var(--text-primary) !important;
-        
-        ion-icon {
-          font-size: 20px;
-          color: var(--primary-color);
-        }
-      }
-      
-      ion-card-subtitle {
-        color: var(--text-secondary) !important;
-        font-size: 14px;
-        margin: 0;
-      }
-    }
-    
-    .estado-badge {
-      font-size: 12px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      background: var(--surface-variant);
-      color: var(--text-primary);
-      padding: 4px 8px;
-      border-radius: 6px;
-      
-      &.entregado {
-        background: var(--success-color);
-        color: white;
-      }
-      
-      &.pendiente {
-        background: var(--warning-color);
-        color: white;
-      }
-      
-      &.cancelado {
-        background: var(--error-color);
-        color: white;
-      }
-    }
-  }
-  
-  .resumen-pedido {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-    padding: 12px;
-    background: var(--surface-variant);
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-    
-    .items-info,
-    .total-info {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      
-      ion-icon {
-        font-size: 16px;
-        color: var(--text-secondary);
-      }
-      
-      span {
-        font-size: 14px;
-        color: var(--text-primary);
-      }
-    }
-    
-    .total-info span {
-      color: var(--secondary-color);
-      font-weight: 600;
-    }
-  }
-  
-  .productos-lista {
-    margin-bottom: 15px;
-    
-    h4 {
-      font-size: 16px;
-      font-weight: 600;
-      margin: 0 0 10px 0;
-      color: var(--text-primary);
-    }
-    
-    .producto-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 0;
-      border-bottom: 1px solid var(--border-color);
-      
-      &:last-child {
-        border-bottom: none;
-      }
-      
-      .cantidad {
-        background: var(--primary-color);
-        color: var(--background-dark);
-        border-radius: 12px;
-        padding: 4px 8px;
-        font-size: 12px;
-        font-weight: 600;
-        min-width: 30px;
-        text-align: center;
-      }
-      
-      .nombre {
-        flex: 1;
-        font-size: 14px;
-        color: var(--text-primary);
-      }
-      
-      .precio {
-        font-size: 14px;
-        font-weight: 600;
-        color: var(--secondary-color);
-      }
-    }
-  }
-  
-  .detalle-button {
-    margin: 15px 0 10px 0;
-    --border-radius: 8px;
-    font-size: 14px;
-    --background: var(--primary-color);
-    --color: var(--background-dark);
-    
-    &:hover {
-      --background: color-mix(in srgb, var(--primary-color) 80%, var(--surface-dark));
-    }
-  }
-  
-  .info-adicional {
-    margin-top: 10px;
-    
-    ion-chip {
-      --background: var(--surface-variant);
-      --color: var(--text-primary);
-      border: 1px solid var(--border-color);
-      font-size: 12px;
-      
-      ion-icon {
-        font-size: 14px;
-        margin-right: 4px;
-        color: var(--text-secondary);
-      }
-    }
-  }
-}
-
-// Estilos para el header y toolbar
-ion-header {
-  ion-toolbar {
-    --background: var(--surface-dark);
-    --color: var(--text-primary);
-    border-bottom: 1px solid var(--border-color);
-    
-    ion-title {
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--text-primary);
-      
-      ion-icon {
-        font-size: 20px;
-        color: var(--primary-color);
-      }
-    }
-    
-    ion-buttons ion-button,
-    .btn-volver {
-      --color: var(--text-primary) !important;
-      color: var(--text-primary) !important;
-      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-      font-weight: 600;
-      
-      ion-icon {
-        color: var(--text-primary) !important;
-      }
-      
-      &:hover {
-        --background: var(--surface-variant);
-      }
-    }
-  }
-  
-  // Toolbar de filtros
-  ion-toolbar:last-child {
-    --background: var(--surface-variant);
-    border-bottom: 1px solid var(--border-color);
-    
-    ion-segment {
-      --background: transparent;
-      
-      ion-segment-button {
-        --color: var(--text-secondary);
-        --color-checked: var(--primary-color);
-        --background-checked: var(--surface-dark);
-        --border-radius: 6px;
-        font-size: 12px;
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        border: 1px solid var(--border-color);
-        
-        &.segment-button-checked {
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-        }
-      }
-    }
-  }
-}
-
-// Sobrescribir estilos de Ionic para el tema oscuro
-ion-item {
-  --background: var(--surface-dark);
-  --color: var(--text-primary);
-  --border-color: var(--border-color);
-}
-
-ion-list {
-  background: var(--background-dark);
-}
-
-ion-refresher-content {
-  --color: var(--text-secondary);
-}
-
-// Responsividad
-@media (max-width: 768px) {
-  .pedido-card {
-    .header-pedido {
-      .info-pedido {
-        ion-card-title {
-          font-size: 16px;
-        }
-        
-        ion-card-subtitle {
-          font-size: 13px;
-        }
-      }
-      
-      .estado-badge {
-        font-size: 11px;
-      }
-    }
-    
-    .resumen-pedido {
-      flex-direction: column;
-      gap: 10px;
-      align-items: flex-start;
-      
-      .items-info,
-      .total-info {
-        font-size: 13px;
-      }
-    }
-  }
-}
-
-// Animaciones mejoradas para tema oscuro
-ion-card.pedido-card {
-  animation: slideInUp 0.3s ease-out;
-  transition: all 0.3s ease;
-  
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
-    border-color: var(--primary-color);
-  }
-}
-
-@keyframes slideInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-// Scrollbar personalizada para tema oscuro
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--surface-dark);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--surface-variant);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--primary-color);
 }

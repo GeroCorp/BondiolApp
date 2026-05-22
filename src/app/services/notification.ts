@@ -3,9 +3,7 @@ import { Capacitor, CapacitorHttp, HttpResponse } from '@capacitor/core';
 import { PushNotifications } from '@capacitor/push-notifications';
 import OneSignal from 'onesignal-cordova-plugin';
 import { environment } from 'src/environments/environment';
-import { INotification } from '../models/notification.model';
 import { ClienteService } from './cliente.service';
-import * as moment from 'moment-timezone';
 
 @Injectable({
   providedIn: 'root'
@@ -20,15 +18,11 @@ export class Notification {
     if(isPushNotificationAvailable) {
       PushNotifications.requestPermissions().then((result) => {
         if(result.receive) {
-          OneSignal.initialize(environment.oneSignalID);
+          OneSignal.logout(); // Asegura que no haya sesión previa
 
-          // Listener para clicks en notificaciones (opcional)
-          // OneSignal.Notifications.addEventListener('click', (e) => {
-          //   const notification: any = e.notification;
-          //   if(notification.additionalData['url']){
-          //     // Navegar a la URL
-          //   }
-          // })
+          setTimeout(() => {
+          OneSignal.initialize(environment.oneSignalID);
+          }, 500); // Pequeño delay para evitar conflictos con el logout
         }
       })
     }
@@ -88,7 +82,7 @@ export class Notification {
   /**
    * Remueve los tags cuando el usuario cierra sesión
    */
-  clearUserTags() {
+  async clearUserTags() {
     if (!this.isOneSignalAvailable()) {
       console.log('[Web Mode] Tags removidos (simulado)');
       return;
@@ -96,7 +90,7 @@ export class Notification {
 
     try {
       OneSignal.User.removeTags(['perfil']);
-      OneSignal.logout();
+      await OneSignal.logout();
       console.log('✅ Tags removidos');
     } catch (error) {
       console.error('❌ Error al remover tags:', error);

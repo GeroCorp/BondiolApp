@@ -4,11 +4,28 @@ import { ClienteService } from 'src/app/services/cliente.service';
 import { DetallePedidoModalComponent } from './detalle-pedido-modal/detalle-pedido-modal.component';
 import { Router } from '@angular/router';
 
+import { CustomLoaderService } from 'src/app/services/custom-loader.service';
+import { Notification } from 'src/app/services/notification';
 import { HapticService } from 'src/app/services/haptic.service';
 import { TipoClienteService } from 'src/app/services/tipo-cliente.service';
-import { AuthService } from 'src/app/services/supabase';
 import { Delivery } from 'src/app/services/delivery';
 
+interface Pedido {
+  mesa: number | null;
+  estado: string;
+  fecha: string;
+  total: number;
+  detalles_pedido: detallePedido[];
+  tiempo_estimado: number;
+}
+
+interface detallePedido {
+  nombre_prod: string;
+  cantidad: number;
+  precio_unitario: number;
+  tipo: 'plato' | 'bebida';
+  imagen?: string;
+}
 @Component({
   selector: 'app-tab4-historial',
   templateUrl: './tab4-historial.page.html',
@@ -23,28 +40,13 @@ export class Tab4HistorialPage implements OnInit, OnDestroy, AfterViewInit {
 
   // Signals para el manejo reactivo del estado
   isLoading = signal<boolean>(false);
-  filtroEstado = signal<string>('todos');
-  pedidosSignal = signal<any[]>([]);
+  pedido = signal<Pedido | null>(null);
+  canConfirm = signal<boolean>(false);
+  canPay = signal<boolean>(false);
   isDelivery: boolean = false;
-  
-  // Computed signal para filtrar pedidos
-  pedidosFiltrados = computed(() => {
-    const pedidos = this.pedidosSignal();
-    const filtro = this.filtroEstado();
-    
-    if (filtro === 'todos') {
-      return pedidos;
-    }
-    
-    if (filtro === 'pagos') {
-      return pedidos.filter(pedido => {
-        const estadoNormalizado = this.clienteService.normalizeEstado(pedido.estado);
-        return ['pago_pendiente', 'pagado', 'cuenta_solicitada'].includes(estadoNormalizado);
-      });
-    }
+  carouselImgs: string[] = [];
+  carouselIndex = signal<number>(0);
 
-    return pedidos.filter(pedido => this.clienteService.normalizeEstado(pedido.estado) === filtro);
-  });
 
   private subscription: any;
   private mesaActual: number | null = null;
@@ -56,19 +58,22 @@ export class Tab4HistorialPage implements OnInit, OnDestroy, AfterViewInit {
     private modalController: ModalController,
     private hapticService: HapticService,
     private tipoClienteService: TipoClienteService,
-    private authService: AuthService,
-    private deliveryService: Delivery
+    private deliveryService: Delivery,
+    private customLoader: CustomLoaderService,
+    private notificationService: Notification
   ){}
 
   async ngOnInit() {
     this.isDelivery = this.clienteService.esDelivery();
-    await this.cargarHistorial();
+    await this.cargarPedido();
+    await this.handleImagenesPedido();
     await this.iniciarSuscripcion();
   }
 
   async ngOnDestroy() {
     if (this.subscription) {
       await this.subscription.unsubscribe();
+      console.log('🛑 Suscripción a historial de pedidos cancelada');
     }
   }
 
@@ -78,11 +83,11 @@ export class Tab4HistorialPage implements OnInit, OnDestroy, AfterViewInit {
   }
 
   /**
-   * ✅ Cargar historial de pedidos
+   * ✅ Cargar el ultimo pedido activo del cliente
    * FUNCIONA para clientes registrados y anónimos
    */
-  async cargarHistorial() {
-  this.isLoading.set(true);
+  async cargarPedido() {
+  this.customLoader.show('Cargando historial...');
   try {
     const isAnonimo = this.tipoClienteService.isAnonimo();
     const clienteData = this.tipoClienteService.getClienteData();
@@ -106,90 +111,88 @@ export class Tab4HistorialPage implements OnInit, OnDestroy, AfterViewInit {
 
     if (!this.mesaActual && this.isDelivery) {
 
-      const pedidos = await this.deliveryService.getClientePedidos(clienteId!)
-      this.pedidosSignal.set(pedidos || []);
+      const pedidoActivo = await this.clienteService.getPedidoActivo();
+      this.pedido.set(pedidoActivo);
 
     } else {
   
-      const pedidos = await this.clienteService.getHistorialPedidos();
+      const pedidoActivo = await this.clienteService.getPedidoActivo();
+
   
-      console.log('✅ Pedidos obtenidos:', pedidos?.length || 0);
-      console.log('📦 Pedidos completos:', pedidos);
+      console.log('✅ Pedidos obtenidos:', pedidoActivo?.length || 0);
+      console.log('📦 Pedidos completos:', pedidoActivo);
       
-      this.pedidosSignal.set(pedidos || []);
+      this.pedido.set(pedidoActivo || null);
+      this.canConfirm.set(pedidoActivo?.estado == 'entregado');
+      this.canPay.set(pedidoActivo?.estado == 'entrega_confirmada');
+      this.handleImagenesPedido();
+      console.log("Pedido completo: ", this.pedido());
     }
 
     
   } catch (error) {
     console.error('❌ Error cargando historial:', error);
+    this.customLoader.hide();
     await this.hapticService.vibrateError();
     await this.showToast('Error al cargar el historial de pedidos', 'danger');
   } finally {
-    this.isLoading.set(false);
+    this.customLoader.hide();
   }
 }
+
+  handleImagenesPedido(){
+    // Dejar solo la primer imagen (url) de cada producto
+    const pedido = this.pedido();
+    console.log("Pedido con imagenes: ", pedido);
+    if (pedido?.detalles_pedido) {
+      pedido.detalles_pedido.forEach((detalle) => {
+        this.carouselImgs.push(detalle.imagen!);
+      })
+    }
+  }
+
+  confirmarPedido() {
+    // El boton confirmara la entrega del pedido, y "habilitara" el pago
+    this.canPay.set(true);
+    this.canConfirm.set(false);
+
+    this.clienteService.confirmarPedido();
+
+    this.notificationService.sendNotificationToPerfil(
+      'mozo',
+      'Cliente ha confirmado la entrega del pedido',
+      `La mesa ${this.mesaActual} ha confirmado la correcta entrega de su pedido.`)
+  }
+
+  iraCuenta() {
+  this.router.navigate(['/tabs-cliente-registrado/tab8-cuenta']);
+  }
+
+  cambiarImagen(direccion: number) {
+    const totalImgs = this.carouselImgs.length;
+    if (totalImgs > 0) {
+      const nuevaIndex = (this.carouselIndex() + direccion + totalImgs) % totalImgs;
+      this.carouselIndex.set(nuevaIndex);
+    }
+
+  }
 
   /**
    * ✅ Iniciar suscripción en tiempo real a cambios de pedidos
    */
   async iniciarSuscripcion() {
-  try {
-    const isAnonimo = this.tipoClienteService.isAnonimo();
-    const clienteData = this.tipoClienteService.getClienteData();
-    
-    let filtro: string;
-    let mesaId: number | null = null;
-
-    if (isAnonimo) {
-      // ✅ ANÓNIMO: Suscribirse por MESA
-      mesaId = clienteData?.mesa_asignada;
-      
-      if (!mesaId) {
-        console.warn('⚠️ Cliente anónimo sin mesa');
-        return;
-      }
-
-      filtro = `mesa=eq.${mesaId}`;
-      console.log('🎭 Suscripción anónimo por mesa:', mesaId);
-
-    } else {
-      // ✅ REGISTRADO: Suscribirse por ID_CLIENTE
-      const clienteId = await this.clienteService.getClientId();
-      
-      filtro = `id_cliente=eq.${clienteId}`;
-      console.log('👤 Suscripción registrado por cliente:', clienteId);
+    try {
+      this.subscription = await this.clienteService.subscribeToHistorialPedidos(() => this.cargarPedido());
+    } catch (error) {
+      console.error('❌ Error iniciando suscripción:', error);
     }
-
-    this.subscription = this.authService.client
-      .channel(`historial-pedidos-${isAnonimo ? 'anonimo-' + mesaId : 'cliente'}`)
-      .on(
-        'postgres_changes',
-        { 
-          event: '*',  // ✅ CAMBIO: Escuchar TODOS los eventos (INSERT, UPDATE, DELETE)
-          schema: 'public', 
-          table: 'pedidos',
-          filter: filtro
-        },
-        async (payload) => {
-          console.log('🔄 Cambio en pedidos:', payload);
-          
-          // ✅ Recargar historial en cualquier cambio
-          await this.cargarHistorial();
-        }
-      )
-      .subscribe();
-
-    console.log('✅ Suscripción iniciada correctamente');
-  } catch (error) {
-    console.error('❌ Error iniciando suscripción:', error);
   }
-}
 
   /**
    * Recargar historial manualmente
    */
   async recargar() {
-    await this.cargarHistorial();
+    await this.cargarPedido();
     await this.showToast('Historial actualizado', 'medium');
   }
 
@@ -197,7 +200,7 @@ export class Tab4HistorialPage implements OnInit, OnDestroy, AfterViewInit {
    * Manejar pull-to-refresh
    */
   async handleRefresh(event: any) {
-    await this.cargarHistorial();
+    await this.cargarPedido();
     event.target.complete();
   }
 
@@ -206,7 +209,6 @@ export class Tab4HistorialPage implements OnInit, OnDestroy, AfterViewInit {
    */
   cambiarFiltro(event: any) {
     const estado = String(event || 'todos');
-    this.filtroEstado.set(estado);
     console.log('🔍 Filtro cambiado a:', estado);
   }
 
