@@ -23,7 +23,14 @@
         <form [formGroup]="registerForm" (ngSubmit)="onRegister()">
           <ion-input type="text" formControlName="name" label="Nombre" fill="outline" labelPlacement="floating" class="ion-margin-top"/>
           <ion-input type="text" formControlName="surname" label="Apellido" fill="outline" labelPlacement="floating" class="ion-margin-top"/>
-          <ion-input type="text" formControlName="dni" label="DNI" fill="outline" labelPlacement="floating" class="ion-margin-top"/>
+          <div class="producto-row ion-margin-top">
+            <ion-input type="text" formControlName="dni" label="DNI" fill="outline" labelPlacement="floating" class="tres-cuartos"/>
+            <app-secondary-button
+            class="un-cuarto"
+            (click)="leerQR()">
+              <ion-icon name="barcode-outline" style="font-size: 24px; vertical-align: middle;"></ion-icon>
+            </app-secondary-button>
+          </div>
           <ion-input type="email" formControlName="email" label="Correo Electrónico" fill="outline" labelPlacement="floating" class="ion-margin-top"/>
 
           <div class="password-container">
@@ -47,17 +54,7 @@
                 <span>Foto</span>
               </div>
             </div>
-
-            <app-secondary-button
-            [clase]="'photo-upload-button'"
-            (click)="leerQR()">
-              Escanear DNI
-            </app-secondary-button>
           </div>
-
-          <!-- <ion-button expand="block" type="submit" class="btn-primary ion-margin-top">
-            Crear Cuenta <ion-icon name="person-add-outline" slot="end"></ion-icon>
-          </ion-button> -->
           <app-main-button
             type="submit">
               Crear Cuenta
