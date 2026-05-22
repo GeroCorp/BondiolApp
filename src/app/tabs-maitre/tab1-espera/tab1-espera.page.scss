@@ -43,8 +43,7 @@ ion-header ion-toolbar {
   scroll-snap-align: start;
   scroll-snap-stop: always;
 
-  // Cada página ocupa exactamente el espacio visible bajo el header
-  height: calc(100dvh - var(--offset-top, 60px));
+  height: calc(100vh - var(--offset-top, 60px) - 56px);
 
   display: flex;
   flex-direction: column;
@@ -58,25 +57,32 @@ ion-header ion-toolbar {
 .cliente-card {
   flex: 1;
   min-height: 0;
-  max-width: 90%;
-  width: 90%;
-  max-height: 75vh;
+  max-width: 92%;
+  width: 92%;
   margin: 0 auto;
 
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 16px;
+  gap: 10px;
 
   background: rgba(120, 0, 0, 0.55);
   border: 1px solid rgba(255, 107, 71, 0.25);
   border-radius: 24px;
-  padding: 0 10px 0;
+  padding: 8px 10px;
   backdrop-filter: blur(14px);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
   box-sizing: border-box;
   overflow: hidden;
+
+  &:only-child {
+    flex: 1;
+    min-height: 0;
+    max-height: calc((100% - 40px) / 2);
+    max-width: 80%;
+    width: 80%;
+  }
 }
 
 // ─── Avatar ───────────────────────────────────────────────────────────────────
@@ -160,13 +166,13 @@ ion-header ion-toolbar {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
 
   ion-button {
     margin: 0;
-    height: 42px;
+    height: 38px;
     font-weight: 700;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     letter-spacing: 0.5px;
     --border-radius: 12px;
     text-transform: uppercase;
@@ -203,7 +209,7 @@ ion-header ion-toolbar {
 
 // ─── Loading ──────────────────────────────────────────────────────────────────
 .loading-container {
-  height: calc(100vh - 60px);
+  height: calc(100vh - 60px - 56px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -219,7 +225,7 @@ ion-header ion-toolbar {
 
 // ─── Empty state ──────────────────────────────────────────────────────────────
 .empty-state {
-  height: calc(100vh - 60px - 32px);
+  height: calc(100vh - 60px - 56px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -246,5 +252,60 @@ ion-header ion-toolbar {
     margin: 0;
     max-width: 300px;
     line-height: 1.5;
+  }
+}
+
+@media screen and (max-height: 800px) {
+  .snap-page {
+    gap: 8px;
+    padding: 8px;
+  }
+
+  .cliente-card {
+    padding: 6px 8px;
+    gap: 6px;
+  }
+
+  .card-avatar {
+    width: 56px;
+    height: 56px;
+    border-width: 2px;
+  }
+
+  .card-info {
+    h2 {
+      font-size: 1rem;
+    }
+
+    .personas {
+      font-size: 0.8rem;
+    }
+
+    .estado-row {
+      ion-badge {
+        font-size: 0.7rem;
+        padding: 2px 6px;
+      }
+
+      .tiempo {
+        font-size: 0.7rem;
+      }
+    }
+  }
+
+  .card-actions {
+    gap: 6px;
+
+    ion-button {
+      height: 32px;
+      font-size: 0.75rem;
+    }
+  }
+
+  .snap-page .cliente-card:only-child {
+    flex: 1;
+    max-height: calc((100% - 24px) / 2);
+    max-width: 80%;
+    width: 80%;
   }
 }
