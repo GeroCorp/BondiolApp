@@ -3,9 +3,7 @@ import { Capacitor, CapacitorHttp, HttpResponse } from '@capacitor/core';
 import { PushNotifications } from '@capacitor/push-notifications';
 import OneSignal from 'onesignal-cordova-plugin';
 import { environment } from 'src/environments/environment';
-import { INotification } from '../models/notification.model';
 import { ClienteService } from './cliente.service';
-import * as moment from 'moment-timezone';
 
 @Injectable({
   providedIn: 'root'

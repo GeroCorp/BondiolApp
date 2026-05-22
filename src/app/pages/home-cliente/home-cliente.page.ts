@@ -9,9 +9,10 @@ import { Notification } from 'src/app/services/notification';
 import { ListaEsperaService } from 'src/app/services/lista-espera.service';
 import { HapticService } from 'src/app/services/haptic.service';
 import { TipoClienteService } from 'src/app/services/tipo-cliente.service';
-import { supabase } from '../../services/supabase';
 import { ReservasService } from 'src/app/services/reservas.service';
 import { environment } from 'src/environments/environment.prod';
+import { CustomLoaderService } from 'src/app/services/custom-loader.service';
+
 
 @Component({
   selector: 'app-home-cliente',
@@ -55,7 +56,8 @@ export class HomeClientePage implements OnInit {
     private listaEsperaService: ListaEsperaService,
     private hapticService: HapticService,
     private tipoClienteService: TipoClienteService,
-    private reservasService: ReservasService
+    private reservasService: ReservasService,
+    private customLoader: CustomLoaderService
   ) {
 
 
@@ -103,6 +105,7 @@ export class HomeClientePage implements OnInit {
   }
   
   async ngOnInit() {
+    this.customLoader.show('Cargando datos...');
     console.log('🏠 [HOME-CLIENTE] ngOnInit iniciado');
     const ahora = new Date();
     const year = ahora.getFullYear();
@@ -176,8 +179,10 @@ export class HomeClientePage implements OnInit {
     } catch (error) {
       console.error('❌ Error en ngOnInit:', error);
       this.showToast('Error al cargar la página', 'danger');
+      this.customLoader.hide();
+      this.router.navigate(['/login'], { replaceUrl: true });
     }
-    
+    this.customLoader.hide();
   }
 
 
@@ -249,12 +254,15 @@ export class HomeClientePage implements OnInit {
   async puedeAccederAmenu(): Promise<boolean> {
     // Si tiene un pedido activo no podrá visualizar el menú para agregar un pedido nuevo
     let estado = await this.clienteService.estadoUltimoPedido();
-    return estado !== 'pagado' || estado == null;
+    console.log("Estado del ultimo pedido: ", estado);
+    console.log("ACCESO A MENÚ: ", estado == 'pagado' || estado == null);
+    return estado == 'pagado' || estado == null;
   }
 
   async puedeAccederEncuestas(): Promise<boolean> {
     // Verificar que el cliente tenga un pedido entregado 
-    return await this.clienteService.estadoUltimoPedido() == 'entregado';
+    const estado = await this.clienteService.estadoUltimoPedido();
+    return estado == 'entregado' || estado == 'entrega_confirmada';
   }
 
   async accesoAOpiniones(): Promise<boolean> {
@@ -270,7 +278,8 @@ export class HomeClientePage implements OnInit {
   async puedePedirCuenta() {
     // Solo si tiene un pedido activo entregado (no pagado)
     let estado = await this.clienteService.estadoUltimoPedido();
-    return estado === 'entregado';
+    console.log("ACCESO A PEDIR CUENTA: ", estado === 'entregado' || estado === 'entrega_confirmada');
+    return estado === 'entrega_confirmada';
   }
 
   /**
@@ -281,23 +290,26 @@ export class HomeClientePage implements OnInit {
     try {
       console.log('🔄 Recalculando accesos según cambios en pedidos...');
       
-      const [puedoEncuestas, puedoJuegos, puedoOpiniones, puedoMenu] = await Promise.all([
+      const [puedoEncuestas, puedoJuegos, puedoOpiniones, puedoMenu, puedoCuenta] = await Promise.all([
         this.puedeAccederEncuestas(),
         this.puedeAccederJuegos(),
         this.accesoAOpiniones(),
-        this.puedeAccederAmenu()
+        this.puedeAccederAmenu(),
+        this.puedePedirCuenta()
       ]);
 
       this.opinionesAccess.set(puedoOpiniones);
       this.juegosAccess.set(puedoJuegos);
       this.menuAccess.set(puedoMenu);
+      this.canPay.set(puedoCuenta);
       // Nota: opinionesAccess se usa para ambos, puedes ajustar si necesitas otro signal
 
       console.log('✅ Accesos actualizados:', {
         encuestas: puedoEncuestas,
         juegos: puedoJuegos,
         opiniones: puedoOpiniones,
-        menu: puedoMenu
+        menu: puedoMenu,
+        pedirCuenta: puedoCuenta
       });
     } catch (error) {
       console.error('❌ Error actualizando accesos:', error);

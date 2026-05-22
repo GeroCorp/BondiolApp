@@ -9,12 +9,16 @@ import { Tab4HistorialPageRoutingModule } from './tab4-historial-routing.module'
 import { Tab4HistorialPage } from './tab4-historial.page';
 import { DetallePedidoModalComponent } from './detalle-pedido-modal/detalle-pedido-modal.component';
 
+import { MainButtonComponent } from 'src/app/components/main-button/main-button.component';
+import { SecondaryButtonComponent } from 'src/app/components/secondary-button/secondary-button.component';
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    Tab4HistorialPageRoutingModule
+    Tab4HistorialPageRoutingModule,
+    MainButtonComponent,
+    SecondaryButtonComponent,
   ],
   declarations: [
     Tab4HistorialPage,

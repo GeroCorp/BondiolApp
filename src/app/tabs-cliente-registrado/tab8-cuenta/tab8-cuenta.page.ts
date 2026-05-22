@@ -91,7 +91,7 @@ export class Tab8CuentaPage implements OnInit {
           .select('*')
           .eq('mesa', mesaId)
           .is('id_cliente', null)
-          .eq('estado', 'entregado')
+          .eq('estado', 'entrega_confirmada')
           .order('fecha', { ascending: false })
           .limit(1);
 
@@ -120,9 +120,9 @@ export class Tab8CuentaPage implements OnInit {
 
         console.log('🪑 Mesa ID del cliente:', mesaId);
 
-        this.pedidoActual = await this.clienteService.getLastPedidoConDetalles(clienteId);
+        this.pedidoActual = await this.clienteService.getPedidoActivo();
 
-        if (!this.pedidoActual || this.pedidoActual.estado !== 'entregado') {
+        if (!this.pedidoActual || this.pedidoActual.estado !== 'entrega_confirmada') {
           console.log('⚠️ No hay pedidos entregados para este cliente');
           this.pedidoActual = null;
           this.customLoader.hide();
@@ -146,7 +146,7 @@ export class Tab8CuentaPage implements OnInit {
 
       // Obtener descuento (solo para registrados)
       if (!isAnonimo && clienteId) {
-        this.descuentoPorcentaje = await this.clienteService.getPorcentajeDescuento();
+        this.descuentoPorcentaje = await this.clienteService.getDescuentoCliente(this.pedidoActual.id);
         this.descuento = this.descuentoPorcentaje;
         this.montoDescuento = Math.round(this.subtotal * (this.descuento / 100));
         console.log('🎁 Descuento:', this.descuentoPorcentaje + '%', '→ $' + this.montoDescuento);

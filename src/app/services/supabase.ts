@@ -560,7 +560,7 @@ export class AuthService {
   
   // 🔑 Insertar nuevo plato
   async insertarPlato(producto: any) {
-    const {data , error} = await this.supabase.from('platos').insert([producto]);
+    const {data , error} = await this.supabase.from('platos').insert([producto]).select();
     if (error) throw new Error('Error al insertar plato: ' + error.message);
     return {data, error};
   }
@@ -766,7 +766,7 @@ async eliminarBebida(id: number) {
   }
   async subirImagenPlatos(imageBlob: Blob, fileName:string, bucket: string) {
     console.log('📤 Subiendo imagen a bucket:', bucket, 'archivo:', fileName);
-    const { data, error } = await this.supabase.storage
+    const { error } = await this.supabase.storage
       .from(bucket)
       .upload(fileName, imageBlob, {
         cacheControl: '3600',
