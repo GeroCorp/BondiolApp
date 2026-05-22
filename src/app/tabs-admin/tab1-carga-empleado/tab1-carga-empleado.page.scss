@@ -95,13 +95,14 @@ ion-header {
   ion-label {
     color: #F48C06;
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 1.2rem;
+    margin-top: -4px;
   }
 
   ion-input, ion-select {
     color: #fff;
     --placeholder-color: #a0a0a0;
-    font-size: 0.9rem;
+    font-size: 1.2rem;
     outline: none;
     --border-width: 0;
   }
@@ -113,7 +114,7 @@ ion-header {
   margin: 10px 0;
   transition: all 0.3s ease;
   height: 46px;
-  font-size: 0.9rem;
+  font-size: 1.2rem;
   
   &[expand="block"]:not([type="submit"]):not([color="danger"]) {
     --background: linear-gradient(135deg, #F48C06);
@@ -221,4 +222,23 @@ app-secondary-button {
   font-weight: 600;
   backdrop-filter: blur(4px);
   ion-icon { font-size: 14px; }
+}
+@media (max-height: 800px) {
+  .empleado-card-content {
+    flex: 1;
+  }
+  .empleado-item {
+    --min-height: 40px;
+    min-height: 40px;
+    height: 40px;
+  }
+
+  .empleado-item::part(native) {
+    min-height: 40px;
+    height: 40px;
+  }
+  .empleado-item ion-label {
+    font-size: 1.1rem;
+    transform: translateY(-2px);
+  }
 }
