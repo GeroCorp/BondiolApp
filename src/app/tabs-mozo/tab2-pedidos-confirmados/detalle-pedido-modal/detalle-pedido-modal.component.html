@@ -1,5 +1,5 @@
-<ion-header>
-  <ion-toolbar>
+<ion-header class="ion-no-border">
+  <ion-toolbar style="--min-height: 44px;">
     <ion-title>Detalle del Pedido - Mesa {{ pedido?.mesa?.numero }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="cerrarModal()">
@@ -9,7 +9,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [scrollY]="false" [scrollX]="false">
+<div class="detalle-scroll">
   <div class="pedido-info">
     <!-- Items del pedido -->
     <ion-card class="card-items">
@@ -56,14 +56,5 @@
       </ion-card-content>
     </ion-card>
   </div>
-</ion-content>
+</div>
 
-<ion-footer>
-  <ion-toolbar>
-    <ion-buttons slot="end">
-      <ion-button expand="block" fill="clear" (click)="cerrarModal()">
-        Cerrar
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-footer>

@@ -6,6 +6,12 @@
   --padding-bottom: 0;
   --padding-start: 0;
   --padding-end: 0;
+
+  &::part(scroll) {
+    scroll-snap-type: y mandatory;
+    scroll-padding-top: var(--offset-top, 60px);
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 ion-header {
@@ -39,25 +45,19 @@ ion-header {
   }
 }
 
-// Snap feed
 .snap-feed {
-  display: flex;
-  flex-direction: column;
-  scroll-snap-type: y mandatory;
   height: 100%;
-  overflow-y: auto;
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
 }
 
 .snap-page {
   scroll-snap-align: start;
-  flex-shrink: 0;
+  scroll-snap-stop: always;
+  height: calc(100vh - var(--offset-top, 60px) - 56px);
   display: flex;
+  flex-direction: column;
   justify-content: center;
-  align-items: flex-start;
-  min-height: 100%;
-  padding: 16px 16px 40px;
+  align-items: center;
+  padding: 12px;
   box-sizing: border-box;
 }
 
@@ -70,13 +70,13 @@ ion-header {
   width: 100%;
   max-width: 420px;
   margin: 0;
-  align-self: center;
   display: flex;
   flex-direction: column;
+  overflow: visible;
   min-height: 55dvh;
 
   ion-card-header {
-    padding: 18px 16px 14px;
+    padding: 14px 14px 12px;
     background: rgba(244, 140, 6, 0.08);
     border-bottom: 1px solid rgba(244, 140, 6, 0.15);
     flex-shrink: 0;
@@ -87,7 +87,7 @@ ion-header {
       align-items: flex-start;
 
       ion-card-title {
-        font-size: 1.5rem;
+        font-size: 1.3rem;
         font-weight: 800;
         display: flex;
         align-items: center;
@@ -102,8 +102,8 @@ ion-header {
       }
 
       ion-card-subtitle {
-        font-size: 0.9rem;
-        margin-top: 8px;
+        font-size: 0.8rem;
+        margin-top: 4px;
         display: flex;
         align-items: center;
         gap: 4px;
@@ -121,8 +121,9 @@ ion-header {
     }
   }
 
-  ion-card-content {
-    padding: 14px 16px 20px;
+  ion-card-content { 
+    --padding-bottom: 20px;
+    padding: 10px 14px 14px;
     flex: 1;
     overflow: visible;
 
@@ -130,8 +131,8 @@ ion-header {
       display: flex;
       align-items: center;
       gap: 10px;
-      margin-bottom: 14px;
-      padding: 12px 14px;
+      margin-bottom: 10px;
+      padding: 10px 12px;
       background: rgba(139, 0, 0, 0.25);
       border-radius: 12px;
       border: 1px solid rgba(255, 255, 255, 0.1);
@@ -151,22 +152,22 @@ ion-header {
     .total-container {
       background: linear-gradient(135deg, #6a040F, #9D0208, #D00000);
       color: white;
-      padding: 16px;
+      padding: 12px;
       border-radius: 14px;
-      margin: 14px 0;
+      margin: 10px 0;
       text-align: center;
       box-shadow: 0 4px 16px rgba(139,0,0,0.4);
 
       h3 {
-        font-size: 1.1rem;
-        margin-bottom: 6px;
+        font-size: 1rem;
+        margin-bottom: 4px;
         text-shadow: 0 2px 4px rgba(0,0,0,0.3);
 
         .total-monto {
-          font-size: 2rem;
+          font-size: 1.7rem;
           font-weight: 800;
           display: block;
-          margin-top: 6px;
+          margin-top: 4px;
           color: #fff;
         }
       }
@@ -175,19 +176,21 @@ ion-header {
     .botones-accion {
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      margin-top: 14px;
+      gap: 8px;
+      margin-top: 10px;
+      margin-bottom: 4px;
 
       app-secondary-button,
       app-main-button {
         --border-radius: 12px;
         font-weight: 700;
-        height: 48px;
-        font-size: 0.95rem;
+        height: 40px;
+        font-size: 0.85rem;
       }
     }
   }
 }
+
 
 .loading-container {
   @extend %tabs-loading-container;
@@ -197,66 +200,55 @@ ion-header {
   @extend %tabs-empty-state;
 }
 
-// Modal Detalle Pedido
-.modal-detalle-content {
-  --background: linear-gradient(180deg, #370617 0%, #6A040F 40%, #9D0208 100%);
+// Modal Detalle Pedido - centrado y compacto
+.detalle-scroll {
+  background: linear-gradient(180deg, #370617 0%, #6A040F 40%, #9D0208 100%);
+  overflow-y: auto;
+  max-height: 70vh;
 }
 
 .pedido-info {
-  padding: 12px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  height: 100%;
   box-sizing: border-box;
   width: 100%;
-  max-width: 500px;
 
   ion-card {
     margin: 0;
     border-radius: 14px;
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
-    flex: 1;
-    display: flex;
-    flex-direction: column;
     overflow: hidden;
 
     ion-card-header {
-      padding: 14px 16px 6px;
+      padding: 10px 14px 4px;
     }
 
     ion-card-title {
       display: flex;
       align-items: center;
       gap: 10px;
-      font-size: 18px;
+      font-size: 16px;
       font-weight: 700;
       color: #F48C06;
 
       ion-icon {
         color: #F48C06;
-        font-size: 20px;
+        font-size: 18px;
         flex-shrink: 0;
       }
     }
 
     ion-card-content {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      padding: 4px 16px 14px;
-      overflow: hidden;
-      min-height: 0;
+      padding: 2px 14px 10px;
     }
   }
 }
 
 .card-items {
   ion-list {
-    flex: 1;
+    max-height: 50vh;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    min-height: 0;
     padding: 0;
   }
 }
@@ -278,7 +270,7 @@ ion-item {
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  padding: 10px 0;
+  padding: 6px 0;
 
   .item-info {
     flex: 1;
@@ -336,44 +328,107 @@ ion-item {
 }
 
 .total-section {
-  margin-top: auto;
-  padding-top: 10px;
+  padding-top: 8px;
   border-top: 1.5px solid rgba(255, 255, 255, 0.5);
-  flex-shrink: 0;
 
   .total-item {
     background-color: #F48C06;
     border-radius: 10px;
     margin: 0;
-    --min-height: 54px;
-    --padding-start: 14px;
-    --inner-padding-end: 14px;
+    --min-height: 44px;
+    --padding-start: 12px;
+    --inner-padding-end: 12px;
 
     h2 {
       margin: 0;
       color: #370617;
-      font-size: 1.1rem;
+      font-size: 1rem;
       font-weight: 700;
     }
   }
 }
 
-ion-footer ion-toolbar {
-  --background: linear-gradient(135deg, #6a040F, #8b0000, #9D0208);
-  --padding-start: 20px;
-  --padding-end: 20px;
-  --padding-top: 8px;
-  --padding-bottom: 8px;
-
-  ion-button {
-    font-size: 1rem;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    height: 44px;
-    --color: white;
-  }
-}
-
 ion-refresher {
   z-index: 10;
+}
+
+@media screen and (max-height: 800px) {
+  .snap-page {
+    padding: 6px;
+  }
+
+  .pedido-card {
+    ion-card-header {
+      padding: 10px 12px 8px;
+    }
+
+    ion-card-content {
+      --padding-bottom: 16px;
+      padding: 6px 10px 10px;
+    }
+  }
+
+  .info-cliente {
+    padding: 6px 10px;
+    margin-bottom: 6px;
+    gap: 8px;
+
+    ion-icon {
+      font-size: 16px;
+    }
+
+    span {
+      font-size: 0.8rem;
+    }
+  }
+
+  .total-container {
+    padding: 10px;
+    margin: 6px 0;
+    border-radius: 10px;
+
+    h3 {
+      font-size: 0.85rem;
+
+      .total-monto {
+        font-size: 1.3rem;
+      }
+    }
+  }
+
+  .botones-accion {
+    gap: 5px;
+    margin-top: 6px;
+    margin-bottom: 4px;
+
+    app-secondary-button,
+    app-main-button {
+      height: 34px;
+      font-size: 0.75rem;
+    }
+  }
+
+  .header-pedido {
+    ion-card-title {
+      font-size: 1.1rem;
+
+      ion-icon {
+        font-size: 20px;
+      }
+    }
+
+    ion-card-subtitle {
+      font-size: 0.75rem;
+      margin-top: 2px;
+
+      ion-icon {
+        font-size: 14px;
+      }
+    }
+
+    ion-badge {
+      font-size: 0.7rem;
+      padding: 2px 6px;
+    }
+  }
 }
