@@ -15,122 +15,90 @@
     </ion-toolbar>
   </ion-header>
 
-  <ng-container *ngIf="nroMesa === 0; else menuContent">
-    <ion-card>
-      <ion-card-header>
-        <ion-card-subtitle>Mesa no asignada</ion-card-subtitle>
-      </ion-card-header>
-    </ion-card>
-  </ng-container>
+  <ion-card class="segment-card">
+    <ion-segment value="platos" (ionChange)="filtro.set($event.detail.value?.toString() || 'platos')">
+      <ion-segment-button value="platos" class="segment-button">
+        <ion-label>Platos</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="bebidas" class="segment-button">
+        <ion-label>Bebidas</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-card>
 
-  <ng-template #menuContent>
-    <div class="total-display-fixed">
-      <div class="total-container">
-        <div class="mesa-info">Mesa: {{ nroMesa }}</div>
-        <div class="cart">
-          <button type="button"
-            (click)="hacerPedido()"
-            [disabled]="clienteService.pedido().length < 1">
-            <ion-icon name="cart-outline"></ion-icon>
-            Hacer Pedido
-          </button>
-        </div>
-        <div class="total-amount">${{ getSubtotalPedido() }}</div>
+ 
+  <div class="total-display-fixed">
+    <div class="total-container">
+      <div class="cart">
+        <button type="button"
+          (click)="hacerPedido()"
+          [disabled]="clienteService.pedido().length < 1">
+          <ion-icon name="cart-outline"></ion-icon>
+          Hacer Pedido
+        </button>
       </div>
+      <div class="total-amount">${{ getSubtotalPedido() }}</div>
     </div>
+  </div>
 
-    <ion-card class="main-card">
-      <ion-card-header>
-        <ion-card-title>Menú de Platos y Bebidas</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <ion-card-title>Menú de Platos</ion-card-title>
-
-        <ng-container *ngIf="isLoadingPlatos || isLoadingBebidas; else platosList">
-          <div class="empty-state">
-            <ion-icon name="restaurant-outline"></ion-icon>
-            <p>Cargando menú...</p>
-          </div>
-        </ng-container>
-
-        <ng-template #platosList>
-          <ng-container *ngIf="platos.length === 0; else platosItems">
-            <div class="empty-state">
-              <ion-icon name="restaurant-outline"></ion-icon>
-              <h2>No hay platos disponibles</h2>
-              <p>Los platos aparecerán aquí cuando estén disponibles</p>
-            </div>
-          </ng-container>
-          <ng-template #platosItems>
-            <div class="menu-scroll-container">
-              <ng-container *ngFor="let chunk of getChunks(platos, 2); let i = index">
-                <div class="menu-page">
-                  <div class="menu-items-list">
-                    <div
-                      class="menu-item"
-                      *ngFor="let plato of chunk"
-                      (click)="seleccionarItem(plato, 'plato')"
-                      [ngClass]="{ disabled: isLoadingItems }"
-                    >
-                      <div class="item-image">
-                        <img [src]="getFirstImage(plato.imagenes)" [alt]="plato.nombre" />
-                      </div>
-                      <div class="item-content">
-                        <h3 class="item-name">{{ plato.nombre }}</h3>
-                        <p class="item-description">{{ plato.descripcion }}</p>
-                      </div>
-                      <div class="item-price">${{ plato.precio }}</div>
-                    </div>
+  <div class="snap-list">
+    @for (producto of getProductosFiltrados(); track $index) {
+      <div class="menu-content">
+        <ion-card class="product-card">
+          <ion-card-header class="ion-text-center">
+            <ion-card-title>{{ producto.nombre | titlecase }}</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <div class="carousel">
+              @for (img of getAllImg(producto.imagenes) ; track $index) {
+                <div class="slide">
+                  <div class="image-container">
+                    <img 
+                      [src]="img"
+                      [alt]="producto.nombre"
+                    />
                   </div>
                 </div>
-              </ng-container>
+              }
             </div>
-          </ng-template>
-        </ng-template>
+            <div class="description">
+              <ion-label>
+                <p>Descripción</p>
+                <h2>
+                {{ producto.descripcion }}
+                </h2>
+              </ion-label>
 
-        <ion-card-title>Menú de Bebidas</ion-card-title>
-        <ng-container *ngIf="bebidas.length === 0; else bebidasItems">
-          <div class="empty-state">
-            <ion-icon name="wine-outline"></ion-icon>
-            <h2>No hay bebidas disponibles</h2>
-            <p>Las bebidas aparecerán aquí cuando estén disponibles</p>
-          </div>
-        </ng-container>
-        <ng-template #bebidasItems>
-          <div class="menu-scroll-container">
-            <ng-container *ngFor="let chunk of getChunks(bebidas, 2); let i = index">
-              <div class="menu-page">
-                <div class="menu-items-list">
-                  <div
-                    class="menu-item"
-                    *ngFor="let bebida of chunk"
-                    (click)="seleccionarItem(bebida, 'bebida')"
-                    [ngClass]="{ disabled: isLoadingItems }"
-                  >
-                    <div class="item-image">
-                      <img [src]="getFirstImage(bebida.imagenes)" [alt]="bebida.nombre" />
-                    </div>
-                    <div class="item-content">
-                      <h3 class="item-name">{{ bebida.nombre }}</h3>
-                      <p class="item-description">{{ bebida.descripcion }}</p>
-                    </div>
-                    <div class="item-price">${{ bebida.precio }}</div>
-                  </div>
-                </div>
-              </div>
-            </ng-container>
-          </div>
-        </ng-template>
-      </ion-card-content>
-    </ion-card>
+            </div>
+            <p class="tiempo">
+              <ion-icon slot="end" name="time-outline"></ion-icon>
+              Tiempo estimado de: <strong>{{ producto.tiempo }}</strong> Min. 
+            </p>
+            <div class="price-add ion-text-center">
+              <div class="price">Precio: ${{ producto.precio }}</div>
+            </div>
 
-    <ng-container *ngIf="itemSelected">
-      <app-menu-item
-        [item]="itemSelected"
-        [itemsArray]="allProds()"
-        (closeItem)="itemSelected = null"
-        (addItem)="onAddItem($event)">
-      </app-menu-item>
-    </ng-container>
-  </ng-template>
+            <div class="button-container">
+
+              <ion-button
+                fill="outline"
+                class="addrm-button"
+                (click)="onRmItem(producto)"
+                >
+                <ion-icon slot="icon-only" name="remove-circle-outline"></ion-icon>
+              </ion-button>
+              
+              <ion-button 
+                (click)="onAddItem(producto)"
+                class="addrm-button add"
+                >
+                <ion-icon name="add-circle-outline" slot="icon-only"></ion-icon>
+              </ion-button>
+
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </div>
+    }
+  </div>
 </ion-content>

@@ -210,18 +210,18 @@
         fill="outline"
           color="secondary"
           (click)="verJuegos()"
-          [disabled]="!juegosAccess() && !mesaVerificada() && !isDelivery()"
+          [disabled]="!juegosAccess()"
           class="boton-grid"
         >
           <div class="boton-content">
             <ion-icon name="game-controller-outline"></ion-icon>
             <span>Juegos</span>
-            <ion-icon name="lock-closed" *ngIf="!mesaVerificada() && !isDelivery()" class="lock-icon"></ion-icon>
+            <ion-icon name="lock-closed" *ngIf="!juegosAccess() && !isDelivery()" class="lock-icon"></ion-icon>
           </div>
         </ion-button>
 
         <ion-button
-          *ngIf="isRegistrado() && (mesaVerificada() || isDelivery())"
+          *ngIf="(mesaVerificada() || isDelivery())"
           fill="outline"
           color="secondary"
           (click)="verEncuesta()"
@@ -254,7 +254,7 @@
           color="secondary"
           fill="outline"
           class="boton-grid"
-          *ngIf="!mesaAsignada()"
+          *ngIf="!mesaAsignada() && isRegistrado()"
         >
           <div class="boton-content">
             <ion-icon name="list-outline"></ion-icon>

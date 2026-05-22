@@ -268,8 +268,8 @@ export class ClienteService {
     if (existingItemIndex !== -1) {
       // Si existe, actualizar la cantidad y subtotal
       const updatedPedido = [...currentPedido];
-      const newQuantity =
-        updatedPedido[existingItemIndex].quantity + (item.quantity || 1);
+      const newQuantity = updatedPedido[existingItemIndex].quantity + (item.quantity || 1);
+
       updatedPedido[existingItemIndex] = {
         ...updatedPedido[existingItemIndex],
         quantity: newQuantity,
@@ -279,6 +279,35 @@ export class ClienteService {
     } else {
       // Si no existe, agregarlo como nuevo item
       this._pedido.set([...currentPedido, itemConSubtotal]);
+    }
+  }
+
+  exctractItem(item: any){
+    const currentPedido = this._pedido();
+    const itemIndex = currentPedido.findIndex(pedidoItem => pedidoItem.id === item.id);
+    
+    if (itemIndex !== -1) {
+      const updatedPedido = [...currentPedido];
+      const itemActual = updatedPedido[itemIndex];
+      
+      // Decrementar cantidad en 1
+      const newQuantity = (itemActual.quantity || 1) - 1;
+      
+      if (newQuantity <= 0) {
+        // Si la cantidad llega a 0, eliminar el item
+        updatedPedido.splice(itemIndex, 1);
+      } else {
+        // Si no, actualizar la cantidad y subtotal
+        updatedPedido[itemIndex] = {
+          ...itemActual,
+          quantity: newQuantity,
+          subtotal: itemActual.precio * newQuantity
+        };
+      }
+      
+      this._pedido.set(updatedPedido);
+    }else{
+      console.log("No se encontro item");
     }
   }
 
@@ -603,33 +632,62 @@ getSubtotal(): number {
   async   estadoUltimoPedido() {
     let pedido = null;
     const clienteId = await this.getClientId();
-    try {
-      const { data, error} = await this.supabase
+    if (this.tipoClienteService.isAnonimo()) {
+      // ✅ CORRECCIÓN: Obtener mesa desde los datos del cliente, no de la variable privada
+      const clienteData = this.tipoClienteService.getClienteData();
+      const mesaAsignada = clienteData?.mesa_asignada;
+      console.log("Mesa del cliente anonimo: ", mesaAsignada);
+      
+      if (!mesaAsignada) {
+        console.log('Cliente anónimo sin mesa asignada');
+        return null;
+      }
+      
+      try {
+        const { data } = await this.supabase
         .from('pedidos')
         .select('*')
-        .eq('id_cliente', clienteId)
+        .eq('mesa', mesaAsignada)
         .order('fecha', { ascending: false })
-      
+        
         if (data?.length === 0 || !data) {
-          console.log('No hay pedidos para este cliente');
+          console.log('No hay pedidos para esta mesa');
           return null;
         }
-        // Verificar que sea del mismo día
-        // const hoy = new Date();
-        // const fechaPedido = new Date(data[0].fecha);
-        // const esMismoDia = hoy.toDateString() === fechaPedido.toDateString();
-
-        // if (esMismoDia){
 
         pedido = data[0];
-        // }else{
-        //   console.log('No hay pedidos activos del día para este cliente');
-        // }
 
-      }catch ( e ){
+      } catch (e) {
         console.error('Error al verificar pedidos activos: ' + e);
       }
-      return pedido ? pedido.estado : null;
+    } else {
+      try {
+        const { data } = await this.supabase
+          .from('pedidos')
+          .select('*')
+          .eq('id_cliente', clienteId)
+          .order('fecha', { ascending: false })
+        
+          if (data?.length === 0 || !data) {
+            console.log('No hay pedidos para este cliente');
+            return null;
+          }
+          // Verificar que sea del mismo día
+          const hoy = new Date();
+          const fechaPedido = new Date(data[0].fecha);
+          const esMismoDia = hoy.toDateString() === fechaPedido.toDateString();
+          
+          if (esMismoDia){
+            pedido = data[0];
+          }else{
+            console.log('No hay pedidos activos del día para este cliente');
+          } 
+  
+        }catch ( e ){
+          console.error('Error al verificar pedidos activos: ' + e);
+        }
+    }
+    return pedido ? pedido.estado : null;
   }
 
 

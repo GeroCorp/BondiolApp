@@ -27,6 +27,7 @@ export class Tab1MenuPage implements OnInit {
   bebidas: Item[] = [];
 
   allProds = signal<Item[]>([]);
+  filtro = signal<string>('platos');
 
   itemSelected: Item | null = null;
   totalConDescuento: number = 0;
@@ -70,6 +71,20 @@ export class Tab1MenuPage implements OnInit {
     this.customLoader.hide();
   }
 
+  getAllImg (imgs: any): string[]{
+    if (!imgs) return [];
+
+    let lista: string[] = [];
+
+    if (typeof imgs === 'string') {
+      lista = imgs.split(',')
+        .map((url: string) => url.trim())
+        .filter((url: string) => url.length > 0);
+    }
+
+    return lista;
+  }
+
   async actualizarTotal() {
     this.totalConDescuento = await this.clienteService.getSubtotal();
   }
@@ -108,52 +123,27 @@ export class Tab1MenuPage implements OnInit {
     }
   }
 
-  seleccionarItem(item: Item, tipo: 'plato' | 'bebida'){
-    if (this.isLoadingItems) return;
-    
-    this.isLoadingItems = true;
-    setTimeout(() => {
-      this.itemSelected = item;
-      this.itemSelected!.tipo = tipo;
-      console.log(this.itemSelected);
-      this.isLoadingItems = false;
-    }, 300);
+
+  getProductosFiltrados(): Item[] {
+    const filtroActual = this.filtro();
+    return this.allProds().filter(producto => {
+      // Convertir 'platos' a 'plato' y 'bebidas' a 'bebida'
+      const tipoFiltro = filtroActual === 'platos' ? 'plato' : 'bebida';
+      return producto.tipo === tipoFiltro;
+    });
   }
-
-getChunks(array: any[], size: number): any[][] {
-    const chunks: any[][] = [];
-    for (let i = 0; i < array.length; i += size) {
-      chunks.push(array.slice(i, i + size));
-    }
-    return chunks;
-  }
-
-  getFirstImage(imagenes: any): string {
-  try {
-    if (!imagenes) return 'assets/images/placeholder.png';
-    let lista: string[] = [];
-
-    if (typeof imagenes === 'string') {
-      lista = imagenes
-        .split(',')
-        .map((url: string) => url.trim())
-        .filter((url: string) => url.length > 0);
-    } else if (Array.isArray(imagenes)) {
-      lista = imagenes;
-    }
-    const valida = lista.find(url => url.startsWith('http'));
-
-    return valida || 'assets/images/placeholder.png';
-
-  } catch {
-    return 'assets/images/placeholder.png';
-  }
-}
 
   async onAddItem(item: Item){
     this.clienteService.addItem(item);
     this.showToast(`${item.nombre} agregado al pedido`, 'success');
     this.itemSelected = null;
+    console.log('Pedido actual:', this.clienteService.pedido());
+    await this.actualizarTotal();
+  }
+  
+  async onRmItem(item: Item){
+    this.clienteService.exctractItem(item);
+    this.showToast(`Se quitó una unidad del pedido`, 'success');
     console.log('Pedido actual:', this.clienteService.pedido());
     await this.actualizarTotal();
   }
@@ -187,7 +177,7 @@ getChunks(array: any[], size: number): any[][] {
       message,
       duration: 2700,
       color,
-      position: 'bottom',
+      position: 'top',
     });
     await toast.present();
   }

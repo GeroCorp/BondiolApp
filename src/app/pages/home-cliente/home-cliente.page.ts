@@ -166,9 +166,11 @@ export class HomeClientePage implements OnInit {
         const clienteData = this.tipoClienteService.getClienteData();
         if (clienteData) {
           this.cliente = clienteData;
+          
           this.mesaAsignada.set(clienteData.mesa_asignada || null);
           this.enListaEspera.set(clienteData.en_espera !== false);
           this.mesaVerificada.set(false);
+          await this.actualizarAccesosSegunPedidos();
         } else {
           console.warn('⚠️ Cliente anónimo sin datos locales; redirigiendo a ingreso-anonimo');
           await this.router.navigate(['/ingreso-anonimo'], { replaceUrl: true });
@@ -259,26 +261,31 @@ export class HomeClientePage implements OnInit {
     return estado == 'pagado' || estado == null;
   }
 
-  async puedeAccederEncuestas(): Promise<boolean> {
-    // Verificar que el cliente tenga un pedido entregado 
-    const estado = await this.clienteService.estadoUltimoPedido();
-    return estado == 'entregado' || estado == 'entrega_confirmada';
-  }
-
   async accesoAOpiniones(): Promise<boolean> {
-    // AND: Mostrar botón SOLO si cumple AMBAS condiciones
+    // Condición: No estar en lista de espera
     const notEnEspera = !this.enListaEspera();
+    
+    if (!notEnEspera) {
+      return false; // Si está en lista de espera, NO puede acceder
+    }
+    
+    // Si no tiene mesa asignada, puede acceder
+    if (!this.mesaAsignada()) {
+      return true;
+    }
+    
+    // Si TIENE mesa asignada, solo puede acceder si el pedido activo está entrega_confirmada
     const estadoPedido = await this.clienteService.estadoUltimoPedido();
-    const tienePagado = estadoPedido === 'pagado' || estadoPedido === null;
-    const access = notEnEspera && tienePagado; // AND: true solo si ambas son verdaderas
-    console.log("Acceso a opiniones (AND): ", access, " (notEnEspera:", notEnEspera, ", tienePagado:", tienePagado, ")");
+    const access = estadoPedido === 'entrega_confirmada';
+    
+    console.log("Acceso a opiniones (AND): ", access, " (notEnEspera:", notEnEspera, ", mesaAsignada:", this.mesaAsignada(), ", estadoPedido:", estadoPedido, ")");
     return access;
   }
 
   async puedePedirCuenta() {
     // Solo si tiene un pedido activo entregado (no pagado)
     let estado = await this.clienteService.estadoUltimoPedido();
-    console.log("ACCESO A PEDIR CUENTA: ", estado === 'entregado' || estado === 'entrega_confirmada');
+    console.log("ACCESO A PEDIR CUENTA: ", estado === 'entrega_confirmada');
     return estado === 'entrega_confirmada';
   }
 
@@ -290,8 +297,7 @@ export class HomeClientePage implements OnInit {
     try {
       console.log('🔄 Recalculando accesos según cambios en pedidos...');
       
-      const [puedoEncuestas, puedoJuegos, puedoOpiniones, puedoMenu, puedoCuenta] = await Promise.all([
-        this.puedeAccederEncuestas(),
+      const [puedoJuegos, puedoOpiniones, puedoMenu, puedoCuenta] = await Promise.all([
         this.puedeAccederJuegos(),
         this.accesoAOpiniones(),
         this.puedeAccederAmenu(),
@@ -305,7 +311,6 @@ export class HomeClientePage implements OnInit {
       // Nota: opinionesAccess se usa para ambos, puedes ajustar si necesitas otro signal
 
       console.log('✅ Accesos actualizados:', {
-        encuestas: puedoEncuestas,
         juegos: puedoJuegos,
         opiniones: puedoOpiniones,
         menu: puedoMenu,
@@ -452,6 +457,11 @@ export class HomeClientePage implements OnInit {
 
       const qrData = result.barcodes[0].displayValue;
       this.opinionesAccess.set(false);
+      if (qrData !== '/lista-espera-cliente') {
+        await this.hapticService.vibrateError();
+        this.showToast('QR inválido para lista de espera', 'danger');
+        return;
+      }
       this.router.navigate([qrData]);
       
     } catch (err: any) {
@@ -485,6 +495,7 @@ export class HomeClientePage implements OnInit {
     }
 
     this.showToast('¡Ya puedes ver los resultados de las encuestas!.', 'success');
+    this.opinionesAccess.set(true);
 
     return true;
   }
@@ -510,9 +521,6 @@ export class HomeClientePage implements OnInit {
         this.showToast('QR inválido: datos no válidos', 'danger');
         return;
       }
-
-      console.log(`📍 Mesa tonto del culo: n°: ${numeroMesa}, Capacidad: ${capacidad}, Tipo: ${tipo}`);
-      console.log('📍 Mesa asignada:', this.mesaAsignada());
 
       if (this.mesaAsignada() && this.mesaAsignada() !== numeroMesa) {
         this.showToast(
@@ -632,14 +640,6 @@ export class HomeClientePage implements OnInit {
   }
 
     async logout() {
-    if (!this.tipoClienteService.isAnonimo() && this.mesaAsignada() && this.cliente?.id_cliente) {
-      try {
-        await this.clienteService.liberarMesaCliente();
-      } catch (error) {
-        console.error('Error liberando mesa al cerrar sesión:', error);
-      }
-    }
-
     await this.authService.logout();
     this.router.navigate(['/login'], { replaceUrl: true });
     this.showToast('Sesión cerrada correctamente', 'medium');
@@ -684,32 +684,20 @@ export class HomeClientePage implements OnInit {
   }
 
   verJuegos() {
-      
-      if (!this.isRegistrado()) {
-        this.showToast('⚠️ Los juegos son solo para clientes registrados', 'warning');
-        return;
-      }
       this.router.navigate(['/tabs-cliente-registrado/tab5-juegos']);
     }
 
 
   async solicitarCuenta() {
-  
-  this.router.navigate(['/tabs-cliente-registrado/tab8-cuenta']);
+    this.router.navigate(['/tabs-cliente-registrado/tab8-cuenta']);
   }
 
 
     verEncuesta() {
-
-    if (!this.isRegistrado()) {
-      this.showToast('⚠️ Las encuestas son solo para clientes registrados', 'warning');
-      return;
-    }
     this.router.navigate(['/tabs-cliente-registrado/tab6-encuesta']);
   }
 
   verResultados() {
-
     this.router.navigate(['/tabs-cliente-registrado/tab7-resultados']);
   }
 
@@ -933,9 +921,9 @@ async verMisReservas() {
   }
 
   async verificarReservaActiva() {
-  if (!this.cliente?.id_cliente || !this.isRegistrado()) {
-    return;
-  }
+    if (!this.cliente?.id_cliente || !this.isRegistrado()) {
+      return;
+    }
 
   try {
     this.cargandoReserva = true;
