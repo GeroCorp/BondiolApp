@@ -36,7 +36,9 @@ ion-header {
 ion-label{
   color: #faa307;
 }
-
+.ion-margin-top {
+  margin-top: 6px;
+}
 .extras-container {
   display: flex;
   flex-direction: column;
@@ -136,4 +138,30 @@ ion-card {
     max-height: 100%;
     overflow-y: auto;
   }
+.producto-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.tres-cuartos {
+  flex: 3;
+}
+
+.un-cuarto {
+  flex: 1;
+  margin: 0 !important;
+}
+
+app-secondary-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 56px;       
+  max-height: 56px;
+  border-radius: 50%;
+  padding: 0;
+  margin: 0;
+}
+
 }
