@@ -42,15 +42,6 @@
 </table>
 
 
-
-
-
-
-
-
-
-
-
 ### Ingreso al local (Lista de espera)
 
 <img width="300" height="300" alt="lista_de_espera" src="https://github.com/user-attachments/assets/de731e55-a413-425b-87ad-89e8cf500d70" />
@@ -62,8 +53,25 @@ En orden son: Mesa 8, Mesa 7, Mesa 6, Mesa 5\
 <img width="100" height="100" alt="mesa 3" src="https://zqcgzuszxljgbbwbriph.supabase.co/storage/v1/object/public/mesas/mesa_3/qr.jpeg" />
 <img width="100" height="100" alt="Mesa 4" src="https://zqcgzuszxljgbbwbriph.supabase.co/storage/v1/object/public/mesas/mesa_4/qr.jpeg" />
 
-# Splash Screen
-
+<table style="width: 100%;">
+    <tr>
+        <th>Propinas</th>  
+    </tr>
+  <tr>
+    <th>Malo</th>
+    <th>Regular</th>
+    <th>Bueno</th>
+    <th>Muy Bueno</th>
+    <th>Excelente</th>
+  </tr>
+  <tr>
+    <td><img width="300" height="300" alt="propina0" src="https://github.com/user-attachments/assets/dffd8a96-2a11-44e1-8b9d-b71bc5168c4e" /></td>
+    <td><img width="300" height="300" alt="propina1" src="https://github.com/user-attachments/assets/ecfc9523-b2fa-4a1e-9299-b5b088a8ec7f" /></td>
+    <td><img width="300" height="300" alt="propina2" src="https://github.com/user-attachments/assets/811f6177-d279-47e7-8e97-64bdec5edc76" /></td>
+    <td><img width="300" height="300" alt="propina3" src="https://github.com/user-attachments/assets/90b68617-0804-4360-9a71-42d16b5b3617" /></td>
+    <td><img width="300" height="300" alt="propina5" src="https://github.com/user-attachments/assets/0f6b6ddc-0311-48ad-b44c-68ce9ba03adb" /></td>
+  </tr>
+</table>
 
 
 ## Pagés Valentino
@@ -130,7 +138,12 @@ Fecha de finalizacion: 30/04
 
 Fecha de inicio: 7/05
 Fecha de finalizacion: 16/05
-
+#
+- Arreglar UI Cocinero, Barista
+- Agregar modal de QR a listado de mesas
+  
+Fecha de inicio: 17/05
+Fecha de finalizacion: 22/05
 
 ## Corpus Geronimo
 - Inicio de sesión
@@ -164,3 +177,10 @@ Fecha de finalizacion: 30/04
 
 Fecha de inicio: 7/05
 Fecha de finalizacion: 18/05
+#
+
+- Arreglar UI Cliente (Registrado | Invitado)
+- Arregar inserción de productos a base de datos
+  
+Fecha de inicio: 17/05
+Fecha de finalizacion: 22/05
