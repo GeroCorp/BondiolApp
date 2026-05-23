@@ -1,177 +1,149 @@
-.loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 60vh;
+.resultados-content {
+  --background: #0f0f13;
 
-  ion-spinner {
-    margin-bottom: 20px;
-  }
-
-  p {
-    color: var(--ion-color-medium);
+  &::part(scroll) {
+    scroll-snap-type: y mandatory;
+    overflow-y: scroll;
+    padding: 0 !important;
   }
 }
 
-.empty-state {
+.snap-container {
   display: flex;
   flex-direction: column;
-  align-items: center;
+}
+
+.snap-screen {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  height: calc(100dvh - var(--offset-top, 112px));
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
   justify-content: center;
-  height: 60vh;
-  text-align: center;
-  padding: 20px;
+  padding: 20px 20px;
+  overflow: hidden;
+}
+
+/* ── Hero ── */
+.hero-screen {
+  background: linear-gradient(145deg, #6a040f, #9D0208);
+  align-items: center;
+  position: relative;
+
+  .hero-numero {
+    font-size: 6rem;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1;
+  }
+
+  .hero-label {
+    font-size: 1rem;
+    color: rgba(255,255,255,0.7);
+    margin-top: 8px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  .hero-bg-icon {
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+    font-size: 9rem;
+    color: rgba(255,255,255,0.07);
+  }
+}
+
+/* ── Chart screens ── */
+.chart-screen {
+  background: #1a1a22;
+
+  &:nth-child(even) {
+    background: #141419;
+  }
+}
+
+.screen-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 20px 0;
+  flex-shrink: 0;
 
   ion-icon {
-    font-size: 80px;
-    margin-bottom: 20px;
-  }
-
-  h2 {
-    color: var(--ion-color-dark);
-    margin-bottom: 8px;
-  }
-
-  p {
-    color: var(--ion-color-medium);
+    color: #F48C06;
+    font-size: 1.2rem;
   }
 }
 
-// Promedios
-.promedio-item {
+.canvas-wrapper {
+  flex: 1;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--ion-color-light);
+  justify-content: center;
+  min-height: 0;
 
-  &:last-child {
-    border-bottom: none;
-  }
-
-  .label {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-
-    ion-icon {
-      font-size: 24px;
-      color: var(--ion-color-primary);
-    }
-
-    span {
-      font-size: 16px;
-      font-weight: 500;
-    }
-  }
-
-  .rating {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-
-    .numero {
-      font-size: 20px;
-      font-weight: bold;
-      color: var(--ion-color-primary);
-    }
-
-    ion-icon {
-      font-size: 20px;
-    }
+  canvas {
+    max-height: 100%;
+    max-width: 100%;
   }
 }
 
-ion-card-title {
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 12px;
-  color: var(--ion-color-primary);
+/* ── Doughnut stats ── */
+.doughnut-stats {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  margin-top: 20px;
+  flex-shrink: 0;
+
+  .stat-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .stat-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    &.si { background: #22c55e; }
+    &.no { background: #ef4444; }
+  }
+
+  .stat-num {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .stat-label {
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.5);
+  }
 }
 
-// Recomendaciones
-.recomendacion-chart {
-  .barra-progreso {
-    width: 100%;
-    height: 40px;
-    background-color: var(--ion-color-light);
-    border-radius: 20px;
-    overflow: hidden;
+/* ── States ── */
+.state-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: calc(100dvh - var(--offset-top, 112px));
+  text-align: center;
+  padding: 40px 20px;
+  color: rgba(255,255,255,0.6);
+
+  ion-icon {
+    font-size: 5rem;
+    color: #F48C06;
     margin-bottom: 16px;
-
-    .barra-si {
-      height: 100%;
-      background: linear-gradient(90deg, #2dd36f 0%, #10dc60 100%);
-      transition: width 0.6s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-weight: bold;
-    }
   }
 
-  .recomendacion-stats {
-    display: flex;
-    justify-content: space-around;
-    gap: 12px;
-
-    .stat {
-      flex: 1;
-
-      ion-chip {
-        width: 100%;
-        justify-content: center;
-        font-size: 14px;
-      }
-    }
-  }
-}
-
-// Distribución
-.distribucion-chart {
-  .barra-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 12px;
-
-    .estrellas {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      min-width: 50px;
-
-      span {
-        font-weight: bold;
-        font-size: 16px;
-      }
-
-      ion-icon {
-        font-size: 18px;
-      }
-    }
-
-    .barra {
-      flex: 1;
-      height: 24px;
-      background-color: var(--ion-color-light);
-      border-radius: 12px;
-      overflow: hidden;
-
-      .barra-relleno {
-        height: 100%;
-        background: linear-gradient(90deg, #3880ff 0%, #5598ff 100%);
-        transition: width 0.6s ease;
-      }
-    }
-
-    .cantidad {
-      min-width: 30px;
-      text-align: right;
-      font-weight: 500;
-      color: var(--ion-color-medium);
-    }
-  }
+  h2 { color: #fff; margin-bottom: 8px; }
+  p  { color: rgba(255,255,255,0.5); }
 }
