@@ -15,6 +15,7 @@ export class Tab5JuegosPage implements OnInit {
   primerIntentoUsado: boolean = false;
   juegoActivo: 'memoria' | 'adivinanza' | 'ruleta' | 'mozo' | null = null;
   isAnonimo: boolean = false;
+  modalReglasAbierto: boolean = false;
 
   constructor(
     private router: Router,
@@ -122,6 +123,14 @@ export class Tab5JuegosPage implements OnInit {
     } catch (error) {
       console.error('Error marcando primer intento:', error);
     }
+  }
+
+  abrirReglas() {
+    this.modalReglasAbierto = true;
+  }
+
+  cerrarReglas() {
+    this.modalReglasAbierto = false;
   }
 
   volverHome() {

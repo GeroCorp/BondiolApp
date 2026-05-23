@@ -468,6 +468,13 @@ export class HomeClientePage implements OnInit {
         return;
       }
 
+      const { available } = await BarcodeScanner.isGoogleBarcodeScannerModuleAvailable().catch(() => ({ available: false }));
+      if (!available) {
+        await BarcodeScanner.installGoogleBarcodeScannerModule();
+        this.showToast('Instalando módulo de escaneo. Escaneá de nuevo.', 'medium');
+        return;
+      }
+
       const result = await BarcodeScanner.scan();
 
       if (result.barcodes && result.barcodes.length > 0) {
@@ -490,6 +497,13 @@ export class HomeClientePage implements OnInit {
       // Usar la función checkPermissions mejorada
       const hasPermissions = await this.checkPermissions();
       if (!hasPermissions) {
+        return;
+      }
+
+      const { available } = await BarcodeScanner.isGoogleBarcodeScannerModuleAvailable().catch(() => ({ available: false }));
+      if (!available) {
+        await BarcodeScanner.installGoogleBarcodeScannerModule();
+        this.showToast('Instalando módulo de escaneo. Escaneá de nuevo.', 'medium');
         return;
       }
 
