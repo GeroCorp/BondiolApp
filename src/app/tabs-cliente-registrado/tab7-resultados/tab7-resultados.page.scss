@@ -1,10 +1,12 @@
 .resultados-content {
   --background: #0f0f13;
 
+
   &::part(scroll) {
     scroll-snap-type: y mandatory;
     overflow-y: scroll;
     padding: 0 !important;
+
   }
 }
 
@@ -16,114 +18,266 @@
 .snap-screen {
   scroll-snap-align: start;
   scroll-snap-stop: always;
-  height: calc(100dvh - var(--offset-top, 112px));
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  padding: 20px 20px;
+  height: 100%;
+  padding: 24px 20px 20px;
   overflow: hidden;
+
+}
+
+.screen-header {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: rgba(255,255,255,0.35);
+  margin-bottom: 4px;
+}
+
+.screen-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 16px;
 }
 
 /* ── Hero ── */
 .hero-screen {
   background: linear-gradient(145deg, #6a040f, #9D0208);
   align-items: center;
+  justify-content: center;
+  text-align: center;
   position: relative;
 
-  .hero-numero {
-    font-size: 6rem;
+  .hero-num {
+    font-size: 80px;
     font-weight: 800;
     color: #fff;
     line-height: 1;
   }
 
   .hero-label {
-    font-size: 1rem;
-    color: rgba(255,255,255,0.7);
-    margin-top: 8px;
+    font-size: 11px;
     text-transform: uppercase;
-    letter-spacing: 2px;
+    letter-spacing: 3px;
+    color: rgba(255,255,255,0.6);
+    margin-top: 8px;
   }
 
   .hero-bg-icon {
     position: absolute;
-    right: 20px;
-    bottom: 20px;
-    font-size: 9rem;
-    color: rgba(255,255,255,0.07);
+    right: -16px;
+    bottom: -16px;
+    font-size: 160px;
+    color: rgba(255,255,255,0.05);
   }
 }
 
-/* ── Chart screens ── */
-.chart-screen {
-  background: #1a1a22;
-
-  &:nth-child(even) {
-    background: #141419;
-  }
+/* ── Gauges ── */
+.gauges-screen {
+  background: #111118;
 }
 
-.screen-title {
-  font-size: 1.05rem;
-  font-weight: 600;
-  color: #fff;
+.gauges-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  flex: 1;
+}
+
+.gauge-card {
+  background: #1e1e28;
+  border-radius: 16px;
   display: flex;
+  flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  margin: 0 0 20px 0;
-  flex-shrink: 0;
+}
 
-  ion-icon {
-    color: #F48C06;
-    font-size: 1.2rem;
+.gauge-ring-wrap {
+  position: relative;
+  width: 80px;
+  height: 80px;
+
+  .gauge-svg {
+    transform: rotate(-90deg);
+  }
+
+  .gauge-val {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
   }
 }
 
-.canvas-wrapper {
+.gauge-name {
+  font-size: 11px;
+  color: rgba(255,255,255,0.45);
+}
+
+/* ── Donut ── */
+.donut-screen {
+  background: #0f0f13;
+}
+
+.donut-wrap {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 0;
+  gap: 28px;
+}
 
-  canvas {
-    max-height: 100%;
-    max-width: 100%;
+.donut-ring-wrap {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  flex-shrink: 0;
+
+  .donut-svg {
+    transform: rotate(-90deg);
+  }
+
+  .donut-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    .donut-pct {
+      font-size: 26px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .donut-sub {
+      font-size: 10px;
+      color: rgba(255,255,255,0.4);
+      margin-top: 2px;
+    }
   }
 }
 
-/* ── Doughnut stats ── */
-.doughnut-stats {
+.donut-legend {
   display: flex;
-  justify-content: center;
-  gap: 32px;
-  margin-top: 20px;
-  flex-shrink: 0;
+  flex-direction: column;
+  gap: 18px;
+}
 
-  .stat-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
+.leg-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 
-  .stat-dot {
-    width: 12px;
-    height: 12px;
+  .leg-dot {
+    width: 10px;
+    height: 10px;
     border-radius: 50%;
-    &.si { background: #22c55e; }
-    &.no { background: #ef4444; }
+    flex-shrink: 0;
   }
 
-  .stat-num {
-    font-size: 1.3rem;
+  .leg-val {
+    font-size: 22px;
     font-weight: 700;
+    color: #fff;
+    line-height: 1;
+  }
+
+  .leg-lbl {
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    margin-top: 2px;
+  }
+}
+
+/* ── Tacómetro ── */
+.tacho-screen {
+  background: #111118;
+  &:nth-child(even) { background: #0f0f13; }
+}
+
+.tacho-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+}
+
+.tacho-svg-wrap {
+  width: 280px;
+  height: 155px;
+}
+
+.tacho-star-labels {
+  display: flex;
+  justify-content: space-between;
+  width: 260px;
+  margin-top: -4px;
+
+  span {
+    font-size: 10px;
+    color: rgba(255,255,255,0.3);
+  }
+}
+
+.tacho-score {
+  margin-top: 12px;
+
+  .tacho-num {
+    font-size: 42px;
+    font-weight: 800;
     color: #fff;
   }
 
-  .stat-label {
-    font-size: 0.85rem;
-    color: rgba(255,255,255,0.5);
+  .tacho-den {
+    font-size: 18px;
+    color: rgba(255,255,255,0.3);
+  }
+}
+
+.tacho-sub {
+  font-size: 11px;
+  color: rgba(255,255,255,0.35);
+  margin-top: 2px;
+}
+
+.star-pills {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  width: 100%;
+}
+
+.star-pill {
+  flex: 1;
+  background: #1e1e28;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  padding: 8px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+
+  .pill-num {
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .pill-lbl {
+    font-size: 9px;
+    color: rgba(255,255,255,0.3);
   }
 }
 
@@ -133,17 +287,13 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: calc(100dvh - var(--offset-top, 112px));
+  height: 100%;
   text-align: center;
   padding: 40px 20px;
+  background: #0f0f13;
   color: rgba(255,255,255,0.6);
 
-  ion-icon {
-    font-size: 5rem;
-    color: #F48C06;
-    margin-bottom: 16px;
-  }
-
+  ion-spinner { margin-bottom: 16px; }
+  ion-icon { font-size: 5rem; color: #F48C06; margin-bottom: 16px; }
   h2 { color: #fff; margin-bottom: 8px; }
-  p  { color: rgba(255,255,255,0.5); }
 }

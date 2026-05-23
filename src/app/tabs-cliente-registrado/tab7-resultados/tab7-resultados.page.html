@@ -15,84 +15,149 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="resultados-content">
+<ion-content class="resultados-content">
   <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
 
+  <!-- Loading -->
   <div *ngIf="cargando" class="state-screen">
     <ion-spinner name="crescent" color="primary"></ion-spinner>
     <p>Cargando resultados...</p>
   </div>
 
+  <!-- Sin datos -->
   <div *ngIf="!cargando && (!resultados || resultados.total === 0)" class="state-screen">
     <ion-icon name="bar-chart-outline"></ion-icon>
     <h2>Sin datos disponibles</h2>
     <p>Aún no hay encuestas completadas</p>
   </div>
 
+  <!-- Contenido -->
   <div *ngIf="!cargando && resultados && resultados.total > 0" class="snap-container">
 
-    <!-- Pantalla 1: Hero -->
-    <div class="snap-screen hero-screen">
-      <div class="hero-numero">{{ resultados.total }}</div>
+    <!-- S1: Hero -->
+    <div class="snap-screen hero-screen " [style.height]="screenHeight">
+      <div class="hero-num">{{ resultados.total }}</div>
       <div class="hero-label">encuestas completadas</div>
       <ion-icon name="checkmark-circle-outline" class="hero-bg-icon"></ion-icon>
     </div>
 
-    <!-- Pantalla 2: Radar promedios -->
-    <div class="snap-screen chart-screen">
-      <h2 class="screen-title">
-        <ion-icon name="star-outline"></ion-icon>
-        Calificaciones Promedio
-      </h2>
-      <div class="canvas-wrapper">
-        <canvas #radarCanvas></canvas>
-      </div>
-    </div>
-
-    <!-- Pantalla 3: Doughnut recomendación -->
-    <div class="snap-screen chart-screen">
-      <h2 class="screen-title">
-        <ion-icon name="heart-outline"></ion-icon>
-        ¿Recomendarían el Restaurante?
-      </h2>
-      <div class="canvas-wrapper">
-        <canvas #doughnutCanvas></canvas>
-      </div>
-      <div class="doughnut-stats">
-        <div class="stat-item">
-          <span class="stat-dot si"></span>
-          <span class="stat-num">{{ resultados.recomendaria.si }}</span>
-          <span class="stat-label">Sí</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-dot no"></span>
-          <span class="stat-num">{{ resultados.recomendaria.no }}</span>
-          <span class="stat-label">No</span>
+    <!-- S2: Gauges promedios -->
+    <div class="snap-screen gauges-screen"[style.height]="screenHeight">
+      <div class="screen-header">Calificaciones</div>
+      <div class="screen-title">Promedios</div>
+      <div class="gauges-grid">
+        <div class="gauge-card" *ngFor="let g of promediosArray">
+          <div class="gauge-ring-wrap">
+            <svg width="80" height="80" viewBox="0 0 80 80" class="gauge-svg">
+              <circle cx="40" cy="40" r="32" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="8"/>
+              <circle cx="40" cy="40" r="32" fill="none"
+                [attr.stroke]="g.color"
+                stroke-width="8"
+                stroke-linecap="round"
+                stroke-dasharray="201"
+                [attr.stroke-dashoffset]="getGaugeDashoffset(g.valor)"/>
+            </svg>
+            <div class="gauge-val">{{ g.valor }}</div>
+          </div>
+          <div class="gauge-name">{{ g.nombre }}</div>
         </div>
       </div>
     </div>
 
-    <!-- Pantalla 4: Barras calidad comida -->
-    <div class="snap-screen chart-screen">
-      <h2 class="screen-title">
-        <ion-icon name="restaurant-outline"></ion-icon>
-        Calidad de Comida
-      </h2>
-      <div class="canvas-wrapper">
-        <canvas #barComidaCanvas></canvas>
+    <!-- S3: Donut recomendación -->
+    <div class="snap-screen donut-screen " [style.height]="screenHeight">
+      <div class="screen-header">Satisfacción</div>
+      <div class="screen-title">¿Recomendarían?</div>
+      <div class="donut-wrap">
+        <div class="donut-ring-wrap">
+          <svg width="150" height="150" viewBox="0 0 150 150" class="donut-svg">
+            <circle cx="75" cy="75" r="55" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="16"/>
+            <circle cx="75" cy="75" r="55" fill="none" stroke="#22c55e" stroke-width="16"
+              stroke-linecap="round" stroke-dasharray="345"
+              [attr.stroke-dashoffset]="345 - (resultados.recomendaria.porcentajeSi / 100) * 345"/>
+            <circle cx="75" cy="75" r="55" fill="none" stroke="#ef4444" stroke-width="16"
+              stroke-linecap="round" stroke-dasharray="345"
+              [attr.stroke-dashoffset]="-(resultados.recomendaria.porcentajeSi / 100) * 345"/>
+          </svg>
+          <div class="donut-center">
+            <div class="donut-pct">{{ resultados.recomendaria.porcentajeSi }}%</div>
+            <div class="donut-sub">recomienda</div>
+          </div>
+        </div>
+        <div class="donut-legend">
+          <div class="leg-item">
+            <span class="leg-dot" style="background:#22c55e"></span>
+            <div>
+              <div class="leg-val">{{ resultados.recomendaria.si }}</div>
+              <div class="leg-lbl">Sí</div>
+            </div>
+          </div>
+          <div class="leg-item">
+            <span class="leg-dot" style="background:#ef4444"></span>
+            <div>
+              <div class="leg-val">{{ resultados.recomendaria.no }}</div>
+              <div class="leg-lbl">No</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Pantalla 5: Barras calidad servicio -->
-    <div class="snap-screen chart-screen">
-      <h2 class="screen-title">
-        <ion-icon name="people-outline"></ion-icon>
-        Calidad de Servicio
-      </h2>
-      <div class="canvas-wrapper">
-        <canvas #barServicioCanvas></canvas>
+    <!-- S4: Tacómetro Comida -->
+    <div class="snap-screen tacho-screen" [style.height]="screenHeight">
+      <div class="screen-header">Distribución</div>
+      <div class="screen-title">Calidad de Comida</div>
+      <div class="tacho-wrap">
+        <div class="tacho-svg-wrap">
+          <svg #tachoComida width="280" height="155" viewBox="0 0 280 155"></svg>
+        </div>
+        <div class="tacho-star-labels">
+          <span *ngFor="let s of [1,2,3,4,5]">★{{ s }}</span>
+        </div>
+        <div class="tacho-score">
+          <span class="tacho-num">{{ resultados.promedios.calidadComida }}</span>
+          <span class="tacho-den">/5</span>
+        </div>
+        <div class="tacho-sub">promedio de {{ resultados.total }} votos</div>
+        <div class="star-pills">
+          <div class="star-pill" *ngFor="let s of [1,2,3,4,5]"
+            [style.border-color]="starColor(s)">
+            <div class="pill-num" [style.color]="starColor(s)">
+              {{ resultados.distribucion.calidadComida[s] }}
+            </div>
+            <div class="pill-lbl">★{{ s }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S5: Tacómetro Servicio -->
+    <div class="snap-screen tacho-screen" [style.height]="screenHeight">
+      <div class="screen-header">Distribución</div>
+      <div class="screen-title">Calidad de Servicio</div>
+      <div class="tacho-wrap">
+        <div class="tacho-svg-wrap">
+          <svg #tachoServicio width="280" height="155" viewBox="0 0 280 155"></svg>
+        </div>
+        <div class="tacho-star-labels">
+          <span *ngFor="let s of [1,2,3,4,5]">★{{ s }}</span>
+        </div>
+        <div class="tacho-score">
+          <span class="tacho-num">{{ resultados.promedios.calidadServicio }}</span>
+          <span class="tacho-den">/5</span>
+        </div>
+        <div class="tacho-sub">promedio de {{ resultados.total }} votos</div>
+        <div class="star-pills">
+          <div class="star-pill" *ngFor="let s of [1,2,3,4,5]"
+            [style.border-color]="starColor(s)">
+            <div class="pill-num" [style.color]="starColor(s)">
+              {{ resultados.distribucion.calidadServicio[s] }}
+            </div>
+            <div class="pill-lbl">★{{ s }}</div>
+          </div>
+        </div>
       </div>
     </div>
 
