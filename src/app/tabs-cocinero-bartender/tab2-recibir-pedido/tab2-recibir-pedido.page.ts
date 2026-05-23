@@ -134,4 +134,28 @@ get pedidosPendientes() {
 get pedidosPreparacion() {
   return this.pedidos.filter(p => p.estadoItem === 'en_preparación');
 }
+
+get pagesPendientes() {
+  return this.chunkArray(this.pedidosPendientes, 3);
+}
+
+get pagesPreparacion() {
+  return this.chunkArray(this.pedidosPreparacion, 3);
+}
+
+chunkArray(arr: any[], size: number) {
+  const p: any[][] = [];
+  for (let i = 0; i < arr.length; i += size) {
+    p.push(arr.slice(i, i + size));
+  }
+  return p;
+}
+
+trackByIndex(index: number) {
+  return index;
+}
+
+trackByPedidoId(_index: number, pedido: any) {
+  return pedido.id || _index;
+}
 }

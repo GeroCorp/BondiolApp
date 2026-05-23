@@ -52,7 +52,7 @@ ion-header {
 .snap-page {
   scroll-snap-align: start;
   scroll-snap-stop: always;
-  height: calc(100vh - var(--offset-top, 60px) - 56px);
+  height: calc(100dvh - var(--offset-top, 60px) - 56px);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -71,9 +71,10 @@ ion-header {
   max-width: 420px;
   margin: 0;
   display: flex;
+  justify-content: center;
   flex-direction: column;
   overflow: visible;
-  min-height: 55dvh;
+  min-height: 57dvh;
 
   ion-card-header {
     padding: 14px 14px 12px;

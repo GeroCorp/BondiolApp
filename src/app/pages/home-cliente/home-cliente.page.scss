@@ -13,6 +13,9 @@
   --success-color: #4caf50;
   --border-color: #404040;
   --shadow-dark: 0 8px 24px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 ion-toolbar{
     --background: #8b0000;
@@ -94,6 +97,15 @@ ion-toolbar{
     }
 }
 
+.main-card{
+    /* En lugar de min-height, usamos flex-grow para que 
+     se estire hasta el final de la pantalla disponible */
+  flex-grow: 1; 
+  display: flex;
+  flex-direction: column;
+  margin: 16px; /* Margen estético para que no toque los bordes */
+}
+
 ion-card {
     --background: var(--surface-dark);
     --color: var(--text-primary);
@@ -107,6 +119,7 @@ ion-card {
     width: 100%;
     box-sizing: border-box;
 
+    
     &:hover {
         box-shadow: 0 12px 30px rgba(187, 134, 252, 0.3);
         transform: translateY(-2px);
@@ -136,10 +149,15 @@ ion-card {
         color: var(--text-primary) !important;
 
         &.botones-grid {
+            /* Hacemos que el contenedor de los botones también crezca */
+            flex-grow: 1; 
             display: grid !important;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            /* auto-rows asegura que todas las filas tengan el mismo tamaño 
+            y se repartan el espacio sobrante */
+            grid-auto-rows: 1fr; 
             gap: 12px;
-            width: 100%;
+            align-content: stretch;
         }
     }
 
@@ -272,9 +290,16 @@ ion-card {
 
 // Estilos para asegurar que todo sea visible
 ion-content {
-    ::part(scroll) {
-        overflow-y: auto !important;
-    }
+  --height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  // Este es el truco: hacemos que el componente de scroll 
+  // use flex para sus hijos
+  &::part(scroll) {
+    display: flex;
+    flex-direction: column;
+  }
 }
 
 ion-card-content {

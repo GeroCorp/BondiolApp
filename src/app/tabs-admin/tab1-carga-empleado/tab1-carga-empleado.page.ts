@@ -4,7 +4,7 @@ import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { AuthService } from 'src/app/services/supabase';
 import { Router } from '@angular/router';
 import { ToastController, LoadingController } from '@ionic/angular';
-
+import { CustomLoaderService } from 'src/app/services/custom-loader.service';
 
 import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
 import { PerfilService } from 'src/app/services/perfilService';
@@ -26,7 +26,8 @@ export class Tab1CargaEmpleadoPage {
     private supabaseService: AuthService, 
     private router: Router, 
     private toastController: ToastController,
-    private perfilService: PerfilService
+    private perfilService: PerfilService,
+    private customLoad: CustomLoaderService
     // private loadingCtrl: LoadingController // implementarlo
   ) {
     this.perfil = this.perfilService.getPerfil();
@@ -75,6 +76,7 @@ export class Tab1CargaEmpleadoPage {
   }
 
   async crearEmpleado() {
+    this.customLoad.show("Creando empleado...")
     const { email, clave, perfil, ...resto } = this.empleadoForm.value;
 
     // Bloquear dueño/supervisor
@@ -137,8 +139,9 @@ export class Tab1CargaEmpleadoPage {
 
     } catch (err: any) {
       this.showToast(err.message, 'danger');
+      this.customLoad.hide()
     }
-
+    this.customLoad.hide()
   }
 
   resetFormulario() {
@@ -161,7 +164,7 @@ export class Tab1CargaEmpleadoPage {
     await toast.present();
   }
 
-  //  Lector de QR comun
+ 
   // // QR
   // async leerQR() {
   //   try {

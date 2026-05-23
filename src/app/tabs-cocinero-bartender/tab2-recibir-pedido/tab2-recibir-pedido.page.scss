@@ -3,12 +3,15 @@ ion-header {
     --background: linear-gradient(135deg, #6a040F, #8b0000, #9D0208);
     --color: #ffffff;
     --min-height: 60px;
-
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 
     ion-title {
       font-weight: 700;
       font-size: 1.2rem;
+    }
+
+    ion-back-button {
+      --color: #fff;
     }
   }
 
@@ -29,64 +32,53 @@ ion-header {
 
 .pedido-content {
   --background: linear-gradient(180deg, #370617 0%, #6A040F 40%, #9D0208 100%);
-  --padding-start: 12px;
-  --padding-end: 12px;
-}
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-bottom: 0;
+  --padding-top: 0;
 
+  &::part(scroll) {
+    padding-bottom: 85px !important;
+    overscroll-behavior-y: none;
+    -webkit-overflow-scrolling: touch;
+  }
 
-.snap-scroll {
-  height: 100%;
-  overflow-y: auto;
-  scroll-snap-type: y mandatory;
-  scroll-behavior: smooth;
-}
-
-
-/* ================= WRAPPER ================= */
-
-.pedido-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-/* ================= LISTA ================= */
-
-.pedidos-list {
-  width: 100%;
-  max-width: 420px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  > div {
+    box-sizing: border-box;
+    padding: calc(var(--offset-top, 0px) + 8px) 6px 0;
+  }
 }
 
 /* ================= CARD ================= */
 
 .pedido-card {
-  width: 100%;
-  height: 70vh; 
-  scroll-snap-align: start;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-
-  border-radius: 16px;
-  margin: 16px 0;
-
+  margin: 0 0 8px 0;
+  // SIN max-height ni height fija — altura natural según contenido
+  border-radius: 12px;
   background: linear-gradient(145deg, #370617, #6a040f);
   box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  display: flex;
+  flex-direction: column;
+
+  // Pisar el padding global de ion-card-content que agrega 30px abajo innecesario
+  ion-card-content {
+    padding: 6px 10px 8px !important;
+    display: flex;
+    flex-direction: column;
+    color: #ffffff;
+  }
 
   ion-card-header {
-    padding: 16px;
+    flex-shrink: 0;
+    padding: 8px 10px;
     border-bottom: 1px solid rgba(255,255,255,0.1);
 
     ion-card-title {
-      color: #F48C06;
-      font-size: 1.2rem;
+      // Pisar el font-size global de 1.5rem
+      font-size: 1rem !important;
       font-weight: 700;
-
       display: flex;
-      gap: 10px;
+      gap: 6px;
       flex-wrap: wrap;
     }
 
@@ -96,7 +88,7 @@ ion-header {
       .pedido-info {
         display: flex;
         flex-direction: column;
-        gap: 6px;
+        gap: 3px;
       }
 
       .pedido-details {
@@ -107,29 +99,52 @@ ion-header {
     }
   }
 
-  ion-card-content {
-    padding: 16px;
-    color: #ffffff;
+  .items-section {
+    display: flex;
+    flex-direction: column;
+  }
 
-    /* SCROLL INTERNO */
-    overflow-y: auto;
+  .items-title {
+    color: #F48C06;
+    font-weight: 600;
+    font-size: 0.8rem;
+    margin: 0 0 4px 0;
+  }
 
-    .items-title {
-      color: #F48C06;
-      font-weight: 600;
-      margin-bottom: 10px;
-    }
+  // Lista sin scroll por defecto
+  .items-list {
+    overflow: hidden;
 
-    .item-pedido {
+    ion-item.item-pedido {
       --background: rgba(255,255,255,0.05);
-      margin-bottom: 6px;
-      border-radius: 8px;
+      margin-bottom: 3px;
+      border-radius: 6px;
+      --min-height: 36px;
+      font-size: 0.85rem;
+
+      ion-icon {
+        font-size: 16px;
+      }
     }
+  }
+
+  // Scroll interno solo cuando hay más de 4 items
+  .items-list.scrollable {
+    max-height: calc(4 * (36px + 3px));
+    overflow-y: auto;
+  }
+
+  .pedido-actions {
+    margin-top: 6px;
 
     ion-button {
-      margin-top: 12px;
-      --border-radius: 12px;
+      margin: 0;
+      height: 32px;
+      font-size: 0.75rem;
+      --border-radius: 8px;
       font-weight: 600;
+      --padding-start: 8px;
+      --padding-end: 8px;
     }
   }
 }
@@ -140,7 +155,8 @@ ion-header {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 60px 20px;
+  justify-content: center;
+  height: calc(100vh - var(--offset-top, 60px) - 56px - 48px);
   color: #ffffff;
 
   ion-spinner {
@@ -152,6 +168,11 @@ ion-header {
 /* ================= EMPTY ================= */
 
 .pedido-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: calc(100vh - var(--offset-top, 60px) - 56px - 48px);
   text-align: center;
   padding: 40px 20px;
   color: #ffffff;
