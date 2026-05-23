@@ -7,6 +7,7 @@ import { IonicModule } from '@ionic/angular';
 import { Tab2RecibirPedidoPageRoutingModule } from './tab2-recibir-pedido-routing.module';
 
 import { Tab2RecibirPedidoPage } from './tab2-recibir-pedido.page';
+import { CustomSpinnerComponent } from 'src/app/components/custom-spinner/custom-spinner.component';
 
 @NgModule({
   imports: [
@@ -14,6 +15,7 @@ import { Tab2RecibirPedidoPage } from './tab2-recibir-pedido.page';
     FormsModule,
     IonicModule,
     Tab2RecibirPedidoPageRoutingModule,
+    CustomSpinnerComponent,
   ],
   declarations: [Tab2RecibirPedidoPage]
 })
