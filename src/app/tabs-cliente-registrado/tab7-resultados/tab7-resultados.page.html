@@ -15,178 +15,159 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="ion-padding">
+<ion-content class="resultados-content">
   <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
 
   <!-- Loading -->
-  <div *ngIf="cargando" class="loading-container">
+  <div *ngIf="cargando" class="state-screen">
     <ion-spinner name="crescent" color="primary"></ion-spinner>
     <p>Cargando resultados...</p>
   </div>
 
   <!-- Sin datos -->
-  <div *ngIf="!cargando && (!resultados || resultados.total === 0)" class="empty-state">
-    <ion-icon name="bar-chart-outline" color="medium"></ion-icon>
+  <div *ngIf="!cargando && (!resultados || resultados.total === 0)" class="state-screen">
+    <ion-icon name="bar-chart-outline"></ion-icon>
     <h2>Sin datos disponibles</h2>
-    <p>Aún no hay encuestas completadas para mostrar resultados</p>
+    <p>Aún no hay encuestas completadas</p>
   </div>
 
-  <!-- Resultados -->
-  <div *ngIf="!cargando && resultados && resultados.total > 0">
-    <!-- Resumen general -->
-    <ion-card color="primary">
-      <ion-card-header>
-        <ion-card-title>Resumen General</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <h2 style="color: white; margin: 0;">{{ resultados.total }}</h2>
-        <p style="color: white; margin-top: 4px;">Encuestas completadas</p>
-      </ion-card-content>
-    </ion-card>
+  <!-- Contenido -->
+  <div *ngIf="!cargando && resultados && resultados.total > 0" class="snap-container">
 
-    <!-- Promedios -->
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title>
-          <ion-icon name="star"></ion-icon>
-          Calificaciones Promedio
-        </ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <div class="promedio-item">
-          <div class="label">
-            <ion-icon name="restaurant"></ion-icon>
-            <span>Calidad de Comida</span>
+    <!-- S1: Hero -->
+    <div class="snap-screen hero-screen " [style.height]="screenHeight">
+      <div class="hero-num">{{ resultados.total }}</div>
+      <div class="hero-label">encuestas completadas</div>
+      <ion-icon name="checkmark-circle-outline" class="hero-bg-icon"></ion-icon>
+    </div>
+
+    <!-- S2: Gauges promedios -->
+    <div class="snap-screen gauges-screen"[style.height]="screenHeight">
+      <div class="screen-header">Calificaciones</div>
+      <div class="screen-title">Promedios</div>
+      <div class="gauges-grid">
+        <div class="gauge-card" *ngFor="let g of promediosArray">
+          <div class="gauge-ring-wrap">
+            <svg width="80" height="80" viewBox="0 0 80 80" class="gauge-svg">
+              <circle cx="40" cy="40" r="32" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="8"/>
+              <circle cx="40" cy="40" r="32" fill="none"
+                [attr.stroke]="g.color"
+                stroke-width="8"
+                stroke-linecap="round"
+                stroke-dasharray="201"
+                [attr.stroke-dashoffset]="getGaugeDashoffset(g.valor)"/>
+            </svg>
+            <div class="gauge-val">{{ g.valor }}</div>
           </div>
-          <div class="rating">
-            <span class="numero">{{ resultados.promedios.calidadComida }}</span>
-            <ion-icon name="star" color="warning"></ion-icon>
+          <div class="gauge-name">{{ g.nombre }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S3: Donut recomendación -->
+    <div class="snap-screen donut-screen " [style.height]="screenHeight">
+      <div class="screen-header">Satisfacción</div>
+      <div class="screen-title">¿Recomendarían?</div>
+      <div class="donut-wrap">
+        <div class="donut-ring-wrap">
+          <svg width="150" height="150" viewBox="0 0 150 150" class="donut-svg">
+            <circle cx="75" cy="75" r="55" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="16"/>
+            <circle cx="75" cy="75" r="55" fill="none" stroke="#22c55e" stroke-width="16"
+              stroke-linecap="round" stroke-dasharray="345"
+              [attr.stroke-dashoffset]="345 - (resultados.recomendaria.porcentajeSi / 100) * 345"/>
+            <circle cx="75" cy="75" r="55" fill="none" stroke="#ef4444" stroke-width="16"
+              stroke-linecap="round" stroke-dasharray="345"
+              [attr.stroke-dashoffset]="-(resultados.recomendaria.porcentajeSi / 100) * 345"/>
+          </svg>
+          <div class="donut-center">
+            <div class="donut-pct">{{ resultados.recomendaria.porcentajeSi }}%</div>
+            <div class="donut-sub">recomienda</div>
           </div>
         </div>
-
-        <div class="promedio-item">
-          <div class="label">
-            <ion-icon name="people"></ion-icon>
-            <span>Calidad de Servicio</span>
-          </div>
-          <div class="rating">
-            <span class="numero">{{ resultados.promedios.calidadServicio }}</span>
-            <ion-icon name="star" color="warning"></ion-icon>
-          </div>
-        </div>
-
-        <div class="promedio-item">
-          <div class="label">
-            <ion-icon name="musical-notes"></ion-icon>
-            <span>Ambiente</span>
-          </div>
-          <div class="rating">
-            <span class="numero">{{ resultados.promedios.ambiente }}</span>
-            <ion-icon name="star" color="warning"></ion-icon>
-          </div>
-        </div>
-
-        <div class="promedio-item">
-          <div class="label">
-            <ion-icon name="cash"></ion-icon>
-            <span>Precio-Calidad</span>
-          </div>
-          <div class="rating">
-            <span class="numero">{{ resultados.promedios.precioCalidad }}</span>
-            <ion-icon name="star" color="warning"></ion-icon>
-          </div>
-        </div>
-      </ion-card-content>
-    </ion-card>
-
-    <!-- Recomendaciones -->
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title>
-          <ion-icon name="heart"></ion-icon>
-          ¿Recomendarían el Restaurante?
-        </ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <div class="recomendacion-chart">
-          <div class="barra-progreso">
-            <div
-              class="barra-si"
-              [style.width.%]="resultados.recomendaria.porcentajeSi"
-            ></div>
-          </div>
-          <div class="recomendacion-stats">
-            <div class="stat">
-              <ion-chip color="success">
-                <ion-icon name="thumbs-up"></ion-icon>
-                <ion-label>Sí: {{ resultados.recomendaria.si }} ({{ resultados.recomendaria.porcentajeSi }}%)</ion-label>
-              </ion-chip>
+        <div class="donut-legend">
+          <div class="leg-item">
+            <span class="leg-dot" style="background:#22c55e"></span>
+            <div>
+              <div class="leg-val">{{ resultados.recomendaria.si }}</div>
+              <div class="leg-lbl">Sí</div>
             </div>
-            <div class="stat">
-              <ion-chip color="danger">
-                <ion-icon name="thumbs-down"></ion-icon>
-                <ion-label>No: {{ resultados.recomendaria.no }}</ion-label>
-              </ion-chip>
+          </div>
+          <div class="leg-item">
+            <span class="leg-dot" style="background:#ef4444"></span>
+            <div>
+              <div class="leg-val">{{ resultados.recomendaria.no }}</div>
+              <div class="leg-lbl">No</div>
             </div>
           </div>
         </div>
-      </ion-card-content>
-    </ion-card>
+      </div>
+    </div>
 
-    <!-- Distribución por estrellas - Calidad Comida -->
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title>
-          <ion-icon name="bar-chart"></ion-icon>
-          Distribución: Calidad de Comida
-        </ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <div class="distribucion-chart">
-          <div class="barra-item" *ngFor="let i of [5, 4, 3, 2, 1]">
-            <div class="estrellas">
-              <span>{{ i }}</span>
-              <ion-icon name="star" color="warning"></ion-icon>
+    <!-- S4: Tacómetro Comida -->
+    <div class="snap-screen tacho-screen" [style.height]="screenHeight">
+      <div class="screen-header">Distribución</div>
+      <div class="screen-title">Calidad de Comida</div>
+      <div class="tacho-wrap">
+        <div class="tacho-svg-wrap">
+          <svg #tachoComida width="280" height="155" viewBox="0 0 280 155"></svg>
+        </div>
+        <div class="tacho-star-labels">
+          <span *ngFor="let s of [1,2,3,4,5]">★{{ s }}</span>
+        </div>
+        <div class="tacho-score">
+          <span class="tacho-num">{{ resultados.promedios.calidadComida }}</span>
+          <span class="tacho-den">/5</span>
+        </div>
+        <div class="tacho-sub">promedio de {{ resultados.total }} votos</div>
+        <div class="star-pills">
+          <div class="star-pill" *ngFor="let s of [1,2,3,4,5]"
+            [style.border-color]="starColor(s)">
+            <div class="pill-num" [style.color]="starColor(s)">
+              {{ resultados.distribucion.calidadComida[s] }}
             </div>
-            <div class="barra">
-              <div
-                class="barra-relleno"
-                [style.width.%]="(resultados.distribucion.calidadComida[i] / resultados.total) * 100"
-              ></div>
-            </div>
-            <span class="cantidad">{{ resultados.distribucion.calidadComida[i] }}</span>
+            <div class="pill-lbl">★{{ s }}</div>
           </div>
         </div>
-      </ion-card-content>
-    </ion-card>
+      </div>
+    </div>
 
-    <!-- Distribución por estrellas - Calidad Servicio -->
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title>
-          <ion-icon name="bar-chart"></ion-icon>
-          Distribución: Calidad de Servicio
-        </ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <div class="distribucion-chart">
-          <div class="barra-item" *ngFor="let i of [5, 4, 3, 2, 1]">
-            <div class="estrellas">
-              <span>{{ i }}</span>
-              <ion-icon name="star" color="warning"></ion-icon>
-            </div>
-            <div class="barra">
-              <div
-                class="barra-relleno"
-                [style.width.%]="(resultados.distribucion.calidadServicio[i] / resultados.total) * 100"
-              ></div>
-            </div>
-            <span class="cantidad">{{ resultados.distribucion.calidadServicio[i] }}</span>
-          </div>
+   <!-- S6: Gráfico de Barras Servicio -->
+<div class="snap-screen barchart-screen" [style.height]="screenHeight">
+  <div class="screen-header">Calidad de Servicio</div>
+  <div class="screen-title">Votos por Estrella</div>
+  <div class="screen-title">Servicio</div>
+  
+  <div class="barchart-wrap">
+    <div class="barchart-item" *ngFor="let estrella of [5,4,3,2,1]">
+      <div class="barchart-label">{{ estrella }} ★</div>
+      <div class="barchart-bar-container">
+        <div class="barchart-bar" 
+             [style.width.%]="getPorcentajeVotos(resultados.distribucion.calidadServicio[estrella], resultados.total)"
+             [style.backgroundColor]="starColor(estrella)">
+          {{ resultados.distribucion.calidadServicio[estrella] > 0 ? resultados.distribucion.calidadServicio[estrella] : '' }}
         </div>
-      </ion-card-content>
-    </ion-card>
+      </div>
+      <div class="barchart-value">{{ resultados.distribucion.calidadServicio[estrella] }}</div>
+    </div>
+
+    <div class="barchart-stats">
+      <div class="barchart-stat">
+        <div class="barchart-stat-label">Total votos</div>
+        <div class="barchart-stat-value">{{ resultados.total }}</div>
+      </div>
+      <div class="barchart-stat">
+        <div class="barchart-stat-label">Promedio</div>
+        <div class="barchart-stat-value">{{ resultados.promedios.calidadServicio }}</div>
+      </div>
+      <div class="barchart-stat">
+        <div class="barchart-stat-label"> + votado</div>
+        <div class="barchart-stat-value">{{ getModa(resultados.distribucion.calidadServicio) }}★</div>
+      </div>
+    </div>
+  </div>
+</div>
+
   </div>
 </ion-content>

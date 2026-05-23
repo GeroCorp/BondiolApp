@@ -22,6 +22,15 @@
   },
   "private": true,
   "dependencies": {
+    "@angular/animations": "^20.0.0",
+    "@angular/common": "^20.0.0",
+    "@angular/compiler": "^20.0.0",
+    "@angular/core": "^20.0.0",
+    "@angular/forms": "^20.0.0",
+    "@angular/google-maps": "^20.2.13",
+    "@angular/platform-browser": "^20.0.0",
+    "@angular/platform-browser-dynamic": "^20.0.0",
+    "@angular/router": "^20.0.0",
     "@awesome-cordova-plugins/core": "^9.1.2",
     "@awesome-cordova-plugins/vibration": "^8.1.0",
     "@capacitor-mlkit/barcode-scanning": "^7.3.0",
@@ -38,16 +47,6 @@
     "@capacitor/push-notifications": "^7.0.3",
     "@capacitor/splash-screen": "^7.0.3",
     "@capacitor/status-bar": "^7.0.3",
-    "cordova-plugin-vibration": "^3.1.1",
-    "@angular/animations": "^20.0.0",
-    "@angular/common": "^20.0.0",
-    "@angular/compiler": "^20.0.0",
-    "@angular/core": "^20.0.0",
-    "@angular/forms": "^20.0.0",
-    "@angular/google-maps": "^20.2.13",
-    "@angular/platform-browser": "^20.0.0",
-    "@angular/platform-browser-dynamic": "^20.0.0",
-    "@angular/router": "^20.0.0",
     "@capgo/capacitor-social-login": "^7.14.9",
     "@emailjs/browser": "^4.4.1",
     "@googlemaps/extended-component-library": "^0.6.14",
@@ -57,6 +56,8 @@
     "@supabase/supabase-js": "^2.101.1",
     "angularx-qrcode": "^20.0.0",
     "bootstrap": "^5.3.8",
+    "chart.js": "^4.5.1",
+    "cordova-plugin-vibration": "^3.1.1",
     "dotenv": "^17.3.1",
     "ionicons": "^7.0.0",
     "mapbox-gl": "^3.16.0",
@@ -101,9 +102,6 @@
     "style-loader": "^4.0.0",
     "supabase": "^2.54.11",
     "typescript": "~5.8.0"
-  },
-  "optionalDependencies": {
-    
   },
   "description": "An Ionic project"
 }

@@ -1,177 +1,384 @@
-.loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 60vh;
+.resultados-content {
+  --background: #0f0f13;
 
-  ion-spinner {
-    margin-bottom: 20px;
-  }
 
-  p {
-    color: var(--ion-color-medium);
+  &::part(scroll) {
+    scroll-snap-type: y mandatory;
+    overflow-y: scroll;
+    padding: 0 !important;
+
   }
 }
 
-.empty-state {
+.snap-container {
   display: flex;
   flex-direction: column;
+}
+
+.snap-screen {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 24px 20px 20px;
+  overflow: hidden;
+
+}
+
+.screen-header {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: rgba(255,255,255,0.35);
+  margin-bottom: 4px;
+}
+
+.screen-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 16px;
+}
+
+/* ── Hero ── */
+.hero-screen {
+  background: linear-gradient(145deg, #6a040f, #9D0208);
   align-items: center;
   justify-content: center;
-  height: 60vh;
   text-align: center;
-  padding: 20px;
+  position: relative;
 
-  ion-icon {
+  .hero-num {
     font-size: 80px;
-    margin-bottom: 20px;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1;
   }
 
-  h2 {
-    color: var(--ion-color-dark);
-    margin-bottom: 8px;
+  .hero-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: rgba(255,255,255,0.6);
+    margin-top: 8px;
   }
 
-  p {
-    color: var(--ion-color-medium);
+  .hero-bg-icon {
+    position: absolute;
+    right: -16px;
+    bottom: -16px;
+    font-size: 160px;
+    color: rgba(255,255,255,0.05);
   }
 }
 
-// Promedios
-.promedio-item {
+/* ── Gauges ── */
+.gauges-screen {
+  background: #111118;
+}
+
+.gauges-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  flex: 1;
+}
+
+.gauge-card {
+  background: #1e1e28;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.gauge-ring-wrap {
+  position: relative;
+  width: 80px;
+  height: 80px;
+
+  .gauge-svg {
+    transform: rotate(-90deg);
+  }
+
+  .gauge-val {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+  }
+}
+
+.gauge-name {
+  font-size: 18px;
+  color: rgba(255,255,255,0.45);
+}
+
+/* ── Donut ── */
+.donut-screen {
+  background: #0f0f13;
+}
+
+.donut-wrap {
+  flex: 1;
+  flex-direction: column;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+}
+
+.donut-ring-wrap {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  flex-shrink: 0;
+
+  .donut-svg {
+    transform: rotate(-90deg);
+  }
+
+  .donut-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    .donut-pct {
+      font-size: 20px ;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .donut-sub {
+      font-size: 10px;
+      color: rgba(255,255,255,0.4);
+      margin-top: 2px;
+    }
+  }
+}
+
+.donut-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.leg-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  .leg-dot {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .leg-val {
+    font-size: 25px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1;
+  }
+
+  .leg-lbl {
+    font-size: 18px;
+    color: rgba(255,255,255,0.4);
+    margin-top: 2px;
+  }
+}
+
+/* ── Tacómetro ── */
+.tacho-screen {
+  background: #111118;
+  &:nth-child(even) { background: #0f0f13; }
+}
+
+.tacho-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+}
+
+.tacho-svg-wrap {
+  width: 280px;
+  height: 155px;
+}
+
+.tacho-star-labels {
   display: flex;
   justify-content: space-between;
+  width: 260px;
+  margin-top: -4px;
+
+  span {
+    font-size: 18px;
+    color: rgba(255,255,255,0.3);
+  }
+}
+
+.tacho-score {
+  margin-top: 12px;
+
+  .tacho-num {
+    font-size: 42px;
+    font-weight: 800;
+    color: #fff;
+  }
+
+  .tacho-den {
+    font-size: 18px;
+    color: rgba(255,255,255,0.3);
+  }
+}
+
+.tacho-sub {
+  font-size: 11px;
+  color: rgba(255,255,255,0.35);
+  margin-top: 2px;
+}
+
+.star-pills {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  width: 100%;
+}
+
+.star-pill {
+  flex: 1;
+  background: #1e1e28;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  padding: 8px 4px;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--ion-color-light);
+  gap: 3px;
 
-  &:last-child {
-    border-bottom: none;
+  .pill-num {
+    font-size: 20px;
+    font-weight: 700;
   }
 
-  .label {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-
-    ion-icon {
-      font-size: 24px;
-      color: var(--ion-color-primary);
-    }
-
-    span {
-      font-size: 16px;
-      font-weight: 500;
-    }
-  }
-
-  .rating {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-
-    .numero {
-      font-size: 20px;
-      font-weight: bold;
-      color: var(--ion-color-primary);
-    }
-
-    ion-icon {
-      font-size: 20px;
-    }
+  .pill-lbl {
+    font-size: 15px;
+    color: rgba(255,255,255,0.3);
   }
 }
 
-ion-card-title {
+/* ── States ── */
+.state-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  padding: 40px 20px;
+  background: #0f0f13;
+  color: rgba(255,255,255,0.6);
+
+  ion-spinner { margin-bottom: 16px; }
+  ion-icon { font-size: 5rem; color: #F48C06; margin-bottom: 16px; }
+  h2 { color: #fff; margin-bottom: 8px; }
+}
+
+/* ── Gráfico de Barras ── */
+.barchart-screen {
+  background: #0f0f13;
+}
+
+.barchart-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+}
+
+.barchart-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.barchart-label {
+  width: 45px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #FFD966;
+  text-align: right;
+}
+
+.barchart-bar-container {
+  flex: 1;
+  height: 40px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+}
+
+.barchart-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #F48C06, #FFB347);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 12px;
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  min-width: 40px;
+  transition: width 0.5s ease;
+}
+
+.barchart-value {
+  width: 40px;
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+  text-align: right;
+}
+
+.barchart-stats {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  justify-content: space-between;
+}
+
+.barchart-stat {
+  text-align: center;
+  flex: 1;
+}
+
+.barchart-stat-label {
+  font-size: 15px;
+  color: rgba(255,255,255,0.4);
+  text-transform: uppercase;
+}
+
+.barchart-stat-value {
   font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 12px;
-  color: var(--ion-color-primary);
-}
-
-// Recomendaciones
-.recomendacion-chart {
-  .barra-progreso {
-    width: 100%;
-    height: 40px;
-    background-color: var(--ion-color-light);
-    border-radius: 20px;
-    overflow: hidden;
-    margin-bottom: 16px;
-
-    .barra-si {
-      height: 100%;
-      background: linear-gradient(90deg, #2dd36f 0%, #10dc60 100%);
-      transition: width 0.6s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-weight: bold;
-    }
-  }
-
-  .recomendacion-stats {
-    display: flex;
-    justify-content: space-around;
-    gap: 12px;
-
-    .stat {
-      flex: 1;
-
-      ion-chip {
-        width: 100%;
-        justify-content: center;
-        font-size: 14px;
-      }
-    }
-  }
-}
-
-// Distribución
-.distribucion-chart {
-  .barra-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 12px;
-
-    .estrellas {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      min-width: 50px;
-
-      span {
-        font-weight: bold;
-        font-size: 16px;
-      }
-
-      ion-icon {
-        font-size: 18px;
-      }
-    }
-
-    .barra {
-      flex: 1;
-      height: 24px;
-      background-color: var(--ion-color-light);
-      border-radius: 12px;
-      overflow: hidden;
-
-      .barra-relleno {
-        height: 100%;
-        background: linear-gradient(90deg, #3880ff 0%, #5598ff 100%);
-        transition: width 0.6s ease;
-      }
-    }
-
-    .cantidad {
-      min-width: 30px;
-      text-align: right;
-      font-weight: 500;
-      color: var(--ion-color-medium);
-    }
-  }
+  font-weight: 700;
+  color: #eaad06;
 }
