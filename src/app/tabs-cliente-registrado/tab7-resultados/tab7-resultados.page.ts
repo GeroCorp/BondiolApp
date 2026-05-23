@@ -183,4 +183,24 @@ ionViewDidEnter() {
   this.screenHeight = `calc(100dvh - ${headerH}px)`;
   this.drawTachos();
 }
+
+getPorcentajeVotos(votos: number, total: number): number {
+  if (total === 0) return 0;
+  return (votos / total) * 100;
+}
+
+// Calcular la moda (estrella más votada)
+getModa(distribucion: any): number {
+  let maxVotos = 0;
+  let moda = 1;
+  
+  for (let i = 1; i <= 5; i++) {
+    if (distribucion[i] > maxVotos) {
+      maxVotos = distribucion[i];
+      moda = i;
+    }
+  }
+  
+  return moda;
+}
 }

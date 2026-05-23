@@ -133,33 +133,41 @@
       </div>
     </div>
 
-    <!-- S5: Tacómetro Servicio -->
-    <div class="snap-screen tacho-screen" [style.height]="screenHeight">
-      <div class="screen-header">Distribución</div>
-      <div class="screen-title">Calidad de Servicio</div>
-      <div class="tacho-wrap">
-        <div class="tacho-svg-wrap">
-          <svg #tachoServicio width="280" height="155" viewBox="0 0 280 155"></svg>
-        </div>
-        <div class="tacho-star-labels">
-          <span *ngFor="let s of [1,2,3,4,5]">★{{ s }}</span>
-        </div>
-        <div class="tacho-score">
-          <span class="tacho-num">{{ resultados.promedios.calidadServicio }}</span>
-          <span class="tacho-den">/5</span>
-        </div>
-        <div class="tacho-sub">promedio de {{ resultados.total }} votos</div>
-        <div class="star-pills">
-          <div class="star-pill" *ngFor="let s of [1,2,3,4,5]"
-            [style.border-color]="starColor(s)">
-            <div class="pill-num" [style.color]="starColor(s)">
-              {{ resultados.distribucion.calidadServicio[s] }}
-            </div>
-            <div class="pill-lbl">★{{ s }}</div>
-          </div>
+   <!-- S6: Gráfico de Barras Servicio -->
+<div class="snap-screen barchart-screen" [style.height]="screenHeight">
+  <div class="screen-header">Calidad de Servicio</div>
+  <div class="screen-title">Votos por Estrella</div>
+  <div class="screen-title">Servicio</div>
+  
+  <div class="barchart-wrap">
+    <div class="barchart-item" *ngFor="let estrella of [5,4,3,2,1]">
+      <div class="barchart-label">{{ estrella }} ★</div>
+      <div class="barchart-bar-container">
+        <div class="barchart-bar" 
+             [style.width.%]="getPorcentajeVotos(resultados.distribucion.calidadServicio[estrella], resultados.total)"
+             [style.backgroundColor]="starColor(estrella)">
+          {{ resultados.distribucion.calidadServicio[estrella] > 0 ? resultados.distribucion.calidadServicio[estrella] : '' }}
         </div>
       </div>
+      <div class="barchart-value">{{ resultados.distribucion.calidadServicio[estrella] }}</div>
     </div>
+
+    <div class="barchart-stats">
+      <div class="barchart-stat">
+        <div class="barchart-stat-label">Total votos</div>
+        <div class="barchart-stat-value">{{ resultados.total }}</div>
+      </div>
+      <div class="barchart-stat">
+        <div class="barchart-stat-label">Promedio</div>
+        <div class="barchart-stat-value">{{ resultados.promedios.calidadServicio }}</div>
+      </div>
+      <div class="barchart-stat">
+        <div class="barchart-stat-label"> + votado</div>
+        <div class="barchart-stat-value">{{ getModa(resultados.distribucion.calidadServicio) }}★</div>
+      </div>
+    </div>
+  </div>
+</div>
 
   </div>
 </ion-content>

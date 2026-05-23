@@ -118,7 +118,7 @@
 }
 
 .gauge-name {
-  font-size: 11px;
+  font-size: 18px;
   color: rgba(255,255,255,0.45);
 }
 
@@ -129,6 +129,7 @@
 
 .donut-wrap {
   flex: 1;
+  flex-direction: column;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -154,7 +155,7 @@
     justify-content: center;
 
     .donut-pct {
-      font-size: 26px;
+      font-size: 20px ;
       font-weight: 700;
       color: #fff;
     }
@@ -179,21 +180,21 @@
   gap: 10px;
 
   .leg-dot {
-    width: 10px;
-    height: 10px;
+    width: 15px;
+    height: 15px;
     border-radius: 50%;
     flex-shrink: 0;
   }
 
   .leg-val {
-    font-size: 22px;
+    font-size: 25px;
     font-weight: 700;
     color: #fff;
     line-height: 1;
   }
 
   .leg-lbl {
-    font-size: 11px;
+    font-size: 18px;
     color: rgba(255,255,255,0.4);
     margin-top: 2px;
   }
@@ -226,7 +227,7 @@
   margin-top: -4px;
 
   span {
-    font-size: 10px;
+    font-size: 18px;
     color: rgba(255,255,255,0.3);
   }
 }
@@ -271,12 +272,12 @@
   gap: 3px;
 
   .pill-num {
-    font-size: 15px;
+    font-size: 20px;
     font-weight: 700;
   }
 
   .pill-lbl {
-    font-size: 9px;
+    font-size: 15px;
     color: rgba(255,255,255,0.3);
   }
 }
@@ -296,4 +297,88 @@
   ion-spinner { margin-bottom: 16px; }
   ion-icon { font-size: 5rem; color: #F48C06; margin-bottom: 16px; }
   h2 { color: #fff; margin-bottom: 8px; }
+}
+
+/* ── Gráfico de Barras ── */
+.barchart-screen {
+  background: #0f0f13;
+}
+
+.barchart-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+}
+
+.barchart-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.barchart-label {
+  width: 45px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #FFD966;
+  text-align: right;
+}
+
+.barchart-bar-container {
+  flex: 1;
+  height: 40px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+}
+
+.barchart-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #F48C06, #FFB347);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 12px;
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  min-width: 40px;
+  transition: width 0.5s ease;
+}
+
+.barchart-value {
+  width: 40px;
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+  text-align: right;
+}
+
+.barchart-stats {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  justify-content: space-between;
+}
+
+.barchart-stat {
+  text-align: center;
+  flex: 1;
+}
+
+.barchart-stat-label {
+  font-size: 15px;
+  color: rgba(255,255,255,0.4);
+  text-transform: uppercase;
+}
+
+.barchart-stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #eaad06;
 }
