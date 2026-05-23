@@ -119,6 +119,26 @@ export class ClienteService {
   }
 
   async checkRejected(){
+    if (this.tipoClienteService.isAnonimo()) {
+      const clienteData = this.tipoClienteService.getClienteData();
+      const mesaId = clienteData?.mesa_asignada;
+      if (!mesaId) return [];
+      const hoy = new Date();
+      const inicioDia = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()).toISOString();
+      const finDia = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + 1).toISOString();
+      const { data, error } = await this.supabase
+        .from('pedidos')
+        .select('*')
+        .eq('mesa', mesaId)
+        .is('id_cliente', null)
+        .eq('estado', 'rechazado')
+        .gte('fecha', inicioDia)
+        .lt('fecha', finDia);
+      if (error) {
+        throw new Error('Error al verificar pedidos rechazados: ' + error.message);
+      }
+      return data || [];
+    }
     const clienteId = await this.getClientId();
     const { data, error } = await this.supabase
     .from('pedidos')
@@ -654,11 +674,18 @@ getSubtotal(): number {
       }
       
       try {
+        const hoy = new Date();
+        const inicioDia = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()).toISOString();
+        const finDia = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + 1).toISOString();
+
         const { data } = await this.supabase
         .from('pedidos')
         .select('*')
         .eq('mesa', mesaAsignada)
+        .gte('fecha', inicioDia)
+        .lt('fecha', finDia)
         .order('fecha', { ascending: false })
+        .limit(1)
         
         if (data?.length === 0 || !data) {
           console.log('No hay pedidos para esta mesa');
@@ -1636,7 +1663,28 @@ async getPedidoActivo(){
         console.warn('⚠️ Cliente anónimo sin mesa asignada');
         return null;
       }
-    }
+
+      // ✅ ANÓNIMO: buscar por mesa con id_cliente null
+      const { data, error } = await this.supabase
+        .from('pedidos')
+        .select(
+          `id, estado, fecha, total, tiempo_estimado,
+            detalles_pedido:detalles_pedido(nombre_prod, cantidad, precio_unitario, tipo)
+          `)
+        .eq('mesa', mesaId)
+        .is('id_cliente', null)
+        .neq('estado', 'rechazado')
+        .order('fecha', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) {
+        throw new Error('Error al obtener pedido activo anónimo: ' + error.message);
+      }
+
+      pedido = data || null;
+    } else {
+      // ✅ REGISTRADO: buscar por id_cliente
       const clienteId = await this.getClientId();
       const { data, error } = await this.supabase
         .from('pedidos')
@@ -1648,31 +1696,33 @@ async getPedidoActivo(){
         .neq('estado', 'rechazado')
         .order('fecha', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (error) {
         throw new Error('Error al obtener pedido activo: ' + error.message);
       }
-      if (!data) {
-        console.log('⚠️ No se encontró pedido activo para el cliente');
-        return null;
-      }
 
       pedido = data || null;
-      console.log("Pedido recuperado: ", pedido);
+    }
 
-      // Agregar las imagenes a detalles del pedido
-      if (pedido.detalles_pedido && pedido.detalles_pedido.length > 0) {
-        await Promise.all(pedido.detalles_pedido.map(async (detalle: any) => {
-          detalle.imagen = await this.getImagenDetalles(detalle.tipo, detalle.nombre_prod);
-        }));
-      }
-      return pedido;
-    }catch ( e ){
-      console.error('❌ Error en getPedidoActivo:', e);
+    if (!pedido) {
+      console.log('⚠️ No se encontró pedido activo');
       return null;
     }
 
+    console.log("Pedido recuperado: ", pedido);
+
+    // Agregar las imagenes a detalles del pedido
+    if (pedido.detalles_pedido && pedido.detalles_pedido.length > 0) {
+      await Promise.all(pedido.detalles_pedido.map(async (detalle: any) => {
+        detalle.imagen = await this.getImagenDetalles(detalle.tipo, detalle.nombre_prod);
+      }));
+    }
+    return pedido;
+  } catch (e) {
+    console.error('❌ Error en getPedidoActivo:', e);
+    return null;
+  }
 }
 
 async confirmarPedido(){
@@ -1843,8 +1893,15 @@ async subscribeToHistorialPedidos(onPedidosChanged?: () => Promise<void>) {
         { event: 'INSERT', schema: 'public', table: 'pedidos', filter:filtro },
         async (payload) => {
           console.log('🆕 Nuevo pedido detectado:', payload);
-          // Recargar historial
-          
+          await this.getHistorialPedidos();
+          if (onPedidosChanged) {
+            try {
+              await onPedidosChanged();
+              console.log('✅ Callback de INSERT ejecutado');
+            } catch (error) {
+              console.error('❌ Error en callback de INSERT:', error);
+            }
+          }
         }
       )
       .subscribe();

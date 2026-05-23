@@ -16,6 +16,19 @@
   </ion-header>
 
   @if (!juegoActivo) {
+    @if (isAnonimo) {
+    <ion-card color="warning">
+      <ion-card-content>
+        <div style="text-align: center; padding: 20px;">
+          <ion-icon name="information-circle" style="font-size: 64px;"></ion-icon>
+          <h2 style="margin: 10px 0;">Modo Invitado</h2>
+          <p style="color: var(--text-primary)">Puedes jugar libremente, pero los descuentos solo están disponibles para clientes registrados. ¡Regístrate para ganar premios!</p>
+        </div>
+      </ion-card-content>
+    </ion-card>
+    }
+
+    @if (!isAnonimo) {
     <!-- Tarjeta de estado de descuento -->
     <ion-card [color]="descuentoObtenido > 0 ? 'success' : (primerIntentoUsado ? 'warning' : 'secondary')">
       <ion-card-content>
@@ -37,6 +50,7 @@
         </div>
       </ion-card-content>
     </ion-card>
+    }
 
     <!-- Selector de juegos -->
     <ion-card class="style-card main-card">
@@ -116,6 +130,7 @@
       </ion-card-content>
     </ion-card>
 
+    @if (!isAnonimo) {
     <!-- Información adicional -->
     <ion-card class="style-card main-card">
       <ion-card-header>
@@ -153,6 +168,7 @@
         </ion-list>
       </ion-card-content>
     </ion-card>
+    }
 
   } @else {
     <!-- Contenedor del juego activo -->

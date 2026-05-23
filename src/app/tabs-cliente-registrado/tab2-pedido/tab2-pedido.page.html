@@ -9,55 +9,137 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-card class="main-card">
+
+  <!-- ===================== CARRITO: items para confirmar ===================== -->
+  <ion-card class="main-card" *ngIf="pedido().length > 0">
     <ion-card-header class="ion-text-center">
       <ion-card-title>Pedido</ion-card-title>
       <ion-card-subtitle>Productos seleccionados: {{ clienteService.getItemCount() }}</ion-card-subtitle>
     </ion-card-header>
-    
+
     <ion-card-content class="main-container">
-      @if (pedido().length > 0) {
-        <ion-list>
-          @for (item of pedido(); track $index) {
-            <ion-item class="item-lista">
-              <div class="info">
-
-                <div class="image-container">
-                  <img [src]="handleImages(item)" alt="">
-
-                </div>
-                
-                <div class="detalles">
-                  <!-- Producto -->
-                   <h2>{{ item.nombre | titlecase }}</h2>
-                  <!-- Precio unitario -->
-                   <p>{{ item.quantity }} x {{ item.precio | currency  }}</p>
-                </div>
-                <div class="subtotal">
-                  <!-- Precio unitario * cantidad -->
-                  {{ item.subtotal | currency }}
-                </div>
+      <ion-list>
+        @for (item of pedido(); track $index) {
+          <ion-item class="item-lista">
+            <div class="info">
+              <div class="image-container">
+                <img [src]="handleImages(item)" alt="">
               </div>
-            </ion-item>
-          }
-        </ion-list>
+              <div class="detalles">
+                <h2>{{ item.nombre | titlecase }}</h2>
+              </div>
+              <div class="cantidad-controls">
+                <ion-button fill="clear" size="small" (click)="decreaseQuantity($index)">
+                  <ion-icon name="remove-circle-outline" color="danger"></ion-icon>
+                </ion-button>
+                <span class="cantidad-valor">{{ item.quantity }}</span>
+                <ion-button fill="clear" size="small" (click)="increaseQuantity($index)">
+                  <ion-icon name="add-circle-outline" color="success"></ion-icon>
+                </ion-button>
+              </div>
+              <div class="subtotal">
+                {{ item.subtotal | currency }}
+              </div>
+              <ion-button fill="clear" size="small" (click)="removeItem($index)" slot="end">
+                <ion-icon name="trash-outline" color="medium"></ion-icon>
+              </ion-button>
+            </div>
+          </ion-item>
+        }
+      </ion-list>
 
-        <!-- Total Final -->
-        <ion-item lines="none" color="secondary">
-          <ion-label>
-            <h2><strong>TOTAL:</strong></h2>
-          </ion-label>
-          <ion-note slot="end" color="light">
-            <h2 class="precio-total">{{ subtotal | currency:'$':'symbol':'1.0-0' }}</h2>
-          </ion-note>
-        </ion-item>
-        
-        <ion-button expand="block" color="secondary" class="ion-margin-top" (click)="confirmarPedido()">
-          Confirmar Pedido
-          <ion-icon name="checkmark-outline" slot="end"></ion-icon>
-        </ion-button>
-      }
+      <ion-item lines="none" color="secondary">
+        <ion-label>
+          <h2><strong>TOTAL:</strong></h2>
+        </ion-label>
+        <ion-note slot="end" color="light">
+          <h2 class="precio-total">{{ subtotal | currency:'$':'symbol':'1.0-0' }}</h2>
+        </ion-note>
+      </ion-item>
+
+      <ion-button expand="block" color="secondary" class="ion-margin-top" (click)="confirmarPedido()">
+        Confirmar Pedido
+        <ion-icon name="checkmark-outline" slot="end"></ion-icon>
+      </ion-button>
     </ion-card-content>
   </ion-card>
+
+  <!-- ===================== PEDIDO ACTIVO: estado en tiempo real ===================== -->
+  <ng-container *ngIf="pedido().length === 0">
+
+    <!-- Cargando -->
+    <div *ngIf="cargandoPedidoActivo" class="loading-container" style="display:flex; flex-direction:column; align-items:center; padding: 40px;">
+      <ion-spinner name="crescent" color="secondary"></ion-spinner>
+      <p style="margin-top: 12px; color: var(--ion-color-medium)">Cargando tu pedido...</p>
+    </div>
+
+    <!-- Pedido activo encontrado -->
+    <ion-card *ngIf="!cargandoPedidoActivo && pedidoActivo" class="main-card">
+      <ion-card-header class="ion-text-center">
+        <ion-card-title>Estado de tu Pedido</ion-card-title>
+        <ion-card-subtitle>Pedido #{{ pedidoActivo.id }}</ion-card-subtitle>
+      </ion-card-header>
+
+      <ion-card-content>
+        <!-- Badge de estado -->
+        <div style="text-align: center; margin-bottom: 20px;">
+          <ion-badge [color]="getColorEstado(pedidoActivo.estado)" style="font-size: 1rem; padding: 10px 20px;">
+            {{ getTextoEstado(pedidoActivo.estado) }}
+          </ion-badge>
+        </div>
+
+        <!-- Tiempo estimado si existe -->
+        <div *ngIf="pedidoActivo.tiempo_estimado" style="text-align: center; margin-bottom: 16px;">
+          <ion-icon name="time-outline" color="secondary"></ion-icon>
+          <span style="margin-left: 6px;">Tiempo estimado: <strong>{{ pedidoActivo.tiempo_estimado }} min</strong></span>
+        </div>
+
+        <!-- Detalle de items -->
+        <ion-list *ngIf="pedidoActivo.detalles_pedido?.length > 0">
+          <ion-list-header>
+            <ion-label><strong>Items</strong></ion-label>
+          </ion-list-header>
+          <ion-item *ngFor="let detalle of pedidoActivo.detalles_pedido">
+            <ion-avatar slot="start" *ngIf="detalle.imagen">
+              <img [src]="detalle.imagen" alt="">
+            </ion-avatar>
+            <ion-label>
+              <h3>{{ detalle.nombre_prod | titlecase }}</h3>
+              <p>{{ detalle.cantidad }}x — ${{ detalle.precio_unitario }}</p>
+            </ion-label>
+            <ion-badge slot="end" [color]="detalle.tipo === 'plato' ? 'secondary' : 'danger'">
+              {{ detalle.tipo === 'plato' ? 'Cocina' : 'Bar' }}
+            </ion-badge>
+          </ion-item>
+        </ion-list>
+
+        <!-- Total -->
+        <ion-item lines="none" color="secondary" style="margin-top: 12px;">
+          <ion-label><h2><strong>TOTAL:</strong></h2></ion-label>
+          <ion-note slot="end" color="light">
+            <h2>{{ pedidoActivo.total | currency:'$':'symbol':'1.0-0' }}</h2>
+          </ion-note>
+        </ion-item>
+
+        <!-- Botón para actualizar estado -->
+        <ion-button expand="block" fill="outline" color="secondary" class="ion-margin-top" (click)="cargarPedidoActivo()">
+          <ion-icon slot="start" name="refresh-outline"></ion-icon>
+          Actualizar estado
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Sin pedidos -->
+    <div *ngIf="!cargandoPedidoActivo && !pedidoActivo" style="display:flex; flex-direction:column; align-items:center; padding: 60px 20px; text-align:center;">
+      <ion-icon name="receipt-outline" style="font-size: 64px; color: var(--ion-color-medium);"></ion-icon>
+      <h3 style="color: var(--ion-color-medium); margin-top: 16px;">No tenés pedidos activos</h3>
+      <p style="color: var(--ion-color-medium);">Explorá el menú para hacer tu primer pedido.</p>
+      <ion-button fill="outline" color="secondary" (click)="volverHome()">
+        <ion-icon slot="start" name="home-outline"></ion-icon>
+        Volver al inicio
+      </ion-button>
+    </div>
+
+  </ng-container>
 
 </ion-content>
