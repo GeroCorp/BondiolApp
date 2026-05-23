@@ -19,7 +19,7 @@ export class Tab3ClientesPage {
   registerForm: FormGroup;
   qrData: string | null = null;
   trimed: string[] | null = null;
-
+  passwordVisible = false;
   constructor(
     private formBuilder: FormBuilder,
     private router: Router,
@@ -114,6 +114,9 @@ export class Tab3ClientesPage {
     }
   }
 
+   cambiarVisibilidadPassword() {
+    this.passwordVisible = !this.passwordVisible;
+  }
   async leerQR() {
     try {
       const granted = await BarcodeScanner.checkPermissions();

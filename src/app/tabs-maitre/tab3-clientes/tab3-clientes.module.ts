@@ -6,6 +6,8 @@ import { IonicModule } from '@ionic/angular';
 
 import { Tab3ClientesPageRoutingModule } from './tab3-clientes-routing.module';
 import { Tab3ClientesPage } from './tab3-clientes.page';
+import { SecondaryButtonComponent } from 'src/app/components/secondary-button/secondary-button.component';
+import { MainButtonComponent } from 'src/app/components/main-button/main-button.component';
 
 @NgModule({
   imports: [
@@ -14,6 +16,8 @@ import { Tab3ClientesPage } from './tab3-clientes.page';
     ReactiveFormsModule,   
     IonicModule,
     Tab3ClientesPageRoutingModule,
+    SecondaryButtonComponent,
+    MainButtonComponent
   ],
   declarations: [Tab3ClientesPage]
 })
