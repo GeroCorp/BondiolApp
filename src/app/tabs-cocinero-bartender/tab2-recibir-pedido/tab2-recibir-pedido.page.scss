@@ -10,6 +10,10 @@ ion-header {
       font-weight: 700;
       font-size: 1.2rem;
     }
+
+    ion-back-button {
+      --color: #fff;
+    }
   }
 
   ion-segment {
@@ -29,64 +33,47 @@ ion-header {
 
 .pedido-content {
   --background: linear-gradient(180deg, #370617 0%, #6A040F 40%, #9D0208 100%);
-  --padding-start: 12px;
-  --padding-end: 12px;
-}
+  --padding-start: 0;
+  --padding-end: 0;
 
+  &::part(scroll) {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
 
-.snap-scroll {
-  height: 100%;
-  overflow-y: auto;
-  scroll-snap-type: y mandatory;
-  scroll-behavior: smooth;
-}
-
-
-/* ================= WRAPPER ================= */
-
-.pedido-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-/* ================= LISTA ================= */
-
-.pedidos-list {
-  width: 100%;
-  max-width: 420px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  > div {
+    min-height: 100%;
+    box-sizing: border-box;
+    padding: 6px 6px 0;
+  }
 }
 
 /* ================= CARD ================= */
 
 .pedido-card {
-  width: 100%;
-  height: 70vh; 
-  scroll-snap-align: start;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  margin: 0 0 8px 0;
+  max-height: 33vh;
+  overflow: hidden;
 
-  border-radius: 16px;
-  margin: 16px 0;
+  border-radius: 12px;
 
   background: linear-gradient(145deg, #370617, #6a040f);
   box-shadow: 0 8px 24px rgba(0,0,0,0.4);
 
+  display: flex;
+  flex-direction: column;
+
   ion-card-header {
-    padding: 16px;
+    flex-shrink: 0;
+    padding: 8px 10px;
     border-bottom: 1px solid rgba(255,255,255,0.1);
 
     ion-card-title {
       color: #F48C06;
-      font-size: 1.2rem;
+      font-size: 1rem;
       font-weight: 700;
-
       display: flex;
-      gap: 10px;
+      gap: 6px;
       flex-wrap: wrap;
     }
 
@@ -96,7 +83,7 @@ ion-header {
       .pedido-info {
         display: flex;
         flex-direction: column;
-        gap: 6px;
+        gap: 3px;
       }
 
       .pedido-details {
@@ -108,28 +95,61 @@ ion-header {
   }
 
   ion-card-content {
-    padding: 16px;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 6px 10px 8px;
     color: #ffffff;
 
-    /* SCROLL INTERNO */
-    overflow-y: auto;
+    .items-section {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
 
     .items-title {
+      flex-shrink: 0;
       color: #F48C06;
       font-weight: 600;
-      margin-bottom: 10px;
+      font-size: 0.8rem;
+      margin: 0 0 4px 0;
     }
 
-    .item-pedido {
-      --background: rgba(255,255,255,0.05);
-      margin-bottom: 6px;
-      border-radius: 8px;
+    .items-list {
+      flex: 1;
+      overflow-y: auto;
+      min-height: 0;
+
+      ion-item.item-pedido {
+        --background: rgba(255,255,255,0.05);
+        margin-bottom: 3px;
+        border-radius: 6px;
+        --min-height: 32px;
+        font-size: 0.85rem;
+
+        ion-icon {
+          font-size: 16px;
+        }
+      }
     }
 
-    ion-button {
-      margin-top: 12px;
-      --border-radius: 12px;
-      font-weight: 600;
+    .pedido-actions {
+      flex-shrink: 0;
+      margin-top: 6px;
+
+      ion-button {
+        margin: 0;
+        height: 32px;
+        font-size: 0.75rem;
+        --border-radius: 8px;
+        font-weight: 600;
+        --padding-start: 8px;
+        --padding-end: 8px;
+      }
     }
   }
 }
@@ -140,7 +160,8 @@ ion-header {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 60px 20px;
+  justify-content: center;
+  height: calc(100vh - var(--offset-top, 60px) - 56px - 48px);
   color: #ffffff;
 
   ion-spinner {
@@ -152,6 +173,11 @@ ion-header {
 /* ================= EMPTY ================= */
 
 .pedido-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: calc(100vh - var(--offset-top, 60px) - 56px - 48px);
   text-align: center;
   padding: 40px 20px;
   color: #ffffff;
@@ -169,5 +195,19 @@ ion-header {
 
   p {
     color: rgba(255,255,255,0.7);
+  }
+}
+
+@media screen and (max-height: 800px) {
+  .pedido-card {
+    max-height: 35vh;
+
+    ion-card-header {
+      padding: 5px 8px;
+    }
+
+    ion-card-content {
+      padding: 4px 8px 6px;
+    }
   }
 }

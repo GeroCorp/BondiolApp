@@ -1,5 +1,8 @@
 <ion-header>
   <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home" icon="arrow-back"></ion-back-button>
+    </ion-buttons>
     <ion-title>Recibir pedidos</ion-title>
   </ion-toolbar>
 
@@ -28,10 +31,8 @@
   </div>
 
     <!-- CONTENIDO -->
-    <div *ngIf="!isLoading && pedidos.length > 0" class="pedido-wrapper">
-
-    <div *ngIf="tabSeleccionado === 'pendientes'" class="pedidos-list">
-      <ion-card *ngFor="let pedidoSector of pedidosPendientes" class="pedido-card">
+    <div *ngIf="!isLoading && pedidos.length > 0 && tabSeleccionado === 'pendientes'">
+      <ion-card *ngFor="let pedidoSector of pedidosPendientes; trackBy: trackByPedidoId" class="pedido-card">
 
         <ion-card-header>
           <ion-card-title>
@@ -98,10 +99,9 @@
         </ion-card-content>
       </ion-card>
     </div>
-  </div>
 
-    <div *ngIf="tabSeleccionado === 'preparacion'" class="pedidos-list">
-      <ion-card *ngFor="let pedidoSector of pedidosPreparacion" class="pedido-card">
+    <div *ngIf="!isLoading && pedidos.length > 0 && tabSeleccionado === 'preparacion'">
+      <ion-card *ngFor="let pedidoSector of pedidosPreparacion; trackBy: trackByPedidoId" class="pedido-card">
 
         <ion-card-header>
           <ion-card-title>

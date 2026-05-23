@@ -58,6 +58,7 @@ ion-tab-bar {
 
 ion-content {
   @extend %tabs-content-dark-blue;
+  --offset-top: 60px;
 }
 
 ion-tab-button[tab="tab3-consultas"] {
