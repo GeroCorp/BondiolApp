@@ -254,8 +254,8 @@ ion-content.container {
   }
 
   .image-container {
-    width: 90px;
-    height: 90px;
+    width: 140px;
+    height: 140px;
   }
 
   .card-info {
@@ -271,11 +271,10 @@ ion-content.container {
       font-size: 0.85rem;
     }
   }
-
+  
   .card-actions {
     .btn-liberar {
-      height: 32px;
-      font-size: 0.75rem;
+      display:none;
     }
   }
 
