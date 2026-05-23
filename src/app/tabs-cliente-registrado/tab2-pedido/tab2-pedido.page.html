@@ -17,32 +17,36 @@
       <ion-card-subtitle>Productos seleccionados: {{ clienteService.getItemCount() }}</ion-card-subtitle>
     </ion-card-header>
 
-    <ion-card-content class="main-container">
+    <ion-card-content class="main-container dynamic-height">
       <ion-list>
         @for (item of pedido(); track $index) {
           <ion-item class="item-lista">
             <div class="info">
               <div class="image-container">
-                <img [src]="handleImages(item)" alt="">
+                @if (handleImages(item); as imgSrc) {
+                  <img [src]="imgSrc" alt="">
+                } @else {
+                  <ion-icon name="image-outline" class="image-placeholder"></ion-icon>
+                }
               </div>
-              <div class="detalles">
-                <h2>{{ item.nombre | titlecase }}</h2>
+              <div class="item-content">
+                <h2 class="item-nombre">{{ item.nombre | titlecase }}</h2>
+                <div class="item-bottom-row">
+                  <div class="cantidad-controls">
+                    <ion-button fill="clear" size="small" (click)="decreaseQuantity($index)">
+                      <ion-icon name="remove-circle-outline" color="danger"></ion-icon>
+                    </ion-button>
+                    <span class="cantidad-valor">{{ item.quantity }}</span>
+                    <ion-button fill="clear" size="small" (click)="increaseQuantity($index)">
+                      <ion-icon name="add-circle-outline" color="success"></ion-icon>
+                    </ion-button>
+                  </div>
+                  <span class="subtotal">{{ item.subtotal | currency }}</span>
+                  <ion-button fill="clear" size="small" (click)="removeItem($index)">
+                    <ion-icon name="trash-outline" color="medium"></ion-icon>
+                  </ion-button>
+                </div>
               </div>
-              <div class="cantidad-controls">
-                <ion-button fill="clear" size="small" (click)="decreaseQuantity($index)">
-                  <ion-icon name="remove-circle-outline" color="danger"></ion-icon>
-                </ion-button>
-                <span class="cantidad-valor">{{ item.quantity }}</span>
-                <ion-button fill="clear" size="small" (click)="increaseQuantity($index)">
-                  <ion-icon name="add-circle-outline" color="success"></ion-icon>
-                </ion-button>
-              </div>
-              <div class="subtotal">
-                {{ item.subtotal | currency }}
-              </div>
-              <ion-button fill="clear" size="small" (click)="removeItem($index)" slot="end">
-                <ion-icon name="trash-outline" color="medium"></ion-icon>
-              </ion-button>
             </div>
           </ion-item>
         }

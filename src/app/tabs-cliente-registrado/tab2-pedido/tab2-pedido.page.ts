@@ -34,6 +34,9 @@ export class Tab2PedidoPage implements OnInit {
     this.setIsDelivery();
     await this.calcularTotales();
     await this.cargarPedidoActivo();
+    if (this.pedido().length === 0) {
+      this.router.navigate(['/tabs-cliente-registrado/tab1-menu']);
+    }
   }
 
   setIsDelivery() {
@@ -80,6 +83,9 @@ export class Tab2PedidoPage implements OnInit {
   async removeItem(index: number) {
     this.clienteService.removeItem(index);
     await this.calcularTotales();
+    if (this.pedido().length === 0) {
+      this.router.navigate(['/tabs-cliente-registrado/tab1-menu']);
+    }
   }
 
   clearPedido() {
@@ -94,24 +100,10 @@ export class Tab2PedidoPage implements OnInit {
     await this.customLoader.show();
     try {
       await this.clienteService.insertPedido();
-      
-      await this.showToast(
-        this.porcentajeDescuento > 0 
-          ? `¡Pedido confirmado con ${this.porcentajeDescuento}% de descuento!` 
-          : 'Pedido confirmado exitosamente',
-        'success'
-      );
-      
       this.clienteService.clearPedido();
       await this.calcularTotales();
       this.clienteService.setJuegosAccess(true);
-
-      // Cargar el pedido activo recién creado
-      await this.cargarPedidoActivo();
-
-      setTimeout(() => {
-        this.router.navigate(['/home-cliente']);
-      }, 1500);
+      this.router.navigate(['/tabs-cliente-registrado/tab1-menu']);
     } catch (error) {
       console.error('Error al confirmar pedido:', error);
       await this.showToast('Error al confirmar el pedido', 'danger');
@@ -130,10 +122,13 @@ export class Tab2PedidoPage implements OnInit {
     const currentItem = this.clienteService.pedido()[index];
     this.clienteService.updateItemQuantity(index, currentItem.quantity - 1);
     await this.calcularTotales();
+    if (this.pedido().length === 0) {
+      this.router.navigate(['/tabs-cliente-registrado/tab1-menu']);
+    }
   }
 
   volverHome(){
-    this.router.navigate(['/home-cliente']);
+    this.router.navigate(['/tabs-cliente-registrado/tab1-menu']);
   }
 
   async showToast(message: string, color: 'success' | 'danger' | 'medium' = 'medium') {

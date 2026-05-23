@@ -199,6 +199,12 @@ ion-header {
 
 .empty-state {
   @extend %tabs-empty-state;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
 }
 
 // Modal Detalle Pedido - centrado y compacto
