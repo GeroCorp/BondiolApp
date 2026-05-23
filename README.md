@@ -5,7 +5,8 @@
 
 ## Icono del local
 
-<img width="250" height="250" alt="icon-only" src="https://github.com/user-attachments/assets/4d4fd8bd-d805-4616-9ab4-af32eeee228c" />
+<img width="250" alt="icon-only" src="https://github.com/user-attachments/assets/1bd9a443-19e9-4a80-97ba-1db275460397" />
+
 
 ## Screens de la app
 
