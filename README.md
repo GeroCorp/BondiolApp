@@ -5,7 +5,8 @@
 
 ## Icono del local
 
-<img width="250" height="250" alt="icon-only" src="https://github.com/user-attachments/assets/4d4fd8bd-d805-4616-9ab4-af32eeee228c" />
+<img width="250" alt="icon-only" src="https://github.com/user-attachments/assets/1bd9a443-19e9-4a80-97ba-1db275460397" />
+
 
 ## Screens de la app
 
@@ -46,12 +47,7 @@
 
 <img width="300" height="300" alt="lista_de_espera" src="https://github.com/user-attachments/assets/de731e55-a413-425b-87ad-89e8cf500d70" />
 
-### QR para test mesa
-En orden son: Mesa 8, Mesa 7, Mesa 6, Mesa 5\
-<img width="100" height="100" alt="mesa 1" src="https://zqcgzuszxljgbbwbriph.supabase.co/storage/v1/object/public/mesas/mesa_1/qr.jpeg" />
-<img width="100" height="100" alt="mesa 2" src="https://zqcgzuszxljgbbwbriph.supabase.co/storage/v1/object/public/mesas/mesa_2/qr.jpeg" />
-<img width="100" height="100" alt="mesa 3" src="https://zqcgzuszxljgbbwbriph.supabase.co/storage/v1/object/public/mesas/mesa_3/qr.jpeg" />
-<img width="100" height="100" alt="Mesa 4" src="https://zqcgzuszxljgbbwbriph.supabase.co/storage/v1/object/public/mesas/mesa_4/qr.jpeg" />
+### QR de Propinas
 
 <table style="width: 100%;">
     <tr>
