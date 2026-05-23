@@ -1,10 +1,17 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-button color="secondary" (click)="volverHome()" fill="clear" shape="round" slot="end">
-      Volver
-      <ion-icon slot="start" name="home-outline"></ion-icon>
-    </ion-button>
+    <ion-buttons slot="start">
+      <ion-button color="secondary" (click)="volverHome()" fill="clear" shape="round">
+        <ion-icon name="arrow-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
     <ion-title>Juegos - Descuentos</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" shape="round" (click)="abrirReglas()">
+        <ion-icon slot="start" name="information-circle-outline"></ion-icon>
+        Reglas
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
@@ -16,6 +23,19 @@
   </ion-header>
 
   @if (!juegoActivo) {
+    @if (isAnonimo) {
+    <ion-card color="warning">
+      <ion-card-content>
+        <div style="text-align: center; padding: 20px;">
+          <ion-icon name="information-circle" style="font-size: 64px;"></ion-icon>
+          <h2 style="margin: 10px 0;">Modo Invitado</h2>
+          <p style="color: var(--text-primary)">Puedes jugar libremente, pero los descuentos solo están disponibles para clientes registrados. ¡Regístrate para ganar premios!</p>
+        </div>
+      </ion-card-content>
+    </ion-card>
+    }
+
+    @if (!isAnonimo) {
     <!-- Tarjeta de estado de descuento -->
     <ion-card [color]="descuentoObtenido > 0 ? 'success' : (primerIntentoUsado ? 'warning' : 'secondary')">
       <ion-card-content>
@@ -37,6 +57,7 @@
         </div>
       </ion-card-content>
     </ion-card>
+    }
 
     <!-- Selector de juegos -->
     <ion-card class="style-card main-card">
@@ -116,44 +137,6 @@
       </ion-card-content>
     </ion-card>
 
-    <!-- Información adicional -->
-    <ion-card class="style-card main-card">
-      <ion-card-header>
-        <ion-card-title>
-          <ion-icon name="information-circle-outline"></ion-icon>
-          Reglas
-        </ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <ion-list lines="none" class="dark-list">
-          <ion-item>
-            <ion-icon name="checkmark-circle" slot="start" color="success"></ion-icon>
-            <ion-label class="ion-text-wrap">
-              Solo se aplica el descuento si ganas en el <strong>primer intento</strong>
-            </ion-label>
-          </ion-item>
-          <ion-item>
-            <ion-icon name="checkmark-circle" slot="start" color="success"></ion-icon>
-            <ion-label class="ion-text-wrap">
-              Solo puedes obtener <strong>un descuento</strong> por visita
-            </ion-label>
-          </ion-item>
-          <ion-item>
-            <ion-icon name="checkmark-circle" slot="start" color="success"></ion-icon>
-            <ion-label class="ion-text-wrap">
-              Los descuentos <strong>no son acumulables</strong>
-            </ion-label>
-          </ion-item>
-          <ion-item>
-            <ion-icon name="checkmark-circle" slot="start" color="success"></ion-icon>
-            <ion-label class="ion-text-wrap">
-              Puedes seguir jugando libremente después del primer intento
-            </ion-label>
-          </ion-item>
-        </ion-list>
-      </ion-card-content>
-    </ion-card>
-
   } @else {
     <!-- Contenedor del juego activo -->
     <div class="game-container">
@@ -189,5 +172,53 @@
       }
     </div>
   }
+
+
+<!-- Modal de Reglas -->
+<ion-modal [isOpen]="modalReglasAbierto" (didDismiss)="cerrarReglas()" [breakpoints]="[0, 0.6]" [initialBreakpoint]="0.6">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button fill="clear" (click)="cerrarReglas()">
+            <ion-icon name="chevron-down-outline"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+        <ion-title>
+          <ion-icon name="information-circle-outline"></ion-icon>
+          Reglas
+        </ion-title>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="ion-padding">
+      <ion-list lines="none" class="dark-list">
+        <ion-item>
+          <ion-icon name="checkmark-circle" slot="start" color="success"></ion-icon>
+          <ion-label class="ion-text-wrap">
+            Solo se aplica el descuento si ganas en el <strong>primer intento</strong>
+          </ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-icon name="checkmark-circle" slot="start" color="success"></ion-icon>
+          <ion-label class="ion-text-wrap">
+            Solo puedes obtener <strong>un descuento</strong> por visita
+          </ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-icon name="checkmark-circle" slot="start" color="success"></ion-icon>
+          <ion-label class="ion-text-wrap">
+            Los descuentos <strong>no son acumulables</strong>
+          </ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-icon name="checkmark-circle" slot="start" color="success"></ion-icon>
+          <ion-label class="ion-text-wrap">
+            Puedes seguir jugando libremente después del primer intento
+          </ion-label>
+        </ion-item>
+      </ion-list>
+    </ion-content>
+  </ng-template>
+</ion-modal>
 
 </ion-content>

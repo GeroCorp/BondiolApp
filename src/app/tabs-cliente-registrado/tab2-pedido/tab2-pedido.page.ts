@@ -19,6 +19,10 @@ export class Tab2PedidoPage implements OnInit {
 
   isDelivery = signal<boolean>(false);
 
+  // Pedido activo (ya enviado a cocina)
+  pedidoActivo: any = null;
+  cargandoPedidoActivo: boolean = false;
+
   constructor(
     public clienteService: ClienteService, 
     private router: Router,
@@ -29,6 +33,10 @@ export class Tab2PedidoPage implements OnInit {
   async ngOnInit() {
     this.setIsDelivery();
     await this.calcularTotales();
+    await this.cargarPedidoActivo();
+    if (this.pedido().length === 0) {
+      this.router.navigate(['/tabs-cliente-registrado/tab1-menu']);
+    }
   }
 
   setIsDelivery() {
@@ -36,9 +44,28 @@ export class Tab2PedidoPage implements OnInit {
     this.isDelivery.set(raw);
   }
 
-  // ✅ Calcular todos los totales con descuento
   async calcularTotales() {
     this.subtotal = this.clienteService.getSubtotal();
+  }
+
+  async cargarPedidoActivo() {
+    this.cargandoPedidoActivo = true;
+    try {
+      this.pedidoActivo = await this.clienteService.getPedidoActivo();
+    } catch (e) {
+      console.error('Error cargando pedido activo:', e);
+      this.pedidoActivo = null;
+    } finally {
+      this.cargandoPedidoActivo = false;
+    }
+  }
+
+  getColorEstado(estado: string): string {
+    return this.clienteService.getColorEstado(estado);
+  }
+
+  getTextoEstado(estado: string): string {
+    return this.clienteService.getTextoEstado(estado);
   }
 
   // Getter para acceder al pedido desde el template
@@ -48,24 +75,19 @@ export class Tab2PedidoPage implements OnInit {
 
   handleImages(item: any) {
     let images = item.imagenes;
-
-    if (!images){
-      console.error("No se encontraron imagenes");
-      return;
-    }
-
+    if (!images) return '';
     const imagesArray = images.split(',');
-
     return imagesArray[0];
   }
 
-  // Remover un item del pedido
   async removeItem(index: number) {
     this.clienteService.removeItem(index);
     await this.calcularTotales();
+    if (this.pedido().length === 0) {
+      this.router.navigate(['/tabs-cliente-registrado/tab1-menu']);
+    }
   }
 
-  // Limpiar todo el pedido
   clearPedido() {
     this.clienteService.clearPedido();
     this.subtotal = 0;
@@ -74,54 +96,39 @@ export class Tab2PedidoPage implements OnInit {
     this.totalFinal = 0;
   }
 
-  // Confirmar el pedido
   async confirmarPedido() {
     await this.customLoader.show();
     try {
-      console.log('Confirmando pedido...');
-      console.log('Total:', this.subtotal);
-      
       await this.clienteService.insertPedido();
-      
-      await this.showToast(
-        this.porcentajeDescuento > 0 
-          ? `¡Pedido confirmado con ${this.porcentajeDescuento}% de descuento!` 
-          : 'Pedido confirmado exitosamente',
-        'success'
-      );
-      
       this.clienteService.clearPedido();
       await this.calcularTotales();
       this.clienteService.setJuegosAccess(true);
-      // Opcional: redirigir al home
-      setTimeout(() => {
-        this.router.navigate(['/home-cliente']);
-      }, 1500);
+      this.router.navigate(['/tabs-cliente-registrado/tab1-menu']);
     } catch (error) {
-      this.customLoader.hide();
       console.error('Error al confirmar pedido:', error);
       await this.showToast('Error al confirmar el pedido', 'danger');
+    } finally {
+      this.customLoader.hide();
     }
-    this.customLoader.hide();
   }
 
-
-  // Aumentar cantidad de un item
   async increaseQuantity(index: number) {
     const currentItem = this.clienteService.pedido()[index];
     this.clienteService.updateItemQuantity(index, currentItem.quantity + 1);
     await this.calcularTotales();
   }
 
-  // Disminuir cantidad de un item
   async decreaseQuantity(index: number) {
     const currentItem = this.clienteService.pedido()[index];
     this.clienteService.updateItemQuantity(index, currentItem.quantity - 1);
     await this.calcularTotales();
+    if (this.pedido().length === 0) {
+      this.router.navigate(['/tabs-cliente-registrado/tab1-menu']);
+    }
   }
 
   volverHome(){
-    this.router.navigate(["/tabs-cliente-registrado/tab1-menu"])
+    this.router.navigate(['/tabs-cliente-registrado/tab1-menu']);
   }
 
   async showToast(message: string, color: 'success' | 'danger' | 'medium' = 'medium') {

@@ -124,6 +124,13 @@ export class Tab3ClientesPage {
         await BarcodeScanner.requestPermissions();
       }
 
+      const { available } = await BarcodeScanner.isGoogleBarcodeScannerModuleAvailable().catch(() => ({ available: false }));
+      if (!available) {
+        await BarcodeScanner.installGoogleBarcodeScannerModule();
+        this.showToast('Instalando módulo de escaneo. Escaneá de nuevo.', 'medium');
+        return;
+      }
+
       const result = await BarcodeScanner.scan();
 
       if (result.barcodes.length > 0) {

@@ -42,73 +42,131 @@ ion-header {
 
 // Contenedor principal
 .main-card {
-  min-height: 90vh;
-  display: flex;       /* Agregamos esto */
+  display: flex;
   flex-direction: column;
 
   .main-container {
     display: flex;
     flex-direction: column;
-    flex-grow: 1;      /* Hace que el contenido ocupe el alto restante de la card */
-    
+
+    &.dynamic-height {
+      height: auto;
+    }
+
     ion-list {
-      flex-grow: 1;    /* ¡ESTO ES LO IMPORTANTE! Empuja lo que sigue hacia el fondo */
       background: transparent;
-      overflow-y: auto; /* Si hay muchos productos, la lista tendrá scroll propio */
     }
 
     // Estilos para el bloque de confirmación
     ion-item[color="secondary"], 
     .ion-button {
-      flex-shrink: 0;  /* Evita que el botón se aplaste */
+      flex-shrink: 0;
     }
   }
 }
 
-// Título del pedido
-// Cards de items del pedido
-ion-list{
-  max-height: calc(135px * 4);
-  overflow-y: auto;
-}
-.item-lista{
-  display: flex;
-  padding: 15px 0;
-  
-  .info{
+.item-lista {
+  --padding-start: 0;
+  --inner-padding-end: 0;
+
+  .info {
     display: flex;
     width: 100%;
-    align-items: center;    
-    justify-content: space-between;
-    .image-container{
-      height: 100px;
-      width: 100px;
-      left:0;
-      img{
-        width: 100%;    /* Ocupa todo el ancho del container */
-        height: 100%;   /* Ocupa todo el alto del container */
-        object-fit: cover; /* RECORTA la imagen para que llene el espacio sin deformarse */
-        border-radius: 15px;
+    gap: 12px;
+    padding: 8px 0;
+    align-items: center;
+
+    .image-container {
+      width: 90px;
+      height: 90px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--surface-variant);
+      border-radius: 15px;
+      overflow: hidden;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
         display: block;
       }
 
+      .image-placeholder {
+        font-size: 36px;
+        color: var(--text-muted);
+      }
     }
 
-    .detalles{
-      h2{
+    .item-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-width: 0;
+
+      .item-nombre {
         font-weight: 700;
+        font-size: 1rem;
         color: #E85D08;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
-      p {
-        color: white;
-        font-size: 16px;
-      }
-    }
 
-    .subtotal{
-      font-size: 20px;
-      color: #FFBA08;
-      right: 0;
+      .item-bottom-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        .cantidad-controls {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          flex-shrink: 0;
+
+          ion-button {
+            --padding-start: 4px;
+            --padding-end: 4px;
+            margin: 0;
+            height: 32px;
+            width: 32px;
+
+            ion-icon {
+              font-size: 22px;
+            }
+          }
+
+          .cantidad-valor {
+            font-size: 1rem;
+            font-weight: bold;
+            min-width: 28px;
+            text-align: center;
+            color: var(--text-primary);
+          }
+        }
+
+        .subtotal {
+          font-size: 16px;
+          font-weight: 600;
+          color: #FFBA08;
+          white-space: nowrap;
+        }
+
+        ion-button:last-child {
+          margin-left: auto;
+          --padding-start: 4px;
+          --padding-end: 4px;
+          height: 32px;
+          width: 32px;
+
+          ion-icon {
+            font-size: 20px;
+          }
+        }
+      }
     }
   }
 }
@@ -118,71 +176,7 @@ ion-list{
   font-weight: 800;
 }
 
-// Controles de cantidad mejorados
-.quantity-controls-pedido {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 12px;
-  justify-content: center;
 
-  .quantity-display {
-    font-size: 1.2rem;
-    font-weight: bold;
-    min-width: 40px;
-    text-align: center;
-    padding: 8px 12px;
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-    color: var(--background-dark);
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(187, 134, 252, 0.3);
-  }
-
-  ion-button {
-    --padding-start: 8px;
-    --padding-end: 8px;
-    --border-radius: 50%;
-    --background: var(--surface-variant);
-    --color: var(--primary-color);
-    --box-shadow: 0 2px 8px rgba(187, 134, 252, 0.2);
-    border: 1px solid var(--border-color);
-    
-    &:hover {
-      --background: var(--primary-color);
-      --color: var(--background-dark);
-      transform: scale(1.1);
-    }
-  }
-}
-
-// Acciones de items
-.item-actions {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  margin-top: 8px;
-
-  ion-note {
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: var(--secondary-color);
-  }
-
-  ion-button {
-    --background: var(--error-color);
-    --color: var(--text-primary);
-    --border-radius: 8px;
-    --box-shadow: 0 2px 8px rgba(207, 102, 121, 0.3);
-    font-size: 12px;
-    height: 32px;
-    
-    &:hover {
-      --background: color-mix(in srgb, var(--error-color) 80%, var(--surface-dark));
-      transform: scale(1.05);
-    }
-  }
-}
 
 // Estado vacío
 .empty-state {

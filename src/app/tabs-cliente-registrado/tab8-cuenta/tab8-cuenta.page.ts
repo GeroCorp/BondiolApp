@@ -327,6 +327,12 @@ export class Tab8CuentaPage implements OnInit {
 
   async escanearQR() {
     try {
+      const { available } = await BarcodeScanner.isGoogleBarcodeScannerModuleAvailable().catch(() => ({ available: false }));
+      if (!available) {
+        await BarcodeScanner.installGoogleBarcodeScannerModule();
+        this.showToast('Instalando módulo de escaneo. Escaneá de nuevo en unos segundos.', 'medium');
+        return;
+      }
       const result = await BarcodeScanner.scan();
 
       if (result.barcodes.length === 0) {

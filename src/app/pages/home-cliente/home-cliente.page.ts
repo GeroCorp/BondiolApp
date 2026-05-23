@@ -30,6 +30,7 @@ export class HomeClientePage implements OnInit {
   private pedidosSubscription: any = null;
   private mesaSubscription: any = null;
   private clienteEnEsperaSubscription: any = null;
+  private initialized = false;
   isRegistrado = signal<boolean>(true);
   perfil = "cliente";
   private notificationService: Notification = inject(Notification);
@@ -86,6 +87,29 @@ export class HomeClientePage implements OnInit {
       this.isRegistrado.set(tipo === 'registrado');
       console.log('👤 Tipo de cliente:', tipo);
     });
+
+    // ✅ REACTIVO: Actualizar señales cuando cambian datos del cliente (ej. maitre asigna mesa)
+    this.tipoClienteService.clienteData$.subscribe(data => {
+      if (data && this.tipoClienteService.isAnonimo()) {
+        const oldMesa = this.mesaAsignada();
+        const oldMesaVerificada = this.mesaVerificada();
+        this.mesaAsignada.set(data.mesa_asignada || null);
+        this.enListaEspera.set(data.en_espera !== false);
+        this.mesaVerificada.set(!!data.mesa_asignada);
+        this.cliente = data;
+
+        // Si se asignó mesa nueva después de inicializado, suscribirse a pedidos
+        if (data.mesa_asignada && !oldMesa && !this.pedidosSubscription && this.initialized) {
+          this.setupPedidosSuscripcion();
+        }
+
+        // Si la mesa cambió pero ya estaba verificada (re-asignación), refrescar accesos
+        if (data.mesa_asignada && oldMesa && data.mesa_asignada !== oldMesa && this.initialized) {
+          this.setupPedidosSuscripcion();
+          this.actualizarAccesosSegunPedidos();
+        }
+      }
+    });
   }
 
   setDireccion(){
@@ -106,7 +130,7 @@ export class HomeClientePage implements OnInit {
   }
   
   async ngOnInit() {
-    this.customLoader.show('Cargando datos...');
+    await this.customLoader.show('Cargando datos...');
     console.log('🏠 [HOME-CLIENTE] ngOnInit iniciado');
     const ahora = new Date();
     const year = ahora.getFullYear();
@@ -169,8 +193,16 @@ export class HomeClientePage implements OnInit {
           
           this.mesaAsignada.set(clienteData.mesa_asignada || null);
           this.enListaEspera.set(clienteData.en_espera !== false);
-          this.mesaVerificada.set(false);
-          await this.actualizarAccesosSegunPedidos();
+          this.mesaVerificada.set(!!clienteData.mesa_asignada);
+          
+          if (clienteData.mesa_asignada) {
+            const suscripcion = await this.clienteService.subscribeToHistorialPedidos(
+              () => this.actualizarAccesosSegunPedidos()
+            );
+            this.pedidosSubscription = suscripcion;
+
+            await this.actualizarAccesosSegunPedidos();
+          }
         } else {
           console.warn('⚠️ Cliente anónimo sin datos locales; redirigiendo a ingreso-anonimo');
           await this.router.navigate(['/ingreso-anonimo'], { replaceUrl: true });
@@ -181,12 +213,22 @@ export class HomeClientePage implements OnInit {
     } catch (error) {
       console.error('❌ Error en ngOnInit:', error);
       this.showToast('Error al cargar la página', 'danger');
-      this.customLoader.hide();
       this.router.navigate(['/login'], { replaceUrl: true });
+    } finally {
+      this.initialized = true;
+      this.customLoader.hide();
     }
-    this.customLoader.hide();
   }
 
+
+  async setupPedidosSuscripcion() {
+    if (this.pedidosSubscription) return;
+    const suscripcion = await this.clienteService.subscribeToHistorialPedidos(
+      () => this.actualizarAccesosSegunPedidos()
+    );
+    this.pedidosSubscription = suscripcion;
+    await this.actualizarAccesosSegunPedidos();
+  }
 
   ngOnDestroy() {
   console.log('🧹 [HOME-CLIENTE] ngOnDestroy - limpiando recursos');
@@ -257,8 +299,8 @@ export class HomeClientePage implements OnInit {
     // Si tiene un pedido activo no podrá visualizar el menú para agregar un pedido nuevo
     let estado = await this.clienteService.estadoUltimoPedido();
     console.log("Estado del ultimo pedido: ", estado);
-    console.log("ACCESO A MENÚ: ", estado == 'pagado' || estado == null);
-    return estado == 'pagado' || estado == null;
+    console.log("ACCESO A MENÚ: ", estado == 'pagado' || estado == null || estado == 'rechazado');
+    return estado == 'pagado' || estado == null || estado == 'rechazado';
   }
 
   async accesoAOpiniones(): Promise<boolean> {
@@ -296,6 +338,14 @@ export class HomeClientePage implements OnInit {
   async actualizarAccesosSegunPedidos(): Promise<void> {
     try {
       console.log('🔄 Recalculando accesos según cambios en pedidos...');
+
+      const estado = await this.clienteService.estadoUltimoPedido();
+      if (estado === 'rechazado') {
+        this.showToast(
+          '⚠️ Tu pedido fue rechazado. Podés modificarlo desde el menú.',
+          'danger'
+        );
+      }
       
       const [puedoJuegos, puedoOpiniones, puedoMenu, puedoCuenta] = await Promise.all([
         this.puedeAccederJuegos(),
@@ -418,6 +468,13 @@ export class HomeClientePage implements OnInit {
         return;
       }
 
+      const { available } = await BarcodeScanner.isGoogleBarcodeScannerModuleAvailable().catch(() => ({ available: false }));
+      if (!available) {
+        await BarcodeScanner.installGoogleBarcodeScannerModule();
+        this.showToast('Instalando módulo de escaneo. Escaneá de nuevo.', 'medium');
+        return;
+      }
+
       const result = await BarcodeScanner.scan();
 
       if (result.barcodes && result.barcodes.length > 0) {
@@ -440,6 +497,13 @@ export class HomeClientePage implements OnInit {
       // Usar la función checkPermissions mejorada
       const hasPermissions = await this.checkPermissions();
       if (!hasPermissions) {
+        return;
+      }
+
+      const { available } = await BarcodeScanner.isGoogleBarcodeScannerModuleAvailable().catch(() => ({ available: false }));
+      if (!available) {
+        await BarcodeScanner.installGoogleBarcodeScannerModule();
+        this.showToast('Instalando módulo de escaneo. Escaneá de nuevo.', 'medium');
         return;
       }
 

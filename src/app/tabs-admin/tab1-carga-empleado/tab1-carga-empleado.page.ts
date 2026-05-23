@@ -222,6 +222,12 @@ export class Tab1CargaEmpleadoPage {
       }
 
       // 2️⃣ Escaneo
+      const { available } = await BarcodeScanner.isGoogleBarcodeScannerModuleAvailable().catch(() => ({ available: false }));
+      if (!available) {
+        await BarcodeScanner.installGoogleBarcodeScannerModule();
+        this.showToast('Instalando módulo de escaneo. Escaneá de nuevo.', 'medium');
+        return;
+      }
       const result = await BarcodeScanner.scan(); // ✅ sin barcodeFormats
 
       if (!result.barcodes || result.barcodes.length === 0) {
