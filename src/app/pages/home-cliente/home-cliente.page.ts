@@ -23,9 +23,10 @@ import { CustomLoaderService } from 'src/app/services/custom-loader.service';
 export class HomeClientePage implements OnInit {
   cliente: any = null;
   enListaEspera = signal<boolean>(false);
+
   mesaAsignada = signal<number | null>(null);
   mesaVerificada = signal<boolean>(false);
-  pedidosHistorial: any[] = [];
+
   private pedidosSubscription: any = null;
   private mesaSubscription: any = null;
   private clienteEnEsperaSubscription: any = null;
@@ -141,7 +142,6 @@ export class HomeClientePage implements OnInit {
       if (session?.user.id && !this.tipoClienteService.isAnonimo()) {
         // Cargar datos del cliente (dependencia para los otros)
         await this.cargarDatosCliente(session.user.id);
-        
         // Ejecutar en paralelo los que dependen de this.cliente
         const [, , suscripcion] = await Promise.all([
           this.verificarReservaActiva(),
@@ -669,7 +669,6 @@ export class HomeClientePage implements OnInit {
 
     this.router.navigate(["/tabs-cliente-registrado/tab1-menu"]);
   }
-
   hacerConsulta() {
     if (this.isDelivery()){
       this.router.navigate(["/tabs-cliente-registrado/tab3-consulta/chat-delivery"]);

@@ -413,7 +413,7 @@ getSubtotal(): number {
     console.log('🎭 Es anónimo:', isAnonimo);
 
     let idCliente: number | null = null;
-    let mesaId: number = this._mesaAsignada!;
+    let mesaId: number | null = null;
     let nroMesa: number | null = null;
 
     if (isAnonimo) {
@@ -422,7 +422,7 @@ getSubtotal(): number {
       
       const clienteData = this.tipoClienteService.getClienteData();
       const idAnon = clienteData?.id_clienteanonimo ?? clienteData?.id_cliente;
-      
+      mesaId = await this.getMesaID(idAnon); 
       console.log('📊 Datos cliente anónimo:', {
         id_clienteanonimo: idAnon,
         mesa_asignada: clienteData?.mesa_asignada,
@@ -432,8 +432,6 @@ getSubtotal(): number {
       if (!idAnon) {
         throw new Error('No se pudo obtener el ID del cliente anónimo');
       }
-
-      mesaId = clienteData?.mesa_asignada;
       
       if (!mesaId) {
         throw new Error('Cliente anónimo sin mesa asignada');
@@ -516,7 +514,7 @@ getSubtotal(): number {
       
       idCliente = await this.getClientId();
       const subtotal = this.getSubtotal();
-
+      mesaId = await this.getMesaID(idCliente);
       // Obtener número de mesa
       const { data: mesaData } = await this.supabase
         .from('mesas')
@@ -531,9 +529,12 @@ getSubtotal(): number {
         id_cliente: idCliente,
         fecha: new Date().toISOString(),
         estado: 'pendiente',
-        total: Math.round(subtotal)
+        total: Math.round(subtotal),
+        tiempo_estimado: this.getTiempo()
       };
       
+      console.log(cabecera);
+
       const { data, error } = await this.supabase
         .from('pedidos')
         .insert([cabecera])
@@ -627,6 +628,15 @@ getSubtotal(): number {
     }
     
     return idPedido;
+  }
+  private getTiempo(){
+    const pedido = this._pedido()
+
+    const tiempo = Math.max(...pedido.map(item => item.tiempo));
+
+    console.log("Tiempo estimado: ", tiempo);
+
+    return tiempo;
   }
 
   async   estadoUltimoPedido() {

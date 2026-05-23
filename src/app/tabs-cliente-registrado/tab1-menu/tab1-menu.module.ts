@@ -8,7 +8,6 @@ import { Tab1MenuPageRoutingModule } from './tab1-menu-routing.module';
 
 import { Tab1MenuPage } from './tab1-menu.page';
 
-import { MenuItemComponent } from './menu-item/menu-item.component';
 
 @NgModule({
   imports: [
@@ -16,7 +15,6 @@ import { MenuItemComponent } from './menu-item/menu-item.component';
     FormsModule,
     IonicModule,
     Tab1MenuPageRoutingModule,
-    MenuItemComponent
   ],
   declarations: [Tab1MenuPage]
 })

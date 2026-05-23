@@ -2,9 +2,6 @@
 // Variables del tema oscuro
 
 // Fondo principal con gradiente oscuro
-ion-content {
-  --color: var(--text-primary);
-}
 
 // Header con estilo elegante oscuro
 ion-header {
@@ -12,7 +9,6 @@ ion-header {
     --background: var(--surface-dark);
     --color: var(--text-primary);
     box-shadow: 0 2px 8px rgba(0,0,0,0.5);
-    border-bottom: 1px solid var(--border-color);
     --min-height: 60px;
     
     ion-title {
@@ -45,78 +41,81 @@ ion-header {
 }
 
 // Contenedor principal
-.pedido-container {
-  padding: 20px;
-  min-height: 100vh;
-  background: transparent;
+.main-card {
+  min-height: 90vh;
+  display: flex;       /* Agregamos esto */
+  flex-direction: column;
+
+  .main-container {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;      /* Hace que el contenido ocupe el alto restante de la card */
+    
+    ion-list {
+      flex-grow: 1;    /* ¡ESTO ES LO IMPORTANTE! Empuja lo que sigue hacia el fondo */
+      background: transparent;
+      overflow-y: auto; /* Si hay muchos productos, la lista tendrá scroll propio */
+    }
+
+    // Estilos para el bloque de confirmación
+    ion-item[color="secondary"], 
+    .ion-button {
+      flex-shrink: 0;  /* Evita que el botón se aplaste */
+    }
+  }
 }
 
 // Título del pedido
-.pedido-header {
-  text-align: center;
-  color: var(--text-primary);
-  margin-bottom: 30px;
+// Cards de items del pedido
+ion-list{
+  max-height: calc(135px * 4);
+  overflow-y: auto;
+}
+.item-lista{
+  display: flex;
+  padding: 15px 0;
+  
+  .info{
+    display: flex;
+    width: 100%;
+    align-items: center;    
+    justify-content: space-between;
+    .image-container{
+      height: 100px;
+      width: 100px;
+      left:0;
+      img{
+        width: 100%;    /* Ocupa todo el ancho del container */
+        height: 100%;   /* Ocupa todo el alto del container */
+        object-fit: cover; /* RECORTA la imagen para que llene el espacio sin deformarse */
+        border-radius: 15px;
+        display: block;
+      }
 
-  h1 {
-    font-size: 28px;
-    font-weight: bold;
-    margin-bottom: 10px;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-    color: var(--text-primary);
-  }
+    }
 
-  .total-badge {
-    background: var(--glass-effect);
-    color: var(--secondary-color);
-    padding: 12px 24px;
-    border-radius: 25px;
-    font-size: 18px;
-    font-weight: bold;
-    box-shadow: var(--shadow-dark);
-    border: 1px solid var(--primary-color);
-    backdrop-filter: blur(10px);
+    .detalles{
+      h2{
+        font-weight: 700;
+        color: #E85D08;
+      }
+      p {
+        color: white;
+        font-size: 16px;
+      }
+    }
+
+    .subtotal{
+      font-size: 20px;
+      color: #FFBA08;
+      right: 0;
+    }
   }
 }
 
-// Cards de items del pedido
-ion-card {
-  --color: var(--text-primary);
-  border-radius: 15px;
-  margin-bottom: 16px;
-  box-shadow: var(--shadow-dark);
-  background: var(--surface-dark) !important;
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--border-color);
-  transition: all 0.3s ease;
-
-  &:hover {
-    box-shadow: 0 8px 25px #F48C06;
-    transform: translateY(-2px);
-    background: var(--surface-variant) !important;
-    border-color: var(--primary-color);
-  }
-
-  ion-card-header {
-    background: transparent !important;
-    
-    ion-card-title {
-      font-size: 18px;
-      font-weight: 600;
-      color: var(--text-primary) !important;
-    }
-
-    ion-card-subtitle {
-      color: var(--secondary-color) !important;
-      font-weight: 500;
-      margin-top: 4px;
-    }
-  }
-
-  ion-card-content {
-    padding-top: 8px;
-    background: transparent !important;
-    color: var(--text-secondary);
-  }
+.precio-total{
+  font-size: 2rem;
+  font-weight: 800;
 }
 
 // Controles de cantidad mejorados

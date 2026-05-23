@@ -2,87 +2,45 @@
   <ion-toolbar>
     <ion-button (click)="volverHome()" fill="clear" shape="round" slot="end">
       Volver
-      <ion-icon slot="start" name="home-outline"></ion-icon>
+      <ion-icon slot="start" name="caret-back"></ion-icon>
     </ion-button>
     <ion-title>Mi Pedido</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Mi Pedido</ion-title>
-    </ion-toolbar>
-  </ion-header>
-
-  <ion-card>
-    <ion-card-header>
-      <ion-card-title>Mi Pedido</ion-card-title>
-      <ion-card-subtitle>Items seleccionados: {{ clienteService.getItemCount() }}</ion-card-subtitle>
+  <ion-card class="main-card">
+    <ion-card-header class="ion-text-center">
+      <ion-card-title>Pedido</ion-card-title>
+      <ion-card-subtitle>Productos seleccionados: {{ clienteService.getItemCount() }}</ion-card-subtitle>
     </ion-card-header>
     
-    <ion-card-content>
-      @if (pedido().length === 0) {
-        <ion-item>
-          <ion-label>
-            <h2>Tu pedido está vacío</h2>
-            <p>Agrega algunos items desde el menú</p>
-          </ion-label>
-        </ion-item>
-      } @else {
+    <ion-card-content class="main-container">
+      @if (pedido().length > 0) {
         <ion-list>
           @for (item of pedido(); track $index) {
-            <ion-item>
-              <ion-label>
-                <h2>{{ item.nombre }}</h2>
-                <p>{{ item.descripcion }}</p>
-                <p><strong>Precio unitario: ${{ item.precio }}</strong></p>
-                <div class="quantity-controls-pedido">
-                  <ion-button fill="outline" size="small" (click)="decreaseQuantity($index)">
-                    <ion-icon name="remove-outline"></ion-icon>
-                  </ion-button>
-                  <span class="quantity-display">{{ item.quantity }}</span>
-                  <ion-button fill="outline" size="small" (click)="increaseQuantity($index)">
-                    <ion-icon name="add-outline"></ion-icon>
-                  </ion-button>
+            <ion-item class="item-lista">
+              <div class="info">
+
+                <div class="image-container">
+                  <img [src]="handleImages(item)" alt="">
+
                 </div>
-              </ion-label>
-              <div slot="end" class="item-actions">
-                <ion-note color="primary">
-                  <strong>${{ item.subtotal }}</strong>
-                </ion-note>
-                <ion-button fill="clear" (click)="removeItem($index)" color="danger">
-                  <ion-icon name="trash-outline"></ion-icon>
-                </ion-button>
+                
+                <div class="detalles">
+                  <!-- Producto -->
+                   <h2>{{ item.nombre | titlecase }}</h2>
+                  <!-- Precio unitario -->
+                   <p>{{ item.quantity }} x {{ item.precio | currency  }}</p>
+                </div>
+                <div class="subtotal">
+                  <!-- Precio unitario * cantidad -->
+                  {{ item.subtotal | currency }}
+                </div>
               </div>
             </ion-item>
           }
         </ion-list>
-        
-        <!-- Subtotal -->
-        <ion-item lines="none">
-          <ion-label>
-            <h3>Subtotal:</h3>
-          </ion-label>
-          <ion-note slot="end" color="medium">
-            <h3>{{ subtotal | currency:'$':'symbol':'1.0-0' }}</h3>
-          </ion-note>
-        </ion-item>
-
-        <!-- Descuento (si existe) -->
-        @if (porcentajeDescuento > 0) {
-          <ion-item lines="none" color="success">
-            <ion-label>
-              <h3>
-                <ion-icon name="gift"></ion-icon>
-                Descuento ({{ porcentajeDescuento }}%):
-              </h3>
-            </ion-label>
-            <ion-note slot="end" color="success">
-              <h3>-{{ montoDescuento | currency:'$':'symbol':'1.0-0' }}</h3>
-            </ion-note>
-          </ion-item>
-        }
 
         <!-- Total Final -->
         <ion-item lines="none" color="secondary">
@@ -90,20 +48,9 @@
             <h2><strong>TOTAL:</strong></h2>
           </ion-label>
           <ion-note slot="end" color="light">
-            <h2><strong>{{ totalFinal | currency:'$':'symbol':'1.0-0' }}</strong></h2>
+            <h2 class="precio-total">{{ subtotal | currency:'$':'symbol':'1.0-0' }}</h2>
           </ion-note>
         </ion-item>
-
-        @if (porcentajeDescuento > 0) {
-          <ion-card color="success">
-            <ion-card-content>
-              <p style="text-align: center; margin: 0;">
-                <ion-icon name="trophy"></ion-icon>
-                ¡Descuento del {{ porcentajeDescuento }}% aplicado por ganar en el juego!
-              </p>
-            </ion-card-content>
-          </ion-card>
-        }
         
         <ion-button expand="block" color="secondary" class="ion-margin-top" (click)="confirmarPedido()">
           Confirmar Pedido

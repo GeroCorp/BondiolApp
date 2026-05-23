@@ -46,6 +46,19 @@ export class Tab2PedidoPage implements OnInit {
     return this.clienteService.pedido;
   }
 
+  handleImages(item: any) {
+    let images = item.imagenes;
+
+    if (!images){
+      console.error("No se encontraron imagenes");
+      return;
+    }
+
+    const imagesArray = images.split(',');
+
+    return imagesArray[0];
+  }
+
   // Remover un item del pedido
   async removeItem(index: number) {
     this.clienteService.removeItem(index);
