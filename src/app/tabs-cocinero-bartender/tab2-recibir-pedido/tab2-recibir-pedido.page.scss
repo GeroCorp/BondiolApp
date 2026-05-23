@@ -3,7 +3,6 @@ ion-header {
     --background: linear-gradient(135deg, #6a040F, #8b0000, #9D0208);
     --color: #ffffff;
     --min-height: 60px;
-
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 
     ion-title {
@@ -35,16 +34,18 @@ ion-header {
   --background: linear-gradient(180deg, #370617 0%, #6A040F 40%, #9D0208 100%);
   --padding-start: 0;
   --padding-end: 0;
+  --padding-bottom: 0;
+  --padding-top: 0;
 
   &::part(scroll) {
+    padding-bottom: 85px !important;
+    overscroll-behavior-y: none;
     -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
   }
 
   > div {
-    min-height: 100%;
     box-sizing: border-box;
-    padding: 6px 6px 0;
+    padding: calc(var(--offset-top, 0px) + 8px) 6px 0;
   }
 }
 
@@ -52,16 +53,20 @@ ion-header {
 
 .pedido-card {
   margin: 0 0 8px 0;
-  max-height: 33vh;
-  overflow: hidden;
-
+  // SIN max-height ni height fija — altura natural según contenido
   border-radius: 12px;
-
   background: linear-gradient(145deg, #370617, #6a040f);
   box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-
   display: flex;
   flex-direction: column;
+
+  // Pisar el padding global de ion-card-content que agrega 30px abajo innecesario
+  ion-card-content {
+    padding: 6px 10px 8px !important;
+    display: flex;
+    flex-direction: column;
+    color: #ffffff;
+  }
 
   ion-card-header {
     flex-shrink: 0;
@@ -69,8 +74,8 @@ ion-header {
     border-bottom: 1px solid rgba(255,255,255,0.1);
 
     ion-card-title {
-      color: #F48C06;
-      font-size: 1rem;
+      // Pisar el font-size global de 1.5rem
+      font-size: 1rem !important;
       font-weight: 700;
       display: flex;
       gap: 6px;
@@ -94,62 +99,52 @@ ion-header {
     }
   }
 
-  ion-card-content {
-    flex: 1;
-    min-height: 0;
+  .items-section {
     display: flex;
     flex-direction: column;
+  }
+
+  .items-title {
+    color: #F48C06;
+    font-weight: 600;
+    font-size: 0.8rem;
+    margin: 0 0 4px 0;
+  }
+
+  // Lista sin scroll por defecto
+  .items-list {
     overflow: hidden;
-    padding: 6px 10px 8px;
-    color: #ffffff;
 
-    .items-section {
-      flex: 1;
-      min-height: 0;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
+    ion-item.item-pedido {
+      --background: rgba(255,255,255,0.05);
+      margin-bottom: 3px;
+      border-radius: 6px;
+      --min-height: 36px;
+      font-size: 0.85rem;
+
+      ion-icon {
+        font-size: 16px;
+      }
     }
+  }
 
-    .items-title {
-      flex-shrink: 0;
-      color: #F48C06;
+  // Scroll interno solo cuando hay más de 4 items
+  .items-list.scrollable {
+    max-height: calc(4 * (36px + 3px));
+    overflow-y: auto;
+  }
+
+  .pedido-actions {
+    margin-top: 6px;
+
+    ion-button {
+      margin: 0;
+      height: 32px;
+      font-size: 0.75rem;
+      --border-radius: 8px;
       font-weight: 600;
-      font-size: 0.8rem;
-      margin: 0 0 4px 0;
-    }
-
-    .items-list {
-      flex: 1;
-      overflow-y: auto;
-      min-height: 0;
-
-      ion-item.item-pedido {
-        --background: rgba(255,255,255,0.05);
-        margin-bottom: 3px;
-        border-radius: 6px;
-        --min-height: 32px;
-        font-size: 0.85rem;
-
-        ion-icon {
-          font-size: 16px;
-        }
-      }
-    }
-
-    .pedido-actions {
-      flex-shrink: 0;
-      margin-top: 6px;
-
-      ion-button {
-        margin: 0;
-        height: 32px;
-        font-size: 0.75rem;
-        --border-radius: 8px;
-        font-weight: 600;
-        --padding-start: 8px;
-        --padding-end: 8px;
-      }
+      --padding-start: 8px;
+      --padding-end: 8px;
     }
   }
 }
@@ -195,19 +190,5 @@ ion-header {
 
   p {
     color: rgba(255,255,255,0.7);
-  }
-}
-
-@media screen and (max-height: 800px) {
-  .pedido-card {
-    max-height: 35vh;
-
-    ion-card-header {
-      padding: 5px 8px;
-    }
-
-    ion-card-content {
-      padding: 4px 8px 6px;
-    }
   }
 }
