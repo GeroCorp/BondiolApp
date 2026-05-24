@@ -103,7 +103,7 @@ export class Tab2PedidoPage implements OnInit {
       this.clienteService.clearPedido();
       await this.calcularTotales();
       this.clienteService.setJuegosAccess(true);
-      this.router.navigate(['/tabs-cliente-registrado/tab1-menu']);
+      this.router.navigate(['/home-cliente']);
     } catch (error) {
       console.error('Error al confirmar pedido:', error);
       await this.showToast('Error al confirmar el pedido', 'danger');
