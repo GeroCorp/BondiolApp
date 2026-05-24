@@ -175,7 +175,7 @@
           fill="outline"
           color="secondary"
           (click)="verHistorial()"
-          [disabled]="!mesaVerificada() && !isDelivery()"
+          [disabled]="(!mesaVerificada() && !isDelivery()) || !historialAccess()"
           *ngIf="mesaVerificada() || isDelivery()"
           class="boton-grid"
         >
@@ -183,7 +183,7 @@
             <ion-icon name="receipt-outline"></ion-icon>
             <span>Mi pedido</span>
             <ion-icon
-              *ngIf="!mesaVerificada() && !isDelivery()"
+              *ngIf="(!mesaVerificada() && !isDelivery()) || !historialAccess()"
               name="lock-closed"
               class="lock-icon"
             ></ion-icon>
@@ -225,13 +225,13 @@
           fill="outline"
           color="secondary"
           (click)="verEncuesta()"
-          [disabled]="!canPay() && !isDelivery()"
+          [disabled]="!encuestaAccess()"
           class="boton-grid"
         >
           <div class="boton-content">
             <ion-icon name="clipboard-outline"></ion-icon>
             <span>Encuesta</span>
-            <ion-icon name="lock-closed" *ngIf="!canPay() && !isDelivery()" class="lock-icon"></ion-icon>
+            <ion-icon name="lock-closed" *ngIf="!encuestaAccess()" class="lock-icon"></ion-icon>
           </div>
         </ion-button>
 
