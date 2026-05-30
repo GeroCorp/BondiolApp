@@ -125,13 +125,21 @@ export class ListaEsperaService {
       console.error('Cliente no encontrado en lista de espera');
       return false;
     }
+        // Obtener número de mesa
+    const { data: mesa, error: mesaError } = await supabase
+      .from('mesas')
+      .select('numero')
+      .eq('id', mesaId)
+      .single();
+
+    if (mesaError) throw mesaError;
 
     // Actualizar la lista de espera
     const { error } = await supabase
       .from('lista_espera')
       .update({ 
         estado: 'asignado',
-        mesa_asignada: mesaId
+        mesa_asignada: mesa.numero
       })
       .eq('id', clienteId);
 
@@ -153,7 +161,7 @@ export class ListaEsperaService {
       const { error: errorUpdateAnonimo } = await supabase
         .from('clientes_anonimos')
         .update({
-          mesa_asignada: mesaId,
+          mesa_asignada: mesa.numero,
           en_espera: false,
           fecha_asignacion: new Date().toISOString()
         })
@@ -215,7 +223,7 @@ export class ListaEsperaService {
       
       try {
         await this.clienteService.setMesa(clienteEncontrado.id_cliente, mesaId);
-        console.log(`✅ Mesa ${mesaId} asignada a cliente registrado: ${clienteEncontrado.nombre} ${clienteEncontrado.apellido}`);
+        console.log(`✅ Mesa ${mesa.numero} asignada a cliente registrado: ${clienteEncontrado.nombre} ${clienteEncontrado.apellido}`);
       } catch (errorAsignacion) {
         console.error('❌ Error al asignar mesa en tabla clientes:', errorAsignacion);
       }

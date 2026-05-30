@@ -1283,7 +1283,7 @@ async sendMessage(contenido: string): Promise<void> {
         cliente_asignado: cliente_id,
         disponible: false,
       })
-      .eq('id', mesa_numero)
+      .eq('numero', mesa_numero)
       .select();
 
     if (error) {
@@ -1371,11 +1371,19 @@ async sendMessage(contenido: string): Promise<void> {
   }
 }
 
-  async setMesa(id: number, nroMesa: number) {
+  async setMesa(id: number, id_mesa: number) {
+    const { data: mesa } = await this.supabase
+  .from('mesas')
+  .select('numero')
+  .eq('id', id_mesa)
+  .single();
+
+  const nroMesa = mesa?.numero;
+    
     try {
       console.log('🔄 Iniciando asignación de mesa:', {
         clienteId: id,
-        mesaId: nroMesa,
+        mesaNumero: nroMesa,
       });
 
       // Comprobar disponibilidad (con await)
