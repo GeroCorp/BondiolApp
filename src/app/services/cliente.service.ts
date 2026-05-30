@@ -174,7 +174,8 @@ export class ClienteService {
         precio: detalle.precio_unitario,
         quantity: detalle.cantidad,
         subtotal: detalle.precio_unitario * detalle.cantidad,
-        tipo: detalle.tipo
+        tipo: detalle.tipo,
+        tiempo: detalle.tiempo || 0
       }));
 
       this._pedido.set(itemsParaPedido);
@@ -482,7 +483,8 @@ getSubtotal(): number {
         id_cliente: idCliente, // NULL para anónimos
         fecha: new Date().toISOString(),
         estado: 'pendiente',
-        total: Math.round(this.getSubtotal())
+        total: Math.round(this.getSubtotal()),
+        tiempo_estimado: this.getTiempo()
       };
       
       const { data, error } = await this.supabase
@@ -652,7 +654,9 @@ getSubtotal(): number {
   private getTiempo(){
     const pedido = this._pedido()
 
-    const tiempo = Math.max(...pedido.map(item => item.tiempo));
+    const tiempos = pedido.map(item => item.tiempo).filter(t => t != null && !isNaN(t));
+    if (tiempos.length === 0) return 0;
+    const tiempo = Math.max(...tiempos);
 
     console.log("Tiempo estimado: ", tiempo);
 

@@ -42,6 +42,8 @@ export class HomeClientePage implements OnInit {
   opinionesAccess = signal<boolean>(true);
   menuAccess = signal<boolean>(false);
   canPay = signal<boolean>(false);
+  encuestaAccess = signal<boolean>(false);
+  historialAccess = signal<boolean>(false);
 
 
   isDelivery = signal<boolean>(false);
@@ -316,6 +318,11 @@ export class HomeClientePage implements OnInit {
       return true;
     }
     
+    // Para anónimos, permitir acceso si tiene mesa asignada y no está en espera
+    if (this.tipoClienteService.isAnonimo()) {
+      return true;
+    }
+    
     // Si TIENE mesa asignada, solo puede acceder si el pedido activo está entrega_confirmada
     const estadoPedido = await this.clienteService.estadoUltimoPedido();
     const access = estadoPedido === 'entrega_confirmada';
@@ -358,7 +365,16 @@ export class HomeClientePage implements OnInit {
       this.juegosAccess.set(puedoJuegos);
       this.menuAccess.set(puedoMenu);
       this.canPay.set(puedoCuenta);
-      // Nota: opinionesAccess se usa para ambos, puedes ajustar si necesitas otro signal
+
+      // Encuesta: para anónimos, siempre accesible cuando tiene mesa asignada
+      if (this.tipoClienteService.isAnonimo()) {
+        this.encuestaAccess.set(!!this.mesaAsignada() && !this.enListaEspera());
+      } else {
+        this.encuestaAccess.set(puedoCuenta);
+      }
+
+      // Historial (Mi pedido): bloqueado si no hay pedido o fue rechazado
+      this.historialAccess.set(estado !== null && estado !== 'rechazado');
 
       console.log('✅ Accesos actualizados:', {
         juegos: puedoJuegos,
