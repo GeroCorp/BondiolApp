@@ -425,6 +425,8 @@ export class Tab1Espera implements OnInit {
 
       if (asignado) {
         const mesaAsignada = this.mesas.find(m => m.id === mesaId);
+        console.log("aaaa"+mesaAsignada)
+        console.log(mesaAsignada)
         const toast = await this.toastCtrl.create({
           message: `Mesa ${mesaAsignada?.numero} asignada a ${cliente.nombre_cliente}`,
           duration: 3000,
