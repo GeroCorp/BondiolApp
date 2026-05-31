@@ -96,4 +96,9 @@ cerrarModal() {
   this.modalAbierto = false;
   this.mesaSeleccionada = null;
 }
+
+async handleRefresh(event: any) {
+  await this.cargarMesas();
+  event.target.complete();
+}
 }

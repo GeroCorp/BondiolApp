@@ -26,6 +26,11 @@ export class Tab2RecibirPedidoPage implements OnInit {
     await this.cargarPedidosPendientes();
   }
 
+  async handleRefresh(event: any) {
+    await this.cargarPedidosPendientes();
+    event.target.complete();
+  }
+
   async cargarPedidosPendientes() {
     //REVISAR PORQUE CREO QUE HAY ALGO QUE SE PISA
       this.isLoading = true;

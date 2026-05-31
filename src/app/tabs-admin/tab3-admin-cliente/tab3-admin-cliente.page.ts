@@ -46,6 +46,11 @@ export class Tab3AdminClientePage implements OnInit {
     this.cargarClientes();
   }
 
+  async handleRefresh(event: any) {
+    await this.cargarClientes();
+    event.target.complete();
+  }
+
   async presentToast(
     message: string,
     color: 'success' | 'warning' | 'danger' | 'medium' = 'medium'
