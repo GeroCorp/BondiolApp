@@ -16,7 +16,11 @@
 
 <ion-content [fullscreen]="true" class="consultas-content">
   <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
-    <ion-refresher-content></ion-refresher-content>
+    <ion-refresher-content
+      pulling-icon="chevron-down-circle-outline"
+      pulling-text="Desliza para actualizar"
+      refreshing-spinner="circles"
+    ></ion-refresher-content>
   </ion-refresher>
 
   <!-- Loading -->

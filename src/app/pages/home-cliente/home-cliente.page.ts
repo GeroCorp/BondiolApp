@@ -97,8 +97,13 @@ export class HomeClientePage implements OnInit {
         const oldMesaVerificada = this.mesaVerificada();
         this.mesaAsignada.set(data.mesa_asignada || null);
         this.enListaEspera.set(data.en_espera !== false);
-        this.mesaVerificada.set(!!data.mesa_asignada);
         this.cliente = data;
+
+        // Si tenía mesa y ahora la quitaron (pago confirmado), redirigir a login
+        if (oldMesa && !data.mesa_asignada && this.initialized) {
+          this.redirigirALogin('Pago confirmado. Redirigiendo al inicio...');
+          return;
+        }
 
         // Si se asignó mesa nueva después de inicializado, suscribirse a pedidos
         if (data.mesa_asignada && !oldMesa && !this.pedidosSubscription && this.initialized) {
@@ -129,6 +134,14 @@ export class HomeClientePage implements OnInit {
 
   testMesa(){
     this.mesaVerificada.set(true);
+  }
+
+  private redirigirALogin(mensaje: string) {
+    this.showToast(mensaje, 'success');
+    setTimeout(() => {
+      this.tipoClienteService.clearClienteData();
+      this.router.navigate(['/login'], { replaceUrl: true });
+    }, 1500);
   }
   
   async ngOnInit() {
@@ -182,6 +195,29 @@ export class HomeClientePage implements OnInit {
         // Suscribirse a cambios en historial de pedidos con callback
         await this.clienteService.subscribeToHistorialPedidos(() => this.actualizarAccesosSegunPedidos());
 
+        // Suscribirse a cambios en la tabla clientes (realtime) para detectar liberación de mesa
+        if (this.cliente?.id_cliente) {
+          this.mesaSubscription = this.authService.client
+            .channel(`cliente-mesa-${this.cliente.id_cliente}`)
+            .on(
+              'postgres_changes',
+              {
+                event: 'UPDATE',
+                schema: 'public',
+                table: 'clientes',
+                filter: `id_cliente=eq.${this.cliente.id_cliente}`
+              },
+              (payload: any) => {
+                const newMesa = payload.new?.mesa_asignada;
+                const oldMesa = payload.old?.mesa_asignada;
+                if (oldMesa && !newMesa && this.initialized) {
+                  this.redirigirALogin('Pago confirmado. Redirigiendo al inicio...');
+                }
+              }
+            )
+            .subscribe();
+        }
+
         // Verificacion de accesos INICIALES
         await this.actualizarAccesosSegunPedidos();
         this.clienteService.isCLienteEnEspera(); // Verificar estado de espera al cargar la página
@@ -195,7 +231,7 @@ export class HomeClientePage implements OnInit {
           
           this.mesaAsignada.set(clienteData.mesa_asignada || null);
           this.enListaEspera.set(clienteData.en_espera !== false);
-          this.mesaVerificada.set(!!clienteData.mesa_asignada);
+          this.mesaVerificada.set(false);
           
           if (clienteData.mesa_asignada) {
             const suscripcion = await this.clienteService.subscribeToHistorialPedidos(
