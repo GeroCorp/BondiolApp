@@ -1058,93 +1058,6 @@ async sendMessage(contenido: string): Promise<void> {
     }
   }
 
-  async detectarUpdate(callback?: (enEspera: boolean) => void) {
-  // ✅ VERIFICAR: Solo para clientes registrados
-  if (this.tipoClienteService.isAnonimo()) {
-    console.log('🎭 Cliente anónimo - detectarUpdate no necesario');
-    return null;
-  }
-
-  const channels = this.supabase.channel('custom-update-channel')
-  .on(
-    'postgres_changes',
-    { event: 'UPDATE', schema: 'public', table: 'clientes' },
-    async (payload) => {
-      console.log('🔄 Update detectado en clientes:', payload);
-      
-      try {
-        const oldRecord = payload.old as any;
-        const newRecord = payload.new as any;
-        
-        // Verificar si este cambio es para el cliente actual
-        const { data: sessionData, error: sessionError } = await this.supabase.auth.getSession();
-        
-        if (sessionError || !sessionData?.session?.user?.id) {
-          console.error('❌ Error obteniendo sesión:', sessionError);
-          return;
-        }
-        
-        const currentUserId = sessionData.session.user.id;
-        if (newRecord?.user_id === currentUserId) {
-          
-          // Verificar si se asignó una mesa (de null a un número)
-          if (oldRecord?.mesa_asignada === null && newRecord?.mesa_asignada !== null) {
-            try {
-              const numeroMesa = await this.getNroMesa(newRecord.id_cliente);
-              await this.notificationService.sendNotificationToCliente(
-                '🎉 ¡Mesa asignada!',
-                `Te hemos asignado la mesa ${numeroMesa}. ¡Ya puedes realizar tu pedido!`,
-                ''
-              );
-              console.log('✅ Notificación de mesa asignada enviada');
-            } catch (error) {
-              console.error('❌ Error enviando notificación de mesa:', error);
-            }
-          }
-          
-          // Verificar si se liberó una mesa (de un número a null)
-          if (oldRecord?.mesa_asignada !== null && newRecord?.mesa_asignada === null) {
-            try {
-              await this.notificationService.sendNotificationToCliente(
-                'Mesa liberada',
-                'Tu mesa ha sido liberada. Gracias por visitarnos.',
-                ''
-              );
-              console.log('✅ Notificación de mesa liberada enviada');
-            } catch (error) {
-              console.error('❌ Error enviando notificación de liberación:', error);
-            }
-          }
-        }
-        
-        // Llamar a la función y esperar el resultado
-        const enEspera = await this.isCLienteEnEspera();
-        console.log('✅ Cliente en espera actualizado:', enEspera);
-        // Actualizar el signal
-        this._clienteEnEspera.set(enEspera);
-        
-        // Ejecutar callback si se proporciona
-        if (callback) {
-          callback(enEspera);
-        }
-      } catch (error) {
-        console.error('❌ Error verificando cliente en espera:', error);
-      }
-    }
-  )
-  .subscribe();
-
-  // Inicializar el estado actual
-  try {
-    const estadoInicial = await this.isCLienteEnEspera();
-    this._clienteEnEspera.set(estadoInicial);
-  } catch (error) {
-    console.error('❌ Error obteniendo estado inicial:', error);
-  }
-
-  return channels;
-}
-
   async isCLienteEnEspera() {
   // ✅ VERIFICAR: Solo para clientes registrados
   if (this.tipoClienteService.isAnonimo()) {
@@ -1181,7 +1094,7 @@ async sendMessage(contenido: string): Promise<void> {
   return bool;
 }
 
-  async subscribeToClienteEnEspera(signal: any) {
+  async subscribeToClienteEnEspera(signal: any, callback: any) {
     // ✅ VERIFICAR: Solo para clientes registrados
     if (this.tipoClienteService.isAnonimo()) {
       console.log('🎭 Cliente anónimo - subscribeToClienteEnEspera no necesario');
@@ -1232,17 +1145,18 @@ async sendMessage(contenido: string): Promise<void> {
           },
           (payload) => {
             console.log('🔄 UPDATE detectado en lista_espera - Estado cambiado:', payload);
-            const estadoAnterior = payload.old?.['estado'];
             const estadoNuevo = payload.new?.['estado'];
             const enEspera = estadoNuevo === 'esperando';
             
             console.log('📊 Cambio de estado:', {
-              anterior: estadoAnterior,
-              nuevo: estadoNuevo,
               enEsperaAhora: enEspera
             });
             
             signal.set(enEspera);
+
+            if (estadoNuevo == 'asignado'){
+              callback();
+            }
           }
         )
         .subscribe();

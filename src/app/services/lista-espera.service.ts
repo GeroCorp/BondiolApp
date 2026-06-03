@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { supabase } from './supabase';
 import { ClienteService } from './cliente.service';
+import { Notification } from './notification';
+import { TipoClienteService } from './tipo-cliente.service';
 
 export interface ClienteEspera {
   id?: number;
@@ -9,7 +11,17 @@ export interface ClienteEspera {
   cantidad_personas: number;
   mesa_asignada?: number;
   created_at?: string;
-  foto?: string;
+}
+
+interface ListaEsperaEntry {
+  id: number;
+  nombre_cliente: string;
+  estado: string;
+  cantidad_personas: number;
+  mesa_asignada?: number;
+  created_at: string;
+  id_cliente: number | null;
+  id_invitado: number | null;
 }
 
 @Injectable({
@@ -17,7 +29,11 @@ export interface ClienteEspera {
 })
 export class ListaEsperaService {
 
-  constructor(private clienteService: ClienteService) { }
+  constructor(
+    private clienteService: ClienteService,
+    private notificationService: Notification,
+    private tipoClienteService: TipoClienteService
+  ) { }
 
   /**
    * Agregar cliente a la lista de espera
@@ -26,13 +42,18 @@ export class ListaEsperaService {
     nombre_cliente: string; // Cambiar de 'nombre' a 'nombre_cliente'
     cantidad_personas: number;
   }) {
+    const isAnonimo = this.tipoClienteService.isAnonimo();
+    let clientId  = await this.tipoClienteService.getClienteId();
+    console.log('Cliente ID:', clientId, "Es anonimo?", isAnonimo);
+    
     try {
-
+      const columna_id = isAnonimo ? 'id_invitado' : 'id_cliente'; 
       const nuevoCliente = {
         nombre_cliente: datosCliente.nombre_cliente,
         cantidad_personas: datosCliente.cantidad_personas,
         estado: 'esperando',
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
+        [columna_id]: clientId
       };
 
       const { data, error } = await supabase
@@ -325,68 +346,6 @@ export class ListaEsperaService {
     }
   }
 
-  /**
-   * Obtener estadísticas de la lista
-   */
-  async getEstadisticas(): Promise<{
-    totalEsperando: number;
-    totalLlamados: number;
-    totalAsignados: number;
-    totalAusentes: number;
-    totalCancelados: number;
-  }> {
-    try {
-      const hoy = new Date().toISOString().split('T')[0];
-      
-      const { data, error } = await supabase
-        .from('lista_espera')
-        .select('estado')
-        .gte('created_at', `${hoy}T00:00:00.000Z`)
-        .lt('created_at', `${hoy}T23:59:59.999Z`);
-
-      if (error) throw error;
-
-      const estadisticas = {
-        totalEsperando: 0,
-        totalLlamados: 0,
-        totalAsignados: 0,
-        totalAusentes: 0,
-        totalCancelados: 0
-      };
-
-      data?.forEach(registro => {
-        switch (registro.estado) {
-          case 'esperando':
-            estadisticas.totalEsperando++;
-            break;
-          case 'llamado':
-            estadisticas.totalLlamados++;
-            break;
-          case 'asignado':
-            estadisticas.totalAsignados++;
-            break;
-          case 'ausente':
-            estadisticas.totalAusentes++;
-            break;
-          case 'cancelado':
-            estadisticas.totalCancelados++;
-            break;
-        }
-      });
-
-      return estadisticas;
-
-    } catch (error) {
-      console.error('Error al obtener estadísticas:', error);
-      return {
-        totalEsperando: 0,
-        totalLlamados: 0,
-        totalAsignados: 0,
-        totalAusentes: 0,
-        totalCancelados: 0
-      };
-    }
-  }
 
   /**
    * Limpiar registros antiguos (más de 1 día)
@@ -450,6 +409,31 @@ export class ListaEsperaService {
     }
   }
 
+  /**
+   * Buscar si el cliente está en la lista de espera y obtener su estado
+   * @returns Datos del cliente si está en la lista, null si no está
+   */
+  async buscarClienteEnLista(id_cliente: number, isAnonimo?: boolean){
+    const columna_id = isAnonimo ? 'id_invitado' : 'id_cliente';
+    try {
+      const { data, error } = await supabase  
+        .from('lista_espera')
+        .select('*')
+        .in('estado', ['esperando', 'llamado'])
+        .eq(columna_id, id_cliente)
+        .single();
+      if (error) throw error;
+      if (!data){
+        console.log('Cliente no encontrado en lista de espera');
+        return null;
+      }
+      return data;
+
+    } catch (error) {
+      console.error('Error al buscar cliente en lista:', error);
+      return null;
+    }
+  }
   async getListaDelDia(){
     try {
       const hoy = new Date().toISOString().split('T')[0];
@@ -545,19 +529,50 @@ export class ListaEsperaService {
   }
 
   /**
-   * Suscribirse a cambios en tiempo real
+   * Suscribirse a cambios en tiempo real de la lista de espera
+   * El callback se ejecutará cada vez que haya un cambio en la lista de espera 
    */
-  suscribirCambios(callback: (payload: any) => void) {
-    return supabase
-      .channel('lista_espera')
-      .on('postgres_changes', 
-        { 
-          event: '*', 
-          schema: 'public', 
-          table: 'lista_espera' 
-        }, 
-        callback
+  suscribirCambios(signal: any, callback?: (payload: any) => void) {
+    const isAnon = this.tipoClienteService.isAnonimo();
+    const client = this.tipoClienteService.getClienteData()
+    let idUser = client.id_cliente ? client.id_cliente : client.id_clienteanonimo;
+    let columna_id = isAnon ? 'id_invitado' : 'id_cliente';
+    const filter = `${columna_id}=eq.${idUser}`
+
+    if (isAnon) {
+      columna_id = 'id_invitado';
+    } else {
+      columna_id = 'id_cliente';
+    }
+    const channel  = supabase.channel('lista-espera-update')
+      .on('postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'lista_espera',
+          filter: filter
+
+        },
+        (payload) => {
+          const payData = payload.new as ListaEsperaEntry;
+          console.log('Update en lista de espera:', payData);
+          this.notificationService.sendNotificationToCliente(
+            '¡Actualización en tu estado de espera!',
+            `Tu estado ha cambiado a: ${payData.estado}`,)
+          signal.set(payData.estado);
+          console.log(signal());
+          if(payData.estado === 'asignado' && payData.mesa_asignada){
+            this.unsubscribirCambios(channel);
+            callback && callback(payData);
+          }
+        }
       )
       .subscribe();
+    
+    return channel;
+  }
+  unsubscribirCambios(channel: any) {
+    supabase.removeChannel(channel);
+    console.log("❌ Subscripción cancelada");
   }
 }

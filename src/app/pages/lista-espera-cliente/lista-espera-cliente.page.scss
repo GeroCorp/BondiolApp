@@ -1,116 +1,18 @@
-.lista-espera-content {
-  --background: linear-gradient(135deg, #ea9266 0%, #764ba2 100%);
+ion-content{
+  height: 100%;
 }
-
-.lista-espera-wrapper {
-  padding: 16px;
-}
-
-ion-toolbar {
-  background-color: #8b0000; 
-}
-
-// Estado y acciones
-.estado-info {
-  margin-bottom: 16px;
-}
-
-.estado-badge {
-  margin-bottom: 12px;
-  text-align: center;
-}
-
-.info-details p {
-  margin: 8px 0;
-  font-size: 14px;
-}
-
-.acciones-espera {
-  margin-top: 16px;
-  
-  ion-button {
-    margin-bottom: 8px;
-  }
-}
-
-// Indicador de última actualización
-.ultima-actualizacion {
-  margin-top: 12px !important;
-  opacity: 0.7;
-  font-style: italic;
-  
-  ion-icon {
-    margin-right: 4px;
-    font-size: 14px;
-  }
-  
-  small {
-    font-size: 12px;
-  }
-}
-
-// Llamado y asignado
-.llamado-alert,
-.asignado-success {
-  margin-top: 16px;
-  
-  h3 {
-    margin: 0 0 8px 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-}
-
-// Loading container
-.loading-container {
-  text-align: center;
-  padding: 40px 20px;
-  
-  ion-spinner {
-    margin-bottom: 16px;
-  }
-  
-  p {
-    color: var(--ion-color-medium);
-    margin: 0;
-  }
-}
-
-// Info container
-.info-container {
-  .id-placeholder {
-    text-align: center;
-    padding: 20px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    margin-bottom: 16px;
-    
-    ion-icon {
-      color: var(--ion-color-primary);
-      margin-bottom: 12px;
-    }
-    
-    p {
-      margin: 4px 0;
-      
-      &:first-of-type {
-        font-size: 18px;
-        font-weight: bold;
-      }
-    }
-  }
-}
-
 // Cliente info styling
+p {
+  font-size: 14px;
+  margin: 4px 0 0 0;
+  color: white  ;
+}
 .cliente-info {
   margin-bottom: 16px;
   
   ion-item {
     --background: rgba(var(--ion-color-primary-rgb), 0.1);
     --border-radius: 12px;
-    --padding-start: 16px;
-    --padding-end: 16px;
     margin-bottom: 8px;
     
     ion-icon {
@@ -120,27 +22,41 @@ ion-toolbar {
     
     ion-label {
       h3 {
-        font-size: 18px;
-        font-weight: 600;
+        font-size: 20px;
+        font-weight: 700;
         margin: 0;
         color: var(--ion-color-primary);
       }
       
-      p {
-        font-size: 14px;
-        margin: 4px 0 0 0;
-        color: var(--ion-color-medium);
-      }
+     
     }
   }
 }
 
+.lista-espera-wrapper {
+  height: 100%;
+  align-content: center;
+
+  ion-card-content {
+    align-content: center;
+  }
+}
+
+.main-content {
+  height: 90%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+
 // Cards styling
-ion-card {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  border-radius: 16px;
-  margin-bottom: 16px;
-  
+.main-card {
+  height: 90%;
+  align-content: center;  
+}
+
+ion-card {  
   ion-card-header {
     ion-card-title {
       display: flex;
@@ -150,12 +66,66 @@ ion-card {
     }
   }
 }
+.enlista {
+  .icon-container {
+    padding: 40px;
+    
+    ion-icon {
+        font-size: 80px;
+        animation: rotation 2s infinite;
+    }
+  }
+  ion-item{
+    border-radius: 12px;
+  }
+  h3 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #E85D04;
+  }
+  app-secondary-button {
+    margin-top: 25px;
+  }
 
+  ion-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+  }
+  ion-icon{
+    color: #E85D04;
+  }
+
+}
+@keyframes rotation {
+    0% {
+        opacity: 1;
+        transform: rotate(0deg);
+    }
+    50% {
+        opacity: 0.5;
+        transform: rotate(180deg);
+    }
+    100% {
+        opacity: 1;
+        transform: rotate(360deg);
+    }
+}
 // Range styling
 ion-range {
   padding: 16px 0;
+  color: #E85D04; 
 }
-
+.espera{
+  ion-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+  }
+  ion-icon{
+    color: #E85D04;
+  }
+}
 // Responsive design
 @media (max-width: 576px) {
   .lista-espera-wrapper {

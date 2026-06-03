@@ -94,6 +94,12 @@
         <ion-icon slot="start" name="time-outline"></ion-icon>
         Lista de Espera
       </ion-button>
+      <ion-button 
+      *ngIf="showDebug()"
+      (click)="esperaDev()" expand="block" fill="clear" shape="round">
+        Lista de espera page
+        <ion-icon slot="end" name="bug-outline"></ion-icon>
+      </ion-button>
       <!-- <ion-button
         *ngIf="isRegistrado()"
         expand="block"
@@ -121,8 +127,11 @@
         color="danger"
         (click)="unirseListaEsperaSimulado()"
         style="margin-top: 10px"
+      *ngIf="showDebug()"
+
       >
-        <ion-icon slot="start" name="bug-outline"></ion-icon>
+        <ion-icon slot="start" name="bug-outline"
+        ></ion-icon>
         Lista de espera (Debug)
       </ion-button>
     </ion-card-content>

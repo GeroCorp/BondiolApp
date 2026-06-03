@@ -2,6 +2,7 @@
 import { Router } from '@angular/router';
 import { ToastController, AlertController } from '@ionic/angular';
 import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
+import { Capacitor } from '@capacitor/core';
 
 import { ClienteService } from 'src/app/services/cliente.service';
 import { AuthService } from 'src/app/services/supabase';
@@ -136,6 +137,14 @@ export class HomeClientePage implements OnInit {
     this.mesaVerificada.set(true);
   }
 
+  esperaDev() {
+    this.router.navigate(['/lista-espera-cliente']);
+  }
+
+  showDebug(){
+    return !Capacitor.isNativePlatform();
+  }
+
   private redirigirALogin(mensaje: string) {
     this.showToast(mensaje, 'success');
     setTimeout(() => {
@@ -185,7 +194,7 @@ export class HomeClientePage implements OnInit {
         const [, , suscripcion] = await Promise.all([
           this.verificarReservaActiva(),
           this.verificarMesaAsignada(),
-          this.clienteService.subscribeToClienteEnEspera(this.enListaEspera),
+          this.clienteService.subscribeToClienteEnEspera(this.enListaEspera, this.verificarMesaAsignada.bind(this)),
           
         ]);
         
@@ -458,11 +467,6 @@ export class HomeClientePage implements OnInit {
         const mesa = await this.clienteService.getNroMesa(this.cliente.id_cliente);
         this.mesaAsignada.set(mesa);
         console.log('🏠 Mesa asignada al cliente registrado:', mesa);
-        
-        if (mesa) {
-          this.enListaEspera.set(false);
-          // ✅ NO cambiar mesaVerificada aquí
-        }
       
     } catch (error) {
       console.error('❌ Error verificando mesa asignada:', error);

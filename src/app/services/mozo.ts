@@ -65,11 +65,12 @@ export class Mozo {
 
     // Enviar notificación al cliente de esa mesa
     try {
-      let clienteId = await this.getdatosCliente(id_mesa).then(cliente => cliente ? cliente.cliente_id : null);
+      let clienteId = await this.getClienteByMesa(id_mesa);
       if (!clienteId) {
-        clienteId = await this.getClienteByMesa(id_mesa);
+        console.log('⚠️ No se encontró cliente asignado a la mesa:', id_mesa);
+        return;
       }
-
+      console.log("Id del cliente. ", clienteId);
       await this.notificationService.sendNotificationToCliente(
           '💬 Nuevo mensaje del mozo',
           `Tienes un nuevo mensaje en la mesa ${id_mesa}: "${contenido}"`,

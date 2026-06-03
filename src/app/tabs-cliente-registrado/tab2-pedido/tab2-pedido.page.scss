@@ -68,7 +68,7 @@ ion-header {
 .item-lista {
   --padding-start: 0;
   --inner-padding-end: 0;
-
+  overflow-y: auto;
   .info {
     display: flex;
     width: 100%;

@@ -36,8 +36,7 @@
         <!-- Card del cliente en posición par (i) -->
         <div class="cliente-card">
           <div class="card-avatar">
-            <img *ngIf="clientesFiltrados[i].foto" [src]="clientesFiltrados[i].foto" alt="foto" />
-            <div *ngIf="!clientesFiltrados[i].foto" class="avatar-placeholder">
+            <div class="avatar-placeholder">
               {{ clientesFiltrados[i].nombre_cliente?.charAt(0)?.toUpperCase() }}
             </div>
           </div>
@@ -71,8 +70,7 @@
         <!-- Card del cliente en posición impar (i+1), si existe -->
         <div *ngIf="clientesFiltrados[i + 1] as clienteSiguiente" class="cliente-card">
           <div class="card-avatar">
-            <img *ngIf="clienteSiguiente.foto" [src]="clienteSiguiente.foto" alt="foto" />
-            <div *ngIf="!clienteSiguiente.foto" class="avatar-placeholder">
+            <div  class="avatar-placeholder">
               {{ clienteSiguiente.nombre_cliente?.charAt(0)?.toUpperCase() }}
             </div>
           </div>

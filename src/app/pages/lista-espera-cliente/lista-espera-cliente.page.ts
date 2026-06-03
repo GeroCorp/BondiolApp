@@ -1,9 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ListaEsperaService, ClienteEspera } from 'src/app/services/lista-espera.service';
 import { ClienteService } from 'src/app/services/cliente.service';
 import { ToastController, AlertController } from '@ionic/angular';
 import { CustomLoaderService } from 'src/app/services/custom-loader.service';
+import { Notification } from 'src/app/services/notification';
+import { TipoClienteService } from 'src/app/services/tipo-cliente.service';
 
 @Component({
   selector: 'app-lista-espera-cliente',
@@ -13,16 +15,13 @@ import { CustomLoaderService } from 'src/app/services/custom-loader.service';
 })
 export class ListaEsperaClientePage implements OnInit {
   
-  mostrarFormulario = true;
+  mostrarFormulario = signal<boolean>(true);
+  estado = signal<string>(''); // Nuevo signal para el estado del cliente en espera
   clienteEnEspera: ClienteEspera | null = null;
   
   // Datos del formulario
   nombreCliente = '';
-  cantidadPersonas = 1;
-  
-  // Para consultar por ID
-  consultarPorId: string | number = '';
-  mostrarConsulta = false;
+  cantidadPersonas = 0;
   
   // Estado
   isLoading = false;
@@ -31,24 +30,28 @@ export class ListaEsperaClientePage implements OnInit {
   ultimaActualizacion: Date | null = null;
 
   constructor(
-    private route: ActivatedRoute,
     private router: Router,
     private listaEsperaService: ListaEsperaService,
     private clienteService: ClienteService,
     private toastCtrl: ToastController,
     private customLoader: CustomLoaderService,
-    private alertCtrl: AlertController
+    private alertCtrl: AlertController,
+    private notificationService: Notification,
+    private tipoClienteService: TipoClienteService
   ) { }
 
   async ngOnInit() {
+    this.customLoader.show('Cargando información...');
+
+    try {
     // Cargar el nombre del cliente logueado
     await this.cargarNombreCliente();
-    
-    // Verificar si viene con un ID de cliente
-    const clienteId = this.route.snapshot.queryParamMap.get('id');
-    if (clienteId) {
-      await this.consultarEstado(clienteId);
+    await this.verificarEnLista();
+    }catch (error) {
+      console.error('Error:', error);
+      this.customLoader.hide();
     }
+    this.customLoader.hide();
   }
 
   /**
@@ -80,13 +83,20 @@ export class ListaEsperaClientePage implements OnInit {
       });
 
       if (cliente && cliente.success) {
-        this.clienteEnEspera = cliente.data;
-        this.mostrarFormulario = false;
+        this.estado.set('esperando');
+        this.mostrarFormulario.set(false);
+
         await this.presentToast(
-          `¡Agregado a la lista! Tu ID es: ${cliente.data.id}`,
+          `¡Agregado a la lista!`,
           'success'
         );
         await this.iniciarActualizacionAutomatica();
+        this.notificationService.sendNotificationToPerfil(
+          'maitre',
+          'Nuevo cliente en lista de espera',
+          `${this.nombreCliente} se ha unido a la lista de espera.`,
+          '/tabs-maitre/tab1-espera'
+        )
       } else {
         await this.presentToast('Error al agregar a la lista', 'danger');
       }
@@ -94,33 +104,6 @@ export class ListaEsperaClientePage implements OnInit {
     } catch (error) {
       console.error('Error:', error);
       await this.presentToast('Error inesperado', 'danger');
-    } finally {
-      await this.customLoader.hide();
-    }
-  }
-
-  /**
-   * Consultar estado por ID
-   */
-  async consultarEstado(clienteId: string) {
-    await this.customLoader.show('Consultando estado...');
-
-    try {
-      const id = parseInt(clienteId);
-      const resultado = await this.listaEsperaService.consultarEstadoPorId(id);
-      
-      if (resultado && resultado.success && resultado.data) {
-        this.clienteEnEspera = resultado.data;
-        this.posicionEnLista = resultado.posicion || 0;
-        this.mostrarFormulario = false;
-        await this.iniciarActualizacionAutomatica();
-      } else {
-        await this.presentToast('Turno no encontrado', 'warning');
-      }
-
-    } catch (error) {
-      console.error('Error:', error);
-      await this.presentToast('Error al consultar estado', 'danger');
     } finally {
       await this.customLoader.hide();
     }
@@ -174,154 +157,28 @@ export class ListaEsperaClientePage implements OnInit {
   }
 
   /**
-   * Actualizar estado manualmente (botón)
-   */
-  async actualizarEstadoManual() {
-    if (!this.clienteEnEspera || !this.clienteEnEspera.id || this.isRefreshing) {
-      if (this.isRefreshing) {
-        await this.presentToast('Ya se está actualizando...', 'warning');
-      } else {
-        await this.presentToast('No hay información para actualizar', 'warning');
-      }
-      return;
-    }
-
-    this.isRefreshing = true;
-    await this.customLoader.show('Actualizando estado...');
-
-    try {
-      const resultado = await this.listaEsperaService.consultarEstadoPorId(this.clienteEnEspera.id);
-      
-      if (resultado && resultado.success && resultado.data) {
-        const estadoAnterior = this.clienteEnEspera.estado;
-        
-        this.clienteEnEspera = resultado.data;
-        this.posicionEnLista = resultado.posicion || 0;
-        this.ultimaActualizacion = new Date();
-        
-        if (estadoAnterior !== this.clienteEnEspera.estado) {
-          let mensaje = '';
-          switch (this.clienteEnEspera.estado) {
-            case 'llamado':
-              mensaje = '🔔 ¡Te han llamado! Dirígete a recepción';
-              break;
-            case 'asignado':
-              mensaje = `🎉 ¡Mesa asignada! Mesa #${this.clienteEnEspera.mesa_asignada}`;
-              break;
-            case 'cancelado':
-              mensaje = '❌ Tu turno ha sido cancelado';
-              break;
-            case 'ausente':
-              mensaje = '⚠️ Has sido marcado como ausente';
-              break;
-            default:
-              mensaje = '✅ Estado actualizado correctamente';
-          }
-          await this.presentToast(mensaje, this.estadoColor);
-        } else {
-          await this.presentToast('Sin cambios en tu estado', 'medium');
-        }
-      } else {
-        await this.presentToast('No se pudo obtener información actualizada', 'warning');
-      }
-    } catch (error) {
-      console.error('Error actualizando estado:', error);
-      await this.presentToast('Error al actualizar', 'danger');
-    } finally {
-      this.isRefreshing = false;
-      await this.customLoader.hide();
-    }
-  }
-
-  /**
-   * Handle refresh manual
-   */
-  async handleRefresh(event: any) {
-    try {
-      // Si no hay cliente en espera, no hay nada que actualizar
-      if (!this.clienteEnEspera || !this.clienteEnEspera.id) {
-        await this.presentToast('No hay información para actualizar', 'warning');
-        event.target.complete();
-        return;
-      }
-
-      console.log('🔄 Actualizando estado del cliente...');
-      
-      // Consultar el estado actualizado
-      const resultado = await this.listaEsperaService.consultarEstadoPorId(this.clienteEnEspera.id);
-      
-      if (resultado && resultado.success && resultado.data) {
-        const estadoAnterior = this.clienteEnEspera.estado;
-        
-        // Actualizar datos
-        this.clienteEnEspera = resultado.data;
-        this.posicionEnLista = resultado.posicion || 0;
-        this.ultimaActualizacion = new Date();
-        
-        // Mostrar mensaje de cambio de estado si es diferente
-        if (estadoAnterior !== this.clienteEnEspera.estado) {
-          let mensaje = '';
-          switch (this.clienteEnEspera.estado) {
-            case 'llamado':
-              mensaje = '🔔 ¡Te han llamado! Dirígete a recepción';
-              break;
-            case 'asignado':
-              mensaje = `🎉 ¡Mesa asignada! Mesa #${this.clienteEnEspera.mesa_asignada}`;
-              break;
-            case 'cancelado':
-              mensaje = '❌ Tu turno ha sido cancelado';
-              break;
-            case 'ausente':
-              mensaje = '⚠️ Has sido marcado como ausente';
-              break;
-            default:
-              mensaje = '✅ Estado actualizado correctamente';
-          }
-          await this.presentToast(mensaje, this.estadoColor);
-        } else {
-          await this.presentToast('✅ Estado actualizado', 'success');
-        }
-        
-        console.log('✅ Estado actualizado:', this.clienteEnEspera.estado);
-      } else {
-        await this.presentToast('⚠️ No se pudo obtener información actualizada', 'warning');
-        console.warn('❌ No se pudo consultar el estado');
-      }
-      
-    } catch (error) {
-      console.error('❌ Error actualizando estado:', error);
-      await this.presentToast('❌ Error al actualizar', 'danger');
-    } finally {
-      // Completar el refresher
-      event.target.complete();
-    }
-  }
-
-  /**
    * Actualización automática del estado
    */
   private async iniciarActualizacionAutomatica() {
-    if (!this.clienteEnEspera) return;
-
-    const intervalo = setInterval(async () => {
-      if (!this.clienteEnEspera) {
-        clearInterval(intervalo);
-        return;
-      }
-
-      const resultado = await this.listaEsperaService.consultarEstadoPorId(
-        this.clienteEnEspera.id!
-      );
-
-      if (resultado && resultado.success && resultado.data) {
-        this.clienteEnEspera = resultado.data;
-        this.posicionEnLista = resultado.posicion || 0;
-        this.ultimaActualizacion = new Date();
-        
-      }
-    }, 30000); // Actualizar cada 30 segundos
+    this.listaEsperaService.suscribirCambios(this.estado, this.volverAHome.bind(this));
   }
 
+  private volverAHome(){
+    this.router.navigate(['/home-cliente']);
+  }
+
+
+  async verificarEnLista(){
+    const isAnonimo = await this.tipoClienteService.isAnonimo();
+    this.clienteEnEspera = await this.listaEsperaService.buscarClienteEnLista(await this.clienteService.getClientId(), isAnonimo);
+    this.estado.set(this.clienteEnEspera ? this.clienteEnEspera.estado : '');
+    if(this.clienteEnEspera){
+      this.mostrarFormulario.set(false);
+      console.log("Cliente encontrado: ", this.clienteEnEspera);
+      await this.iniciarActualizacionAutomatica();
+    }
+
+  }
 
   private validarFormulario(): boolean {
     if (!this.nombreCliente || !this.nombreCliente.trim()) {
@@ -337,42 +194,6 @@ export class ListaEsperaClientePage implements OnInit {
     return true;
   }
 
-  /**
-   * Consultar turno por ID
-   */
-  async consultarTurnoPorId() {
-    // Convertir a string de forma segura
-    let idStr: string;
-    
-    if (typeof this.consultarPorId === 'number') {
-      idStr = this.consultarPorId.toString();
-    } else if (typeof this.consultarPorId === 'string') {
-      idStr = this.consultarPorId.trim();
-    } else {
-      idStr = '';
-    }
-    
-    if (!idStr || idStr === '') {
-      await this.presentToast('Ingresa tu ID', 'warning');
-      return;
-    }
-    
-    // Validar que sea un número válido
-    const idNum = parseInt(idStr);
-    if (isNaN(idNum) || idNum <= 0) {
-      await this.presentToast('El ID debe ser un número válido mayor a 0', 'warning');
-      return;
-    }
-    
-    await this.consultarEstado(idStr);
-  }
-
-  /**
-   * Mostrar/ocultar formulario de consulta
-   */
-  toggleConsulta() {
-    this.mostrarConsulta = !this.mostrarConsulta;
-  }
 
   private async presentToast(message: string, color: string = 'medium') {
     const toast = await this.toastCtrl.create({

@@ -4,6 +4,9 @@ import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
+import { MainButtonComponent } from '../../components/main-button/main-button.component';
+import { SecondaryButtonComponent } from '../../components/secondary-button/secondary-button.component';
+
 import { ListaEsperaClientePageRoutingModule } from './lista-espera-cliente-routing.module';
 
 import { ListaEsperaClientePage } from './lista-espera-cliente.page';
@@ -13,7 +16,9 @@ import { ListaEsperaClientePage } from './lista-espera-cliente.page';
     CommonModule,
     FormsModule,
     IonicModule,
-    ListaEsperaClientePageRoutingModule
+    ListaEsperaClientePageRoutingModule,
+    MainButtonComponent,
+    SecondaryButtonComponent
   ],
   declarations: [ListaEsperaClientePage]
 })

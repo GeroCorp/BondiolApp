@@ -980,23 +980,11 @@ async eliminarBebida(id: number) {
     try {
       console.log('Asignando mesa:', { idCliente, numeroMesa });
 
-      // Primero verificar que la mesa existe y está disponible
-      const { data: mesaData, error: mesaError } = await this.supabase
-        .from('mesas')
-        .select('*')
-        .eq('id', numeroMesa)
-        .is('cliente_asignado', null)
-        .single();
-
-      if (mesaError || !mesaData) {
-        throw new Error('La mesa no está disponible o no existe');
-      }
-
       // Actualizar la mesa como ocupada
       const { error: errorMesa } = await this.supabase
         .from('mesas')
         .update({
-          cliente_asignado: idCliente,
+          invitado_asignado: idCliente,
           disponible: false,
         })
         .eq('id', numeroMesa);

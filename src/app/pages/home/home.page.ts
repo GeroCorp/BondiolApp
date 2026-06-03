@@ -24,8 +24,7 @@ export class HomePage implements OnInit {
     private toastController: ToastController,
     private perfilService: PerfilService,
     private alertController: AlertController,
-    private hapticService: HapticService,
-    private toastCtrl:  ToastController
+    private hapticService: HapticService
   ) {
     console.log('Perfil recibido en Home:', this.perfil());
   }
@@ -69,11 +68,7 @@ async logout() {
           handler: async () => {
             try {
               // Limpiar tags de OneSignal al cerrar sesión
-              this.notificationService.clearUserTags();
-              
-              await this.authService.logout();
-              this.perfilService.setPerfil('');
-              this.notificationService.clearUserTags();
+              this.authService.logout()
               const toast = await this.toastController.create({
                 message: 'Sesión cerrada correctamente',
                 duration: 2000,
@@ -91,7 +86,6 @@ async logout() {
               });
               await toast.present();
               await this.hapticService.vibrateError();
-
             }
           }
         }
