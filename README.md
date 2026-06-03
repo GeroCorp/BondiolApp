@@ -16,29 +16,43 @@
         <td><img alt="Splash" width="25%" src="https://github.com/user-attachments/assets/facf7c03-24f1-45bd-acc1-1220a15ab278" /></td>
         <td><img alt="Login" width="25%" src="https://github.com/user-attachments/assets/7a0599fd-8ecd-4b1b-bc6a-8495e0b94d90" /></td>
         <td><img alt="Registro" width="25%" src="https://github.com/user-attachments/assets/9751c098-17e3-4444-9eb2-9fa89dc45e75" /></td>
+        <td><img width="25%" alt="logAnon" src="https://github.com/user-attachments/assets/3fee7f50-698d-4f34-a958-33e6747480b1" /></td>  
+    </tr>
+    <tr>
+      <th>Cliente</th>
+      <td><img width="25%" alt="image" src="https://github.com/user-attachments/assets/9eff6937-77ef-4afd-a1c5-3039c399a4a6" /></td>
+      <td><img width="25%" alt="ListaEspera" src="https://github.com/user-attachments/assets/64eee27e-5894-45bb-8170-21e706e2cb84" /></td>
+      <td><img width="25%" alt="Menu" src="https://github.com/user-attachments/assets/3684de91-555e-4ba2-bac3-e7ae7f65b780" /></td>
+      <td><img width="25%" alt="Carrito" src="https://github.com/user-attachments/assets/44526354-704c-4e2f-b1dd-bebd673f1a89" /></td>
     </tr>
     <tr>
         <th>Dueño</th>
         <td><img alt="Duenio_1" width="25%" src="https://github.com/user-attachments/assets/e5647ba2-a2c1-4e74-9697-9b5ec3d775b0" /></td>
-        <td><img alt="Duenio_2" width="25%" src="https://github.com/user-attachments/assets/00a86e85-c0f6-41e5-bdfb-5d84aaeaf925" /></td>
-        <td><img alt="Duenio_3" width="25%" src="https://github.com/user-attachments/assets/73b09670-b13d-4de4-b916-6eb14c44f99a" /></td>
+        <td><img width="25%" alt="CrearMesa" src="https://github.com/user-attachments/assets/156e0891-b563-42ea-a2f0-b7df8c978bcd" /></td>
+        <td><img width="25%" alt="ClientesPendientes" src="https://github.com/user-attachments/assets/23cdbb80-c48d-41e0-b2c1-de1cb05f8661" /></td>
+        <td><img width="25%" alt="AgregarEmpleado" src="https://github.com/user-attachments/assets/64ae528b-fc34-47d6-8c58-8211b801ddcd" /></td>
     </tr>
     <tr>
         <th>Maître</th>
-        <td><img alt="Maitre_2" width="25%" src="https://github.com/user-attachments/assets/e5a17284-2f38-4543-98f4-ab3a1902b344" /></td>
-        <td><img alt="Maitre_3" width="25%" src="https://github.com/user-attachments/assets/275ba047-b6d9-4c4d-9518-b8b32a871199" /></td>
         <td><img alt="Maitre_1" width="25%" src="https://github.com/user-attachments/assets/8a30b401-7a2d-4a4d-83ca-ea4f272c221e" /></td>
+        <td><img width="25%" alt="ListaEsperaMaitre" src="https://github.com/user-attachments/assets/1c458069-c757-40bf-a04e-ee22b4a3c283" /></td>
+        <td><img width="25%" alt="GestionMesas" src="https://github.com/user-attachments/assets/d8229b03-87dd-4a38-87e7-a2b6734ac1a3" /></td>
     </tr>
     <tr>
         <th>Mozo</th>
         <td><img alt="Mozo_1" width="25%" src="https://github.com/user-attachments/assets/90759b4e-fd0a-4449-ba3e-b50fc7ac4b94" /></td>
         <td><img alt="Mozo_2" width="25%" src="https://github.com/user-attachments/assets/60b3af53-05a8-4937-8d33-4caf262236a3" /></td>
-        <td><img alt="Mozo_3" width="25%" src="https://github.com/user-attachments/assets/0edc7e97-7732-4ec7-a67f-0f137f946980" /></td>
+        <td><img width="25%" alt="ListaPedidos" src="https://github.com/user-attachments/assets/40320388-26ac-448c-8464-0962c1405e15" /></td>
+        <td><img width="25%" alt="MenuChats" src="https://github.com/user-attachments/assets/6450dc43-ac3a-441a-9ded-7d989f143835" />
+</td>
     </tr>
     <tr>
         <th>Cociner / Bartender</th>
         <td><img alt="Cocinero_1" width="25%" src="https://github.com/user-attachments/assets/4b207ae4-19fc-49e6-aa12-8aa85f97110a" /></td>
-        <td><img alt="Cocinero 3" width="25%" src="https://github.com/user-attachments/assets/4d4e5ba4-f350-4aa1-82df-597a0141ca11" /></td>
+        <td><img width="25%" alt="PedidosVacio" src="https://github.com/user-attachments/assets/5c053618-3b8f-4b0a-8ea2-8803d35cf1d8" /></td>
+        <td><img width="25%" alt="PedidosCocina" src="https://github.com/user-attachments/assets/33941ce6-e9bc-4789-95e2-75699991d8aa" /></td>
+        <td><img width="25%" alt="menuCocina" src="https://github.com/user-attachments/assets/d0f9bba4-0efc-47aa-8949-170b99b72521" /></td>
+        <td><img width="25%" alt="AgregarProducto" src="https://github.com/user-attachments/assets/8eb7578e-dec5-42c8-8474-d3e6ff91165a" /></td>
     </tr>
 </table>
 
@@ -100,6 +114,12 @@ Fecha de finalizacion: 30/04
 
 Fecha de inicio: 7/05
 Fecha de finalizacion: 15/05
+#
+
+- Arreglar flujo cliente anonimo
+  
+Fecha de inicio: 24/05
+Fecha de finalizacion: 6/06
 
 ## Borda Victoria
 - Baja en base de datos de platos
@@ -140,6 +160,12 @@ Fecha de finalizacion: 16/05
   
 Fecha de inicio: 17/05
 Fecha de finalizacion: 22/05
+#
+
+- Arreglar mesas de lado cliente
+  
+Fecha de inicio: 24/05
+Fecha de finalizacion: 6/06
 
 ## Corpus Geronimo
 - Inicio de sesión
@@ -180,3 +206,11 @@ Fecha de finalizacion: 18/05
   
 Fecha de inicio: 17/05
 Fecha de finalizacion: 22/05
+
+#
+
+- Cambiar lista de espera
+- Cambiar page de juegos
+  
+Fecha de inicio: 24/05
+Fecha de finalizacion: 6/06
