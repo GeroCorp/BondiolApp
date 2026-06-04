@@ -24,7 +24,7 @@ export class JuegoMemoriaPage implements OnInit {
   movimientos: number = 0;
   paresEncontrados: number = 0;
   juegoIniciado: boolean = false;
-  esPrimerIntento: boolean = true;
+  esPrimerIntento: boolean = this.primerIntentoDisponible;
 
   iconos = ['pizza-outline', 'beer-outline', 'ice-cream-outline', 'cafe-outline', 'wine-outline', 'fast-food-outline'];
 

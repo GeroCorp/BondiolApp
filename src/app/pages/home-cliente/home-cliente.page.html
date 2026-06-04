@@ -165,6 +165,28 @@
     <!-- Tarjetas de funcionalidades -->
     <ion-card class="main-card">
       <ion-card-content class="botones-grid">
+        @if (!mesaVerificada() && mesaAsignada() && !opinionesAccess()){
+         <ion-button
+          fill="outline"
+          color="secondary"
+          class="boton-grid"
+        >
+          <div class="boton-content">
+            <ion-icon name="logo-instagram"></ion-icon>
+            <span>Instagram</span>
+          </div>
+        </ion-button>
+         <ion-button
+          fill="outline"
+          color="secondary"
+          class="boton-grid"
+        >
+          <div class="boton-content">
+            <ion-icon name="logo-tiktok"></ion-icon>
+            <span>TikTok</span>
+          </div>
+        </ion-button>
+        }
         <ion-button
           fill="outline"
           color="secondary"
@@ -185,7 +207,7 @@
           color="secondary"
           (click)="verHistorial()"
           [disabled]="(!mesaVerificada() && !isDelivery()) || !historialAccess()"
-          *ngIf="mesaVerificada() || isDelivery()"
+          *ngIf="!menuAccess() && (mesaVerificada() || isDelivery())"
           class="boton-grid"
         >
           <div class="boton-content">
@@ -268,21 +290,6 @@
           <div class="boton-content">
             <ion-icon name="list-outline"></ion-icon>
             <span>Mis Reservas</span>
-          </div>
-        </ion-button>
-        
-        <ion-button
-          color="success"
-          (click)="solicitarCuenta()"
-          [disabled]="(!mesaVerificada()) || (!isDelivery() && !canPay())"
-          *ngIf="isDelivery() || canPay()"
-          class="boton-grid"
-        >
-          <div class="boton-content">
-            <ion-icon name="card-outline"></ion-icon>
-            <span *ngIf="!isDelivery(); else pagarPedido">Pedir la Cuenta</span>
-            <ng-template #pagarPedido><span>Pagar pedido</span></ng-template>
-            <ion-icon name="lock-closed" *ngIf="(!mesaVerificada()) || (!isDelivery() && !canPay())" class="lock-icon"></ion-icon>
           </div>
         </ion-button>
       </ion-card-content>

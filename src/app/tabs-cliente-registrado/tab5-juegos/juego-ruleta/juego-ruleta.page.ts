@@ -15,7 +15,8 @@ export class JuegoRuletaPage implements OnInit {
   resultado: string = '';
   rotacion: number = 0;
   intentosRealizados: number = 0;
-  esPrimerIntento: boolean = true;
+  esPrimerIntento: boolean = this.primerIntentoDisponible;
+
 
   // Sectores de la ruleta (8 sectores)
   sectores = [

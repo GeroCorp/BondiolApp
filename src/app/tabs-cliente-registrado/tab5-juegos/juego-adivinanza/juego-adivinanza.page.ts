@@ -18,7 +18,7 @@ export class JuegoAdivinanzaPage implements OnInit {
   maxIntentos: number = 5;
   juegoActivo: boolean = true;
   historialIntentos: { numero: number; pista: string }[] = [];
-  esPrimerIntento: boolean = true;
+  esPrimerIntento: boolean = this.primerIntentoDisponible;
 
   ngOnInit() {
     this.inicializarJuego();

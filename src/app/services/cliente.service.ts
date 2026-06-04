@@ -1388,11 +1388,12 @@ async sendMessage(contenido: string): Promise<void> {
   // seccion juegos descuentos
   async getEstadoJuegos(mesaId: number | null, clienteId: number) {
     try {
+      const pedido = await this.getPedidoActivo()
+      const pedido_id = pedido.id
       const { data, error } = await this.supabase
         .from('juegos_descuentos')
         .select('*')
-        .eq('mesa_id', mesaId)
-        .eq('cliente_id', clienteId)
+        .eq('id_pedido', pedido_id)
         .maybeSingle();
 
       if (error && error.code !== 'PGRST116') {
@@ -1414,11 +1415,14 @@ async sendMessage(contenido: string): Promise<void> {
     descuento: number
   ) {
     try {
+      const pedido = await this.getPedidoActivo()
+      const pedido_id = pedido.id
       const { data, error } = await this.supabase
         .from('juegos_descuentos')
         .upsert(
           {
             mesa_id: mesaId,
+            id_pedido: pedido_id,
             cliente_id: clienteId,
             descuento_obtenido: descuento,
             primer_intento_usado: true,
@@ -1442,11 +1446,14 @@ async sendMessage(contenido: string): Promise<void> {
 
   async marcarPrimerIntentoUsado(mesaId: number | null, clienteId: number) {
     try {
+      const pedido = await this.getPedidoActivo()
+      const pedido_id = pedido.id
       const { data, error } = await this.supabase
         .from('juegos_descuentos')
         .upsert(
           {
             mesa_id: mesaId,
+            id_pedido: pedido_id,
             cliente_id: clienteId,
             descuento_obtenido: 0,
             primer_intento_usado: true,
@@ -1789,11 +1796,13 @@ async subscribeToHistorialPedidos(onPedidosChanged?: () => Promise<void>) {
                 ? clienteData?.mesa_asignada 
                 : await this.getNroMesa(await this.getClientId());
 
-              await this.notificationService.sendNotificationToCliente(
-                `Estado de tu pedido`,
-                `Tu pedido #${newRecord.id} cambió a: ${estadoTexto}`,
-                ''
-              );
+                if (estadoTexto != "entrega_confirmada"){
+                  await this.notificationService.sendNotificationToCliente(
+                    `Estado de tu pedido`,
+                    `Tu pedido #${newRecord.id} cambió a: ${estadoTexto}`,
+                    ''
+                  );
+                }
               console.log('✅ Notificación de cambio de estado enviada');
             } catch (error) {
               console.error('❌ Error enviando notificación:', error);

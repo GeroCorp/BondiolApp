@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
+import { Capacitor } from '@capacitor/core';
 import { Router } from '@angular/router';
 import { ToastController, AlertController } from '@ionic/angular';
 import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
@@ -27,7 +28,7 @@ export class Tab8CuentaPage implements OnInit {
   
   propinaPorcentaje = 0;
   montoPropina = 0;
-  propinaSeleccionada = false;
+  propinaSeleccionada = signal<boolean>(false);
   
   totalFinal = 0;
 
@@ -168,7 +169,12 @@ export class Tab8CuentaPage implements OnInit {
     }
   }
 
+  propinaDebug(){
+    return !Capacitor.isNativePlatform()
+  }
+
   seleccionarPropina(porcentaje: number) {
+    this.propinaSeleccionada.set(true);
     this.propinaPorcentaje = porcentaje;
     this.montoPropina = this.calcularPropina(porcentaje);
     this.calcularTotal();
@@ -191,7 +197,7 @@ export class Tab8CuentaPage implements OnInit {
   }
 
   async confirmarPropina() {
-  this.propinaSeleccionada = true;
+  this.propinaSeleccionada.set(true);
   console.log(this.esDelivery);
   if (this.esDelivery){
     await this.propinaService.updatePropinaDelivery(
@@ -216,7 +222,7 @@ export class Tab8CuentaPage implements OnInit {
     this.propinaPorcentaje = 0;
     this.montoPropina = 0;
     this.calcularTotal();
-    this.propinaSeleccionada = true;
+    this.propinaSeleccionada.set(true);
   }
 
   async realizarPago() {

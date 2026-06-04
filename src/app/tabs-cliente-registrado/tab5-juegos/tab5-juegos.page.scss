@@ -55,8 +55,11 @@ ion-header {
 }
 
 .game-container {
-  padding: 20px;
+  padding: 10px;
   background: transparent;
+  height: 90%;
+    flex-direction: column;
+    display: flex;
 }
 
 .games-grid {

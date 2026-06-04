@@ -29,7 +29,7 @@
   </div>
 
   <!-- Detalle de la cuenta -->
-  <div *ngIf="!cargando && pedidoActual">
+  <div *ngIf="!cargando && pedidoActual" class="main-content">
     <!-- Info del pedido -->
     <ion-card>
       <ion-card-header>
@@ -92,7 +92,7 @@
       </ion-card>
 
       <!-- Selección de propina -->
-      <ion-card *ngIf="!propinaSeleccionada" >
+      <ion-card *ngIf="!propinaSeleccionada()" >
         <ion-card-header>
           <ion-card-title>
             <ion-icon name="heart"></ion-icon>
@@ -107,27 +107,21 @@
             >
               <ion-icon slot="start" name="qr-code-outline"></ion-icon> Escanear QR
             </app-secondary-button>
+            @if(propinaDebug()){
+              <app-secondary-button
+              (click)="seleccionarPropina(15)">
+                Propina Debug
+              </app-secondary-button>
+            }
           </div>
 
           </ion-card-content>
         </ion-card>
       </ion-card-content>
      </ion-card>
-    
-
-    <!-- Confirmación de propina -->
-    <ion-card *ngIf="propinaSeleccionada">
-      <ion-card-content>
-        <div style="text-align: center;">
-          <ion-icon name="checkmark-circle" style="font-size: 48px;"></ion-icon>
-          <h2>¡Propina Confirmada!</h2>
-          <p>{{ propinaPorcentaje }}% - ${{ montoPropina }}</p>
-        </div>
-      </ion-card-content>
-    </ion-card>
 
     <!-- Botón de pago -->
-    <ion-card *ngIf="propinaSeleccionada">
+    <ion-card *ngIf="propinaSeleccionada()">
       <ion-card-content>
         <ion-button
           expand="block"
