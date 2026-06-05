@@ -164,28 +164,31 @@
 
     <!-- Tarjetas de funcionalidades -->
     <ion-card class="main-card">
+      <ion-card-header *ngIf="!mesaVerificada() && mesaAsignada() && !opinionesAccess()" class="redes">
+        <ion-card-title>Nuestras redes</ion-card-title>
+      </ion-card-header>
       <ion-card-content class="botones-grid">
         @if (!mesaVerificada() && mesaAsignada() && !opinionesAccess()){
          <ion-button
           fill="outline"
           color="secondary"
           class="boton-grid"
-        >
+          >
           <div class="boton-content">
             <ion-icon name="logo-instagram"></ion-icon>
             <span>Instagram</span>
           </div>
-        </ion-button>
-         <ion-button
-          fill="outline"
-          color="secondary"
-          class="boton-grid"
-        >
-          <div class="boton-content">
-            <ion-icon name="logo-tiktok"></ion-icon>
-            <span>TikTok</span>
-          </div>
-        </ion-button>
+          </ion-button>
+          <ion-button
+            fill="outline"
+            color="secondary"
+            class="boton-grid"
+          >
+            <div class="boton-content">
+              <ion-icon name="logo-tiktok"></ion-icon>
+              <span>TikTok</span>
+            </div>
+          </ion-button>
         }
         <ion-button
           fill="outline"
@@ -207,7 +210,7 @@
           color="secondary"
           (click)="verHistorial()"
           [disabled]="(!mesaVerificada() && !isDelivery()) || !historialAccess()"
-          *ngIf="!menuAccess() && (mesaVerificada() || isDelivery())"
+          *ngIf="(mesaVerificada() || isDelivery())"
           class="boton-grid"
         >
           <div class="boton-content">
