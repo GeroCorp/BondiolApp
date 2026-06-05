@@ -44,6 +44,9 @@ ion-header {
 .main-card {
   display: flex;
   flex-direction: column;
+  margin: 5vh auto 0;
+  max-width: 600px;
+  width: calc(100% - 32px);
 
   .main-container {
     display: flex;
@@ -55,6 +58,8 @@ ion-header {
 
     ion-list {
       background: transparent;
+      max-height: 440px;
+      overflow-y: auto;
     }
 
     // Estilos para el bloque de confirmación
