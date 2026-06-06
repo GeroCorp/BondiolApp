@@ -1289,49 +1289,84 @@ async sendMessage(contenido: string): Promise<void> {
   }
 }
 
-  async setMesa(id: number, id_mesa: number) {
-    const { data: mesa } = await this.supabase
-  .from('mesas')
-  .select('numero')
-  .eq('id', id_mesa)
-  .single();
+  // Como maitre pasas el id_mesa
+  // Como cliente pasas el numero_mesa
+  async setMesa(id: number, id_mesa: number, anonimo?: boolean) {
+  try {
+    console.log('🔄 Iniciando asignación de mesa:', { id, id_mesa });
 
-  const nroMesa = mesa?.numero;
-    
-    try {
-      console.log('🔄 Iniciando asignación de mesa:', {
-        clienteId: id,
-        mesaNumero: nroMesa,
-      });
+    // 1. Obtener tipo de cliente
+    const esAnonimo = anonimo ? anonimo : this.tipoClienteService.isAnonimo();
 
-      // Comprobar disponibilidad (con await)
-      await this.isMesaDisponible(nroMesa);
-      console.log('✅ Mesa disponible verificada');
+    // // 2. Obtener número de mesa
+    // const { data: mesa, error: mesaError } = await this.supabase
+    //   .from('mesas')
+    //   .select('numero')
+    //   .eq('id', id_mesa)
+    //   .maybeSingle();
 
-      // Actualizar cliente
+    // if (mesaError) throw new Error('Error al obtener mesa: ' + mesaError.message);
+    // if (!mesa) {
+    //   throw new Error(`No existe ninguna mesa con id=${id_mesa}`);
+    // }
+    // const nroMesa = mesa?.numero;
+    // if (nroMesa === undefined || nroMesa === null) {
+    //   throw new Error(`No se encontró la mesa con id ${id_mesa}`);
+    // }
+
+    // // 3. Verificar disponibilidad
+    //  await this.isMesaDisponible(nroMesa);
+    //  console.log('✅ Mesa disponible verificada');
+
+    if (esAnonimo) {
+      const { data, error } = await this.supabase
+        .from('clientes_anonimos')
+        .update({ mesa_asignada: id_mesa }) // Le pasa nroMesa a la FK
+        .eq('id_clienteanonimo', id)
+        .select();
+
+      if (error) throw new Error('Error al asignar mesa al invitado: ' + error.message);
+
+      const { error: mesaUpdateError } = await this.supabase
+        .from('mesas')
+        .update({ invitado_asignado: id, disponible: false })
+        .eq('id', id_mesa);
+
+      if (mesaUpdateError) throw new Error('Error al actualizar mesa (invitado): ' + mesaUpdateError.message);
+
+      console.log('✅ Mesa asignada a invitado:', data);
+      return data;
+
+    } else {
       const { data, error } = await this.supabase
         .from('clientes')
-        .update({ mesa_asignada: nroMesa })
+        .update({ mesa_asignada: id_mesa })
         .eq('id_cliente', id)
         .select();
 
-      if (error) {
-        console.error('❌ Error asignando mesa al cliente:', error);
-        throw new Error('Error al asignar mesa: ' + error.message);
-      }
+      if (error) throw new Error('Error al asignar mesa al cliente: ' + error.message);
 
-      console.log('✅ Cliente actualizado:', data);
+      const { error: mesaUpdateError } = await this.supabase
+        .from('mesas')
+        .update({ cliente_asignado: id ,
+          disponible: false
+        })
+        .eq('id', id_mesa);
+        // Update el estado
 
-      // Actualizar disponibilidad de la mesa
-      await this.actualizarMesa(id, nroMesa);
+      if (mesaUpdateError) throw new Error('Error al actualizar mesa (cliente): ' + mesaUpdateError.message);
 
-      console.log('✅ Mesa asignada correctamente:', data);
+      console.log('✅ Mesa asignada a cliente:', data);
       return data;
-    } catch (error: any) {
-      console.error('❌ Error en setMesa:', error);
-      throw error;
     }
+
+  } catch (error: any) {
+    console.error('❌ Error en setMesa:', error);
+    throw error;
   }
+}
+
+  
   async liberarMesaCliente(nroMesa?: number, clientId?: number) {
     try {
       const clienteId = clientId || (await this.getClientId());
