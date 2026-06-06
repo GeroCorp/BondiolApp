@@ -25,7 +25,7 @@ export class HomeClientePage implements OnInit {
   cliente: any = null;
   enListaEspera = signal<boolean>(false);
 
-  mesaAsignada = signal<number | null>(null);
+  mesaAsignada = signal<number | null>(null); // Es el id
   mesaVerificada = signal<boolean>(false);
 
   private pedidosSubscription: any = null;
@@ -642,14 +642,6 @@ export class HomeClientePage implements OnInit {
         return;
       }
 
-      if (this.mesaAsignada() && this.mesaAsignada() !== numeroMesa) {
-        this.showToast(
-          `❌ Esta no es tu mesa asignada. Tu mesa es la ${this.mesaAsignada()}, pero escaneaste la mesa ${numeroMesa}`,
-          'danger'
-        );
-        return;
-      }
-
       if (!this.mesaAsignada()) {
         this.showToast(
           `❌ No tienes una mesa asignada. Debe asignarte una mesa antes de poder escanear el QR.`,
@@ -682,6 +674,20 @@ export class HomeClientePage implements OnInit {
         .eq('numero', numeroMesa)
         .single();
 
+        // Comparar mesa.id con this.mesaAsignada
+        if (this.tipoClienteService.isAnonimo()){
+          if (this.mesaAsignada() != mesa.id){
+            this.showToast(`La Mesa ${numeroMesa} no es la asignada`, 'danger');
+            return;
+          }
+        }else{
+          if (this.mesaAsignada() != mesa.numero){
+            this.showToast(`La Mesa ${numeroMesa} no es la asignada`, 'danger');
+            return;
+          }
+
+        }
+
       if (errorMesa || !mesa) {
         await this.hapticService.vibrateError();
         this.showToast(`La Mesa ${numeroMesa} no existe en el sistema`, 'danger');
@@ -697,14 +703,6 @@ export class HomeClientePage implements OnInit {
         await this.hapticService.vibrateError();
         this.showToast(`Los datos del QR no coinciden con la mesa registrada`, 'danger');
         return;
-      }
-
-      // ✅ NO llamar a setMesa si ya está asignada
-      if (!this.tipoClienteService.isAnonimo() && this.mesaAsignada()) {
-        // Solo verificar para registrados
-        console.log('✅ Mesa ya asignada, solo verificando QR');
-      } else {
-        await this.clienteService.setMesa(clientId, numeroMesa);
       }
 
       // ✅ MARCAR COMO VERIFICADA
