@@ -22,8 +22,12 @@
       <th>Cliente</th>
       <td><img width="25%" alt="image" src="https://github.com/user-attachments/assets/9eff6937-77ef-4afd-a1c5-3039c399a4a6" /></td>
       <td><img width="25%" alt="ListaEspera" src="https://github.com/user-attachments/assets/64eee27e-5894-45bb-8170-21e706e2cb84" /></td>
+      <td><img width="25%" alt="homeCliente" src="https://github.com/user-attachments/assets/65189d0c-d18e-4e9f-9ed2-bdd18e886fc8" /></td>
       <td><img width="25%" alt="Menu" src="https://github.com/user-attachments/assets/3684de91-555e-4ba2-bac3-e7ae7f65b780" /></td>
       <td><img width="25%" alt="Carrito" src="https://github.com/user-attachments/assets/44526354-704c-4e2f-b1dd-bebd673f1a89" /></td>
+      <td><img width="25%" alt="miPedidoCliente" src="https://github.com/user-attachments/assets/d15d4e8b-8066-4ce6-852a-a0962834110f" /></td>
+      <td><img width="25%" alt="juegosCliente" src="https://github.com/user-attachments/assets/e55465c5-51fd-43ed-ba49-8f81db5b0eb3" /></td>
+      <td><img width="25%" alt="ChatCliente" src="https://github.com/user-attachments/assets/d3cb1702-d35c-4f76-8d79-cc529e5a0869" /></td>
     </tr>
     <tr>
         <th>Dueño</th>
